@@ -60,7 +60,7 @@
 // middleware/auth-middleware.ts
 import { getServerSession } from "next-auth/next";
 import { NextResponse, type NextRequest } from "next/server";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 
 // Extend the Session type to include custom user fields
 declare module "next-auth" {

@@ -1,7 +1,7 @@
 // app/api/users/[username]/following/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/lib/auth";
 import User from "@/models/User";
 import Follow from "@/models/Follow";
 import connectDB from "@/lib/db";
