@@ -1,0 +1,157 @@
+openapi: "3.0.0"
+info:
+  version: "1.0.0"
+  title: "DevSocial API"
+  description: "API for DevSocial platform with user management and file uploads"
+servers:
+  - url: http://localhost:3000/api
+    description: Development server
+paths:
+  /users/{id}/follow:
+    post:
+      summary: "Toggle follow status for a user"
+      description: "Follow or unfollow a user by their ID"
+      parameters:
+        - name: "id"
+          in: "path"
+          required: true
+          schema:
+            type: "string"
+          description: "User ID to follow/unfollow"
+      responses:
+        "200":
+          description: "Follow status toggled successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  success:
+                    type: "boolean"
+                    example: true
+                  isFollowing:
+                    type: "boolean"
+                    example: true
+                  followersCount:
+                    type: "number"
+                    example: 42
+                  message:
+                    type: "string"
+                    example: "Now following user"
+        "400":
+          description: "Bad request"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  success:
+                    type: "boolean"
+                    example: false
+                  error:
+                    type: "string"
+                    example: "User ID is required"
+        "404":
+          description: "User not found"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  success:
+                    type: "boolean"
+                    example: false
+                  error:
+                    type: "string"
+                    example: "User not found"
+  /upload/avatar:
+    post:
+      summary: "Upload user avatar"
+      description: "Upload a new avatar image. If no file is provided, a DiceBear avatar will be generated."
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: "object"
+              properties:
+                file:
+                  type: "string"
+                  format: "binary"
+                  description: "Avatar image file (jpg, png, gif)"
+                userId:
+                  type: "string"
+                  description: "User ID for avatar assignment"
+      responses:
+        "200":
+          description: "Avatar uploaded successfully"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  success:
+                    type: "boolean"
+                    example: true
+                  url:
+                    type: "string"
+                    example: "https://api.dicebear.com/8.x/adventurer/svg?seed=username"
+                  filename:
+                    type: "string"
+                    example: "avatar_1699123456789.jpg"
+                  size:
+                    type: "number"
+                    example: 204800
+                  type:
+                    type: "string"
+                    enum: ["uploaded", "generated"]
+                    example: "uploaded"
+        "400":
+          description: "Bad request - invalid file or missing data"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  success:
+                    type: "boolean"
+                    example: false
+                  error:
+                    type: "string"
+                    example: "Invalid file type. Only jpg, png, gif allowed"
+        "500":
+          description: "Server error"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  success:
+                    type: "boolean"
+                    example: false
+                  error:
+                    type: "string"
+                    example: "Upload failed"
+components:
+  schemas:
+    User:
+      type: "object"
+      properties:
+        id:
+          type: "string"
+        username:
+          type: "string"
+        displayName:
+          type: "string"
+        email:
+          type: "string"
+        avatar:
+          type: "string"
+          description: "Avatar URL - either uploaded or DiceBear generated"
+        level:
+          type: "number"
+        points:
+          type: "number"
+        isFollowing:
+          type: "boolean"
+        followersCount:
+          type: "number"

@@ -1,0 +1,25 @@
+@import "@uploadthing/react/styles.css";
+
+/* Custom UploadThing styles */
+.ut-button:root {
+  /* You can override styles here */
+  --primary-500: rgb(16 185 129); /* emerald-600 */
+  --primary-600: rgb(5 150 105); /* emerald-700 */
+}
+
+.ut-button:hover {
+  background-color: rgb(5 150 105);
+}
+
+.ut-label {
+  color: rgb(75 85 99); /* gray-600 */
+}
+
+.ut-allowed-content {
+  color: rgb(107 114 128); /* gray-500 */
+  font-size: 0.875rem;
+}
+
+.ut-uploading {
+  color: rgb(16 185 129); /* emerald-600 */
+}

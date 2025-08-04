@@ -1,0 +1,84 @@
+// app/api/users/profile/route.ts
+import { type NextRequest, NextResponse } from "next/server"
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
+import { getServerSession } from "next-auth";
+import bcrypt from "bcryptjs";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import User, { IUser } from "@/models/User";
+import connectDB from "@/lib/db";
+import { successResponse, errorResponse } from "@/utils/response";
+
+// --- GET Handler ---
+export async function GET(req: NextRequest) {
+  try {
+    await connectDB();
+    
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json(errorResponse("Unauthorized"), { status: 401 });
+    }
+
+    const user = await User.findById(session.user.id).select("-password").lean();
+
+    if (!user) {
+      return NextResponse.json(errorResponse("User not found"), { status: 404 });
+    }
+
+    return NextResponse.json(successResponse({ user }));
+  } catch (error) {
+    console.error("Profile GET error:", error);
+    return NextResponse.json(errorResponse("Internal server error"), { status: 500 });
+  }
+}
+
+
+// --- PUT Handler ---
+export async function PUT(req: NextRequest) {
+  try {
+    await connectDB();
+    
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user?.id) {
+      return NextResponse.json(errorResponse("Unauthorized"), { status: 401 });
+    }
+
+    const userId = session.user.id;
+    const body = await req.json();
+
+    const {
+      displayName, bio, affiliation, location, website, avatar, bannerUrl,
+      currentPassword, newPassword
+    } = body;
+
+    const user = await User.findById(userId).select("+password");
+    if (!user) {
+      return NextResponse.json(errorResponse("User not found"), { status: 404 });
+    }
+
+    const updateData: Partial<IUser> = {};
+    if (displayName !== undefined) updateData.displayName = displayName;
+    if (bio !== undefined) updateData.bio = bio;
+    if (affiliation !== undefined) updateData.affiliation = affiliation;
+    if (location !== undefined) updateData.location = location;
+    if (website !== undefined) updateData.website = website;
+    if (avatar !== undefined) updateData.avatar = avatar;
+    if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
+
+    if (currentPassword && newPassword) {
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password!);
+      if (!isPasswordValid) {
+        return NextResponse.json(errorResponse("Current password is incorrect"), { status: 400 });
+      }
+      updateData.password = await bcrypt.hash(newPassword, 12);
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select("-password");
+
+    return NextResponse.json(successResponse({ user: updatedUser, message: "Profile updated successfully" }));
+  } catch (error) {
+    console.error("Profile PUT error:", error);
+    return NextResponse.json(errorResponse("Internal server error"), { status: 500 });
+  }
+}

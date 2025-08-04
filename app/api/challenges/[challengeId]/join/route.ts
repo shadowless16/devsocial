@@ -1,0 +1,23 @@
+import { type NextRequest, NextResponse } from "next/server"
+import { authMiddleware } from "@/middleware/auth"
+import { ChallengeSystem } from "@/utils/challenge-system"
+import { successResponse, errorResponse } from "@/utils/response"
+
+export async function POST(request: NextRequest, { params }: { params: { challengeId: string } }) {
+  try {
+    const authResult = await authMiddleware(request)
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+    }
+
+    const userId = authResult.user!.id
+    const { challengeId } = params
+
+    const participation = await ChallengeSystem.joinChallenge(userId, challengeId)
+
+    return NextResponse.json(successResponse({ participation }), { status: 201 })
+  } catch (error: any) {
+    console.error("Error joining challenge:", error)
+    return NextResponse.json(errorResponse(error.message || "Failed to join challenge"), { status: 500 })
+  }
+}

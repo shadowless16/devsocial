@@ -1,0 +1,97 @@
+// import { type NextRequest, NextResponse } from "next/server"
+// import { authMiddleware } from "@/middleware/auth"
+// import Message from "@/models/Message"
+// import connectDB from "@/lib/db"
+// import { successResponse, errorResponse } from "@/utils/response"
+
+// export async function POST(request: NextRequest, { params }: { params: { messageId: string } }) {
+//   try {
+//     await connectDB()
+
+//     const authResult = await authMiddleware(request)
+//     if (!authResult.success) {
+//       return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+//     }
+
+//     const userId = authResult.user!.id
+//     const { messageId } = params
+//     const { emoji } = await request.json()
+
+//     const message = await Message.findById(messageId)
+//     if (!message) {
+//       return NextResponse.json(errorResponse("Message not found"), { status: 404 })
+//     }
+
+//     // Check if user is part of this conversation
+//     if (message.sender.toString() !== userId && message.recipient.toString() !== userId) {
+//       return NextResponse.json(errorResponse("Unauthorized"), { status: 403 })
+//     }
+
+//     // Remove existing reaction from this user
+//     message.reactions = message.reactions.filter((reaction) => reaction.user.toString() !== userId)
+
+//     // Add new reaction
+//     message.reactions.push({
+//       user: userId as any,
+//       emoji,
+//       createdAt: new Date(),
+//     })
+
+//     await message.save()
+//     await message.populate("reactions.user", "username displayName avatar")
+
+//     return NextResponse.json(
+//       successResponse({
+//         messageId,
+//         reactions: message.reactions,
+//       }),
+//     )
+//   } catch (error) {
+//     console.error("Error adding reaction:", error)
+//     return NextResponse.json(errorResponse("Failed to add reaction"), { status: 500 })
+//   }
+// }
+
+// export async function DELETE(request: NextRequest, { params }: { params: { messageId: string } }) {
+//   try {
+//     await connectDB()
+
+//     const authResult = await authMiddleware(request)
+//     if (!authResult.success) {
+//       return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+//     }
+
+//     const userId = authResult.user!.id
+//     const { messageId } = params
+//     const { searchParams } = new URL(request.url)
+//     const emoji = searchParams.get("emoji")
+
+//     const message = await Message.findById(messageId)
+//     if (!message) {
+//       return NextResponse.json(errorResponse("Message not found"), { status: 404 })
+//     }
+
+//     // Check if user is part of this conversation
+//     if (message.sender.toString() !== userId && message.recipient.toString() !== userId) {
+//       return NextResponse.json(errorResponse("Unauthorized"), { status: 403 })
+//     }
+
+//     // Remove reaction
+//     message.reactions = message.reactions.filter(
+//       (reaction) => !(reaction.user.toString() === userId && reaction.emoji === emoji),
+//     )
+
+//     await message.save()
+//     await message.populate("reactions.user", "username displayName avatar
+
+//     return NextResponse.json(
+//       successResponse({
+//         messageId,
+//         reactions: message.reactions,
+//       }),
+//     )
+//   } catch (error) {
+//     console.error("Error removing reaction:", error)
+//     return NextResponse.json(errorResponse("Failed to remove reaction"), { status: 500 })
+//   }
+// }
