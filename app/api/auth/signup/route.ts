@@ -16,11 +16,13 @@ export async function POST(request: NextRequest) {
     await connectDB()
 
     const body = await request.json()
+    console.log('Signup request body:', JSON.stringify(body, null, 2))
     const { referralCode } = body
 
     // Validate input
     const validation = signupSchema.safeParse(body)
     if (!validation.success) {
+      console.log('Validation failed:', validation.error.format())
       return validationErrorResponse(validation.error.format())
     }
 

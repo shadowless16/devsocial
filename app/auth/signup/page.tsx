@@ -94,6 +94,16 @@ useEffect(() => {
         errorMessage = error.message;
       } else if (error?.error?.message) {
         errorMessage = error.error.message;
+      } else if (error?.error?.details) {
+        // Handle validation errors
+        const details = error.error.details;
+        const validationErrors = [];
+        for (const field in details) {
+          if (details[field]?._errors) {
+            validationErrors.push(...details[field]._errors);
+          }
+        }
+        errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
       }
       setError(errorMessage);
     } finally {
