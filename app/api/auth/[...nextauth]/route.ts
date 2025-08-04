@@ -34,6 +34,7 @@ declare module "next-auth" {
 
 export const authOptions: AuthOptions = {
   adapter: MongoDBAdapter(Promise.resolve(new MongoClient(process.env.MONGODB_URI!).connect())),
+  trustHost: true, // Required for Vercel deployment
   providers: [
     CredentialsProvider({
       name: "Credentials",

@@ -22,10 +22,20 @@ export default withAuth(
   },
   {
     callbacks: {
-      authorized: ({ token }) => {
-        // Return true if the user has a valid token
-        return !!token
+      authorized: ({ token, req }) => {
+        // Allow public access to auth pages and API routes
+        if (req.nextUrl.pathname.startsWith('/auth') || 
+            req.nextUrl.pathname.startsWith('/api/auth') ||
+            req.nextUrl.pathname.startsWith('/api/affiliations')) {
+          return true;
+        }
+        // For protected routes, require a token
+        return !!token;
       },
+    },
+    pages: {
+      signIn: '/auth/login',
+      error: '/auth/error',
     },
   }
 )
