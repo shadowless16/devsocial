@@ -83,13 +83,36 @@ useEffect(() => {
         affiliation: formData.affiliation || "Other",
         referralCode: referralCode || undefined,
       })
-      router.push("/onboarding")
+      
+      // Give some time for the session to be established
+      setTimeout(() => {
+        router.push("/onboarding")
+      }, 1000)
     } catch (error: any) {
       console.error("Signup error:", error);
       // Handle different error types
       let errorMessage = "Signup failed";
+      
       if (typeof error === 'string') {
         errorMessage = error;
+      } else if (error?.response) {
+        // Handle API response errors
+        const responseData = error.response.data;
+        if (responseData?.error?.message) {
+          errorMessage = responseData.error.message;
+        } else if (responseData?.error?.details) {
+          // Handle validation errors
+          const details = responseData.error.details;
+          const validationErrors = [];
+          for (const field in details) {
+            if (details[field]?._errors) {
+              validationErrors.push(...details[field]._errors);
+            }
+          }
+          errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
+        } else if (responseData?.message) {
+          errorMessage = responseData.message;
+        }
       } else if (error?.message) {
         errorMessage = error.message;
       } else if (error?.error?.message) {
@@ -104,7 +127,11 @@ useEffect(() => {
           }
         }
         errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
+      } else {
+        // Fallback for unknown error structures
+        errorMessage = JSON.stringify(error);
       }
+      
       setError(errorMessage);
     } finally {
       setLoading(false)

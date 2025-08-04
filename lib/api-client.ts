@@ -224,7 +224,11 @@ class ApiClient {
       
       if (!response.ok) {
         console.error(`[API Client] Error response:`, json);
-        throw new Error(json.message || json.error || `HTTP error! status: ${response.status}`);
+        // Create a comprehensive error object
+        const error = new Error(json.error?.message || json.message || `HTTP error! status: ${response.status}`);
+        // Attach the full response for detailed error handling
+        (error as any).response = { data: json, status: response.status };
+        throw error;
       }
       
       return json as ApiResponse<T>;

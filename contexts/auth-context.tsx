@@ -322,6 +322,20 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       const errorMessage = response.error?.message || response.message || "Signup failed";
       throw new Error(errorMessage);
     }
+    
+    // After successful signup, automatically log the user in
+    if (response.data?.token && response.data?.user) {
+      // Use NextAuth signIn to create a session
+      const result = await signIn("credentials", {
+        usernameOrEmail: userData.email,
+        password: userData.password,
+        redirect: false,
+      });
+      
+      if (result?.error) {
+        throw new Error("Account created but login failed. Please try logging in manually.");
+      }
+    }
   };
 
   const value: AuthContextType = { user, loading, login, logout, updateUser, signup };
