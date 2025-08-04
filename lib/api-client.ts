@@ -337,6 +337,10 @@ class ApiClient {
     const query = params ? "?" + new URLSearchParams(params).toString() : "";
     return this.request<T>(`/users/${username}/following${query}`, { method: "GET" });
   }
+
+  public getAffiliations(): Promise<ApiResponse<any>> {
+    return this.request<any>("/affiliations");
+  }
 }
 
 export const apiClient = new ApiClient();

@@ -36,12 +36,13 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api/auth (NextAuth API routes)
+     * - api/affiliations (public affiliations data)
      * - auth (login/signup pages)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - .well-known (well-known URIs)
      */
-    "/((?!api/auth|auth|_next/static|_next/image|favicon.ico|\.well-known).*)",
+    "/((?!api/auth|api/affiliations|auth|_next/static|_next/image|favicon.ico|\.well-known).*)",
   ]
 }

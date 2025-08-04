@@ -39,10 +39,10 @@ export default function SignupPage() {
   // TODO: Add referral code support with proper suspense boundary
   const referralCode = null
 
-  useEffect(() => {
+useEffect(() => {
     const fetchAffiliations = async () => {
       try {
-        const response = await apiClient.request("/affiliations");
+        const response = await apiClient.getAffiliations();
         if (response.success && response.data?.affiliations) {
           setAffiliations(response.data.affiliations);
         }

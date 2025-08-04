@@ -1,41 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readFileSync } from "fs";
-import path from "path";
 import { successResponse, errorResponse } from "@/utils/response";
+import { MongoClient } from "mongodb";
 
 export async function GET(req: NextRequest) {
+  let client;
+  
   try {
-    // Read the affiliations JSON file
-    const filePath = path.join(process.cwd(), "docs", "affiliations.json");
-    const fileContent = readFileSync(filePath, "utf-8");
-    const raw = JSON.parse(fileContent);
+    // Connect to MongoDB using MongoClient
+    const uri = process.env.MONGODB_URI;
+    if (!uri) {
+      throw new Error("MONGODB_URI environment variable is not set");
+    }
+    
+    client = new MongoClient(uri);
+    await client.connect();
+    const db = client.db();
+    const collection = db.collection("affiliations");
 
-    // Transform the raw JSON structure into the flat structure expected by the frontend
-    const techBootcamps = [
-      ...(raw.TechbootCamps?.NIIT_Centres || []),
-      ...(raw.TechbootCamps?.Top_Bootcamps_Tech_Programmes || []),
-    ];
+    // Fetch the affiliations data from MongoDB
+    const affiliationRecord = await collection.findOne({ type: "affiliations" });
+    if (!affiliationRecord) {
+      throw new Error("No affiliations data found in database. Please run the load script first.");
+    }
 
-    const nigerian = raw.Nigerian_Universities || {};
-    const federal = nigerian.Federal || [];
-    const state = nigerian.State || [];
-    const privateUniversities = nigerian.Private || [];
-    const affiliatedInstitutions = nigerian.Affiliated_Institutions || [];
-    const distanceLearning = nigerian.Distance_Learning || [];
-
-    const affiliations = {
-      techBootcamps,
-      federal,
-      state,
-      privateUniversities,
-      affiliatedInstitutions,
-      distanceLearning,
-    };
-
-    // Return the transformed affiliations data
-    return NextResponse.json(successResponse({ affiliations }));
+    // Return the affiliations data
+    return successResponse({ affiliations: affiliationRecord.data });
   } catch (error) {
     console.error("Error fetching affiliations:", error);
-    return errorResponse("Failed to fetch affiliations", 500);
+    return errorResponse(`Failed to fetch affiliations: ${error.message}`, 500);
+  } finally {
+    // Close the connection
+    if (client) {
+      await client.close();
+    }
   }
 }

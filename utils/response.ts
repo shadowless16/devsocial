@@ -46,10 +46,13 @@ interface ResponseData {
  * @returns A JSON response object.
  */
 export function successResponse(data: ResponseData, status: number = 200) {
-  return {
-    success: true,
-    data,
-  };
+  return NextResponse.json(
+    {
+      success: true,
+      data,
+    },
+    { status }
+  );
 }
 
 /**
