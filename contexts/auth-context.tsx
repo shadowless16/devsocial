@@ -1,138 +1,3 @@
-// // contexts/auth-context.tsx
-// "use client";
-
-// import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-// import { apiClient } from "@/lib/api-client";
-// import { type IUser } from "@/models/User"; // Import the full Mongoose type
-
-// // Define a simple, plain object type for frontend state
-// export interface User {
-//   id: string;
-//   username: string;
-//   email: string;
-//   bio: string;
-//   branch: string;
-//   avatar: string;
-//   bannerUrl: string;
-//   role: "user" | "moderator" | "admin";
-//   points: number;
-//   level: number;
-//   displayName?: string;
-//   location?: string;
-//   website?: string;
-// }
-
-// interface AuthContextType {
-//   user: User | null;
-//   loading: boolean;
-//   login: (credentials: { usernameOrEmail: string; password: string }) => Promise<void>;
-//   logout: () => Promise<void>;
-//   updateUser: (userData: Partial<User>) => void;
-//   signup: (userData: any) => Promise<void>;
-// }
-
-// const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-// // Helper function to map the full IUser to our simple frontend User type
-// const mapApiUserData = (apiUserData: IUser): User => ({
-//   id: apiUserData._id.toString(),
-//   username: apiUserData.username,
-//   email: apiUserData.email,
-//   bio: apiUserData.bio,
-//   branch: apiUserData.branch,
-//   avatar: apiUserData.avatar,
-//   bannerUrl: apiUserData.bannerUrl,
-//   role: apiUserData.role,
-//   points: apiUserData.points,
-//   level: apiUserData.level,
-//   displayName: apiUserData.displayName,
-//   location: apiUserData.location,
-//   website: apiUserData.website,
-// });
-
-// export function AuthProvider({ children }: { children: React.ReactNode }) {
-//   const [user, setUser] = useState<User | null>(null);
-//   const [loading, setLoading] = useState(true);
-
-//   const logout = useCallback(async () => {
-//     setUser(null);
-//     await apiClient.logout();
-//     window.location.href = "/auth/login";
-//   }, []);
-
-//   const fetchCurrentUser = useCallback(async () => {
-//     const token = localStorage.getItem("access_token");
-//     if (!token) {
-//       setUser(null);
-//       setLoading(false);
-//       return;
-//     }
-//     try {
-//       const response = await apiClient.getCurrentUserProfile<{ user: IUser }>();
-//       if (response.success && response.data?.user) {
-//         setUser(mapApiUserData(response.data.user));
-//       } else {
-//         setUser(null);
-//       }
-//     } catch (error) {
-//       setUser(null);
-//       console.log("Session invalid:", error);
-//     } finally {
-//       setLoading(false);
-//     }
-//   }, []);
-
-//   useEffect(() => {
-//     fetchCurrentUser();
-//   }, [fetchCurrentUser]);
-
-//   // Periodically check if the token is missing and log out if necessary
-//   useEffect(() => {
-//     const checkToken = () => {
-//       const token = localStorage.getItem("access_token");
-//       if (!token && user) {
-//         setUser(null);
-//         window.location.href = "/auth/login";
-//       }
-//     };
-//     checkToken();
-//     const interval = setInterval(checkToken, 5000); // Check every 5 seconds
-//     return () => clearInterval(interval);
-//   }, [user]);
-
-//   const login = async (credentials: { usernameOrEmail: string; password: string }) => {
-//     const response = await apiClient.login(credentials);
-//     if (response.success && response.data?.user) {
-//       setUser(mapApiUserData(response.data.user));
-//     } else {
-//       throw new Error(response.message || "Login failed.");
-//     }
-//   };
-
-//   const updateUser = (newUserData: Partial<User>) => {
-//     setUser((currentUser) => (currentUser ? { ...currentUser, ...newUserData } : null));
-//   };
-
-//   const signup = async (userData: any) => {
-//     // Implement signup logic here if needed
-//   };
-
-//   const value: AuthContextType = { user, loading, login, logout, updateUser, signup };
-
-//   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
-// }
-
-// export function useAuth() {
-//   const context = useContext(AuthContext);
-//   if (context === undefined) throw new Error("useAuth must be used within an AuthProvider");
-//   return context;
-// }
-
-// contexts/auth-context.tsx
-
-
-// contexts/auth-context.tsx
-// contexts/auth-context.tsx
 "use client";
 
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
@@ -284,7 +149,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      fetchUserWithCache();
+      // Temporarily disable profile fetching to prevent redirect loop
+      setUser(null);
+      setLoading(false);
     } else if (status === "unauthenticated") {
       setUser(null);
       userCacheRef.current = null;
@@ -296,7 +163,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [status, session, fetchUserWithCache]);
+  }, [status, session]);
 
   const login = async (credentials: { usernameOrEmail: string; password: string }) => {
     const result = await signIn("credentials", {
