@@ -1,82 +1,55 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
+import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import connectDB from "@/lib/db"
 import User from "@/models/User"
-import { successResponse, errorResponse } from "@/utils/response"
+import { generateGenderAvatar } from "@/utils/avatar-generator"
 
-export async function POST(request: NextRequest) {
+export const dynamic = 'force-dynamic'
+
+export async function PUT(req: NextRequest) {
   try {
     await connectDB()
-
+    
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
-      return errorResponse("Unauthorized", 401)
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
     }
 
-    const body = await request.json()
-    console.log("[Onboarding API] Received data:", body)
+    const body = await req.json()
+    const { gender, userType, bio, techStack, experienceLevel, githubUsername, linkedinUrl, portfolioUrl } = body
 
-    const {
-      bio,
-      techCareerPath,
-      experienceLevel,
-      techStack,
-      githubUsername,
-      linkedinUrl,
-      portfolioUrl,
-      interests,
-      starterBadge,
-      socials
-    } = body
-
-    // Update user with onboarding data
-    const updatedUser = await User.findByIdAndUpdate(
-      session.user.id,
-      {
-        $set: {
-          bio: bio || "",
-          techCareerPath: techCareerPath || "",
-          experienceLevel: experienceLevel || "beginner",
-          techStack: techStack || [],
-          githubUsername: githubUsername || "",
-          linkedinUrl: linkedinUrl || "",
-          portfolioUrl: portfolioUrl || "",
-          // Add starter badge to badges array if not already present
-          ...(starterBadge && { $addToSet: { badges: starterBadge } }),
-          // Mark onboarding as completed
-          onboardingCompleted: true,
-          updatedAt: new Date()
-        }
-      },
-      { new: true }
-    )
-
-    if (!updatedUser) {
-      return errorResponse("User not found", 404)
+    const user = await User.findById(session.user.id)
+    if (!user) {
+      return NextResponse.json({ success: false, error: "User not found" }, { status: 404 })
     }
 
-    console.log("[Onboarding API] User updated successfully")
+    // Update user fields
+    if (gender) user.gender = gender
+    if (userType) user.userType = userType
+    if (bio) user.bio = bio
+    if (techStack) user.techStack = techStack
+    if (experienceLevel) user.experienceLevel = experienceLevel
+    if (githubUsername) user.githubUsername = githubUsername
+    if (linkedinUrl) user.linkedinUrl = linkedinUrl
+    if (portfolioUrl) user.portfolioUrl = portfolioUrl
 
-    return NextResponse.json(
-      successResponse({
-        message: "Onboarding completed successfully",
-        user: {
-          id: updatedUser._id,
-          bio: updatedUser.bio,
-          techCareerPath: updatedUser.techCareerPath,
-          experienceLevel: updatedUser.experienceLevel,
-          techStack: updatedUser.techStack,
-          githubUsername: updatedUser.githubUsername,
-          linkedinUrl: updatedUser.linkedinUrl,
-          portfolioUrl: updatedUser.portfolioUrl,
-          badges: updatedUser.badges,
-          onboardingCompleted: updatedUser.onboardingCompleted
-        }
-      })
-    )
+    // Generate gender-specific avatar if gender is provided
+    if (gender && !user.avatar.includes('uploaded')) {
+      user.avatar = generateGenderAvatar(user.username, gender)
+    }
+
+    // Mark onboarding as completed
+    user.onboardingCompleted = true
+
+    await user.save()
+
+    return NextResponse.json({
+      success: true,
+      data: { user: user.toObject() }
+    })
   } catch (error) {
     console.error("Onboarding error:", error)
-    return errorResponse("Internal server error", 500)
+    return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

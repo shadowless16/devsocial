@@ -27,6 +27,8 @@ export default function OnboardingPage() {
   const [onboardingData, setOnboardingData] = useState({
     avatar: "",
     bio: "",
+    gender: "",
+    userType: "",
     socials: { twitter: "", linkedin: "" },
     techCareerPath: "",
     experienceLevel: "beginner",
@@ -68,9 +70,11 @@ export default function OnboardingPage() {
       
       // Call the onboarding API to save the data
       const response = await apiClient.request('/users/onboarding', {
-        method: 'POST',
+        method: 'PUT',
         body: JSON.stringify({
           bio: data.bio,
+          gender: data.gender,
+          userType: data.userType,
           techCareerPath: data.techCareerPath,
           experienceLevel: data.experienceLevel,
           techStack: data.techStack,

@@ -15,6 +15,8 @@ export interface IUser extends Document {
   avatar: string;
   bannerUrl: string;
   role: "user" | "moderator" | "admin";
+  gender?: "male" | "female" | "other";
+  userType?: "student" | "developer" | "designer" | "entrepreneur" | "other";
   techCareerPath?: string;
   techStack?: string[];
   experienceLevel?: "beginner" | "intermediate" | "advanced" | "expert";
@@ -126,6 +128,14 @@ const UserSchema = new Schema<IUser>(
       type: String,
       default: "", // We set default to empty string so the pre-save hook can catch it
     },
+    gender: {
+      type: String,
+      enum: ["male", "female", "other"],
+    },
+    userType: {
+      type: String,
+      enum: ["student", "developer", "designer", "entrepreneur", "other"],
+    },
     bannerUrl: {
       type: String,
       default: "", // New field for user banner
@@ -177,12 +187,16 @@ UserSchema.pre("save", function (next) {
     this.level = Math.floor(this.points / 1000) + 1;
   }
 
-  // 2. New DiceBear Avatar Logic
+  // 2. Gender-specific DiceBear Avatar Logic
   if (this.isNew && !this.avatar) {
-    // If it's a new user and they haven't uploaded a custom avatar...
-    const avatarStyle = 'adventurer'; // You can change this style!
-    // ...generate a unique 3D avatar for them using their username.
-    this.avatar = `https://api.dicebear.com/8.x/${avatarStyle}/svg?seed=${this.username}`;
+    const seed = this.username;
+    if (this.gender === "male") {
+      this.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&gender=male`;
+    } else if (this.gender === "female") {
+      this.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&gender=female`;
+    } else {
+      this.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+    }
   }
 
   // 3. Generate referral code for new users

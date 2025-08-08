@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AvatarSetupProps {
   data: any
@@ -20,6 +21,8 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
   const [formData, setFormData] = useState({
     avatar: data.avatar || "",
     bio: data.bio || "",
+    gender: data.gender || "",
+    userType: data.userType || "",
     socials: data.socials || { twitter: "", linkedin: "" },
   })
 
@@ -65,6 +68,38 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
             <span>Upload Avatar</span>
           </Button>
         </div>
+      </div>
+
+      {/* Gender Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="gender">Gender</Label>
+        <Select value={formData.gender} onValueChange={(value) => setFormData((prev) => ({ ...prev, gender: value }))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select your gender" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="male">Male</SelectItem>
+            <SelectItem value="female">Female</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* User Type Selection */}
+      <div className="space-y-2">
+        <Label htmlFor="userType">I am a...</Label>
+        <Select value={formData.userType} onValueChange={(value) => setFormData((prev) => ({ ...prev, userType: value }))}>
+          <SelectTrigger>
+            <SelectValue placeholder="Select your role" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="student">Student</SelectItem>
+            <SelectItem value="developer">Developer</SelectItem>
+            <SelectItem value="designer">Designer</SelectItem>
+            <SelectItem value="entrepreneur">Entrepreneur</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Bio */}

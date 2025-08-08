@@ -26,6 +26,8 @@ export interface User {
   avatar: string;
   bannerUrl: string;
   role: "user" | "moderator" | "admin";
+  gender?: "male" | "female" | "other";
+  userType?: "student" | "developer" | "designer" | "entrepreneur" | "other";
   points: number;
   badges: string[];
   level: number;
