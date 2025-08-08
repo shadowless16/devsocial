@@ -69,6 +69,7 @@ export function ReferralDashboard() {
   }
 
   const getReferralLink = () => {
+    if (typeof window === 'undefined') return ''
     return `${window.location.origin}/auth/signup?ref=${referralCode}`
   }
 

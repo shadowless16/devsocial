@@ -2,7 +2,9 @@
 
 import React from "react";
 import ReactMarkdown from "react-markdown";
+// @ts-ignore
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+// @ts-ignore
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
@@ -11,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 interface PostContentProps {
   content: string;
   onCopyCode?: (code: string) => void;
-}
+} 
 
 export function PostContent({ content, onCopyCode }: PostContentProps) {
   const { toast } = useToast();
@@ -36,8 +38,9 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
 
   return (
     <ReactMarkdown
-      components={{
-        code({ node, inline, className, children, ...props }) {
+      components={{ 
+        code({ node, className, children, ...props }: any) {
+          const inline = !className;
           const match = /language-(\w+)/.exec(className || "");
           return !inline && match ? (
             <div className="relative my-4 rounded-lg overflow-hidden border border-gray-600">

@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest) {
     const conversationsWithUnread = conversations.map((conv) => ({
       ...conv.toObject(),
       unreadCount: conv.unreadCount.get(userId) || 0,
-      otherParticipant: conv.participants.find((p) => p._id.toString() !== userId),
+      otherParticipant: conv.participants.find((p: any) => p._id.toString() !== userId),
     }))
 
     return NextResponse.json(

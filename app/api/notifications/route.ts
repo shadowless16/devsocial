@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -37,8 +37,9 @@ export async function GET(request: NextRequest) {
       isRead: false,
     })
 
-    return NextResponse.json(
-      successResponse({
+    return NextResponse.json({
+      success: true,
+      data: {
         notifications,
         unreadCount,
         pagination: {
@@ -47,8 +48,8 @@ export async function GET(request: NextRequest) {
           totalNotifications,
           hasMore: skip + notifications.length < totalNotifications,
         },
-      }),
-    )
+      }
+    })
   } catch (error) {
     console.error("Error fetching notifications:", error)
     return NextResponse.json(errorResponse("Failed to fetch notifications"), { status: 500 })
@@ -61,7 +62,7 @@ export async function PATCH(request: NextRequest) {
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -87,11 +88,12 @@ export async function PATCH(request: NextRequest) {
       updateData,
     )
 
-    return NextResponse.json(
-      successResponse({
+    return NextResponse.json({
+      success: true,
+      data: {
         message: `${notificationIds.length} notifications updated`,
-      }),
-    )
+      }
+    })
   } catch (error) {
     console.error("Error updating notifications:", error)
     return NextResponse.json(errorResponse("Failed to update notifications"), { status: 500 })

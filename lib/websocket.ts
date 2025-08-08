@@ -155,7 +155,7 @@ export class WebSocketServer {
           }
 
           // Remove existing reaction from this user
-          message.reactions = message.reactions.filter((reaction) => reaction.user.toString() !== userId)
+          message.reactions = message.reactions.filter((reaction: any) => reaction.user.toString() !== userId)
 
           // Add new reaction
           message.reactions.push({

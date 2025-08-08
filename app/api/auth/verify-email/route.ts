@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     await user.save()
 
     // Award XP for email verification
-    await awardXP(user._id.toString(), "email_verification")
+    await awardXP(user._id.toString(), "email_verified")
 
     return successResponse({
       message: "Email verified successfully",

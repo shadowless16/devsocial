@@ -37,6 +37,7 @@ export interface IUser extends Document {
   loginStreak: number;
   lastStreakDate?: Date;
   referralCode?: string;
+  onboardingCompleted: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -157,6 +158,11 @@ const UserSchema = new Schema<IUser>(
       type: String, 
       unique: true, 
       sparse: true,
+      index: true,
+    },
+    onboardingCompleted: {
+      type: Boolean,
+      default: false,
       index: true,
     },
   },

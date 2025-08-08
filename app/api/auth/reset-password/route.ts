@@ -4,6 +4,7 @@ import User from "@/models/User"
 import { AuthService } from "@/lib/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 import { z } from "zod"
+import bcrypt from "bcryptjs";
 
 const resetPasswordSchema = z.object({
   token: z.string().min(1, "Reset token is required"),
@@ -39,7 +40,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Hash new password
-    const hashedPassword = await AuthService.hashPassword(password)
+    const hashedPassword = await bcrypt.hash(password, 10)
 
     // Update user
     user.password = hashedPassword

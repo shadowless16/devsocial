@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import {
   Dialog,
-  DialogContent,
+  DialogContent, 
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
@@ -108,11 +108,11 @@ export function FollowListModal({
 
       if (response.success && response.data) {
         if (page === 1) {
-          setFollowers(response.data.followers);
+          setFollowers(response.data!.followers);
         } else {
-          setFollowers(prev => [...prev, ...response.data.followers]);
+          setFollowers(prev => [...prev, ...response.data!.followers]);
         }
-        setHasMoreFollowers(response.data.pagination.hasMore);
+        setHasMoreFollowers(response.data!.pagination.hasMore);
         setFollowersPage(page);
       }
     } catch (error) {
@@ -132,11 +132,11 @@ export function FollowListModal({
 
       if (response.success && response.data) {
         if (page === 1) {
-          setFollowing(response.data.following);
+          setFollowing(response.data!.following);
         } else {
-          setFollowing(prev => [...prev, ...response.data.following]);
+          setFollowing(prev => [...prev, ...response.data!.following]);
         }
-        setHasMoreFollowing(response.data.pagination.hasMore);
+        setHasMoreFollowing(response.data!.pagination.hasMore);
         setFollowingPage(page);
       }
     } catch (error) {

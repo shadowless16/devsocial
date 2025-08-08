@@ -14,8 +14,8 @@ export async function GET(request: NextRequest) {
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: authResult.status })
     }
 
     const { searchParams } = new URL(request.url)

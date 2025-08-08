@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
 import { NextResponse, type NextRequest } from "next/server";
-
+ 
 declare module "next-auth" {
   interface User {
     id: string;
@@ -33,8 +33,6 @@ declare module "next-auth" {
 }
 
 export const authOptions: AuthOptions = {
-  adapter: MongoDBAdapter(Promise.resolve(new MongoClient(process.env.MONGODB_URI!).connect())),
-  trustHost: true, // Required for Vercel deployment
   providers: [
     CredentialsProvider({
       name: "Credentials",

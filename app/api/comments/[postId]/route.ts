@@ -49,8 +49,9 @@ export async function GET(request: NextRequest, { params }: { params: { postId: 
 
     const totalComments = await Comment.countDocuments({ post: postId, parentComment: { $exists: false } })
 
-    return NextResponse.json(
-      successResponse({
+    return NextResponse.json({
+      success: true,
+      data: {
         comments: commentsWithReplies,
         pagination: {
           currentPage: page,
@@ -58,8 +59,8 @@ export async function GET(request: NextRequest, { params }: { params: { postId: 
           totalComments,
           hasMore: skip + comments.length < totalComments,
         },
-      }),
-    )
+      }
+    })
   } catch (error) {
     console.error("Error fetching comments:", error)
     return NextResponse.json(errorResponse("Failed to fetch comments"), { status: 500 })
@@ -72,7 +73,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -152,7 +153,10 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
       }
     }
 
-    return NextResponse.json(successResponse({ comment }), { status: 201 })
+    return NextResponse.json({
+      success: true,
+      data: { comment }
+    }, { status: 201 })
   } catch (error) {
     console.error("Error creating comment:", error)
     return NextResponse.json(errorResponse("Failed to create comment"), { status: 500 })

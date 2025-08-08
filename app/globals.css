@@ -90,6 +90,49 @@
     @apply bg-background text-foreground;
   }
   
+  /* Custom scrollbar styles */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+  
+  .scrollbar-thumb-gray-300::-webkit-scrollbar-thumb {
+    background-color: rgb(209 213 219);
+  }
+  
+  .dark .scrollbar-thumb-gray-600::-webkit-scrollbar-thumb {
+    background-color: rgb(75 85 99);
+  }
+  
+  .scrollbar-track-transparent::-webkit-scrollbar-track {
+    background-color: transparent;
+  }
+  
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background-color: rgb(209 213 219);
+    border-radius: 3px;
+  }
+  
+  .dark ::-webkit-scrollbar-thumb {
+    background-color: rgb(75 85 99);
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(156 163 175);
+  }
+  
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background-color: rgb(107 114 128);
+  }
+  
   /* Mobile text optimization */
   @media (max-width: 768px) {
     html {

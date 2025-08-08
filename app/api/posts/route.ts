@@ -22,11 +22,10 @@ export async function GET(req: NextRequest) {
     const skip = (page - 1) * limit;
 
     // Fetch posts and ensure author exists
-    const posts = await Post.find({ isAnonymous: false })
+    const posts = await Post.find({})
       .populate({
         path: "author",
-        select: "username displayName avatar level",
-        match: { _id: { $exists: true } }, // Ensure author exists
+        select: "username firstName lastName avatar level",
       })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -36,35 +35,40 @@ export async function GET(req: NextRequest) {
     // Filter out posts where author population failed and transform data
     const validPosts = posts
       .filter((post) => post.author !== null)
-      .map((post) => ({
+      .map((post: any) => ({
         ...post,
         id: post._id.toString(),
         author: post.author ? {
           ...post.author,
           id: post.author._id?.toString(),
+          displayName: post.author.firstName && post.author.lastName 
+            ? `${post.author.firstName} ${post.author.lastName}` 
+            : post.author.username,
         } : null,
-        createdAt: new Date(post.createdAt).toLocaleDateString(),
+        createdAt: new Date(post.createdAt).toISOString(),
         tags: post.tags || [],
-        isLiked: false, // This would be determined by user context in a real app
+        viewsCount: post.viewsCount || 0,
+        isLiked: false,
       }));
 
     const totalPosts = await Post.countDocuments({
-      isAnonymous: false,
       author: { $exists: true, $ne: null },
     });
 
-    return NextResponse.json(
-      successResponse({
+    const responseData = {
+      success: true,
+      data: {
         posts: validPosts,
         pagination: {
           currentPage: page,
           totalPages: Math.ceil(totalPosts / limit),
           totalPosts,
         },
-      })
-    );
+      },
+    };
+    
+    return NextResponse.json(responseData);
   } catch (error: any) {
-    console.error("[API_POSTS_GET_ERROR]", error);
     return errorResponse("Failed to fetch posts due to a server error.", 500);
   }
 }
@@ -76,10 +80,22 @@ export async function POST(req: NextRequest) {
   try {
     const authResult = await authMiddleware(req);
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 });
+      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 });
     }
 
-    const body = await req.json();
+    let body;
+    try {
+      const rawBody = await req.text();
+      
+      if (!rawBody || rawBody.trim() === '') {
+        return NextResponse.json(errorResponse("Request body is empty"), { status: 400 });
+      }
+      
+      body = JSON.parse(rawBody);
+    } catch (jsonError) {
+      return NextResponse.json(errorResponse("Invalid JSON in request body"), { status: 400 });
+    }
+    
     const { content, tags, isAnonymous, imageUrl, imageUrls, videoUrls } = body;
     const authorId = (req as AuthenticatedRequest).user.id;
 
@@ -106,8 +122,33 @@ export async function POST(req: NextRequest) {
     });
 
     const populatedPost = await Post.findById(newPost._id)
-      .populate("author", "username displayName avatar level")
+      .populate("author", "username firstName lastName avatar level")
       .lean();
+
+    if (!populatedPost) {
+      return errorResponse("Failed to retrieve created post.", 500);
+    }
+
+    // Transform the post data to match frontend expectations
+    const postData = populatedPost as any;
+    const postAuthor = postData.author;
+    const transformedPost = {
+      ...postData,
+      id: postData._id.toString(),
+      author: postAuthor ? {
+        ...postAuthor,
+        id: postAuthor._id?.toString(),
+        displayName: postAuthor.firstName && postAuthor.lastName 
+          ? `${postAuthor.firstName} ${postAuthor.lastName}` 
+          : postAuthor.username,
+      } : null,
+      createdAt: new Date(postData.createdAt).toISOString(),
+      tags: postData.tags || [],
+      likesCount: postData.likesCount || 0,
+      commentsCount: postData.commentsCount || 0,
+      viewsCount: postData.viewsCount || 0,
+      xpAwarded: postData.xpAwarded || 0,
+    };
 
     // Award XP for post creation
     const isFirstPost = await checkFirstTimeAction(authorId, "post");
@@ -130,12 +171,16 @@ export async function POST(req: NextRequest) {
     // Check if this user has completed any referral requirements
     await checkReferralMiddleware(authorId);
 
+    const responseData = {
+      success: true,
+      data: { post: transformedPost, message: "Post created successfully." }
+    };
+    
     return NextResponse.json(
-      successResponse({ post: populatedPost }, "Post created successfully."),
+      responseData,
       { status: 201 }
     );
   } catch (error: any) {
-    console.error("[API_POSTS_POST_ERROR]", error);
     return errorResponse("Failed to create post due to a server error.", 500);
   }
 }

@@ -51,7 +51,7 @@ export async function GET(
     const totalFollowers = await Follow.countDocuments({ following: user._id });
 
     // Transform the data
-    const followers = followersData.map(follow => ({
+    const followers = followersData.map((follow: any) => ({
       _id: follow.follower._id.toString(),
       username: follow.follower.username,
       displayName: follow.follower.displayName || follow.follower.username,

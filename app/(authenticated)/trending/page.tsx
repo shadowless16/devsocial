@@ -12,6 +12,7 @@ import { apiClient } from "@/lib/api-client"
 
 interface TrendingPost {
   id: string
+  _id?: string
   author: {
     username: string
     displayName: string
@@ -23,6 +24,7 @@ interface TrendingPost {
   tags: string[]
   likesCount: number
   commentsCount: number
+  viewsCount: number
   xpAwarded: number
   createdAt: string
   isAnonymous: boolean
@@ -56,6 +58,18 @@ interface TrendingStats {
   engagements: string
 }
 
+interface TrendingData {
+  trendingPosts: TrendingPost[];
+  trendingTopics: TrendingTopic[];
+  risingUsers: TrendingUser[];
+  stats: TrendingStats;
+}
+
+interface LikeResponse {
+  liked: boolean;
+  likesCount: number;
+}
+
 export default function TrendingPage() {
   const [activeTab, setActiveTab] = useState("posts")
   const [timeFilter, setTimeFilter] = useState("today")
@@ -78,7 +92,7 @@ export default function TrendingPage() {
   const fetchTrendingData = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.getTrendingData(timeFilter)
+      const response = await apiClient.getTrendingData<TrendingData>(timeFilter)
       if (response.success && response.data) {
         setTrendingPosts(response.data.trendingPosts || [])
         setTrendingTopics(response.data.trendingTopics || [])
@@ -94,16 +108,22 @@ export default function TrendingPage() {
   }
 
   const handleLike = async (postId: string) => {
+    if (!postId || postId === 'undefined') {
+      console.error('Invalid post ID:', postId)
+      return
+    }
+    
     try {
-      const response = await apiClient.togglePostLike(postId)
+      const response = await apiClient.togglePostLike<LikeResponse>(postId)
       if (response.success && response.data) {
+        const { liked, likesCount } = response.data;
         setTrendingPosts(
           trendingPosts.map((post) =>
-            post.id === postId
+            (post.id || post._id) === postId
               ? {
                   ...post,
-                  isLiked: response.data.liked,
-                  likesCount: response.data.likesCount,
+                  isLiked: liked,
+                  likesCount: likesCount,
                 }
               : post,
           ),
@@ -243,7 +263,7 @@ export default function TrendingPage() {
                   </Card>
                 )}
 
-                <FeedItem post={post} onLike={() => handleLike(post.id)} />
+                <FeedItem post={{...post, id: post.id || post._id || ''}} onLike={() => handleLike(post.id || post._id || '')} />
               </div>
             ))
           )}

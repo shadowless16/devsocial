@@ -4,7 +4,7 @@ import Post from "@/models/Post"
 import Comment from "@/models/Comment"
 import Like from "@/models/Like"
 import { authMiddleware, type AuthenticatedRequest } from "@/middleware/auth"
-import { successResponse, errorResponse } from "@/utils/response"
+import { errorResponse } from "@/utils/response"
 
 // GET /api/posts/[id] - Get single post
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
@@ -25,9 +25,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       .lean()
 
     // Format post for response
+    const postData = post as any
     const formattedPost = {
-      id: post._id,
-      author: post.isAnonymous
+      id: postData._id,
+      author: postData.isAnonymous
         ? {
             username: "anonymous",
             displayName: "Anonymous",
@@ -35,21 +36,22 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
             level: 0,
           }
         : {
-            username: post.author.username,
-            displayName: post.author.username,
-            avatar: post.author.avatar,
-            level: post.author.level,
+            username: postData.author.username,
+            displayName: postData.author.username,
+            avatar: postData.author.avatar,
+            level: postData.author.level,
           },
-      content: post.content,
-      imageUrl: post.imageUrl,
-      imageUrls: post.imageUrls || [],
-      videoUrls: post.videoUrls || [],
-      tags: post.tags,
-      likesCount: post.likesCount,
-      commentsCount: post.commentsCount,
-      xpAwarded: post.xpAwarded,
-      createdAt: post.createdAt,
-      isAnonymous: post.isAnonymous,
+      content: postData.content,
+      imageUrl: postData.imageUrl,
+      imageUrls: postData.imageUrls || [],
+      videoUrls: postData.videoUrls || [],
+      tags: postData.tags,
+      likesCount: postData.likesCount,
+      commentsCount: postData.commentsCount,
+      viewsCount: postData.viewsCount || 0,
+      xpAwarded: postData.xpAwarded,
+      createdAt: postData.createdAt,
+      isAnonymous: postData.isAnonymous,
       isLiked: false, // TODO: Check if current user liked this post
       comments: comments.map((comment) => ({
         id: comment._id,
@@ -66,7 +68,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
       })),
     }
 
-    return NextResponse.json(successResponse(formattedPost))
+    return NextResponse.json({
+      success: true,
+      data: { post: formattedPost }
+    })
   } catch (error) {
     console.error("Get post error:", error)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
@@ -81,7 +86,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // Authenticate user
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
     }
 
     const userId = (request as AuthenticatedRequest).user.id
@@ -115,7 +120,10 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     // Delete the post
     await Post.findByIdAndDelete(postId)
 
-    return NextResponse.json(successResponse({ message: "Post deleted successfully" }))
+    return NextResponse.json({
+      success: true,
+      data: { message: "Post deleted successfully" }
+    })
   } catch (error) {
     console.error("Delete post error:", error)
     return NextResponse.json(errorResponse("Failed to delete post"), { status: 500 })

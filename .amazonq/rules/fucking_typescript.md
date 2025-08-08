@@ -1,0 +1,1 @@
+use proper typescript syntax

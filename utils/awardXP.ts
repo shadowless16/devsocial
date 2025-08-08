@@ -4,7 +4,7 @@ import connectDB from "@/lib/db"
 import { ReferralSystem } from "./referral-system"
 
 // XP values for different actions
-const XP_VALUES = {
+export const XP_VALUES = {
   daily_login: 10,
   post_creation: 20,
   comment_creation: 5,
@@ -18,6 +18,9 @@ const XP_VALUES = {
   moderator_action_bonus: 50,
   referral_success: 25,  // XP for successful referral (referrer)
   referral_bonus: 15,    // XP for being referred (new user)
+  email_verified: 10,
+  user_followed: 5,
+  challenge_completion: 75,
 }
 
 export async function awardXP(

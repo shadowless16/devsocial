@@ -29,6 +29,7 @@ interface Post {
   tags: string[];
   likesCount: number;
   commentsCount: number;
+  viewsCount: number;
   xpAwarded: number;
   createdAt: string;
   isAnonymous: boolean;
@@ -72,23 +73,19 @@ export default function PublicProfilePage() {
   const [showFollowList, setShowFollowList] = useState(false);
 
   useEffect(() => {
-    console.log('[Profile] Effect triggered:', { username, authLoading });
     if (!username || authLoading) return;
 
     const fetchProfileData = async () => {
-      console.log('[Profile] Fetching profile data for:', username);
       setLoading(true);
       setError(null);
       try {
         const profileRes = await apiClient.getUserProfileByUsername<ProfileResponse>(username);
-        console.log('[Profile] Profile response:', profileRes);
         if (profileRes.success && profileRes.data?.user) {
           setProfile(profileRes.data.user);
         } else {
           throw new Error(profileRes.message || "User not found");
         }
       } catch (err: any) {
-        console.error('[Profile] Error fetching profile:', err);
         setError(err.message);
       } finally {
         setLoading(false);
@@ -178,12 +175,12 @@ export default function PublicProfilePage() {
           <FollowButton
             userId={profile._id}
             username={profile.username}
-            isFollowing={profile.isFollowing}
+            isFollowing={profile.isFollowing ?? false}
             onFollowChange={(following, change) => {
-              setProfile(prev => ({
+              setProfile(prev => prev ? {
                 ...prev,
-                followersCount: (prev?.followersCount || 0) + change
-              }));
+                followersCount: (prev.followersCount || 0) + change
+              } : null);
             }}
           />
         </div>
@@ -231,7 +228,7 @@ export default function PublicProfilePage() {
         <TabsContent value="posts" className="space-y-4 mt-6">
           {profile.recentPosts.length > 0 ? (
             profile.recentPosts.map((post) => (
-              <FeedItem key={post._id} post={{...post, id: post._id}} onLike={() => {}} />
+              <FeedItem key={post._id} post={{...post, id: post._id, viewsCount: post.viewsCount || 0}} onLike={() => {}} />
             ))
           ) : (
             <div className="text-center py-10 text-gray-500">This user has no posts yet.</div>

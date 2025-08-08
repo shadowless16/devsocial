@@ -11,7 +11,7 @@ export async function POST(request: NextRequest, { params }: { params: { comment
 
     const authResult = await authMiddleware(request);
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 });
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 });
     }
 
     const userId = authResult.user!.id;
@@ -34,12 +34,13 @@ export async function POST(request: NextRequest, { params }: { params: { comment
 
     await comment.save();
 
-    return NextResponse.json(
-      successResponse({
+    return NextResponse.json({
+      success: true,
+      data: {
         liked,
         likesCount: comment.likes.length,
-      })
-    );
+      }
+    });
   } catch (error) {
     console.error("Error toggling comment like:", error);
     return NextResponse.json(errorResponse("Failed to toggle like"), { status: 500 });

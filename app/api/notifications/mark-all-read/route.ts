@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
     }
 
     const userId = authResult.user!.id

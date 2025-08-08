@@ -4,9 +4,10 @@ import connectDB from "@/lib/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
 import Notification from "@/models/Notification"
+import Activity from "@/models/Activity"
 import { authMiddleware } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
-import { awardXP } from "@/utils/awardXP" // Assuming awardXP is defined to accept (userId, reason, amount)
+import { awardXP, XP_VALUES } from "@/utils/awardXP"
 
 // POST /api/user/follow/[userId] - Follow a user
 export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
@@ -47,16 +48,26 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
     await User.findByIdAndUpdate(currentUserId, { $inc: { followingCount: 1 } })
     await User.findByIdAndUpdate(userId, { $inc: { followersCount: 1 } })
 
+    // Create a notification for the user who was followed
     await Notification.create({
       recipient: userId,
       sender: currentUserId,
       type: "follow",
       title: "New Follower",
-      message: `${authResult.user!.username} started following you`,
+      message: `${authResult.user!.displayName} started following you`,
     })
 
-    // Corrected awardXP call: (userId, reason, amount)
-    await awardXP(currentUserId, "follow_user", 5) // XP reason string, then XP amount
+    // Create an activity record for the user who followed
+    await Activity.create({
+      user: currentUserId,
+      type: "user_followed",
+      description: `Started following ${userToFollow.displayName || userToFollow.username}`,
+      metadata: { followedUserId: userId },
+      xpEarned: XP_VALUES.user_followed,
+    });
+
+    // Award XP for following a user
+    await awardXP(currentUserId, "user_followed", userId)
 
     return NextResponse.json(successResponse({ follow }))
   } catch (error) {

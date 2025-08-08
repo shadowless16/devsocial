@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
   try {
     const authResult = await authMiddleware(req);
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 });
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 });
     }
 
     const body = await req.json();
@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     post.commentsCount = (post.commentsCount || 0) + 1;
     await post.save();
 
-    await awardXP(authorId, 10, "comment");
+    await awardXP(authorId, "comment_creation");
 
     if (post.author.toString() !== authorId) {
       const notification = new Notification({
@@ -99,7 +99,7 @@ export async function POST(req: NextRequest) {
       .lean();
 
     return NextResponse.json(
-      successResponse({ comment: populatedComment }, "Comment created successfully."),
+      successResponse({ comment: populatedComment }),
       { status: 201 }
     );
   } catch (error: any) {

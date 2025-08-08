@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary-server';
+import { type UploadApiResponse } from 'cloudinary';
 
 export async function POST(req: NextRequest) {
   try {
@@ -15,11 +16,11 @@ export async function POST(req: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
     
-    let result;
+    let result: UploadApiResponse | undefined;
     
     if (isVideo) {
       // Use upload_stream for videos to handle large files better
-      result = await new Promise((resolve, reject) => {
+      result = await new Promise<UploadApiResponse | undefined>((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
           {
             folder: 'posts',
@@ -49,6 +50,10 @@ export async function POST(req: NextRequest) {
           { quality: 'auto:good' } // Auto optimize quality
         ]
       });
+    }
+
+    if (!result) {
+      return NextResponse.json({ error: 'Upload failed to return a result' }, { status: 500 });
     }
 
     return NextResponse.json({

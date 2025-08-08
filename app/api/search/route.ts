@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
 
     if (!query || query.trim().length === 0) {
-      return NextResponse.json(errorResponse("Search query is required"), { status: 400 })
+      return NextResponse.json({ success: false, message: "Search query is required" }, { status: 400 })
     }
 
     const searchRegex = new RegExp(query.trim(), "i")
@@ -39,7 +39,11 @@ export async function GET(request: NextRequest) {
         .skip(type === "posts" ? skip : 0)
         .limit(type === "posts" ? limit : 10)
 
-      results.posts = posts
+      // Transform posts to include id field
+      results.posts = posts.map(post => ({
+        ...post.toObject(),
+        id: post._id.toString()
+      }))
     }
 
     // Search users
@@ -95,8 +99,9 @@ export async function GET(request: NextRequest) {
       tags: results.tags.length,
     }
 
-    return NextResponse.json(
-      successResponse({
+    return NextResponse.json({
+      success: true,
+      data: {
         results,
         query,
         type,
@@ -106,10 +111,10 @@ export async function GET(request: NextRequest) {
           totalResults: totals[type as keyof typeof totals],
           hasMore: skip + (results[type === "all" ? "posts" : type] || []).length < totals[type as keyof typeof totals],
         },
-      }),
-    )
+      }
+    })
   } catch (error) {
     console.error("Error performing search:", error)
-    return NextResponse.json(errorResponse("Search failed"), { status: 500 })
+    return NextResponse.json({ success: false, message: "Search failed" }, { status: 500 })
   }
 }

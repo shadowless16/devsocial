@@ -29,6 +29,21 @@ type ProfileFormData = Pick<
   | "avatar"
 >;
 
+interface AffiliationsData {
+  affiliations: {
+    techBootcamps?: string[];
+    federal?: string[];
+    state?: string[];
+    privateUniversities?: string[];
+    affiliatedInstitutions?: string[];
+    distanceLearning?: string[];
+  };
+}
+
+interface UpdateProfileResponse {
+    user: User;
+}
+
 export default function SettingsPage() {
   const { user, loading: authLoading, updateUser } = useAuth();
 
@@ -78,7 +93,7 @@ export default function SettingsPage() {
   useEffect(() => {
     const fetchAffiliations = async () => {
       try {
-        const response = await apiClient.request("/affiliations");
+        const response = await apiClient.request<AffiliationsData>("/affiliations");
         if (response.success && response.data?.affiliations) {
           // Combine all affiliations from different categories
           const allAffiliations = [
@@ -132,7 +147,7 @@ export default function SettingsPage() {
       };
 
       // We pass the 'payload' object to the API client.
-      const response = await apiClient.updateProfile(payload);
+      const response = await apiClient.updateProfile<UpdateProfileResponse>(payload);
 
       if (response.success && response.data?.user) {
         updateUser(response.data.user);
@@ -205,6 +220,8 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
+              {formData && (
+              <>
               <div className="flex items-center space-x-6">
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={formData.avatar} />
@@ -273,6 +290,8 @@ export default function SettingsPage() {
                 <Textarea id="bio" value={formData.bio} onChange={(e) => handleInputChange("bio", e.target.value)} className="min-h-[100px]" maxLength={250} />
                 <p className="text-xs text-gray-500 text-right">{formData.bio.length}/250 characters</p>
               </div>
+              </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

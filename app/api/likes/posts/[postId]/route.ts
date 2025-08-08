@@ -16,7 +16,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
 
     const authResult = await authMiddleware(request);
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 });
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 });
     }
 
     const userId = (request as AuthenticatedRequest).user.id;
@@ -48,7 +48,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
       await Post.findByIdAndUpdate(postId, { likesCount });
       liked = true;
 
-      await awardXP(userId, 5, "like_given");
+      await awardXP(userId, "like_given");
 
       const activity = new Activity({
         user: userId,
@@ -97,7 +97,10 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
       });
     }
 
-    return NextResponse.json(successResponse({ liked, likesCount }));
+    return NextResponse.json({
+      success: true,
+      data: { liked, likesCount }
+    });
   } catch (error) {
     console.error("Error toggling post like:", error);
     return NextResponse.json(errorResponse("Failed to toggle like"), { status: 500 });

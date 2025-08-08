@@ -27,7 +27,7 @@ export async function GET(req: NextRequest) {
     return successResponse({ affiliations: affiliationRecord.data });
   } catch (error) {
     console.error("Error fetching affiliations:", error);
-    return errorResponse(`Failed to fetch affiliations: ${error.message}`, 500);
+    return errorResponse(`Failed to fetch affiliations: ${(error as Error).message}`, 500);
   } finally {
     // Close the connection
     if (client) {

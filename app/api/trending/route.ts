@@ -77,6 +77,12 @@ export async function GET(request: NextRequest) {
         },
       },
       { $unwind: "$author" },
+      {
+        $addFields: {
+          id: { $toString: "$_id" },
+          viewsCount: { $ifNull: ["$viewsCount", 0] }
+        }
+      }
     ])
 
     // Trending topics (tags)
@@ -170,25 +176,62 @@ export async function GET(request: NextRequest) {
       },
     ])
 
-    // Calculate stats
+    // Calculate real stats
+    const totalViews = await Post.aggregate([
+      { $match: { createdAt: { $gte: dateFilter } } },
+      { $group: { _id: null, total: { $sum: "$viewsCount" } } }
+    ]);
+    
+    const totalEngagements = await Post.aggregate([
+      { $match: { createdAt: { $gte: dateFilter } } },
+      { $group: { _id: null, total: { $sum: { $add: ["$likesCount", "$commentsCount"] } } } }
+    ]);
+    
+    const previousPeriodFilter = new Date(dateFilter);
+    switch (period) {
+      case "today":
+        previousPeriodFilter.setDate(previousPeriodFilter.getDate() - 1);
+        break;
+      case "week":
+        previousPeriodFilter.setDate(previousPeriodFilter.getDate() - 7);
+        break;
+      case "month":
+        previousPeriodFilter.setMonth(previousPeriodFilter.getMonth() - 1);
+        break;
+    }
+    
+    const previousPosts = await Post.countDocuments({
+      createdAt: { $gte: previousPeriodFilter, $lt: dateFilter }
+    });
+    
+    const currentPosts = trendingPosts.length;
+    const growthRate = previousPosts > 0 ? Math.round(((currentPosts - previousPosts) / previousPosts) * 100) : 100;
+    
+    const formatNumber = (num: number) => {
+      if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+      if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+      return num.toString();
+    };
+    
     const stats = {
-      hotPosts: trendingPosts.length,
-      growth: "+23%", // This would be calculated based on historical data
-      totalViews: "12.4K", // This would come from view tracking
-      engagements: "1.8K", // This would be calculated from likes + comments
+      hotPosts: currentPosts,
+      growth: `${growthRate >= 0 ? '+' : ''}${growthRate}%`,
+      totalViews: formatNumber(totalViews[0]?.total || 0),
+      engagements: formatNumber(totalEngagements[0]?.total || 0),
     }
 
-    return NextResponse.json(
-      successResponse({
+    return NextResponse.json({
+      success: true,
+      data: {
         period,
         stats,
         trendingPosts,
         trendingTopics,
         risingUsers,
-      }),
-    )
+      }
+    })
   } catch (error) {
     console.error("Error fetching trending data:", error)
-    return NextResponse.json(errorResponse("Failed to fetch trending data"), { status: 500 })
+    return NextResponse.json({ success: false, message: "Failed to fetch trending data" }, { status: 500 })
   }
 }

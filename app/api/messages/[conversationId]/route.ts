@@ -4,6 +4,7 @@ import Message from "@/models/Message"
 import Conversation from "@/models/Conversation"
 import connectDB from "@/lib/db"
 import { successResponse, errorResponse } from "@/utils/response"
+import mongoose from "mongoose"
 
 export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
   try {
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest, { params }: { params: { convers
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -115,7 +116,7 @@ export async function POST(request: NextRequest, { params }: { params: { convers
     }
 
     // Get recipient (other participant)
-    const recipientId = conversation.participants.find((p) => p.toString() !== userId)
+    const recipientId = conversation.participants.find((p: mongoose.Types.ObjectId) => p.toString() !== userId)
 
     const message = new Message({
       sender: userId,

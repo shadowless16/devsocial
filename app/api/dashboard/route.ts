@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -227,7 +227,10 @@ export async function GET(request: NextRequest) {
       },
     }
 
-    return NextResponse.json(successResponse(dashboardData))
+    return NextResponse.json({
+      success: true,
+      data: dashboardData
+    })
   } catch (error) {
     console.error("Error fetching dashboard data:", error)
     return NextResponse.json(errorResponse("Failed to fetch dashboard data"), { status: 500 })

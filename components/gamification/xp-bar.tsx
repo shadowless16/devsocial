@@ -22,7 +22,14 @@ export function XPBar() {
   // Early return after all hooks
   if (loading || !user) return null;
 
-  const progressPercentage = (user.points / user.totalXpForLevel) * 100
+  // Calculate XP for current level and next level
+  const currentLevelXp = (user.level - 1) * 1000;
+  const nextLevelXp = user.level * 1000;
+  const xpInCurrentLevel = user.points - currentLevelXp;
+  const xpNeededForLevel = nextLevelXp - currentLevelXp;
+  const xpToNext = nextLevelXp - user.points;
+  
+  const progressPercentage = Math.min((xpInCurrentLevel / xpNeededForLevel) * 100, 100)
 
   // Simulate XP gain animation
   const triggerXpGain = (amount: number) => {
@@ -62,8 +69,8 @@ export function XPBar() {
         <Progress value={progressPercentage} className="h-2 mb-2" />
 
         <div className="flex justify-between text-xs text-gray-500">
-<span>{user.xpToNext} XP to next level</span>
-          <span>{user.totalXpForLevel} XP</span>
+          <span>{xpToNext} XP to next level</span>
+          <span>{nextLevelXp} XP</span>
         </div>
 
         {/* XP Gain Animation */}

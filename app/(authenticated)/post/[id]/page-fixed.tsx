@@ -74,9 +74,22 @@ export default function PostPage() {
     const fetchPost = async () => {
       try {
         setLoading(true)
-        const response = await apiClient.getPost(postId)
+        const response = await apiClient.getPost<{ post: any }>(postId)
         if (response.success && response.data) {
-          setPost(response.data)
+          const postData = response.data.post || response.data
+          setPost({
+            id: postData._id || postData.id,
+            author: postData.author,
+            content: postData.content,
+            imageUrl: postData.imageUrl || null,
+            tags: postData.tags || [],
+            likesCount: postData.likesCount || postData.likes?.length || 0,
+            commentsCount: postData.commentsCount || postData.comments?.length || 0,
+            xpAwarded: postData.xpAwarded || 0,
+            createdAt: postData.createdAt,
+            isAnonymous: postData.isAnonymous || false,
+            isLiked: postData.isLiked || false,
+          })
         } else {
           setError("Post not found")
         }
@@ -97,7 +110,7 @@ export default function PostPage() {
     const fetchComments = async () => {
       try {
         setLoadingComments(true)
-        const response = await apiClient.getComments(postId)
+        const response = await apiClient.getComments<{ comments: any[] }>(postId)
         if (response.success && response.data) {
           setComments(response.data.comments.map((comment: any) => ({
             ...comment,
@@ -121,12 +134,12 @@ export default function PostPage() {
     if (!post) return
     
     try {
-      const response = await apiClient.togglePostLike(post.id)
+      const response = await apiClient.togglePostLike<{ liked: boolean; likesCount: number }>(post.id)
       if (response.success && response.data) {
         setPost(prev => prev ? {
           ...prev,
-          isLiked: response.data.liked,
-          likesCount: response.data.likesCount,
+          isLiked: response.data!.liked,
+          likesCount: response.data!.likesCount,
         } : null)
       }
     } catch (error) {
@@ -141,7 +154,7 @@ export default function PostPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await apiClient.createComment(post.id, newComment.trim())
+      const response = await apiClient.createComment<{ comment: any }>(post.id, newComment.trim())
       if (response.success && response.data) {
         const newCommentData = response.data.comment
         setComments(prev => [...prev, {
@@ -165,15 +178,15 @@ export default function PostPage() {
 
   const handleCommentLike = async (commentId: string) => {
     try {
-      const response = await apiClient.toggleCommentLike(commentId)
+      const response = await apiClient.toggleCommentLike<{ liked: boolean; likesCount: number }>(commentId)
       if (response.success && response.data) {
         setComments(prev =>
           prev.map(comment =>
             comment.id === commentId
               ? {
                   ...comment,
-                  isLiked: response.data.liked,
-                  likesCount: response.data.likesCount,
+                  isLiked: response.data!.liked,
+                  likesCount: response.data!.likesCount,
                 }
               : comment,
           ),
@@ -210,7 +223,7 @@ export default function PostPage() {
     }
 
     try {
-      const response = await apiClient.deletePost(post.id);
+      const response = await apiClient.createComment<{ comment: any }>(post.id, newComment.trim())
       if (response.success) {
         toast({
           title: "Post deleted successfully",

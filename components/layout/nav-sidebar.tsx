@@ -19,6 +19,7 @@ import {
   Search,
   LayoutDashboard,
   Users,
+  Star,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -73,28 +74,28 @@ export function NavSidebar({ onItemClick }: NavSidebarProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       {/* Logo - Hidden on mobile since it's in the header */}
-      <div className="hidden lg:block p-6 border-b border-gray-200 dark:border-gray-800">
+      <div className="hidden lg:block p-4 border-b border-gray-200 dark:border-gray-800">
         <div className="flex items-center space-x-2">
-          <div className="bg-emerald-100 dark:bg-emerald-900 p-2 rounded-lg">
-            <Code2 className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+          <div className="bg-emerald-100 dark:bg-emerald-900 p-1.5 rounded-lg">
+            <Code2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
           </div>
-          <span className="text-xl font-bold text-navy-900 dark:text-white">TechConnect</span>
+          <span className="text-lg font-bold text-navy-900 dark:text-white">TechConnect</span>
         </div>
       </div>
 
       {/* User Profile Summary */}
-      <div className="p-4 border-b border-gray-200 dark:border-gray-800">
+      <div className="p-3 border-b border-gray-200 dark:border-gray-800">
         {user ? (
           <UserLink username={user.username}>
-            <div className="flex items-center space-x-3 mb-3 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-2 -m-2 transition-colors">
-              <Avatar className="w-10 h-10">
+            <div className="flex items-center space-x-2 mb-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-1.5 -m-1.5 transition-colors">
+              <Avatar className="w-8 h-8">
                 <AvatarImage src={displayUser.avatar || "/placeholder.svg"} />
-                <AvatarFallback>{(displayUser.displayName ?? "G").charAt(0)}</AvatarFallback>
+                <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex-1 min-w-0">
-                <p className="font-semibold text-sm text-gray-900 dark:text-white truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{displayUser.displayName}</p>
+                <p className="font-semibold text-xs text-gray-900 dark:text-white truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{displayUser.displayName || displayUser.username || 'Guest User'}</p>
                 <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Level {displayUser.level}</p>
               </div>
               <div className="text-right">
@@ -106,10 +107,10 @@ export function NavSidebar({ onItemClick }: NavSidebarProps) {
           <div className="flex items-center space-x-3 mb-3">
             <Avatar className="w-10 h-10">
               <AvatarImage src={displayUser.avatar || "/placeholder.svg"} />
-              <AvatarFallback>{(displayUser.displayName ?? "G").charAt(0)}</AvatarFallback>
+              <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{displayUser.displayName}</p>
+              <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{displayUser.displayName || displayUser.username || 'Guest User'}</p>
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Level {displayUser.level}</p>
             </div>
             <div className="text-right">
@@ -120,8 +121,8 @@ export function NavSidebar({ onItemClick }: NavSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4">
-        <ul className="space-y-2">
+      <nav className="flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
+        <ul className="space-y-1">
           {navigationItems.map((item) => {
             if (item.adminOnly && displayUser.role !== "admin") return null;
 
@@ -133,7 +134,7 @@ export function NavSidebar({ onItemClick }: NavSidebarProps) {
                 <Link
                   href={item.href}
                   onClick={onItemClick}
-                  className={`flex items-center space-x-3 px-3 py-2 rounded-lg transition-colors ${
+                  className={`flex items-center space-x-2 px-2 py-1.5 rounded-lg transition-colors text-sm ${
                     isActive ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                   }`}
                 >
@@ -152,7 +153,7 @@ export function NavSidebar({ onItemClick }: NavSidebarProps) {
       </nav>
 
       {/* Quick Actions */}
-      <div className="p-4 border-t border-gray-200 dark:border-gray-800">
+      <div className="p-3 border-t border-gray-200 dark:border-gray-800">
         <div className="mb-4">
           <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Quick Actions</h3>
           <Button

@@ -159,9 +159,24 @@ export default function PostPage() {
     const fetchPost = async () => {
       try {
         setLoading(true)
-        const response = await apiClient.getPost(postId)
+        const response = await apiClient.getPost<{ post: any }>(postId)
         if (response.success && response.data) {
-          setPost(response.data)
+          const postData = response.data.post || response.data
+          setPost({
+            id: postData._id || postData.id,
+            author: postData.author,
+            content: postData.content,
+            imageUrl: postData.imageUrl || null,
+            imageUrls: postData.imageUrls || [],
+            videoUrls: postData.videoUrls || [],
+            tags: postData.tags || [],
+            likesCount: postData.likesCount || postData.likes?.length || 0,
+            commentsCount: postData.commentsCount || postData.comments?.length || 0,
+            xpAwarded: postData.xpAwarded || 0,
+            createdAt: postData.createdAt,
+            isAnonymous: postData.isAnonymous || false,
+            isLiked: postData.isLiked || false,
+          })
         } else {
           setError("Post not found")
         }
@@ -182,7 +197,7 @@ export default function PostPage() {
     const fetchComments = async () => {
       try {
         setLoadingComments(true)
-        const response = await apiClient.getComments(postId)
+        const response = await apiClient.getComments<{ comments: any[] }>(postId)
         if (response.success && response.data) {
           setComments(response.data.comments.map((comment: any) => ({
             ...comment,
@@ -211,12 +226,13 @@ export default function PostPage() {
     if (!post) return
     
     try {
-      const response = await apiClient.togglePostLike(post.id)
+      const response = await apiClient.togglePostLike<{ liked: boolean; likesCount: number }>(post.id)
       if (response.success && response.data) {
+        const { liked, likesCount } = response.data
         setPost(prev => prev ? {
           ...prev,
-          isLiked: response.data.liked,
-          likesCount: response.data.likesCount,
+          isLiked: liked,
+          likesCount: likesCount,
         } : null)
       }
     } catch (error) {
@@ -231,7 +247,7 @@ export default function PostPage() {
     setIsSubmitting(true)
 
     try {
-      const response = await apiClient.createComment(post.id, newComment.trim())
+      const response = await apiClient.createComment<{ comment: any }>(post.id, newComment.trim())
       if (response.success && response.data) {
         const newCommentData = response.data.comment
         // Add new comment at the end (newest last)
@@ -255,10 +271,10 @@ export default function PostPage() {
     if (!post) return;
 
     try {
-      const response = await apiClient.createComment(post.id, content, parentCommentId);
+      const response = await apiClient.createComment<{ comment: any }>(post.id, content, parentCommentId);
       if (response.success && response.data) {
         // Refresh comments to show the new reply
-        const commentsResponse = await apiClient.getComments(post.id);
+        const commentsResponse = await apiClient.getComments<{ comments: any[] }>(post.id);
         if (commentsResponse.success && commentsResponse.data) {
           setComments(commentsResponse.data.comments.map((comment: any) => ({
             ...comment,
@@ -283,16 +299,17 @@ export default function PostPage() {
 
   const handleCommentLike = async (commentId: string) => {
     try {
-      const response = await apiClient.toggleCommentLike(commentId)
+      const response = await apiClient.toggleCommentLike<{ liked: boolean; likesCount: number }>(commentId)
       if (response.success && response.data) {
+        const { liked, likesCount } = response.data
         setComments(prev =>
           prev.map(comment => {
             // Check if it's the main comment
             if (comment.id === commentId) {
               return {
                 ...comment,
-                isLiked: response.data.liked,
-                likesCount: response.data.likesCount,
+                isLiked: liked,
+                likesCount: likesCount,
               }
             }
             // Check if it's a reply within this comment
@@ -303,8 +320,8 @@ export default function PostPage() {
                   reply.id === commentId
                     ? {
                         ...reply,
-                        isLiked: response.data.liked,
-                        likesCount: response.data.likesCount,
+                        isLiked: liked,
+                        likesCount: likesCount,
                       }
                     : reply
                 ),
@@ -427,7 +444,7 @@ export default function PostPage() {
   const handleNewComment = async (data: any) => {
     try {
       setIsSubmitting(true);
-      const response = await apiClient.createComment(post!.id, data.text);
+      const response = await apiClient.createComment<{ comment: any }>(post!.id, data.text);
       if (response.success && response.data) {
         const newCommentData = response.data.comment;
         setComments(prev => [...prev, {

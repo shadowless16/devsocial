@@ -25,6 +25,7 @@ interface Post {
   tags: string[]
   likesCount: number
   commentsCount: number
+  viewsCount: number
   xpAwarded: number
   createdAt: string
   isAnonymous: boolean
@@ -122,17 +123,23 @@ export default function SearchPage() {
   }, [searchQuery, activeTab])
 
   const handleLike = async (postId: string) => {
+    if (!postId || postId === 'undefined') {
+      console.error('Invalid post ID:', postId)
+      return
+    }
+    
     try {
-      const response = await apiClient.togglePostLike(postId)
+      const response = await apiClient.togglePostLike<{ liked: boolean; likesCount: number }>(postId)
       if (response.success && response.data) {
+        const { liked, likesCount } = response.data // Destructure for cleaner code
         setSearchResults(prev => ({
           ...prev,
           posts: prev.posts.map(post =>
-            post.id === postId || post._id === postId
+            (post.id || post._id) === postId
               ? {
                   ...post,
-                  isLiked: response.data.liked,
-                  likesCount: response.data.likesCount,
+                  isLiked: liked,
+                  likesCount: likesCount,
                 }
               : post
           )
@@ -278,7 +285,7 @@ export default function SearchPage() {
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={user.avatar || "/placeholder.svg"} />
                               <AvatarFallback>
-                                {user.displayName
+                                {(user.displayName || user.username || 'U')
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
@@ -402,7 +409,7 @@ export default function SearchPage() {
                           <Avatar className="w-16 h-16 mx-auto mb-4">
                             <AvatarImage src={user.avatar || "/placeholder.svg"} />
                             <AvatarFallback className="text-lg">
-                              {user.displayName
+                              {(user.displayName || user.username || 'U')
                                 .split(" ")
                                 .map((n) => n[0])
                                 .join("")}

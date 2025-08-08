@@ -70,7 +70,7 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
   const handleRemoveTech = (tech: string) => {
     setTechData({
       ...techData,
-      techStack: techData.techStack.filter((t) => t !== tech)
+      techStack: techData.techStack.filter((t: string) => t !== tech)
     })
   }
 
@@ -150,7 +150,7 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
               </SelectContent>
             </Select>
             <div className="flex flex-wrap gap-2 mt-2">
-              {techData.techStack.map((tech) => (
+              {techData.techStack.map((tech: string) => (
                 <Badge
                   key={tech}
                   variant="secondary"

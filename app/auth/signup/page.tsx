@@ -36,8 +36,15 @@ export default function SignupPage() {
 
   const { signup } = useAuth()
   const router = useRouter()
-  // TODO: Add referral code support with proper suspense boundary
-  const referralCode = null
+  const [referralCode, setReferralCode] = useState<string | null>(null)
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search)
+    const refCode = urlParams.get('ref')
+    if (refCode) {
+      setReferralCode(refCode)
+    }
+  }, [])
 
 useEffect(() => {
     const fetchAffiliations = async () => {
@@ -160,6 +167,14 @@ useEffect(() => {
             {error && (
               <Alert variant="destructive">
                 <AlertDescription>{error}</AlertDescription>
+              </Alert>
+            )}
+
+            {referralCode && (
+              <Alert>
+                <AlertDescription className="text-emerald-600">
+                  🎉 You're joining with a referral code: <strong>{referralCode}</strong>
+                </AlertDescription>
               </Alert>
             )}
 

@@ -16,6 +16,7 @@ export async function GET(req: NextRequest) {
     await connectDB();
     
     const session = await getServerSession(authOptions);
+    
     if (!session || !session.user?.id) {
       return NextResponse.json(errorResponse("Unauthorized"), { status: 401 });
     }
@@ -26,9 +27,13 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(errorResponse("User not found"), { status: 404 });
     }
 
-    return NextResponse.json(successResponse({ user }));
+    const response = {
+      success: true,
+      data: { user }
+    };
+    
+    return NextResponse.json(response);
   } catch (error) {
-    console.error("Profile GET error:", error);
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 });
   }
 }
@@ -76,9 +81,11 @@ export async function PUT(req: NextRequest) {
 
     const updatedUser = await User.findByIdAndUpdate(userId, updateData, { new: true }).select("-password");
 
-    return NextResponse.json(successResponse({ user: updatedUser, message: "Profile updated successfully" }));
+    return NextResponse.json({
+      success: true,
+      data: { user: updatedUser, message: "Profile updated successfully" }
+    });
   } catch (error) {
-    console.error("Profile PUT error:", error);
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 });
   }
 }

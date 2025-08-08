@@ -1,11 +1,12 @@
 // XP System Configuration and Logic
 export const XP_VALUES = {
   // Account & Onboarding
-account_created: 10, // Already present
+  account_created: 10, // Already present
   profile_completed: 15,
   profile_picture_added: 5,
   github_connected: 10,
   onboarding_completed: 15,
+  email_verified: 10,
 
   // Content Creation
 post_created: 8, // Base XP for creating a post

@@ -3,6 +3,7 @@ import { authMiddleware } from "@/middleware/auth"
 import Message from "@/models/Message"
 import connectDB from "@/lib/db"
 import { successResponse, errorResponse } from "@/utils/response"
+import mongoose from "mongoose"
 
 export async function POST(request: NextRequest, { params }: { params: { messageId: string } }) {
   try {
@@ -10,7 +11,7 @@ export async function POST(request: NextRequest, { params }: { params: { message
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -28,7 +29,7 @@ export async function POST(request: NextRequest, { params }: { params: { message
     }
 
     // Remove existing reaction from this user
-    message.reactions = message.reactions.filter((reaction) => reaction.user.toString() !== userId)
+    message.reactions = message.reactions.filter((reaction: { user: mongoose.Types.ObjectId; emoji: string; createdAt: Date }) => reaction.user.toString() !== userId)
 
     // Add new reaction
     message.reactions.push({
@@ -58,7 +59,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { messa
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.message), { status: 401 })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -78,7 +79,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { messa
 
     // Remove reaction
     message.reactions = message.reactions.filter(
-      (reaction) => !(reaction.user.toString() === userId && reaction.emoji === emoji),
+      (reaction: { user: mongoose.Types.ObjectId; emoji: string; createdAt: Date }) => !(reaction.user.toString() === userId && reaction.emoji === emoji),
     )
 
     await message.save()

@@ -186,9 +186,7 @@ class ApiClient {
 
   public async request<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
     try {
-      console.log(`[API Client] Making request to: ${endpoint}`);
       const session = await getSession();
-      console.log(`[API Client] Session:`, session);
       
       const headers = new Headers(options.headers);
       if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
@@ -196,14 +194,11 @@ class ApiClient {
       const config: RequestInit = { 
         ...options, 
         headers,
-        credentials: 'include' // Ensure cookies are sent
+        credentials: 'include'
       };
       
       const fullUrl = `${this.baseUrl}${endpoint}`;
-      console.log(`[API Client] Full URL: ${fullUrl}`);
-      
       const response = await fetch(fullUrl, config);
-      console.log(`[API Client] Response status: ${response.status}`);
       
       if (response.status === 401) {
         await signOut({ redirect: false });
@@ -212,28 +207,22 @@ class ApiClient {
       }
       
       const text = await response.text();
-      console.log(`[API Client] Response text:`, text);
       
       let json;
       try {
         json = JSON.parse(text);
       } catch (e) {
-        console.error(`[API Client] Failed to parse JSON:`, e);
         throw new Error(`Invalid JSON response from ${endpoint}`);
       }
       
       if (!response.ok) {
-        console.error(`[API Client] Error response:`, json);
-        // Create a comprehensive error object
         const error = new Error(json.error?.message || json.message || `HTTP error! status: ${response.status}`);
-        // Attach the full response for detailed error handling
         (error as any).response = { data: json, status: response.status };
         throw error;
       }
       
       return json as ApiResponse<T>;
     } catch (error: any) {
-      console.error(`[API Client] Request error:`, error);
       throw new Error(error.message || `Request failed for ${endpoint}`);
     }
   }
@@ -264,7 +253,12 @@ class ApiClient {
   }
 
   public createPost<T>(postData: any): Promise<ApiResponse<T>> {
-    return this.request<T>("/posts", { method: "POST", body: JSON.stringify(postData) });
+    try {
+      const jsonBody = JSON.stringify(postData);
+      return this.request<T>("/posts", { method: "POST", body: jsonBody });
+    } catch (error) {
+      throw new Error('Failed to serialize post data');
+    }
   }
 
   public getPostById<T>(postId: string): Promise<ApiResponse<T>> {
@@ -344,6 +338,10 @@ class ApiClient {
 
   public getAffiliations(): Promise<ApiResponse<any>> {
     return this.request<any>("/affiliations");
+  }
+
+  public trackPostView<T>(postId: string): Promise<ApiResponse<T>> {
+    return this.request<T>(`/posts/${postId}/views`, { method: "POST" });
   }
 }
 

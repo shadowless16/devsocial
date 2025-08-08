@@ -8,10 +8,10 @@ import User from "@/models/User"
 import UserStats from "@/models/UserStats"
 import Referral from "@/models/Referral"
 import ChallengeParticipation from "@/models/ChallengeParticipation"
-import PostSchema from "@/models/Post"
-import LikeSchema from "@/models/Like"
-import CommentSchema from "@/models/Comment"
-import { successResponse, errorResponse } from "@/utils/response"
+import Post from "@/models/Post"
+import Like from "@/models/Like"
+import Comment from "@/models/Comment"
+
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,10 +40,13 @@ export async function GET(request: NextRequest) {
         leaderboard = await getAllTimeLeaderboard(limit)
     }
 
-    return NextResponse.json(successResponse({ leaderboard, type }))
+    return NextResponse.json({
+      success: true,
+      data: { leaderboard, type }
+    })
   } catch (error) {
     console.error("Error fetching leaderboard:", error)
-    return NextResponse.json(errorResponse("Failed to fetch leaderboard"), { status: 500 })
+    return NextResponse.json({ success: false, message: "Failed to fetch leaderboard" }, { status: 500 })
   }
 }
 
@@ -57,17 +60,15 @@ async function getAllTimeLeaderboard(limit: number) {
       .lean();
 
     // Get posts and likes counts for each user
-    const userIds = users.map(u => u._id);
+    const userIds = users.map((u: any) => u._id);
     
     // Count posts per user
-    const Post = mongoose.models.Post || mongoose.model("Post", PostSchema);
     const postCounts = await Post.aggregate([
       { $match: { author: { $in: userIds } } },
       { $group: { _id: "$author", count: { $sum: 1 } } }
     ]);
     
     // Count likes received per user (on their posts)
-    const Like = mongoose.models.Like || mongoose.model("Like", LikeSchema);
     const likeCounts = await Like.aggregate([
       {
         $lookup: {
@@ -83,9 +84,8 @@ async function getAllTimeLeaderboard(limit: number) {
     ]);
     
     // Count comments per user
-    const Comment = mongoose.models.Comment || mongoose.model("Comment", CommentSchema);
-    const commentCounts = await Comment.aggregate([
-      { $match: { author: { $in: userIds } } },
+    const commentCounts = await Comment.aggregate([{
+      $match: { author: { $in: userIds } } },
       { $group: { _id: "$author", count: { $sum: 1 } } }
     ]);
     
@@ -105,8 +105,8 @@ async function getAllTimeLeaderboard(limit: number) {
       console.log("UserStats not available");
     }
     
-    return users.map(user => {
-      const userId = user._id.toString();
+    return users.map((user: any) => {
+      const userId = user._id!.toString();
       const stats = userStatsMap.get(userId);
       
       return {
@@ -137,7 +137,7 @@ async function getAllTimeLeaderboard(limit: number) {
     .select("username displayName avatar level points")
     .lean();
 
-  return users.map(user => ({
+  return users.map((user: any) => ({
     user: {
       username: user.username,
       displayName: user.displayName,
@@ -163,7 +163,7 @@ async function getWeeklyLeaderboard(limit: number) {
       .lean();
 
     if (userStats.length > 0) {
-      return userStats.map(stat => ({
+      return userStats.map((stat: any) => ({
         user: stat.userId,
         totalXP: stat.weeklyXP || stat.totalXP || 0,
         totalPosts: stat.postsCount || 0,
@@ -191,7 +191,7 @@ async function getMonthlyLeaderboard(limit: number) {
       .lean();
 
     if (userStats.length > 0) {
-      return userStats.map(stat => ({
+      return userStats.map((stat: any) => ({
         user: stat.userId,
         totalXP: stat.monthlyXP || stat.totalXP || 0,
         totalPosts: stat.postsCount || 0,
@@ -241,7 +241,9 @@ async function getReferralLeaderboard(limit: number) {
       },
     },
     {
-      $unwind: "$stats",
+      $addFields: {
+        stats: { $arrayElemAt: ["$stats", 0] }
+      }
     },
     {
       $sort: { referralCount: -1 },
@@ -251,11 +253,17 @@ async function getReferralLeaderboard(limit: number) {
     },
     {
       $project: {
-        user: "$userInfo",
+        user: {
+          _id: "$userInfo._id",
+          username: "$userInfo.username",
+          displayName: "$userInfo.displayName",
+          avatar: "$userInfo.avatar",
+          level: "$userInfo.level"
+        },
         totalXP: "$totalRewards",
         referralCount: 1,
-        level: "$stats.level",
-        rank: "$stats.rank",
+        level: { $ifNull: ["$stats.level", "$userInfo.level"] },
+        rank: { $ifNull: ["$stats.rank", "Developer"] },
       },
     },
   ])
@@ -296,7 +304,9 @@ async function getChallengeLeaderboard(limit: number) {
       },
     },
     {
-      $unwind: "$stats",
+      $addFields: {
+        stats: { $arrayElemAt: ["$stats", 0] }
+      }
     },
     {
       $sort: { challengesCompleted: -1, firstCompletions: -1 },
@@ -306,12 +316,18 @@ async function getChallengeLeaderboard(limit: number) {
     },
     {
       $project: {
-        user: "$userInfo",
+        user: {
+          _id: "$userInfo._id",
+          username: "$userInfo.username",
+          displayName: "$userInfo.displayName",
+          avatar: "$userInfo.avatar",
+          level: "$userInfo.level"
+        },
         totalXP: "$totalXPEarned",
         challengesCompleted: 1,
         firstCompletions: 1,
-        level: "$stats.level",
-        rank: "$stats.rank",
+        level: { $ifNull: ["$stats.level", "$userInfo.level"] },
+        rank: { $ifNull: ["$stats.rank", "Developer"] },
       },
     },
   ])

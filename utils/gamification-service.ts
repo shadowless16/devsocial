@@ -27,6 +27,7 @@ export class GamificationService {
     badgesEarned?: string[]
     levelUp?: boolean
     rankUp?: boolean
+    message?: string
   }> {
     try {
       await connectDB()
@@ -54,7 +55,7 @@ export class GamificationService {
       const isFirstOfDay = action === "post_created" && 
         await this.isFirstActionOfDay(userId, "post_created")
       const isSolution = action === "comment_created" && 
-        content && content.toLowerCase().includes("solution")
+        !!content && content.toLowerCase().includes("solution")
 
       // Calculate XP with all bonuses
       const xpAwarded = calculateXPWithBonuses(
@@ -200,7 +201,7 @@ export class GamificationService {
       avatar: entry.userId.avatar,
       xp: entry[sortField],
       level: entry.currentLevel,
-      rank: entry.currentRank,
+      userRank: entry.currentRank,
       badges: entry.badgesEarned.length,
     }))
   }
@@ -220,7 +221,7 @@ export class GamificationService {
       level: userStats.currentLevel,
       currentRank,
       nextRank,
-      badges: userStats.badgesEarned.map((badgeId) => BADGES.find((badge) => badge.id === badgeId)).filter(Boolean),
+      badges: userStats.badgesEarned.map((badgeId: string) => BADGES.find((badge) => badge.id === badgeId)).filter(Boolean),
       stats: {
         postsCount: userStats.postsCount,
         commentsCount: userStats.commentsCount,

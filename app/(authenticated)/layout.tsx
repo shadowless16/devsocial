@@ -62,7 +62,7 @@ export default function AuthenticatedLayout({
 
       <div className="flex">
         {/* Left Sidebar - Desktop */}
-        <div className="hidden lg:block fixed left-0 top-0 h-full w-64 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 z-10">
+        <div className="hidden lg:block fixed left-0 top-0 h-full w-56 bg-white dark:bg-gray-950 border-r border-gray-200 dark:border-gray-800 z-10">
           <NavSidebar />
         </div>
 
@@ -70,7 +70,7 @@ export default function AuthenticatedLayout({
         {leftSidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setLeftSidebarOpen(false)} />
-            <div className="absolute left-0 top-0 h-full w-64 bg-white dark:bg-gray-950">
+            <div className="absolute left-0 top-0 h-full w-56 bg-white dark:bg-gray-950">
               <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
                 <h2 className="font-semibold text-gray-900 dark:text-white">Menu</h2>
                 <Button variant="ghost" size="sm" onClick={() => setLeftSidebarOpen(false)}>
@@ -83,12 +83,12 @@ export default function AuthenticatedLayout({
         )}
 
         {/* Main Content */}
-        <div className="flex-1 lg:ml-64 lg:mr-80 w-full max-w-full overflow-x-hidden">
+        <div className="flex-1 lg:ml-56 lg:mr-72 w-full max-w-full overflow-x-hidden">
           <main className="min-h-screen w-full">{children}</main>
         </div>
 
         {/* Right Sidebar - Desktop */}
-        <div className="hidden lg:block fixed right-0 top-0 h-full w-80 bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 z-10">
+        <div className="hidden lg:block fixed right-0 top-0 h-full w-72 bg-white dark:bg-gray-950 border-l border-gray-200 dark:border-gray-800 z-10">
           <RightSidebar />
         </div>
 
@@ -96,7 +96,7 @@ export default function AuthenticatedLayout({
         {rightSidebarOpen && (
           <div className="lg:hidden fixed inset-0 z-50">
             <div className="absolute inset-0 bg-black bg-opacity-50" onClick={() => setRightSidebarOpen(false)} />
-            <div className="absolute right-0 top-0 h-full w-80 bg-white dark:bg-gray-950">
+            <div className="absolute right-0 top-0 h-full w-72 bg-white dark:bg-gray-950">
               <div className="p-4 border-b border-gray-200 dark:border-gray-800 flex justify-between items-center">
                 <h2 className="font-semibold text-gray-900 dark:text-white">Trending</h2>
                 <Button variant="ghost" size="sm" onClick={() => setRightSidebarOpen(false)}>

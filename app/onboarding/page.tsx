@@ -10,6 +10,7 @@ import { InterestTags } from "@/components/onboarding/interest-tags"
 import { StarterBadge } from "@/components/onboarding/starter-badge"
 import { WelcomeGamification } from "@/components/onboarding/welcome-gamification"
 import { apiClient } from "@/lib/api-client"
+import { useAuth } from "@/contexts/auth-context"
 
 const steps = [
   { id: 1, title: "Avatar & Bio Setup", component: AvatarSetup },
@@ -20,6 +21,8 @@ const steps = [
 ]
 
 export default function OnboardingPage() {
+  const { updateUser } = useAuth()
+  const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
   const [onboardingData, setOnboardingData] = useState({
     avatar: "",
@@ -82,7 +85,10 @@ export default function OnboardingPage() {
       
       if (response.success) {
         console.log('Onboarding data saved successfully');
-        window.location.href = '/';
+        // Update the user context to reflect onboarding completion
+        updateUser({ onboardingCompleted: true });
+        // Use router.push instead of window.location.href for better UX
+        router.push('/home');
       } else {
         throw new Error(response.message || 'Failed to save onboarding data');
       }
@@ -90,7 +96,7 @@ export default function OnboardingPage() {
       console.error("Failed to complete onboarding:", error);
       // Show error message to user but still redirect for now
       alert('There was an issue saving your onboarding data. Please update your profile later.');
-      window.location.href = '/';
+      router.push('/home');
     }
   }
 

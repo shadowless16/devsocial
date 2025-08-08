@@ -8,6 +8,7 @@ import { LoggerInitializer } from "@/components/logger-initializer"
 import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin"
 import { extractRouterConfig } from "uploadthing/server"
 import { ourFileRouter } from "@/app/api/uploadthing/core"
+import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -41,6 +42,7 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   )

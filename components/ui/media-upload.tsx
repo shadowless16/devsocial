@@ -50,7 +50,7 @@ export function MediaUpload({
     setUploadError(null);
   };
 
-  const handleUploadComplete = (res: FileUploadResult[]) => {
+  const handleUploadComplete = (res: any[]) => {
     if (res && res.length > 0) {
       const newUrls = res.map((file: any) => file.url ?? file.fileUrl).filter(Boolean);
       onUploadComplete(newUrls);
@@ -148,8 +148,8 @@ export function MediaUpload({
   };
 
   const renderUploadButton = (endpoint: keyof OurFileRouter, label: string, icon: React.ReactNode) => (
-    <UploadButton<OurFileRouter>
-      endpoint={endpoint}
+    <UploadButton<any>
+      endpoint={endpoint as any}
       onUploadBegin={handleUploadBegin}
       onClientUploadComplete={handleUploadComplete}
       onUploadError={handleUploadError}
@@ -175,8 +175,8 @@ export function MediaUpload({
   );
 
   const renderUploadDropzone = (endpoint: keyof OurFileRouter, label: string) => (
-    <UploadDropzone<OurFileRouter>
-      endpoint={endpoint}
+    <UploadDropzone<any>
+      endpoint={endpoint as any}
       onUploadBegin={handleUploadBegin}
       onClientUploadComplete={handleUploadComplete}
       onUploadError={handleUploadError}

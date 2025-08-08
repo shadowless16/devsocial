@@ -10,6 +10,7 @@ export interface IPost extends Document {
   tags: string[]
   likesCount: number
   commentsCount: number
+  viewsCount: number
   xpAwarded: number
   createdAt: Date
   updatedAt: Date
@@ -61,6 +62,11 @@ const PostSchema = new Schema<IPost>(
     commentsCount: {
       type: Number,
       default: 0,
+    },
+    viewsCount: {
+      type: Number,
+      default: 0,
+      index: true,
     },
     xpAwarded: {
       type: Number,

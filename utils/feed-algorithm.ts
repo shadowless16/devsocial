@@ -98,7 +98,7 @@ export class FeedAlgorithm {
       // Paginate results
       const paginatedPosts = rankedPosts.slice(skip, skip + limit)
       const posts = paginatedPosts
-        .map((scored) => candidatePosts.find((p) => p._id.toString() === scored.postId))
+        .map((scored) => candidatePosts.find((p) => (p._id as any).toString() === scored.postId))
         .filter(Boolean)
 
       return {
@@ -187,7 +187,7 @@ export class FeedAlgorithm {
           factors.diversity * this.WEIGHTS.DIVERSITY
 
     return {
-      postId: post._id.toString(),
+      postId: (post._id as any).toString(),
       score: Math.max(score, this.MIN_SCORE),
       factors,
     }
@@ -216,7 +216,7 @@ export class FeedAlgorithm {
     let score = 0
 
     // Boost for followed users
-    if (followedUserIds.includes(author._id.toString())) {
+    if (followedUserIds.includes((author._id as any).toString())) {
       score += 0.5
     }
 
@@ -242,7 +242,7 @@ export class FeedAlgorithm {
     }
 
     // Author relevance
-    if (preferredAuthors.includes(post.author._id.toString())) {
+    if (preferredAuthors.includes((post.author._id as any).toString())) {
       score += 0.4
     }
 

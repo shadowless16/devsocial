@@ -10,11 +10,32 @@ const nextConfig = {
     JWT_SECRET: process.env.JWT_SECRET,
   },
   images: {
-    domains: [
-      'res.cloudinary.com',
-      'lh3.googleusercontent.com',
-      'avatars.githubusercontent.com',
-      'techdevsocial.vercel.app'
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'res.cloudinary.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'techdevsocial.vercel.app',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'utfs.io',
+        pathname: '/**',
+      }
     ],
   },
   async headers() {

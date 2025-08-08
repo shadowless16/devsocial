@@ -330,7 +330,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    onSubmit({
+    const postData = {
       content,
       tags,
       isAnonymous,
@@ -339,7 +339,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
       videoUrls: mediaUrls.filter(url => url.endsWith('.mp4') || url.endsWith('.webm')),
       postType,
       challenge: selectedChallenge
-    });
+    };
+    console.log('[PostModal] Submitting post data:', postData);
+    onSubmit(postData);
     resetForm();
   };
 
@@ -536,12 +538,6 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                               variant={selectedAspect === ratio.value ? "default" : "outline"}
                               onClick={() => {
                                 setSelectedAspect(ratio.value);
-                                if (ratio.value) {
-                                  setCrop({
-                                    ...crop,
-                                    aspect: ratio.value
-                                  });
-                                }
                               }}
                               className={`text-xs ${selectedAspect === ratio.value ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
                             >

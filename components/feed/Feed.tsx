@@ -2,8 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FeedItem } from "@/components/FeedItem";
-import { CommentItem } from "@/components/CommentItem";
+import { FeedItem } from "@/components/feed/FeedItem";
+import { CommentItem } from "@/components/feed/comment-item";
 
 interface Post {
   id: string;
@@ -18,6 +18,7 @@ interface Post {
   tags: string[];
   likesCount: number;
   commentsCount: number;
+  viewsCount: number;
   xpAwarded: number;
   createdAt: string;
   isAnonymous: boolean;
@@ -53,6 +54,7 @@ export function Feed() {
             ...post,
             id: post._id,
             isLiked: false,
+            viewsCount: post.viewsCount || 0,
             createdAt: new Date(post.createdAt).toLocaleDateString(),
           })));
         }
@@ -138,7 +140,7 @@ export function Feed() {
         setCommentsByPost((prev) => ({
           ...prev,
           [postId]: prev[postId].map((c) =>
-(c.id || c._id) === commentId
+c.id === commentId
               ? { ...c, isLiked: data.data.liked, likesCount: data.data.likesCount }
               : c
           ),
@@ -164,7 +166,7 @@ export function Feed() {
           post={post}
           onLike={handleLike}
           onComment={handleComment}
-          onShowComments={(show) => handleShowComments(post.id, show)}
+          onShowComments={(show: boolean) => handleShowComments(post.id, show)}
         >
           {commentsByPost[post.id]?.map((comment) => (
             <CommentItem

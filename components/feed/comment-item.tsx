@@ -31,6 +31,7 @@ interface CommentItemProps {
   onReply?: (parentCommentId: string, content: string) => void;
   isReply?: boolean;
   depth?: number;
+  replies?: Comment[];
 }
 
 export function CommentItem({ comment, onLike, onReply, isReply = false, depth = 0 }: CommentItemProps) {
@@ -86,7 +87,7 @@ export function CommentItem({ comment, onLike, onReply, isReply = false, depth =
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={onLike}
+                onClick={() => onLike(comment.id)}
                 className={`flex items-center space-x-1 text-xs ${
                   comment.isLiked ? "text-red-500 hover:text-red-600" : "text-gray-500 hover:text-red-500"
                 }`}

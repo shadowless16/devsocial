@@ -200,7 +200,7 @@ export function EnhancedLeaderboard() {
                             <Avatar className="w-12 h-12">
                               <AvatarImage src={entry.user.avatar || "/placeholder.svg"} />
                               <AvatarFallback>
-                                {entry.user.displayName
+                                {(entry.user.displayName || entry.user.username || 'U')
                                   .split(" ")
                                   .map((n) => n[0])
                                   .join("")}
@@ -211,7 +211,7 @@ export function EnhancedLeaderboard() {
                           <div className="flex-1">
                             <div className="flex items-center space-x-2">
                               <UserLink username={entry.user.username}>
-                                <h3 className="font-semibold text-gray-900 hover:text-emerald-600 transition-colors">{entry.user.displayName}</h3>
+                                <h3 className="font-semibold text-gray-900 hover:text-emerald-600 transition-colors">{entry.user.displayName || entry.user.username}</h3>
                               </UserLink>
                               <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200">
                                 L{entry.user.level}

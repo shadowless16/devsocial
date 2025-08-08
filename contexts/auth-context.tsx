@@ -176,6 +176,7 @@ export interface User {
   lastLogin?: Date;
   loginStreak: number;
   lastStreakDate?: Date;
+  onboardingCompleted: boolean;
   xpToNext: number; // Calculated field for remaining XP to next level
   totalXpForLevel: number; // Calculated field for total XP required for current level
 }
@@ -258,6 +259,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
               lastLogin: response.data.user.lastLogin,
               loginStreak: response.data.user.loginStreak || 0,
               lastStreakDate: response.data.user.lastStreakDate,
+              onboardingCompleted: response.data.user.onboardingCompleted || false,
               xpToNext: xpToNext >= 0 ? xpToNext : 0, // Ensure non-negative
               totalXpForLevel,
             };
@@ -265,9 +267,16 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
             setUser(newUser);
             userCacheRef.current = newUser;
             lastFetchRef.current = Date.now();
+            setLoading(false);
+      } else {
+        console.error('Failed to fetch user profile - no data in response');
+        setUser(null);
+        setLoading(false);
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
+      setUser(null);
+      setLoading(false);
       await signOut({ redirect: false });
       window.location.href = "/auth/login";
     } finally {
@@ -319,12 +328,12 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     });
     if (!response.success) {
       // Handle different error response formats
-      const errorMessage = response.error?.message || response.message || "Signup failed";
+      const errorMessage = response.message || "Signup failed";
       throw new Error(errorMessage);
     }
     
     // After successful signup, automatically log the user in
-    if (response.data?.token && response.data?.user) {
+    if (response.data && (response.data as any).token && (response.data as any).user) {
       // Use NextAuth signIn to create a session
       const result = await signIn("credentials", {
         usernameOrEmail: userData.email,

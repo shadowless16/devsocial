@@ -33,7 +33,7 @@ export async function GET(
       username: { $regex: new RegExp(`^${username}$`, 'i') } 
     })
     .select("-password -email")
-    .lean();
+    .lean() as any;
 
     if (!user) {
       return NextResponse.json(
@@ -80,7 +80,7 @@ export async function GET(
       .lean();
 
     // Transform posts to include necessary fields
-    const transformedPosts = recentPosts.map(post => ({
+    const transformedPosts = recentPosts.map((post: any) => ({
       ...post,
       _id: post._id.toString(),
       id: post._id.toString(),
@@ -135,7 +135,7 @@ export async function GET(
       username: user.username,
       displayName: user.displayName || user.username,
       bio: user.bio || "",
-      branch: user.branch || "Not specified",
+      affiliation: user.affiliation || user.branch || "Not specified",
       avatar: user.avatar || "/placeholder.svg",
       bannerUrl: user.bannerUrl || "",
       level: user.level || 1,
@@ -156,9 +156,10 @@ export async function GET(
       recentPosts: transformedPosts
     };
 
-    return NextResponse.json(
-      successResponse({ user: userProfile })
-    );
+    return NextResponse.json({
+      success: true,
+      data: { user: userProfile }
+    });
 
   } catch (error) {
     console.error("Error fetching user profile:", error);
