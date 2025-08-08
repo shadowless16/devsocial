@@ -11,6 +11,8 @@ import { RightSidebar } from "@/components/layout/right-sidebar"
 import { XPBar } from "@/components/gamification/xp-bar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 
+export const dynamic = 'force-dynamic'
+
 export default function AuthenticatedLayout({
   children,
 }: {
