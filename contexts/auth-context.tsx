@@ -138,7 +138,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { useSession, signIn, signOut, SessionProvider } from "next-auth/react";
 import { apiClient } from "@/lib/api-client";
-import { authConfig } from "@/lib/auth-config";
+
 
 // Extend the Session type to include custom user fields
 declare module "next-auth" {
@@ -194,9 +194,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider
-      {...authConfig}
-    >
+    <SessionProvider>
       <AuthProviderInner>{children}</AuthProviderInner>
     </SessionProvider>
   );
@@ -277,8 +275,8 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       console.error("Failed to fetch user:", error);
       setUser(null);
       setLoading(false);
-      await signOut({ redirect: false });
-      window.location.href = "/auth/login";
+      // Don't automatically sign out on profile fetch failure
+      // This could be a temporary API issue
     } finally {
       fetchingRef.current = false;
     }
