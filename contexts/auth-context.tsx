@@ -139,6 +139,12 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         userCacheRef.current = newUser;
         lastFetchRef.current = Date.now();
         setLoading(false);
+        
+        // Check if user needs onboarding
+        if (!newUser.onboardingCompleted && typeof window !== 'undefined') {
+          console.log('User needs onboarding, redirecting...');
+          window.location.href = '/onboarding';
+        }
       } else {
         throw new Error('No user data in response');
       }
@@ -212,28 +218,55 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
   };
 
   const signup = async (userData: any) => {
-    const response = await apiClient.request("/auth/signup", {
-      method: "POST",
-      body: JSON.stringify(userData),
-    });
-    if (!response.success) {
-      // Handle different error response formats
-      const errorMessage = response.message || "Signup failed";
-      throw new Error(errorMessage);
-    }
-    
-    // After successful signup, automatically log the user in
-    if (response.data && (response.data as any).token && (response.data as any).user) {
-      // Use NextAuth signIn to create a session
-      const result = await signIn("credentials", {
-        usernameOrEmail: userData.email,
-        password: userData.password,
-        redirect: false,
+    try {
+      const response = await apiClient.request("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify(userData),
       });
       
-      if (result?.error) {
-        throw new Error("Account created but login failed. Please try logging in manually.");
+      if (!response.success) {
+        // Extract detailed error message
+        let errorMessage = "Signup failed";
+        
+        if (response.error?.details) {
+          // Handle validation errors
+          const details = response.error.details;
+          const validationErrors = [];
+          for (const field in details) {
+            if (details[field]?._errors) {
+              validationErrors.push(...details[field]._errors);
+            }
+          }
+          errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
+        } else if (response.error?.message) {
+          errorMessage = response.error.message;
+        } else if (response.message) {
+          errorMessage = response.message;
+        }
+        
+        throw new Error(errorMessage);
       }
+      
+      // After successful signup, automatically log the user in
+      if (response.data && response.data.token && response.data.user) {
+        console.log('Signup successful, attempting login...');
+        const result = await signIn("credentials", {
+          usernameOrEmail: userData.email,
+          password: userData.password,
+          redirect: false,
+        });
+        
+        if (result?.error) {
+          throw new Error("Account created successfully! Please log in manually.");
+        }
+        
+        console.log('Auto-login successful');
+      } else {
+        throw new Error("Account created but missing login data. Please log in manually.");
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      throw error;
     }
   };
 
