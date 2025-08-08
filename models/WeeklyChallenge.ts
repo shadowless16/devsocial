@@ -15,6 +15,9 @@ export interface IWeeklyChallenge extends Document {
     badge?: string
     title?: string
   }
+  techStack?: string[]
+  experienceLevel?: "beginner" | "intermediate" | "advanced" | "expert"
+  tags?: string[]
   startDate: Date
   endDate: Date
   isActive: boolean
@@ -99,6 +102,18 @@ const WeeklyChallengeSchema = new Schema<IWeeklyChallenge>(
       type: Number,
       default: 10,
     },
+    techStack: [{
+      type: String,
+      trim: true,
+    }],
+    experienceLevel: {
+      type: String,
+      enum: ["beginner", "intermediate", "advanced", "expert"],
+    },
+    tags: [{
+      type: String,
+      trim: true,
+    }],
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",

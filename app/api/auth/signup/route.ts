@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import connectDB from "@/lib/db"
 import User from "@/models/User"
+import Follow from "@/models/Follow"
 import { signupSchema } from "@/utils/validation"
 import { successResponse, errorResponse, validationErrorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
@@ -62,6 +63,19 @@ export async function POST(request: NextRequest) {
 
     // Award signup XP
     await awardXP(user._id.toString(), "daily_login")
+
+    // Auto-follow AkDavid (platform creator)
+    try {
+      const akDavid = await User.findOne({ username: "AkDavid" })
+      if (akDavid) {
+        await Follow.create({
+          follower: user._id,
+          following: akDavid._id,
+        })
+      }
+    } catch (error) {
+      console.error("Auto-follow AkDavid error:", error)
+    }
 
     // Handle referral if code was provided
     if (referralCode) {

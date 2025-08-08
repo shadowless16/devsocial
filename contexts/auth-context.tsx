@@ -227,14 +227,12 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       });
       
       if (!response.success) {
-        // Extract detailed error message
         const errorMessage = response.message || "Signup failed";
         throw new Error(errorMessage);
       }
       
       // After successful signup, automatically log the user in
       if (response.data && (response.data as any).token && (response.data as any).user) {
-        console.log('Signup successful, attempting login...');
         const result = await signIn("credentials", {
           usernameOrEmail: userData.email,
           password: userData.password,
@@ -244,8 +242,6 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         if (result?.error) {
           throw new Error("Account created successfully! Please log in manually.");
         }
-        
-        console.log('Auto-login successful');
       } else {
         throw new Error("Account created but missing login data. Please log in manually.");
       }

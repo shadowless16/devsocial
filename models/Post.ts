@@ -49,9 +49,8 @@ const PostSchema = new Schema<IPost>(
     ],
     tags: [
       {
-        type: String,
-        trim: true,
-        lowercase: true,
+        type: Schema.Types.ObjectId,
+        ref: "Tag",
       },
     ],
     likesCount: {

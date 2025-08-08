@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/contexts/auth-context"
 import { apiClient } from "@/lib/api-client"
+import { toast } from "sonner"
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
@@ -91,10 +92,8 @@ useEffect(() => {
         referralCode: referralCode || undefined,
       })
       
-      // Give some time for the session to be established
-      setTimeout(() => {
-        router.push("/onboarding")
-      }, 1000)
+      toast.success("Account created successfully! Welcome to DevSocial!")
+      router.push("/onboarding")
     } catch (error: any) {
       console.error("Signup error:", error);
       // Handle different error types

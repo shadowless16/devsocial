@@ -91,6 +91,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
     const { userId } = params
     const currentUserId = authResult.user!.id
 
+    // Prevent unfollowing AkDavid
+    const userToUnfollow = await User.findById(userId)
+    if (userToUnfollow?.username === "AkDavid") {
+      return NextResponse.json(errorResponse("Cannot unfollow the platform creator"), { status: 403 })
+    }
+
     const follow = await Follow.findOneAndDelete({
       follower: currentUserId,
       following: userId,
