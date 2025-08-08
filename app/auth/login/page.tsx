@@ -6,10 +6,16 @@ export default function LoginPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("")
   const [password, setPassword] = useState("")
 
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log('Login attempt:', { usernameOrEmail, password })
+    // TODO: Add actual login logic
+  }
+
   return (
     <div>
       <h1>Login Page - Updated</h1>
-      <form>
+      <form onSubmit={handleSubmit}>
         <input 
           type="text" 
           placeholder="Username or Email"
