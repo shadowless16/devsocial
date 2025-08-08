@@ -41,7 +41,7 @@ export class MissionTracker {
         }
 
         // Check if mission is completed
-        const allStepsCompleted = missionProgress.progress.every(p => p.completed)
+        const allStepsCompleted = missionProgress.progress.every((p: any) => p.completed)
         if (allStepsCompleted && missionProgress.status === "active") {
           missionProgress.status = "completed"
           missionProgress.completedAt = new Date()
