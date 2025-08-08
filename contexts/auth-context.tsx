@@ -77,9 +77,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     // Prevent concurrent fetches
     if (fetchingRef.current) return;
     
-    // Check if we recently fetched (within 5 minutes)
+    // Check if we recently fetched (within 2 minutes for better UX)
     const now = Date.now();
-    if (lastFetchRef.current && now - lastFetchRef.current < 5 * 60 * 1000) {
+    if (lastFetchRef.current && now - lastFetchRef.current < 2 * 60 * 1000) {
       if (userCacheRef.current) {
         setUser(userCacheRef.current);
         setLoading(false);
@@ -90,58 +90,61 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     fetchingRef.current = true;
     
     try {
-      const response = await apiClient.getCurrentUserProfile<{ user: any }>();
+      // Add timeout to prevent hanging requests
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error('Request timeout')), 10000)
+      );
+      
+      const response = await Promise.race([
+        apiClient.getCurrentUserProfile<{ user: any }>(),
+        timeoutPromise
+      ]) as any;
+      
       if (response.success && response.data?.user) {
-            // Calculate xpToNext and totalXpForLevel based on points and level
-            const points = response.data.user.points || 0;
-            const level = Math.floor(points / 1000) + 1; // Matches UserSchema.calculateLevel
-            const totalXpForLevel = level * 1000; // 1000 XP per level
-            const xpToNext = totalXpForLevel - points;
+        const points = response.data.user.points || 0;
+        const level = Math.floor(points / 1000) + 1;
+        const totalXpForLevel = level * 1000;
+        const xpToNext = totalXpForLevel - points;
 
-            const newUser: User = {
-              id: response.data.user._id.toString(),
-              username: response.data.user.username,
-              email: response.data.user.email,
-              bio: response.data.user.bio,
-              affiliation: response.data.user.affiliation,
-              avatar: response.data.user.avatar,
-              bannerUrl: response.data.user.bannerUrl,
-              role: response.data.user.role,
-              points,
-              badges: response.data.user.badges || [],
-              level: response.data.user.level,
-              isVerified: response.data.user.isVerified || false,
-              displayName: response.data.user.displayName,
-              location: response.data.user.location,
-              website: response.data.user.website,
-              verificationToken: response.data.user.verificationToken,
-              verificationTokenExpires: response.data.user.verificationTokenExpires,
-              resetPasswordToken: response.data.user.resetPasswordToken,
-              resetPasswordExpires: response.data.user.resetPasswordExpires,
-              refreshTokens: response.data.user.refreshTokens || [],
-              lastLogin: response.data.user.lastLogin,
-              loginStreak: response.data.user.loginStreak || 0,
-              lastStreakDate: response.data.user.lastStreakDate,
-              onboardingCompleted: response.data.user.onboardingCompleted || false,
-              xpToNext: xpToNext >= 0 ? xpToNext : 0, // Ensure non-negative
-              totalXpForLevel,
-            };
-            
-            setUser(newUser);
-            userCacheRef.current = newUser;
-            lastFetchRef.current = Date.now();
-            setLoading(false);
-      } else {
-        console.error('Failed to fetch user profile - no data in response');
-        setUser(null);
+        const newUser: User = {
+          id: response.data.user._id.toString(),
+          username: response.data.user.username,
+          email: response.data.user.email,
+          bio: response.data.user.bio || '',
+          affiliation: response.data.user.affiliation || '',
+          avatar: response.data.user.avatar || '/placeholder.svg',
+          bannerUrl: response.data.user.bannerUrl || '',
+          role: response.data.user.role,
+          points,
+          badges: response.data.user.badges || [],
+          level: response.data.user.level || level,
+          isVerified: response.data.user.isVerified || false,
+          displayName: response.data.user.displayName || response.data.user.username,
+          location: response.data.user.location,
+          website: response.data.user.website,
+          verificationToken: response.data.user.verificationToken,
+          verificationTokenExpires: response.data.user.verificationTokenExpires,
+          resetPasswordToken: response.data.user.resetPasswordToken,
+          resetPasswordExpires: response.data.user.resetPasswordExpires,
+          refreshTokens: response.data.user.refreshTokens || [],
+          lastLogin: response.data.user.lastLogin,
+          loginStreak: response.data.user.loginStreak || 0,
+          lastStreakDate: response.data.user.lastStreakDate,
+          onboardingCompleted: response.data.user.onboardingCompleted || false,
+          xpToNext: xpToNext >= 0 ? xpToNext : 0,
+          totalXpForLevel,
+        };
+        
+        setUser(newUser);
+        userCacheRef.current = newUser;
+        lastFetchRef.current = Date.now();
         setLoading(false);
+      } else {
+        throw new Error('No user data in response');
       }
     } catch (error) {
       console.error("Failed to fetch user:", error);
-      setUser(null);
-      setLoading(false);
-      // Don't automatically sign out on profile fetch failure
-      // This could be a temporary API issue
+      throw error; // Re-throw to trigger fallback
     } finally {
       fetchingRef.current = false;
     }
@@ -149,29 +152,32 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      // Create basic user from session data without API call
-      const basicUser: User = {
-        id: session.user.id,
-        username: session.user.username,
-        email: session.user.email,
-        bio: '',
-        affiliation: '',
-        avatar: '/placeholder.svg',
-        bannerUrl: '',
-        role: session.user.role as "user" | "moderator" | "admin",
-        points: 0,
-        badges: [],
-        level: 1,
-        isVerified: false,
-        displayName: session.user.username,
-        refreshTokens: [],
-        loginStreak: 0,
-        onboardingCompleted: true,
-        xpToNext: 1000,
-        totalXpForLevel: 1000,
-      };
-      setUser(basicUser);
-      setLoading(false);
+      console.log('Authenticated, fetching user profile...');
+      fetchUserWithCache().catch((error) => {
+        console.log('Profile fetch failed, using fallback:', error.message);
+        const basicUser: User = {
+          id: session.user.id,
+          username: session.user.username,
+          email: session.user.email,
+          bio: '',
+          affiliation: '',
+          avatar: '/placeholder.svg',
+          bannerUrl: '',
+          role: session.user.role as "user" | "moderator" | "admin",
+          points: 0,
+          badges: [],
+          level: 1,
+          isVerified: false,
+          displayName: session.user.username,
+          refreshTokens: [],
+          loginStreak: 0,
+          onboardingCompleted: true,
+          xpToNext: 1000,
+          totalXpForLevel: 1000,
+        };
+        setUser(basicUser);
+        setLoading(false);
+      });
     } else if (status === "unauthenticated") {
       setUser(null);
       userCacheRef.current = null;
@@ -182,7 +188,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     } else {
       setLoading(false);
     }
-  }, [status, session]);
+  }, [status, session, fetchUserWithCache]);
 
   const login = async (credentials: { usernameOrEmail: string; password: string }) => {
     const result = await signIn("credentials", {
