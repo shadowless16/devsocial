@@ -8,6 +8,8 @@ import Follow from "@/models/Follow";
 import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { username: string } }

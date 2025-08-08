@@ -4,6 +4,8 @@ import Notification from "@/models/Notification"
 import connectDB from "@/lib/db"
 import { successResponse, errorResponse } from "@/utils/response"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB()

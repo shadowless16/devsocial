@@ -9,6 +9,8 @@ import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
 import { getWebSocketServer } from "@/lib/websocket"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest, { params }: { params: { postId: string } }) {
   try {
     await connectDB()

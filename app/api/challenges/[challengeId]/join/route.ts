@@ -3,6 +3,8 @@ import { authMiddleware } from "@/middleware/auth"
 import { ChallengeSystem } from "@/utils/challenge-system"
 import { successResponse, errorResponse } from "@/utils/response"
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest, { params }: { params: { challengeId: string } }) {
   try {
     const authResult = await authMiddleware(request)

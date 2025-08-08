@@ -5,6 +5,8 @@ import Comment from "@/models/Comment";
 import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
 
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest, { params }: { params: { commentId: string } }) {
   try {
     await connectDB();

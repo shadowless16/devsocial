@@ -6,6 +6,8 @@ import Like from "@/models/Like"
 import { authMiddleware, type AuthenticatedRequest } from "@/middleware/auth"
 import { errorResponse } from "@/utils/response"
 
+export const dynamic = 'force-dynamic'
+
 // GET /api/posts/[id] - Get single post
 export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
   try {

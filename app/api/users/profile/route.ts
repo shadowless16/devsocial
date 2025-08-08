@@ -1,14 +1,14 @@
 // app/api/users/profile/route.ts
 import { type NextRequest, NextResponse } from "next/server"
-
-// Force dynamic rendering
-export const dynamic = 'force-dynamic'
 import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import User, { IUser } from "@/models/User";
 import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
+
+// Force dynamic rendering
+export const dynamic = 'force-dynamic'
 
 // --- GET Handler ---
 export async function GET(req: NextRequest) {

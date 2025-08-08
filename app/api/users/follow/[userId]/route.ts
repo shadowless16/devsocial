@@ -10,6 +10,8 @@ import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP, XP_VALUES } from "@/utils/awardXP"
 
 // POST /api/user/follow/[userId] - Follow a user
+
+export const dynamic = 'force-dynamic'
 export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
   try {
     await connectDB()

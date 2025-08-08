@@ -9,6 +9,8 @@ import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/websocket";
 import Notification from "@/models/Notification";
 
+export const dynamic = 'force-dynamic'
+
 //================================================================//
 //  GET /api/comments - Fetch comments for a post
 //================================================================//

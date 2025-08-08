@@ -9,6 +9,8 @@ import { awardXP, checkFirstTimeAction } from "@/utils/awardXP";
 import UserStats from "@/models/UserStats";
 import { checkReferralMiddleware } from "@/utils/check-referral-middleware";
 
+export const dynamic = 'force-dynamic'
+
 //================================================================//
 //  GET /api/posts - Fetch a feed of posts
 //================================================================//
