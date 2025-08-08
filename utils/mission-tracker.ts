@@ -48,7 +48,7 @@ export class MissionTracker {
           missionProgress.xpEarned = mission.rewards.xp
 
           // Award mission completion XP and badges
-          await awardXP(userId, "mission_completed", mission._id.toString())
+          await awardXP(userId, "challenge_completion", mission._id.toString())
           
           if (mission.rewards.badge) {
             await User.findByIdAndUpdate(userId, {
