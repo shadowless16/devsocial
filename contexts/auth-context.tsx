@@ -149,8 +149,28 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (status === "authenticated" && session?.user?.id) {
-      // Temporarily disable profile fetching to prevent redirect loop
-      setUser(null);
+      // Create basic user from session data without API call
+      const basicUser: User = {
+        id: session.user.id,
+        username: session.user.username,
+        email: session.user.email,
+        bio: '',
+        affiliation: '',
+        avatar: '/placeholder.svg',
+        bannerUrl: '',
+        role: session.user.role as "user" | "moderator" | "admin",
+        points: 0,
+        badges: [],
+        level: 1,
+        isVerified: false,
+        displayName: session.user.username,
+        refreshTokens: [],
+        loginStreak: 0,
+        onboardingCompleted: true,
+        xpToNext: 1000,
+        totalXpForLevel: 1000,
+      };
+      setUser(basicUser);
       setLoading(false);
     } else if (status === "unauthenticated") {
       setUser(null);
@@ -158,7 +178,6 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       lastFetchRef.current = 0;
       setLoading(false);
     } else if (status === "loading") {
-      // Don't do anything while NextAuth is determining the session
       return;
     } else {
       setLoading(false);
