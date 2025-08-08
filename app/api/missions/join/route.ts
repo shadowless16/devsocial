@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Initialize progress for each step
-    const progress = mission.steps.map(step => ({
+    const progress = mission.steps.map((step: any) => ({
       stepId: step.id,
       current: 0,
       target: step.target,
