@@ -18,7 +18,7 @@ export async function GET(request: NextRequest) {
       query = { name: { $regex: search, $options: "i" } }
     }
 
-    const sortBy = popular ? { usageCount: -1 } : { createdAt: -1 }
+    const sortBy = popular ? { usageCount: -1 as const } : { createdAt: -1 as const }
     
     const tags = await Tag.find(query)
       .sort(sortBy)
