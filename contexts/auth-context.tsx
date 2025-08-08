@@ -140,8 +140,8 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         lastFetchRef.current = Date.now();
         setLoading(false);
         
-        // Check if user needs onboarding
-        if (!newUser.onboardingCompleted && typeof window !== 'undefined') {
+        // Check if user needs onboarding (only redirect if not already on onboarding page)
+        if (!newUser.onboardingCompleted && typeof window !== 'undefined' && window.location.pathname !== '/onboarding') {
           console.log('User needs onboarding, redirecting...');
           window.location.href = '/onboarding';
         }
