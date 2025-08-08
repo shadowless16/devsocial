@@ -226,29 +226,12 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       
       if (!response.success) {
         // Extract detailed error message
-        let errorMessage = "Signup failed";
-        
-        if (response.error?.details) {
-          // Handle validation errors
-          const details = response.error.details;
-          const validationErrors = [];
-          for (const field in details) {
-            if (details[field]?._errors) {
-              validationErrors.push(...details[field]._errors);
-            }
-          }
-          errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
-        } else if (response.error?.message) {
-          errorMessage = response.error.message;
-        } else if (response.message) {
-          errorMessage = response.message;
-        }
-        
+        const errorMessage = response.message || "Signup failed";
         throw new Error(errorMessage);
       }
       
       // After successful signup, automatically log the user in
-      if (response.data && response.data.token && response.data.user) {
+      if (response.data && (response.data as any).token && (response.data as any).user) {
         console.log('Signup successful, attempting login...');
         const result = await signIn("credentials", {
           usernameOrEmail: userData.email,
