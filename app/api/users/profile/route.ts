@@ -13,28 +13,63 @@ export const dynamic = 'force-dynamic'
 // --- GET Handler ---
 export async function GET(req: NextRequest) {
   try {
-    await connectDB();
+    // Check environment variables
+    if (!process.env.MONGODB_URI) {
+      console.error('MONGODB_URI not found in environment variables');
+      return NextResponse.json({ 
+        success: false, 
+        error: "Database configuration error" 
+      }, { status: 500 });
+    }
+    
+    console.log('Profile API called, attempting DB connection');
+    
+    try {
+      await connectDB();
+      console.log('Database connected successfully');
+    } catch (dbError: any) {
+      console.error('Database connection failed:', dbError.message);
+      return NextResponse.json({ 
+        success: false, 
+        error: "Database connection failed" 
+      }, { status: 500 });
+    }
     
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.id) {
-      return NextResponse.json(errorResponse("Unauthorized"), { status: 401 });
+      console.log('No session found');
+      return NextResponse.json({ 
+        success: false, 
+        error: "Unauthorized" 
+      }, { status: 401 });
     }
 
+    console.log('Session found for user:', session.user.id);
+    
     const user = await User.findById(session.user.id).select("-password").lean();
 
     if (!user) {
-      return NextResponse.json(errorResponse("User not found"), { status: 404 });
+      console.log('User not found in database');
+      return NextResponse.json({ 
+        success: false, 
+        error: "User not found" 
+      }, { status: 404 });
     }
 
-    const response = {
+    console.log('User found, returning profile');
+    
+    return NextResponse.json({
       success: true,
       data: { user }
-    };
-    
-    return NextResponse.json(response);
-  } catch (error) {
-    return NextResponse.json(errorResponse("Internal server error"), { status: 500 });
+    });
+  } catch (error: any) {
+    console.error('Profile API error:', error.message, error.stack);
+    return NextResponse.json({ 
+      success: false, 
+      error: "Internal server error",
+      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+    }, { status: 500 });
   }
 }
 
