@@ -3,7 +3,7 @@ import connectDB from "@/lib/db"
 import Mission from "@/models/Mission"
 import MissionProgress from "@/models/MissionProgress"
 import { getServerSession } from "next-auth"
-import { authOptions } from "@/app/api/auth/[...nextauth]/route"
+import { authOptions } from "@/lib/auth"
 
 export async function POST(request: NextRequest) {
   try {
