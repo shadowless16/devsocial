@@ -23,10 +23,9 @@ export default withAuth(
     const token = await getToken({ req })
     const { pathname } = req.nextUrl
 
-    // If user is authenticated and tries to access auth pages, redirect appropriately
+    // If user is authenticated and tries to access auth pages, redirect to home
     if (token && (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/signup'))) {
-      // Let the client-side handle the onboarding check
-      return NextResponse.redirect(new URL('/', req.url))
+      return NextResponse.redirect(new URL('/home', req.url))
     }
 
     // Allow onboarding page for authenticated users
@@ -39,14 +38,14 @@ export default withAuth(
   {
     callbacks: {
       authorized: ({ token, req }) => {
-        // Allow public access to auth pages and API routes
-        if (req.nextUrl.pathname.startsWith('/auth') || 
-            req.nextUrl.pathname.startsWith('/api/auth') ||
-            req.nextUrl.pathname.startsWith('/api/affiliations') ||
-            req.nextUrl.pathname === '/onboarding') {
+        const { pathname } = req.nextUrl;
+        
+        // Allow public access to auth pages and onboarding
+        if (pathname.startsWith('/auth') || pathname === '/onboarding') {
           return true;
         }
-        // For protected routes, require a token
+        
+        // For all other routes, require authentication
         return !!token;
       },
     },
@@ -62,8 +61,7 @@ export const config = {
   matcher: [
     /*
      * Match all request paths except for the ones starting with:
-     * - api/auth (NextAuth API routes)
-     * - api/affiliations (public affiliations data)
+     * - api (all API routes)
      * - auth (login/signup pages)
      * - onboarding (onboarding page)
      * - _next/static (static files)
@@ -71,7 +69,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * - .well-known (well-known URIs)
      */
-    "/((?!api/auth|api/affiliations|auth|onboarding|_next/static|_next/image|favicon.ico|\.well-known).*)",
+    "/((?!api|auth|onboarding|_next/static|_next/image|favicon.ico|\.well-known).*)",
   ]
 }
 

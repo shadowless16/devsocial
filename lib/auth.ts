@@ -61,7 +61,29 @@ export const authOptions: AuthOptions = {
       },
     }),
   ],
+
+  session: {
+    strategy: "jwt" as const,
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+    updateAge: 24 * 60 * 60, // Update session only once per day
+  },
+  jwt: {
+    maxAge: 7 * 24 * 60 * 60, // 7 days
+  },
+  pages: {
+    signIn: "/auth/login",
+    error: "/auth/error",
+  },
   callbacks: {
+    async redirect({ url, baseUrl }) {
+      // Prevent redirect to API endpoints
+      if (url.includes('/api/')) return baseUrl + "/home"
+      // Allows relative callback URLs
+      if (url.startsWith("/")) return `${baseUrl}${url}`
+      // Allows callback URLs on the same origin
+      else if (new URL(url).origin === baseUrl) return url
+      return baseUrl + "/home"
+    },
     async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.id = user.id;
@@ -78,18 +100,6 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
-  },
-  session: {
-    strategy: "jwt" as const,
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-    updateAge: 24 * 60 * 60, // Update session only once per day
-  },
-  jwt: {
-    maxAge: 7 * 24 * 60 * 60, // 7 days
-  },
-  pages: {
-    signIn: "/auth/login",
-    error: "/auth/error",
   },
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === 'development',
