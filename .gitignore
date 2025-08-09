@@ -98,3 +98,15 @@ jspm_packages/
 
 # TernJS port file
 .tern-port
+
+#ignore ngrok
+ngrok.exe
+
+echo "ngrok.exe" >> .gitignore
+
+# Commit the removal
+git add .gitignore
+git commit -m "Remove ngrok.exe from git tracking and add to .gitignore"
+
+# Push the changes
+git push
