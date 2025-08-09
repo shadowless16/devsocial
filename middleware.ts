@@ -4,6 +4,9 @@ import type { NextRequest } from "next/server"
 import { getToken } from "next-auth/jwt"
 import { apiRateLimiter, authRateLimiter } from "@/middleware/rate-limit"
 
+const isDev = process.env.NODE_ENV === 'development'
+const shouldLog = process.env.LOG_MIDDLEWARE === 'true'
+
 export default withAuth(
   async function middleware(req: NextRequest) {
     // Apply rate limiting to API routes
@@ -39,6 +42,14 @@ export default withAuth(
     callbacks: {
       authorized: ({ token, req }) => {
         const { pathname } = req.nextUrl;
+        
+        // Reduce middleware logging noise
+        if (shouldLog && pathname.startsWith('/api/')) {
+          console.log(`[Middleware] Protecting route: ${pathname}`);
+          if (token) {
+            console.log(`[Middleware] Success: User ${token.username || 'unknown'} authenticated.`);
+          }
+        }
         
         // Allow public access to auth pages and onboarding
         if (pathname.startsWith('/auth') || pathname === '/onboarding') {

@@ -6,6 +6,7 @@ import { authOptions } from "@/lib/auth";
 import User, { IUser } from "@/models/User";
 import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
+import { logger } from "@/lib/logger";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -22,13 +23,13 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
     
-    console.log('Profile API called, attempting DB connection');
+    logger.api('Profile API called, attempting DB connection');
     
     try {
       await connectDB();
-      console.log('Database connected successfully');
+      logger.api('Database connected successfully');
     } catch (dbError: any) {
-      console.error('Database connection failed:', dbError.message);
+      logger.error('Database connection failed:', dbError.message);
       return NextResponse.json({ 
         success: false, 
         error: "Database connection failed" 
@@ -38,33 +39,33 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.id) {
-      console.log('No session found');
+      logger.api('No session found');
       return NextResponse.json({ 
         success: false, 
         error: "Unauthorized" 
       }, { status: 401 });
     }
 
-    console.log('Session found for user:', session.user.id);
+    logger.api('Session found for user:', session.user.id);
     
     const user = await User.findById(session.user.id).select("-password").lean();
 
     if (!user) {
-      console.log('User not found in database');
+      logger.api('User not found in database');
       return NextResponse.json({ 
         success: false, 
         error: "User not found" 
       }, { status: 404 });
     }
 
-    console.log('User found, returning profile');
+    logger.api('User found, returning profile');
     
     return NextResponse.json({
       success: true,
       data: { user }
     });
   } catch (error: any) {
-    console.error('Profile API error:', error.message, error.stack);
+    logger.error('Profile API error:', error.message, error.stack);
     return NextResponse.json({ 
       success: false, 
       error: "Internal server error",

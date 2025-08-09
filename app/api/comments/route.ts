@@ -8,6 +8,7 @@ import { successResponse, errorResponse } from "@/utils/response";
 import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/websocket";
 import Notification from "@/models/Notification";
+import { processMentions } from "@/utils/mention-utils";
 
 export const dynamic = 'force-dynamic'
 
@@ -69,6 +70,9 @@ export async function POST(req: NextRequest) {
 
     post.commentsCount = (post.commentsCount || 0) + 1;
     await post.save();
+
+    // Process mentions in the comment content
+    await processMentions(content, postId, authorId, newComment._id.toString());
 
     await awardXP(authorId, "comment_creation");
 

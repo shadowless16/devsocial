@@ -54,6 +54,7 @@ export class WebSocketServer {
 
       // Join user to their personal room for notifications
       socket.join(`user:${userId}`)
+      socket.join(`user_${userId}`) // Alternative room format for follow updates
 
       // Handle joining conversation rooms
       socket.on("join_conversation", (conversationId: string) => {
@@ -276,6 +277,41 @@ export class WebSocketServer {
           comment,
           user: socket.data.user,
         })
+      })
+
+      // Handle follow actions
+      socket.on("follow_action", async (data) => {
+        try {
+          const { targetUserId, action, followerId } = data
+          
+          // Get updated user data
+          const targetUser = await User.findById(targetUserId)
+          if (!targetUser) return
+
+          const isFollowing = action === 'follow'
+          
+          // Emit to both users for real-time updates
+          this.io.to(`user_${targetUserId}`).emit("follow_update", {
+            userId: targetUserId,
+            followerId,
+            isFollowing,
+            followersCount: targetUser.followersCount
+          })
+          
+          this.io.to(`user_${followerId}`).emit("follow_update", {
+            userId: targetUserId,
+            followerId,
+            isFollowing,
+            followersCount: targetUser.followersCount
+          })
+        } catch (error) {
+          console.error('Error handling follow action:', error)
+        }
+      })
+
+      // Handle joining user room
+      socket.on("join_user_room", (userId: string) => {
+        socket.join(`user_${userId}`)
       })
 
       // Handle disconnect

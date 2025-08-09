@@ -343,6 +343,18 @@ class ApiClient {
   public trackPostView<T>(postId: string): Promise<ApiResponse<T>> {
     return this.request<T>(`/posts/${postId}/views`, { method: "POST" });
   }
+
+  public getMissions<T>(params?: Record<string, string>): Promise<ApiResponse<T>> {
+    const query = params ? "?" + new URLSearchParams(params).toString() : "";
+    return this.request<T>(`/missions${query}`, { method: "GET" });
+  }
+
+  public updateMissionProgress<T>(missionId: string, stepId: string): Promise<ApiResponse<T>> {
+    return this.request<T>(`/missions/${missionId}/progress`, {
+      method: "POST",
+      body: JSON.stringify({ stepId })
+    });
+  }
 }
 
 export const apiClient = new ApiClient();

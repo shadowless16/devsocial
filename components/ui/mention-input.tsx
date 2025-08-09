@@ -23,14 +23,22 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
   const [mentionStart, setMentionStart] = useState(-1)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
 
-  const searchUsers = async (query: string) => {
-    if (query.length < 2) {
-      setSuggestions([])
-      return
-    }
-
+  // Load followed users when @ is typed without query
+  const loadFollowedUsers = async () => {
     try {
-      const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&limit=5`)
+      const response = await fetch(`/api/users/search?limit=8`)
+      const data = await response.json()
+      if (response.ok) {
+        setSuggestions(data.users || [])
+      }
+    } catch (error) {
+      console.error("Error loading followed users:", error)
+    }
+  }
+
+  const searchUsers = async (query: string) => {
+    try {
+      const response = await fetch(`/api/users/search?q=${encodeURIComponent(query)}&limit=8`)
       const data = await response.json()
       if (response.ok) {
         setSuggestions(data.users || [])
@@ -55,7 +63,14 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
       setMentionStart(cursorPos - mentionMatch[0].length)
       setShowSuggestions(true)
       setSelectedIndex(0)
-      searchUsers(query)
+      
+      if (query.length === 0) {
+        // Show followed users when just @ is typed
+        loadFollowedUsers()
+      } else {
+        // Search for users as they type
+        searchUsers(query)
+      }
     } else {
       setShowSuggestions(false)
       setSuggestions([])
@@ -121,19 +136,19 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
             <div
               key={user.username}
               className={`px-3 py-2 cursor-pointer flex items-center gap-2 ${
-                index === selectedIndex ? "bg-blue-50" : "hover:bg-gray-50"
+                index === selectedIndex ? "bg-blue-50 border-l-2 border-blue-500" : "hover:bg-gray-50"
               }`}
               onClick={() => insertMention(user)}
             >
               <img
                 src={user.avatar}
                 alt={user.username}
-                className="w-6 h-6 rounded-full"
+                className="w-8 h-8 rounded-full"
               />
-              <div>
-                <div className="font-medium">@{user.username}</div>
+              <div className="flex-1">
+                <div className="font-medium text-sm">@{user.username}</div>
                 {user.displayName && (
-                  <div className="text-sm text-gray-500">{user.displayName}</div>
+                  <div className="text-xs text-gray-500">{user.displayName}</div>
                 )}
               </div>
             </div>

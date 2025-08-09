@@ -1,215 +1,232 @@
-// components/layout/nav-sidebar.tsx
-"use client";
+"use client"
 
-import { useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import type React from "react"
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
+import { cn } from "@/lib/utils"
 import {
-  Home,
-  TrendingUp,
-  Target,
-  Trophy,
-  Settings,
-  Plus,
-  User as UserIcon, // Renamed to avoid conflict with User interface
-  Shield,
-  LogOut,
-  Code2,
   Bell,
+  Compass,
+  Grid2X2,
+  Home,
+  ListOrdered,
+  Moon,
+  Plus,
   Search,
-  LayoutDashboard,
-  Users,
-  Star,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
-import { NotificationCenter } from "@/components/notifications/notification-center";
-import { UserLink } from "@/components/shared/UserLink";
-import { ThemeSwitch } from "@/components/ui/theme-toggle";
-import { useAuth } from "@/contexts/auth-context";
-
-const navigationItems = [
-  { href: "/", icon: Home, label: "Home", badge: null },
-  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard", badge: null },
-  { href: "/search", icon: Search, label: "Search", badge: null },
-  { href: "/trending", icon: TrendingUp, label: "Trending", badge: null },
-  { href: "/missions", icon: Target, label: "Missions", badge: 3 },
-  { href: "/leaderboard", icon: Trophy, label: "Leaderboard", badge: null },
-  { href: "/profile", icon: UserIcon, label: "My Profile", badge: null },
-  { href: "/confess", icon: Plus, label: "Confess", badge: null },
-  { href: "/referrals", icon: Users, label: "Referrals", badge: null },
-  { href: "/challenges", icon: Target, label: "Challenges", badge: null },
-  { href: "/moderation", icon: Shield, label: "Moderation", badge: null, adminOnly: true },
-];
+  Trophy,
+  User,
+  LogOut,
+  Settings2,
+  MessageCircle,
+  Shield
+} from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
+import { PostModal } from "@/components/modals/post-modal"
+import { NotificationCenter } from "@/components/notifications/notification-center"
 
 interface NavSidebarProps {
-  onItemClick?: () => void;
+  collapsed?: boolean
+  onItemClick?: () => void
 }
 
-export function NavSidebar({ onItemClick }: NavSidebarProps) {
-  const pathname = usePathname();
-  const [showCreatePost, setShowCreatePost] = useState(false);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const { user, logout } = useAuth();
+type NavItem = {
+  label: string
+  icon: React.ComponentType<{ className?: string }>
+  href: string
+  badge?: string
+  adminOnly?: boolean
+}
 
-  // Provide a default user object if not authenticated to prevent errors
+const navigationItems: NavItem[] = [
+  { label: "Home", icon: Home, href: "/home" },
+  { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
+  { label: "Search", icon: Search, href: "/search" },
+  { label: "Trending", icon: Compass, href: "/trending" },
+  { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
+  { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
+  { label: "My Profile", icon: User, href: "/profile" },
+  { label: "Messages", icon: MessageCircle, href: "/messages" },
+  { label: "Moderation", icon: Shield, href: "/moderation", adminOnly: true },
+]
+
+export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) {
+  const pathname = usePathname()
+  const { user, logout } = useAuth()
+  const [showCreatePost, setShowCreatePost] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
+
   const displayUser = user || {
-    username: "Guest",
-    displayName: "Guest User",
-    avatar: "/placeholder.svg",
-    level: 0,
-    points: 0, // Changed from xp to points
-    xpToNext: 0,
+    username: "",
+    displayName: "",
+    avatar: "",
+    level: 1,
+    points: 0,
     totalXpForLevel: 1000,
-    role: "guest",
-    bio: "",
-    branch: "Other",
-    bannerUrl: "",
-    badges: [],
-    isVerified: false,
-    refreshTokens: [],
-    loginStreak: 0,
-  };
+    xpToNext: 239,
+    role: "user"
+  }
 
-  return (
-    <div className="flex flex-col h-full overflow-hidden">
-      {/* Logo - Hidden on mobile since it's in the header */}
-      <div className="hidden lg:block p-4 border-b border-gray-200 dark:border-gray-800">
-        <div className="flex items-center space-x-2">
-          <div className="bg-emerald-100 dark:bg-emerald-900 p-1.5 rounded-lg">
-            <Code2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-          </div>
-          <span className="text-lg font-bold text-navy-900 dark:text-white">TechConnect</span>
+  if (collapsed) {
+    return (
+      <div className="h-full flex flex-col bg-white dark:bg-gray-950 p-2">
+        <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-white shadow-sm mx-auto mb-4">
+          {"</>"}  
         </div>
-      </div>
-
-      {/* User Profile Summary */}
-      <div className="p-3 border-b border-gray-200 dark:border-gray-800">
-        {user ? (
-          <UserLink username={user.username}>
-            <div className="flex items-center space-x-2 mb-2 hover:bg-gray-50 dark:hover:bg-gray-800 rounded-lg p-1.5 -m-1.5 transition-colors">
-              <Avatar className="w-8 h-8">
-                <AvatarImage src={displayUser.avatar || "/placeholder.svg"} />
-                <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-semibold text-xs text-gray-900 dark:text-white truncate hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors">{displayUser.displayName || displayUser.username || 'Guest User'}</p>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Level {displayUser.level}</p>
-              </div>
-              <div className="text-right">
-                <p className="text-xs text-gray-500 dark:text-gray-400">{(displayUser.points ?? 0).toLocaleString()} XP</p>
-              </div>
-            </div>
-          </UserLink>
-        ) : (
-          <div className="flex items-center space-x-3 mb-3">
-            <Avatar className="w-10 h-10">
-              <AvatarImage src={displayUser.avatar || "/placeholder.svg"} />
-              <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="font-semibold text-sm text-gray-900 dark:text-white truncate">{displayUser.displayName || displayUser.username || 'Guest User'}</p>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">Level {displayUser.level}</p>
-            </div>
-            <div className="text-right">
-              <p className="text-xs text-gray-500 dark:text-gray-400">{(displayUser.points ?? 0).toLocaleString()} XP</p>
-            </div>
-          </div>
+        {displayUser.username && (
+          <Avatar className="h-10 w-10 ring-1 ring-emerald-100 mx-auto mb-4">
+            <AvatarImage src={displayUser.avatar || "/placeholder.svg"} alt={displayUser.displayName || displayUser.username} />
+            <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
         )}
       </div>
+    )
+  }
 
-      {/* Navigation */}
-      <nav className="flex-1 p-3 overflow-y-auto scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600 scrollbar-track-transparent">
-        <ul className="space-y-1">
-          {navigationItems.map((item) => {
-            if (item.adminOnly && displayUser.role !== "admin") return null;
-
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <li key={item.href}>
-                <Link
-                  href={item.href}
-                  onClick={onItemClick}
-                  className={`flex items-center space-x-2 px-2 py-1.5 rounded-lg transition-colors text-sm ${
-                    isActive ? "bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-300" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
-                  }`}
-                >
-                  <Icon className="w-5 h-5" />
-                  <span className="font-medium">{item.label}</span>
-                  {item.badge && (
-                    <span className="ml-auto bg-orange-500 text-white text-xs rounded-full px-2 py-1 min-w-[20px] text-center">
-                      {item.badge}
-                    </span>
-                  )}
-                </Link>
-              </li>
-            );
-          })}
-        </ul>
-      </nav>
-
-      {/* Quick Actions */}
-      <div className="p-3 border-t border-gray-200 dark:border-gray-800">
-        <div className="mb-4">
-          <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-2">Quick Actions</h3>
-          <Button
-            onClick={() => setShowCreatePost(true)}
-            className="w-full bg-emerald-600 hover:bg-emerald-700 text-white mb-2"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Create Post
-          </Button>
-          <Button
-            onClick={() => setShowNotifications(true)}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white mb-2"
-          >
-            <Bell className="w-4 h-4 mr-2" />
-            Notifications
-            <Badge className="ml-auto bg-red-500 text-white text-xs px-2 py-1">3</Badge>
-          </Button>
-
-          {/* Level Progress */}
-          <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Level {displayUser.level}</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400">{displayUser.xpToNext} XP to next</span>
-            </div>
-            <Progress
-              value={displayUser.totalXpForLevel > 0 ? (displayUser.points / displayUser.totalXpForLevel) * 100 : 0}
-              className="h-2"
-            />
+  return (
+    <div className="h-full w-full flex flex-col bg-white dark:bg-gray-950 p-3 overflow-y-auto overflow-x-hidden">
+      <div className="space-y-4">
+        <div className="flex items-center gap-2">
+          <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-white shadow-sm">{"</>"}  </div>
+          <div className="grid">
+            <span className="text-lg font-semibold leading-none">TechConnect</span>
+            <span className="text-xs text-muted-foreground">Connect • Learn • Build</span>
           </div>
         </div>
 
-        {/* Settings & Logout */}
-        <div className="space-y-1">
-          <Link
-            href="/settings"
-            onClick={onItemClick}
-            className="flex items-center space-x-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
-          >
-            <Settings className="w-4 h-4" />
-            <span className="text-sm">Settings</span>
-          </Link>
-          <div className="px-3 py-1">
-            <ThemeSwitch />
+        {displayUser.username && (
+          <Card className="border-0 p-3 ring-1 ring-black/5 w-full">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-8 w-8 ring-1 ring-emerald-100 flex-shrink-0">
+                <AvatarImage src={displayUser.avatar || "/placeholder.svg"} alt={displayUser.displayName || displayUser.username} />
+                <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div className="min-w-0 flex-1">
+                <div className="text-sm font-medium break-words">{displayUser.displayName || displayUser.username}</div>
+                <div className="text-xs text-muted-foreground">{(displayUser.points ?? 0).toLocaleString()} XP</div>
+              </div>
+            </div>
+            <div className="mt-2">
+              <div className="flex items-center justify-between mb-1">
+                <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-xs">{`Level ${displayUser.level}`}</Badge>
+              </div>
+              <Progress value={displayUser.totalXpForLevel > 0 ? (displayUser.points / displayUser.totalXpForLevel) * 100 : 0} className="[&>div]:bg-emerald-600 h-1" />
+              <div className="mt-1 text-[10px] text-muted-foreground">{`${displayUser.xpToNext} XP to next`}</div>
+            </div>
+          </Card>
+        )}
+
+        <nav className="grid gap-1">
+          {navigationItems.map((item) => {
+            if (item.adminOnly && displayUser.role !== "admin") return null;
+            const isActive = pathname === item.href;
+            return (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={onItemClick}
+                className={cn(
+                  "group relative flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-all",
+                  isActive
+                    ? "bg-emerald-600/10 text-emerald-700 ring-1 ring-emerald-600/20"
+                    : "hover:bg-muted",
+                )}
+                aria-current={isActive ? "page" : undefined}
+              >
+                <item.icon
+                  className={cn(
+                    "h-4 w-4 transition-colors",
+                    isActive ? "text-emerald-700" : "text-muted-foreground group-hover:text-foreground",
+                  )}
+                />
+                <span className="flex-1 break-words text-xs">{item.label}</span>
+                {item.badge ? (
+                  <Badge className="ml-auto h-6 rounded-full bg-orange-100 px-2 text-[11px] font-medium text-orange-700 hover:bg-orange-100">
+                    {item.badge}
+                  </Badge>
+                ) : null}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="grid gap-2">
+          <div className="text-xs font-medium text-muted-foreground">Quick Actions</div>
+          <div className="flex items-center gap-1">
+            <Button 
+              className="flex-1 bg-emerald-600 hover:bg-emerald-600/90 text-xs px-2 py-1"
+              onClick={() => setShowCreatePost(true)}
+            >
+              <Plus className="mr-1 h-3 w-3" />
+              Create
+            </Button>
+            <Button 
+              variant="secondary" 
+              className="flex-1 gap-1 text-xs px-2 py-1"
+              onClick={() => setShowNotifications(true)}
+            >
+              <Bell className="h-3 w-3" />
+              <span>3</span>
+            </Button>
           </div>
-          <button
+        </div>
+
+        <Separator />
+
+        <div className="grid gap-1">
+          <Link href="/settings" onClick={onItemClick}>
+            <Button variant="ghost" className="justify-start gap-2 w-full text-xs px-2 py-1">
+              <Settings2 className="h-3 w-3" />
+              Settings
+            </Button>
+          </Link>
+          <Button 
+            variant="ghost" 
+            className="justify-start gap-2 text-xs px-2 py-1"
+            onClick={() => {
+              const html = document.documentElement;
+              if (html.classList.contains('dark')) {
+                html.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+              } else {
+                html.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+              }
+            }}
+          >
+            <Moon className="h-3 w-3" />
+            Dark Mode
+          </Button>
+          <Button 
+            variant="ghost" 
+            className="justify-start gap-2 text-red-600 hover:text-red-600 text-xs px-2 py-1"
             onClick={() => {
               logout();
               if (onItemClick) onItemClick();
             }}
-            className="flex items-center space-x-3 px-3 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors w-full"
           >
-            <LogOut className="w-4 h-4" />
-            <span className="text-sm">Logout</span>
-          </button>
+            <LogOut className="h-3 w-3" />
+            Logout
+          </Button>
         </div>
       </div>
+
+      {showCreatePost && (
+        <PostModal
+          isOpen={showCreatePost}
+          onClose={() => setShowCreatePost(false)}
+          onSubmit={async (postData) => {
+            setShowCreatePost(false);
+          }}
+        />
+      )}
+      
       {showNotifications && (
         <NotificationCenter isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
       )}

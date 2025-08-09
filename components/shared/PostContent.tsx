@@ -9,6 +9,7 @@ import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { Copy } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { MentionText } from "@/components/ui/mention-text";
 
 interface PostContentProps {
   content: string;
@@ -85,7 +86,13 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
           );
         },
         p({ children }) {
-          return <p className="text-gray-900 leading-relaxed mb-4">{children}</p>;
+          // Convert children to string and check for mentions
+          const textContent = React.Children.toArray(children).join('');
+          return (
+            <p className="text-gray-900 leading-relaxed mb-4">
+              <MentionText text={textContent} />
+            </p>
+          );
         },
         h1({ children }) {
           return <h1 className="text-2xl font-bold text-gray-900 mb-4">{children}</h1>;

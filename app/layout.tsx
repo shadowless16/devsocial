@@ -3,8 +3,11 @@ import type { Metadata, Viewport } from "next"
 import { Inter } from "next/font/google"
 import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
+import { FollowProvider } from "@/contexts/follow-context"
+import { WebSocketProvider } from "@/contexts/websocket-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { LoggerInitializer } from "@/components/logger-initializer"
+import { Toaster } from "@/components/ui/toaster"
 // import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin"
 // import { extractRouterConfig } from "uploadthing/server"
 // import { ourFileRouter } from "@/app/api/uploadthing/core"
@@ -36,9 +39,14 @@ export default function RootLayout({
         <LoggerInitializer />
         <ThemeProvider>
           <AuthProvider>
-            {children}
+            <WebSocketProvider>
+              <FollowProvider>
+                {children}
+              </FollowProvider>
+            </WebSocketProvider>
           </AuthProvider>
         </ThemeProvider>
+        <Toaster />
         <Analytics />
       </body>
     </html>

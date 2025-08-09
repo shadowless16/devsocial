@@ -5,6 +5,7 @@ import React, { useState, useRef, FormEvent } from "react";
 import { X, ImageIcon, Code, Hash, Eye, EyeOff, Target, Search, Video, Upload, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { MentionInput } from "@/components/ui/mention-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -468,14 +469,11 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
         <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
           <div className="space-y-2">
             <Label htmlFor="content">What's on your mind?</Label>
-            <Textarea
-              id="content"
-              placeholder="Share your thoughts, ask questions, or start a discussion..."
+            <MentionInput
               value={content}
-              onChange={(e) => setContent(e.target.value)}
+              onChange={setContent}
+              placeholder="Share your thoughts, ask questions, or start a discussion..."
               className="min-h-[120px] resize-none"
-              maxLength={2000}
-              required
             />
             <p className="text-xs text-gray-500 mt-1">
               Use Markdown for formatting. For code snippets, use triple backticks, e.g., ```javascript console.log("Hello"); ```

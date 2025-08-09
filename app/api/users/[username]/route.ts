@@ -18,6 +18,8 @@ export async function GET(
     await connectDB();
     
     const { username } = params;
+    const { searchParams } = new URL(req.url);
+    const type = searchParams.get('type') || 'profile';
     
     if (!username) {
       return NextResponse.json(
@@ -102,6 +104,43 @@ export async function GET(
       isFollowing = !!followExists;
     }
 
+    // Handle different query types
+    if (type === 'stats') {
+      return NextResponse.json({
+        success: true,
+        data: {
+          totalPosts: postsCount,
+          totalLikes,
+          totalFollowers: followersCount,
+          totalFollowing: followingCount,
+          level: user.level || 1,
+          xp: user.points || 0,
+          badges: user.badges || []
+        }
+      });
+    }
+
+    if (type === 'activity') {
+      // Check liked status for posts if user is authenticated
+      if (currentUserId) {
+        const likedPostIds = await Post.find({
+          _id: { $in: transformedPosts.map(p => p._id) },
+          likes: currentUserId
+        }).distinct('_id');
+        
+        const likedPostIdsSet = new Set(likedPostIds.map(id => id.toString()));
+        transformedPosts.forEach(post => {
+          post.isLiked = likedPostIdsSet.has(post._id);
+        });
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: { posts: transformedPosts }
+      });
+    }
+
+    // Default profile response
     // Check liked status for posts if user is authenticated
     if (currentUserId) {
       const likedPostIds = await Post.find({

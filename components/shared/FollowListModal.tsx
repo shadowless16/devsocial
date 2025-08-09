@@ -101,18 +101,21 @@ export function FollowListModal({
   const fetchFollowers = async (page = 1) => {
     setLoadingFollowers(true);
     try {
+      console.log('Fetching followers for:', username);
       const response = await apiClient.getFollowers<{
         followers: User[];
         pagination: { hasMore: boolean };
       }>(username, { page: page.toString(), limit: "20" });
 
+      console.log('Followers response:', response);
+      console.log('Response data:', response.data);
       if (response.success && response.data) {
         if (page === 1) {
-          setFollowers(response.data!.followers);
+          setFollowers(response.data.followers);
         } else {
-          setFollowers(prev => [...prev, ...response.data!.followers]);
+          setFollowers(prev => [...prev, ...response.data.followers]);
         }
-        setHasMoreFollowers(response.data!.pagination.hasMore);
+        setHasMoreFollowers(response.data.pagination.hasMore);
         setFollowersPage(page);
       }
     } catch (error) {
@@ -125,18 +128,21 @@ export function FollowListModal({
   const fetchFollowing = async (page = 1) => {
     setLoadingFollowing(true);
     try {
+      console.log('Fetching following for:', username);
       const response = await apiClient.getFollowing<{
         following: User[];
         pagination: { hasMore: boolean };
       }>(username, { page: page.toString(), limit: "20" });
 
+      console.log('Following response:', response);
+      console.log('Response data:', response.data);
       if (response.success && response.data) {
         if (page === 1) {
-          setFollowing(response.data!.following);
+          setFollowing(response.data.following);
         } else {
-          setFollowing(prev => [...prev, ...response.data!.following]);
+          setFollowing(prev => [...prev, ...response.data.following]);
         }
-        setHasMoreFollowing(response.data!.pagination.hasMore);
+        setHasMoreFollowing(response.data.pagination.hasMore);
         setFollowingPage(page);
       }
     } catch (error) {
@@ -230,7 +236,7 @@ export function FollowListModal({
               <FollowButton
                 userId={user._id}
                 username={user.username}
-                isFollowing={false} // We'd need to check this from the API
+                isFollowing={false}
                 size="sm"
                 showIcon={false}
               />

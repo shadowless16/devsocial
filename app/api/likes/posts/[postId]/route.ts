@@ -9,6 +9,8 @@ import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
 import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/websocket";
+import MissionProgress from "@/models/MissionProgress";
+import Mission from "@/models/Mission";
 
 export const dynamic = 'force-dynamic'
 
@@ -51,6 +53,47 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
       liked = true;
 
       await awardXP(userId, "like_given");
+
+      // Auto-track mission progress for like actions
+      const activeMissions = await MissionProgress.find({
+        user: userId,
+        status: "active"
+      }).populate('mission');
+
+      for (const progress of activeMissions) {
+        const mission = progress.mission;
+        let progressUpdated = false;
+        
+        for (const step of mission.steps) {
+          const stepId = step.id || step._id?.toString();
+          if (!progress.stepsCompleted.includes(stepId)) {
+            // Check if this step is related to liking posts
+            const stepText = (step.title + ' ' + step.description).toLowerCase();
+            if (stepText.includes('like') && stepText.includes('post')) {
+              // Get current like count for user
+              const userLikeCount = await Like.countDocuments({ user: userId });
+              
+              // Check if target is met
+              if (userLikeCount >= (step.target || 1)) {
+                progress.stepsCompleted.push(stepId);
+                progressUpdated = true;
+              }
+            }
+          }
+        }
+        
+        // Check if mission is completed
+        if (progress.stepsCompleted.length >= mission.steps.length && progress.status !== 'completed') {
+          progress.status = "completed";
+          progress.completedAt = new Date();
+          progress.xpEarned = mission.rewards.xp;
+          progressUpdated = true;
+        }
+        
+        if (progressUpdated) {
+          await progress.save();
+        }
+      }
 
       const activity = new Activity({
         user: userId,

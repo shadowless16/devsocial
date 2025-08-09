@@ -1,242 +1,194 @@
-// app/(authenticated)/profile/[username]/page.tsx
-"use client";
+"use client"
 
-import { useState, useEffect } from "react";
-import { useRouter, useParams } from "next/navigation";
-import { Edit, MapPin, Calendar, Link as LinkIcon, Trophy, Star, Users } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useAuth } from "@/contexts/auth-context";
-import { apiClient } from "@/lib/api-client";
-import { FeedItem } from "@/components/feed/FeedItem";
-import { FollowButton } from "@/components/shared/FollowButton";
-import { FollowListModal } from "@/components/shared/FollowListModal";
+import React, { useState, useEffect } from 'react'
+import { useParams } from 'next/navigation'
+import { User, Activity, TrendingUp } from 'lucide-react'
+import { useAuth } from '@/contexts/auth-context'
+import ProfileHeader from '@/components/profile/ProfileHeader'
+import ProfileStats from '@/components/profile/ProfileStats'
+import AchievementShowcase from '@/components/profile/AchievementShowcase'
+import ActivityFeed from '@/components/profile/ActivityFeed'
+import SkillProgress from '@/components/profile/SkillProgress'
+import { Button } from '@/components/ui/button'
 
-// --- START: FINALIZED INTERFACES ---
-interface Post {
-  _id: string;
-  id: string;
-  author: {
-    username: string;
-    displayName: string;
-    avatar: string;
-    level: number;
-  };
-  content: string;
-  imageUrl?: string | null;
-  tags: string[];
-  likesCount: number;
-  commentsCount: number;
-  viewsCount: number;
-  xpAwarded: number;
-  createdAt: string;
-  isAnonymous: boolean;
-  isLiked: boolean;
-}
-
-interface UserProfile {
-  _id: string;
-  username: string;
-  displayName?: string;
-  bio: string;
-  affiliation: string;
-  avatar: string;
-  bannerUrl: string;
-  level: number;
-  points: number;
-  followersCount?: number;
-  followingCount?: number;
-  isFollowing?: boolean;
-  location?: string;
-  website?: string;
-  createdAt: string;
-  rank?: number;
-  rankTitle?: string;
-  recentPosts: Post[];
-  stats: { totalPosts: number; };
-}
-interface ProfileResponse { user: UserProfile; }
-// --- END: FINALIZED INTERFACES ---
-
-
-export default function PublicProfilePage() {
-  const router = useRouter();
-  const params = useParams();
-  const username = params.username as string;
-
-  const { user: currentUser, loading: authLoading } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [showFollowList, setShowFollowList] = useState(false);
+export default function UserProfile() {
+  const params = useParams()
+  const username = params.username as string
+  const { user: currentUser } = useAuth()
+  const [activeTab, setActiveTab] = useState('overview')
+  const [profileData, setProfileData] = useState<any>(null)
+  const [statsData, setStatsData] = useState<any>(null)
+  const [activitiesData, setActivitiesData] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [isOwnProfile, setIsOwnProfile] = useState(false)
 
   useEffect(() => {
-    if (!username || authLoading) return;
-
-    const fetchProfileData = async () => {
-      setLoading(true);
-      setError(null);
+    const fetchUserProfile = async () => {
       try {
-        const profileRes = await apiClient.getUserProfileByUsername<ProfileResponse>(username);
-        if (profileRes.success && profileRes.data?.user) {
-          setProfile(profileRes.data.user);
-        } else {
-          throw new Error(profileRes.message || "User not found");
+        // Check if viewing own profile
+        const ownProfile = currentUser?.username === username
+        setIsOwnProfile(ownProfile)
+
+        if (ownProfile) {
+          // Redirect to own profile page
+          window.location.href = '/profile'
+          return
         }
-      } catch (err: any) {
-        setError(err.message);
+
+        // Fetch user data
+        const userResponse = await fetch(`/api/users/${username}`)
+        
+        if (!userResponse.ok) {
+          throw new Error('User not found')
+        }
+        
+        const userData = await userResponse.json()
+        const user = userData.data.user
+        
+        console.log('User data:', user); // Debug log
+        
+        // Get recent posts from user data
+        const activitiesData = user.recentPosts || []
+
+        const profileData = {
+          name: user.displayName || user.username,
+          title: "Developer",
+          location: user.location || "Not specified",
+          joinDate: new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+          bio: user.bio || "No bio available",
+          avatar: user.avatar,
+          techStack: user.techStack || [],
+          socialLinks: [],
+          userId: user._id,
+          username: user.username,
+          followersCount: user.followersCount || 0,
+          followingCount: user.followingCount || 0,
+          isFollowing: user.isFollowing || false
+        }
+        
+        console.log('Profile data with follow state:', profileData); // Debug log
+        setProfileData(profileData)
+
+        setStatsData({
+          totalXP: user.points || 0,
+          challengesCompleted: 0,
+          communityRank: user.rank || 999,
+          postsCreated: user.stats?.totalPosts || 0
+        })
+
+        setActivitiesData(activitiesData)
+
+      } catch (error) {
+        console.error('Error fetching user profile:', error)
+        // Handle error - maybe show 404 page
       } finally {
-        setLoading(false);
+        setLoading(false)
       }
-    };
-    
-    fetchProfileData();
-  }, [username, authLoading]);
+    }
 
-  // --- START: THE GUARD CLAUSE FIX ---
-  // This block runs BEFORE the main JSX. If any of these conditions are true,
-  // it returns a loading/error message and stops, preventing the "possibly 'null'" errors.
-  if (loading || authLoading) {
-    return <div className="text-center py-20">Loading profile...</div>;
-  }
-  if (error) {
-    return <div className="text-center py-20 text-red-500">Error: {error}</div>;
-  }
-  if (!profile) {
-    // This is the most important guard. If we get past this, TypeScript knows 'profile' is not null.
-    return <div className="text-center py-20">User not found.</div>;
-  }
-  // --- END: THE GUARD CLAUSE FIX ---
+    if (username && currentUser) {
+      fetchUserProfile()
+    }
+  }, [username, currentUser])
 
+  const achievementsData = {
+    badges: [],
+    missions: [],
+    certifications: []
+  }
 
-  // --- From here on, TypeScript knows 'profile' is a valid UserProfile object ---
-  const isOwnProfile = currentUser?.username.toLowerCase() === profile.username.toLowerCase();
-  const displayName = profile.displayName || profile.username;
-  const xpToNext = (profile.level * 1000) - profile.points;
-  const progressPercentage = (profile.points / (profile.level * 1000)) * 100;
-  const joinedDate = new Date(profile.createdAt).toLocaleDateString("en-US", { month: "long", year: "numeric" });
-  
-  return (
-    <div className="container mx-auto px-2 sm:px-4 py-6">
-      <div className="relative">
-        <div 
-          className="h-32 md:h-48 bg-gray-200 rounded-t-lg bg-cover bg-center"
-          style={{ backgroundImage: profile.bannerUrl ? `url(${profile.bannerUrl})` : 'none' }}
-        />
-        <Card className="p-4 sm:p-6 pt-16 sm:pt-6">
-          <div className="relative flex flex-col items-center sm:flex-row sm:items-start sm:space-x-6">
-            <div className="absolute -top-20 sm:-top-24 left-1/2 -translate-x-1/2 sm:static sm:translate-x-0 sm:-mt-16">
-              <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-white shadow-lg">
-                <AvatarImage src={profile.avatar} alt={`${displayName}'s avatar`} />
-                <AvatarFallback>{displayName.charAt(0)}</AvatarFallback>
-              </Avatar>
-            </div>
-            <div className="w-full text-center sm:text-left mt-4 sm:mt-0">
-              <div className="flex flex-col sm:flex-row justify-between items-center">
-                <div>
-                  <h1 className="text-2xl md:text-3xl font-bold">{displayName}</h1>
-                  <p className="text-gray-500">@{profile.username}</p>
-                </div>
-                {isOwnProfile && (
-                  <div className="mt-4 sm:mt-0">
-                    <Button variant="outline" onClick={() => router.push('/settings')}>
-                      <Edit size={16} className="mr-2" />
-                      Edit Profile
-                    </Button>
-                  </div>
-                )}
-              </div>
-              <p className="mt-4 text-gray-700 max-w-xl mx-auto sm:mx-0">{profile.bio || "This user hasn't written a bio yet."}</p>
-              <div className="flex items-center justify-center sm:justify-start flex-wrap gap-x-4 gap-y-2 mt-4 text-sm text-gray-500">
-                  <span className="flex items-center"><Calendar size={14} className="mr-1.5" />Joined {joinedDate}</span>
-                  {profile.location && <span className="flex items-center"><MapPin size={14} className="mr-1.5" />{profile.location}</span>}
-                  {profile.website && <a href={profile.website} target="_blank" rel="noopener noreferrer" className="flex items-center text-emerald-600 hover:underline"><LinkIcon size={14} className="mr-1.5" />Website</a>}
-              </div>
-              <div className="flex justify-center sm:justify-start space-x-6 mt-6 pt-4 border-t border-gray-100">
-                  <div className="text-center"><p className="font-bold text-lg">{profile.stats.totalPosts}</p><p className="text-sm text-gray-500">Posts</p></div>
-                  <div className="text-center cursor-pointer hover:opacity-75 transition-opacity" onClick={() => setShowFollowList(true)}>
-                    <p className="font-bold text-lg">{profile.followersCount ?? 0}</p>
-                    <p className="text-sm text-gray-500">Followers</p>
-                  </div>
-                  <div className="text-center cursor-pointer hover:opacity-75 transition-opacity" onClick={() => setShowFollowList(true)}>
-                    <p className="font-bold text-lg">{profile.followingCount ?? 0}</p>
-                    <p className="text-sm text-gray-500">Following</p>
-                  </div>
-              </div>
-            </div>
+  const skillsData: any[] = []
+
+  const tabOptions = [
+    { id: 'overview', label: 'Overview', icon: User },
+    { id: 'activity', label: 'Activity', icon: Activity },
+    { id: 'skills', label: 'Skills', icon: TrendingUp }
+  ]
+
+  if (loading) {
+    return (
+      <div className="container mx-auto p-3 max-w-4xl">
+        <div className="animate-pulse space-y-3">
+          <div className="h-24 bg-gray-200 rounded-lg" />
+          <div className="grid grid-cols-4 gap-2">
+            {[1, 2, 3, 4].map(i => (
+              <div key={i} className="h-12 bg-gray-200 rounded-lg" />
+            ))}
           </div>
-        </Card>
-      </div>
-      
-      {!isOwnProfile && (
-        <div className="flex justify-center mt-4">
-          <FollowButton
-            userId={profile._id}
-            username={profile.username}
-            isFollowing={profile.isFollowing ?? false}
-            onFollowChange={(following, change) => {
-              setProfile(prev => prev ? {
-                ...prev,
-                followersCount: (prev.followersCount || 0) + change
-              } : null);
-            }}
-          />
         </div>
-      )}
+      </div>
+    )
+  }
 
-      <FollowListModal
-        isOpen={showFollowList}
-        onClose={() => setShowFollowList(false)}
-        username={profile.username}
-        followersCount={profile.followersCount ?? 0}
-        followingCount={profile.followingCount ?? 0}
+  if (!profileData) {
+    return (
+      <div className="container mx-auto p-3 max-w-4xl">
+        <div className="text-center py-6">
+          <h1 className="text-xl font-bold text-gray-900 mb-2">User Not Found</h1>
+          <p className="text-gray-600">The user you're looking for doesn't exist.</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="container mx-auto p-2 max-w-4xl">
+      {/* Profile Header */}
+      <ProfileHeader 
+        profile={profileData} 
+        onEdit={() => {}} 
+        isOwnProfile={false} 
+        setProfileData={setProfileData}
       />
       
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-6">
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center mb-2"><Star className="w-5 h-5 text-yellow-500 mr-2" /><span className="text-lg font-bold">Level {profile.level}</span></div>
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm text-gray-600"><span>{(profile.points ?? 0).toLocaleString()} Points</span><span>{xpToNext.toLocaleString()} to next</span></div>
-              <div className="w-full bg-gray-200 rounded-full h-2"><div className="bg-emerald-500 h-2 rounded-full" style={{ width: `${progressPercentage}%` }} /></div>
-            </div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4">
-            <div className="flex items-center mb-2"><Trophy className="w-5 h-5 text-purple-500 mr-2" /><span className="text-lg font-bold">#{profile.rank ?? 'N/A'}</span></div>
-            <p className="text-sm text-gray-600">Global Rank</p>
-            <p className="text-xs text-purple-600 font-medium">{profile.rankTitle ?? 'Unranked'}</p>
-          </CardContent>
-        </Card>
-        <Card className="sm:col-span-2 lg:col-span-1">
-          <CardContent className="p-4">
-            <div className="flex items-center mb-2"><Users className="w-5 h-5 text-blue-500 mr-2" /><span className="text-lg font-bold">{profile.affiliation}</span></div>
-            <p className="text-sm text-gray-600">Affiliation</p>
-          </CardContent>
-        </Card>
+      {/* Stats */}
+      {statsData && <ProfileStats stats={statsData} />}
+
+      {/* Tab Navigation */}
+      <div className="flex gap-1 mb-2 overflow-x-auto">
+        {tabOptions.map((tab) => (
+          <Button
+            key={tab.id}
+            onClick={() => setActiveTab(tab.id)}
+            variant={activeTab === tab.id ? "default" : "ghost"}
+            className="whitespace-nowrap"
+          >
+            <tab.icon size={16} className="mr-2" />
+            {tab.label}
+          </Button>
+        ))}
       </div>
-      
-      <Tabs defaultValue="posts" className="mt-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="posts">Posts</TabsTrigger>
-          <TabsTrigger value="badges">Badges</TabsTrigger>
-          <TabsTrigger value="activity">Activity</TabsTrigger>
-        </TabsList>
-        <TabsContent value="posts" className="space-y-4 mt-6">
-          {profile.recentPosts.length > 0 ? (
-            profile.recentPosts.map((post) => (
-              <FeedItem key={post._id} post={{...post, id: post._id, viewsCount: post.viewsCount || 0}} onLike={() => {}} />
-            ))
-          ) : (
-            <div className="text-center py-10 text-gray-500">This user has no posts yet.</div>
-          )}
-        </TabsContent>
-        <TabsContent value="badges" className="mt-6"><div className="text-center py-10 text-gray-500">Badge display coming soon.</div></TabsContent>
-        <TabsContent value="activity" className="mt-6"><div className="text-center py-10 text-gray-500">Activity feed coming soon.</div></TabsContent>
-      </Tabs>
+
+      {/* Tab Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+        {activeTab === 'overview' && (
+          <>
+            <div className="lg:col-span-4">
+              <AchievementShowcase achievements={achievementsData} />
+            </div>
+            <div className="lg:col-span-8">
+              <ActivityFeed activities={activitiesData.slice(0, 6)} />
+            </div>
+          </>
+        )}
+
+        {activeTab === 'activity' && (
+          <div className="lg:col-span-12">
+            <ActivityFeed activities={activitiesData} />
+          </div>
+        )}
+
+        {activeTab === 'skills' && (
+          <>
+            <div className="lg:col-span-8">
+              <SkillProgress skills={skillsData} />
+            </div>
+            <div className="lg:col-span-4">
+              <AchievementShowcase achievements={achievementsData} />
+            </div>
+          </>
+        )}
+      </div>
     </div>
-  );
+  )
 }

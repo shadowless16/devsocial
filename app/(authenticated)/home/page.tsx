@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus } from "lucide-react"
+import { Plus, Search, Image, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { FeedItem } from "@/components/feed/FeedItem"
 import { PostModal } from "@/components/modals/post-modal"
@@ -193,59 +193,75 @@ export default function FeedPage() {
   }
 
   return (
-    <div className="w-full lg:max-w-xl lg:mx-auto py-2 sm:py-3 lg:py-4 px-2 sm:px-3">
-      {/* Header - Hidden on mobile since it's in the layout header */}
-      <div className="hidden lg:block mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <div>
-            <h1 className="text-xl font-bold text-navy-900 dark:text-white">TechConnect</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">What's happening in tech today?</p>
+    <div className="w-full max-w-lg mx-auto py-2 px-2">
+      {/* Header */}
+      <div className="mb-3">
+        <div className="text-center mb-2">
+          <h1 className="text-lg font-bold text-gray-900 dark:text-white mb-1">TechConnect</h1>
+          <p className="text-xs text-gray-600 dark:text-gray-400">What's happening in tech today?</p>
+        </div>
+        <div className="flex items-center justify-center space-x-2">
+          <div className="relative">
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3" />
+            <input
+              type="text"
+              placeholder="Search"
+              className="pl-7 pr-3 py-1.5 bg-gray-100 dark:bg-gray-800 border-0 rounded-full text-xs focus:outline-none focus:ring-1 focus:ring-emerald-500 w-48"
+            />
           </div>
           <Button
             onClick={() => setShowPostModal(true)}
-            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full p-2"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-full px-3 py-1.5 font-medium text-xs"
           >
-            <Plus className="w-4 h-4" />
+            Create
           </Button>
         </div>
       </div>
 
-      {/* Mobile Create Post Button */}
-      <div className="lg:hidden mb-4">
-        <Button
-          onClick={() => setShowPostModal(true)}
-          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Create Post
-        </Button>
-      </div>
-
       {/* Challenges Section */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-2 mb-3">
         {challenges.map((challenge, index) => (
-          <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer">
-            <CardContent className="p-2 sm:p-3">
-              <div
-                className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium mb-2 ${
+          <Card key={index} className="border-0 shadow-sm hover:shadow-md transition-all duration-200 cursor-pointer bg-white dark:bg-gray-950">
+            <CardContent className="p-2">
+              <div className="flex items-center mb-1">
+                <div className={`w-4 h-4 rounded flex items-center justify-center mr-2 ${
                   challenge.color === "emerald"
-                    ? "bg-emerald-100 text-emerald-800"
+                    ? "bg-emerald-100 dark:bg-emerald-900/20"
                     : challenge.color === "orange"
-                      ? "bg-orange-100 text-orange-800"
-                      : "bg-purple-100 text-purple-800"
-                }`}
-              >
-                {challenge.featured ? "🔥" : "⚡"} <span className="truncate">{challenge.title}</span>
+                      ? "bg-orange-100 dark:bg-orange-900/20"
+                      : "bg-purple-100 dark:bg-purple-900/20"
+                }`}>
+                  <span className="text-xs">
+                    {challenge.color === "emerald" ? "🏆" : challenge.color === "orange" ? "💡" : "👍"}
+                  </span>
+                </div>
+                <div className="flex-1">
+                  <h3 className={`font-semibold text-xs ${
+                    challenge.color === "emerald"
+                      ? "text-emerald-700 dark:text-emerald-400"
+                      : challenge.color === "orange"
+                        ? "text-orange-700 dark:text-orange-400"
+                        : "text-purple-700 dark:text-purple-400"
+                  }`}>
+                    {challenge.title}
+                  </h3>
+                </div>
               </div>
-              <p className="text-xs sm:text-sm text-gray-700 mb-2 line-clamp-2">{challenge.description}</p>
-              <div className="flex flex-wrap gap-1 sm:gap-2">
+              <p className="text-xs text-gray-700 dark:text-gray-300 mb-1 line-clamp-2">
+                {challenge.description}
+              </p>
+              <div className="flex items-center justify-between">
                 {challenge.xp > 0 && (
-                  <div className="inline-flex items-center px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">
+                  <div className={`inline-flex items-center px-1 py-0.5 rounded-full text-xs font-medium ${
+                    challenge.color === "emerald"
+                      ? "bg-emerald-100 dark:bg-emerald-900/20 text-emerald-700 dark:text-emerald-400"
+                      : "bg-orange-100 dark:bg-orange-900/20 text-orange-700 dark:text-orange-400"
+                  }`}>
                     +{challenge.xp} XP
                   </div>
                 )}
                 {challenge.featured && (
-                  <div className="inline-flex items-center px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                  <div className="inline-flex items-center px-1 py-0.5 bg-purple-100 dark:bg-purple-900/20 text-purple-700 dark:text-purple-400 rounded-full text-xs font-medium">
                     Featured
                   </div>
                 )}
@@ -255,30 +271,58 @@ export default function FeedPage() {
         ))}
       </div>
 
-      {/* Post Creation Prompt - Desktop only */}
-      <Card className="mb-4 hidden lg:block">
-        <CardContent className="p-3">
+      {/* Post Creation Prompt */}
+      <Card className="mb-2 border-0 shadow-sm bg-white dark:bg-gray-950">
+        <CardContent className="p-2">
           <div className="flex items-center space-x-2">
-            <Avatar className="w-8 h-8">
+            <Avatar className="w-6 h-6 border border-gray-100 dark:border-gray-700">
               <AvatarImage src={user?.avatar || "/placeholder.svg"} />
-              <AvatarFallback>{user?.username?.[0]?.toUpperCase()}</AvatarFallback>
+              <AvatarFallback className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-300 font-semibold text-xs">
+                {user?.username?.[0]?.toUpperCase()}
+              </AvatarFallback>
             </Avatar>
             <div 
-              className="flex-1 bg-gray-50 dark:bg-gray-800 rounded-full px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+              className="flex-1 bg-gray-50 dark:bg-gray-800/50 rounded-full px-3 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors border border-gray-200 dark:border-gray-700"
               onClick={() => setShowPostModal(true)}
             >
-              <p className="text-sm text-gray-500 dark:text-gray-400">What's on your mind?</p>
+              <p className="text-gray-500 dark:text-gray-400 text-xs">What's on your mind?</p>
+            </div>
+            <div className="flex items-center space-x-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 p-1"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-gray-500 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 p-1"
+              >
+                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
+                </svg>
+              </Button>
             </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Posts Feed */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {posts.length === 0 ? (
-          <Card>
-            <CardContent className="p-6 text-center">
-              <p className="text-gray-500">No posts yet. Be the first to share something!</p>
+          <Card className="border-0 shadow-sm bg-white dark:bg-gray-950">
+            <CardContent className="p-8 text-center">
+              <div className="w-16 h-16 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">No posts yet</h3>
+              <p className="text-gray-500 dark:text-gray-400">Be the first to share something with the community!</p>
             </CardContent>
           </Card>
         ) : (

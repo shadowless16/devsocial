@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, Loader2 } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
+import { useWebSocket } from "@/contexts/websocket-context";
+import { useFollow } from "@/contexts/follow-context";
+import { useAuth } from "@/contexts/auth-context";
 
 interface FollowButtonProps {
   userId: string;
@@ -30,41 +33,58 @@ export function FollowButton({
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { socket } = useWebSocket();
+  const { updateFollowState, getFollowState } = useFollow();
+  const { user } = useAuth();
+
+  // Update local state when prop changes or from context
+  useEffect(() => {
+    const contextState = getFollowState(userId);
+    if (contextState) {
+      setIsFollowing(contextState.isFollowing);
+    } else {
+      setIsFollowing(initialIsFollowing);
+    }
+  }, [initialIsFollowing, userId, getFollowState]);
+
+  // Disable WebSocket listeners since we're using optimistic updates
 
   const handleFollowToggle = async () => {
+    const previousState = isFollowing;
+    const newState = !isFollowing;
+    const delta = newState ? 1 : -1;
+    
+    // Optimistic update - update UI immediately
+    setIsFollowing(newState);
+    updateFollowState(userId, newState);
+    onFollowChange?.(newState, delta);
+    
     setIsLoading(true);
     
     try {
-      if (isFollowing) {
+      if (previousState) {
         // Unfollow
-        const response = await apiClient.unfollowUser(userId);
-        if (response.success) {
-          setIsFollowing(false);
-          if (onFollowChange) {
-            onFollowChange(false, -1); // Decrease count by 1
-          }
-          toast({
-            title: "Unfollowed",
-            description: `You have unfollowed @${username}`,
-            variant: "default",
-          });
-        }
+        await apiClient.unfollowUser(userId);
+        toast({
+          title: "Unfollowed",
+          description: `You have unfollowed @${username}`,
+          variant: "default",
+        });
       } else {
         // Follow
-        const response = await apiClient.followUser(userId);
-        if (response.success) {
-          setIsFollowing(true);
-          if (onFollowChange) {
-            onFollowChange(true, 1); // Increase count by 1
-          }
-          toast({
-            title: "Following",
-            description: `You are now following @${username}`,
-            variant: "default",
-          });
-        }
+        await apiClient.followUser(userId);
+        toast({
+          title: "Following",
+          description: `You are now following @${username}`,
+          variant: "default",
+        });
       }
     } catch (error: any) {
+      // Revert optimistic update on error
+      setIsFollowing(previousState);
+      updateFollowState(userId, previousState);
+      onFollowChange?.(previousState, -delta);
+      
       toast({
         title: "Error",
         description: error.message || "Something went wrong",

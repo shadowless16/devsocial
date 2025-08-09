@@ -8,6 +8,7 @@ import connectDB from "@/lib/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
 import { getWebSocketServer } from "@/lib/websocket"
+import MissionProgress from "@/models/MissionProgress"
 
 export const dynamic = 'force-dynamic'
 
@@ -152,6 +153,47 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
           sender: authResult.user,
           createdAt: notification.createdAt,
         })
+      }
+    }
+
+    // Auto-track mission progress for comment creation
+    const activeMissions = await MissionProgress.find({
+      user: userId,
+      status: "active"
+    }).populate('mission');
+
+    for (const progress of activeMissions) {
+      const mission = progress.mission;
+      let progressUpdated = false;
+      
+      for (const step of mission.steps) {
+        const stepId = step.id || step._id?.toString();
+        if (!progress.stepsCompleted.includes(stepId)) {
+          // Check if this step is related to commenting
+          const stepText = (step.title + ' ' + step.description).toLowerCase();
+          if (stepText.includes('comment')) {
+            // Get current comment count for user
+            const userCommentCount = await Comment.countDocuments({ author: userId });
+            
+            // Check if target is met
+            if (userCommentCount >= (step.target || 1)) {
+              progress.stepsCompleted.push(stepId);
+              progressUpdated = true;
+            }
+          }
+        }
+      }
+      
+      // Check if mission is completed
+      if (progress.stepsCompleted.length >= mission.steps.length && progress.status !== 'completed') {
+        progress.status = "completed";
+        progress.completedAt = new Date();
+        progress.xpEarned = mission.rewards.xp;
+        progressUpdated = true;
+      }
+      
+      if (progressUpdated) {
+        await progress.save();
       }
     }
 

@@ -26,11 +26,21 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
       if (token) {
         const newSocket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3000", {
           auth: { token },
+          transports: ['websocket'],
+          upgrade: false,
+          rememberUpgrade: false
         })
 
         newSocket.on("connect", () => {
           console.log("Connected to WebSocket server")
           setIsConnected(true)
+          // Join user's personal room immediately
+          newSocket.emit("join_user_room", user.id)
+          
+          // Test event listener
+          newSocket.on('follow_update', (data) => {
+            console.log('WebSocket received follow_update:', data)
+          })
         })
 
         newSocket.on("disconnect", () => {
@@ -41,6 +51,8 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
         newSocket.on("error", (error) => {
           console.error("WebSocket error:", error)
         })
+
+
 
         setSocket(newSocket)
 

@@ -16,6 +16,7 @@ import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/auth-context"
 import { PostContent } from "@/components/shared/PostContent"
+import { MentionText } from "@/components/ui/mention-text"
 import { UserLink } from "@/components/shared/UserLink"
 import { useViewTracker } from "@/hooks/use-view-tracker"
 import {
@@ -313,77 +314,66 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
   };
 
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer w-full" onClick={handlePostClick} data-post-id={post.id}>
-      <CardContent className="p-4 sm:p-4 lg:p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3 flex-1 min-w-0">
-            {post.isAnonymous ? (
-              <Avatar className="w-10 h-10 lg:w-10 lg:h-10 flex-shrink-0">
+    <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full bg-white dark:bg-gray-950" onClick={handlePostClick} data-post-id={post.id}>
+      <CardContent className="p-2">
+        <div className="flex items-start space-x-2 mb-2">
+          {post.isAnonymous ? (
+            <Avatar className="w-6 h-6 flex-shrink-0">
+              <AvatarImage src={author.avatar || "/placeholder.svg"} />
+              <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">?</AvatarFallback>
+            </Avatar>
+          ) : (
+            <UserLink username={author.username}>
+              <Avatar className="w-6 h-6 flex-shrink-0">
                 <AvatarImage src={author.avatar || "/placeholder.svg"} />
-                <AvatarFallback>?</AvatarFallback>
+                <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">
+                  {(author.displayName || author.username || "A")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                </AvatarFallback>
               </Avatar>
-            ) : (
-              <UserLink username={author.username}>
-                <Avatar className="w-10 h-10 lg:w-10 lg:h-10 flex-shrink-0">
-                  <AvatarImage src={author.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>
-                    {(author.displayName || author.username || "A")
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                  </AvatarFallback>
-                </Avatar>
-              </UserLink>
-            )}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center space-x-2 mb-1">
-                {post.isAnonymous ? (
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base lg:text-base truncate">
-                    Anonymous
+            </UserLink>
+          )}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-1 mb-0.5">
+              {post.isAnonymous ? (
+                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-xs truncate">
+                  Anonymous
+                </h3>
+              ) : (
+                <UserLink username={author.username}>
+                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-xs hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate">
+                    {author.displayName}
                   </h3>
-                ) : (
-                  <UserLink username={author.username}>
-                    <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-base lg:text-base hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate">
-                      {author.displayName}
-                    </h3>
-                  </UserLink>
-                )}
-                {!post.isAnonymous && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 flex-shrink-0"
-                  >
-                    L{author.level}
-                  </Badge>
-                )}
-                {post.isAnonymous && (
-                  <Badge
-                    variant="outline"
-                    className="text-xs text-gray-500 dark:text-gray-400 border-gray-300 dark:border-gray-600 flex-shrink-0"
-                  >
-                    Anonymous
-                  </Badge>
-                )}
-              </div>
-              <div className="flex items-center space-x-2 text-sm lg:text-sm text-gray-500 dark:text-gray-400">
-                {post.isAnonymous ? (
-                  <span className="truncate">Anonymous User</span>
-                ) : (
-                  <UserLink username={author.username}>
-                    <span className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate">
-                      @{author.username}
-                    </span>
-                  </UserLink>
-                )}
-                <span>•</span>
-                <span className="truncate">{post.createdAt}</span>
-              </div>
+                </UserLink>
+              )}
+              {!post.isAnonymous && (
+                <Badge
+                  variant="outline"
+                  className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 flex-shrink-0 px-1 py-0"
+                >
+                  L{author.level}
+                </Badge>
+              )}
+            </div>
+            <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
+              {post.isAnonymous ? (
+                <span className="truncate">Anonymous User</span>
+              ) : (
+                <UserLink username={author.username}>
+                  <span className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate">
+                    @{author.username}
+                  </span>
+                </UserLink>
+              )}
+              <span>•</span>
+              <span className="truncate">{post.createdAt}</span>
             </div>
           </div>
-
-          <div className="flex items-center space-x-2">
-            <div className="flex items-center space-x-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 px-2 py-1 rounded-full text-xs font-medium">
-              <Zap className="w-3 h-3" />
+          <div className="flex items-center space-x-1">
+            <div className="flex items-center space-x-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 px-1 py-0.5 rounded-full text-xs font-medium">
+              <Zap className="w-2 h-2" />
               <span>+{post.xpAwarded}</span>
             </div>
             <DropdownMenu>
@@ -392,20 +382,21 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                   variant="ghost"
                   size="sm"
                   onClick={(e) => e.stopPropagation()}
+                  className="h-4 w-4 p-0"
                 >
-                  <MoreHorizontal className="w-4 h-4" />
+                  <MoreHorizontal className="w-3 h-3" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-48" align="end" onClick={(e) => e.stopPropagation()}>
+              <DropdownMenuContent className="w-32" align="end" onClick={(e) => e.stopPropagation()}>
                 {canDeletePost && (
                   <DropdownMenuItem 
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeletePost();
                     }} 
-                    className="text-red-600 focus:text-red-600"
+                    className="text-red-600 focus:text-red-600 text-xs"
                   >
-                    <Trash className="w-4 h-4 mr-2" />
+                    <Trash className="w-3 h-3 mr-1" />
                     Delete Post
                   </DropdownMenuItem>
                 )}
@@ -414,8 +405,10 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           </div>
         </div>
 
-        <div className="mb-4">
-          <PostContent content={post.content} onCopyCode={handleCopyCode} />
+        <div className="mb-2">
+          <div className="text-xs text-gray-800 dark:text-gray-200">
+            <PostContent content={post.content} onCopyCode={handleCopyCode} />
+          </div>
 
           {/* Legacy single image support */}
           {post.imageUrl && (
@@ -506,12 +499,12 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         </div>
 
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4">
+          <div className="flex flex-wrap gap-1 mb-2">
             {post.tags.map((tag) => (
               <Badge
                 key={tag}
                 variant="outline"
-                className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer text-xs"
+                className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer text-xs px-1 py-0"
                 onClick={(e) => e.stopPropagation()}
               >
                 {tag}
@@ -520,20 +513,20 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           </div>
         )}
 
-        <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-800 interactive-element">
-          <div className="flex items-center space-x-4 lg:space-x-6">
+        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800 interactive-element">
+          <div className="flex items-center space-x-3">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleLikeClick}
-              className={`flex items-center space-x-2 text-xs lg:text-sm ${
+              className={`flex items-center space-x-1 text-xs hover:bg-transparent p-1 ${
                 post.isLiked
-                  ? "text-red-500 hover:text-red-600"
-                  : "text-gray-500 dark:text-gray-400 hover:text-red-500"
+                  ? "text-emerald-600 hover:text-emerald-700"
+                  : "text-gray-500 dark:text-gray-400 hover:text-emerald-600"
               }`}
             >
               <Heart
-                className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`}
+                className={`w-3 h-3 ${post.isLiked ? "fill-current text-emerald-600" : ""}`}
               />
               <span>{post.likesCount}</span>
             </Button>
@@ -542,9 +535,9 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
               variant="ghost"
               size="sm"
               onClick={handleCommentClick}
-              className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-blue-500 text-xs lg:text-sm"
+              className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-blue-500 text-xs hover:bg-transparent p-1"
             >
-              <MessageCircle className="w-4 h-4" />
+              <MessageCircle className="w-3 h-3" />
               <span>{post.commentsCount}</span>
             </Button>
 
@@ -552,14 +545,13 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
               variant="ghost"
               size="sm"
               onClick={handleShareClick}
-              className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 hover:text-green-500 text-xs lg:text-sm"
+              className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-green-500 text-xs hover:bg-transparent p-1"
             >
-              <Share className="w-4 h-4" />
-              <span className="hidden lg:inline">Share</span>
+              <Share className="w-3 h-3" />
             </Button>
 
-            <div className="flex items-center space-x-2 text-gray-500 dark:text-gray-400 text-xs lg:text-sm">
-              <Eye className="w-4 h-4" />
+            <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 text-xs">
+              <Eye className="w-3 h-3" />
               <span>{post.viewsCount || 0}</span>
             </div>
           </div>
@@ -611,7 +603,9 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                                 <span className="text-gray-400">•</span>
                                 <span className="text-sm text-gray-500">{comment.createdAt}</span>
                               </div>
-                              <p className="text-gray-800 mb-3 leading-relaxed">{comment.content}</p>
+                              <div className="text-gray-800 mb-3 leading-relaxed">
+                                <MentionText text={comment.content} />
+                              </div>
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-4">
                                   <Button
