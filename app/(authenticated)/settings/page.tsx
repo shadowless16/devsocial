@@ -15,6 +15,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { SettingsSkeleton } from "@/components/skeletons/settings-skeleton";
 
 // Use the imported 'User' type here.
 type ProfileFormData = Pick<
@@ -165,16 +166,7 @@ export default function SettingsPage() {
 
   // Show loading only if still loading and timeout hasn't been reached
   if ((authLoading || !formData) && !loadingTimeout) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center">
-          <p className="text-lg">Loading settings...</p>
-          <p className="text-sm text-gray-500 mt-2">Auth Loading: {authLoading ? 'Yes' : 'No'}</p>
-          <p className="text-sm text-gray-500">Form Data: {formData ? 'Loaded' : 'Not loaded'}</p>
-          <p className="text-sm text-gray-500">User: {user ? user.username : 'Not loaded'}</p>
-        </div>
-      </div>
-    );
+    return <SettingsSkeleton />
   }
 
   // If timeout reached but still no data, show error

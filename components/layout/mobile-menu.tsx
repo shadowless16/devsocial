@@ -30,6 +30,7 @@ interface MobileMenuProps {
 const menuItems = [
   { icon: Grid2X2, href: "/dashboard", label: "Dashboard" },
   { icon: Search, href: "/search", label: "Search" },
+  { icon: ListOrdered, href: "/leaderboard", label: "Leaderboard" },    
   { icon: FolderOpen, href: "/projects", label: "Projects" },
   { icon: ListOrdered, href: "/missions", label: "Missions", badge: "3" },
   { icon: MessageCircle, href: "/messages", label: "Messages" },

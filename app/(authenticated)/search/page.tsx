@@ -11,6 +11,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { apiClient } from "@/lib/api-client"
 import { FeedItem } from "@/components/feed/FeedItem"
 import { UserLink } from "@/components/shared/UserLink"
+import { SearchSkeleton } from "@/components/skeletons/search-skeleton"
 interface Post {
   id: string
   _id: string
@@ -158,6 +159,10 @@ export default function SearchPage() {
   }
 
   const totalResults = searchResults.posts.length + searchResults.users.length + searchResults.tags.length
+
+  if (isSearching && !hasSearched) {
+    return <SearchSkeleton />
+  }
 
   return (
     <div className="w-full">

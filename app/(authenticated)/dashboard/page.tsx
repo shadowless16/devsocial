@@ -134,7 +134,7 @@ export default function DashboardPage() {
   }))
 
   return (
-    <div className="w-full py-4 sm:py-6 px-3 sm:px-4">
+    <div className="w-full py-4 sm:py-6 px-1 sm:px-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
         <div className="mb-4 sm:mb-0">
@@ -159,62 +159,65 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-xs sm:text-sm font-medium">Total XP</CardTitle>
-            <Zap className="h-4 w-4 text-yellow-600" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+            <CardTitle className="text-[10px] sm:text-sm font-medium">Total XP</CardTitle>
+            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-xl sm:text-2xl font-bold">{dashboardData.user.points.toLocaleString()}</div>
-            <p className="text-[10px] sm:text-xs text-muted-foreground">
-              Level {dashboardData.user.level} • Rank #{dashboardData.user.rank}
+          <CardContent className="pt-1 sm:pt-2">
+            <div className="text-sm sm:text-xl font-bold">{dashboardData.user.points > 999 ? `${(dashboardData.user.points / 1000).toFixed(1)}k` : dashboardData.user.points}</div>
+            <p className="text-[8px] sm:text-xs text-muted-foreground">
+              L{dashboardData.user.level} • #{dashboardData.user.rank}
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Posts Created</CardTitle>
-            <MessageSquare className="h-4 w-4 text-blue-600" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+            <CardTitle className="text-[10px] sm:text-sm font-medium">Posts</CardTitle>
+            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.stats.posts.totalPosts}</div>
-            <p className="text-xs text-muted-foreground">
-              Avg {dashboardData.stats.posts.avgLikes.toFixed(1)} likes per post
+          <CardContent className="pt-1 sm:pt-2">
+            <div className="text-sm sm:text-xl font-bold">{dashboardData.stats.posts.totalPosts}</div>
+            <p className="text-[8px] sm:text-xs text-muted-foreground">
+              {dashboardData.stats.posts.avgLikes.toFixed(1)} avg likes
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
-            <Heart className="h-4 w-4 text-red-600" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+            <CardTitle className="text-[10px] sm:text-sm font-medium">Engagement</CardTitle>
+            <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {(dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments).toLocaleString()}
+          <CardContent className="pt-1 sm:pt-2">
+            <div className="text-sm sm:text-xl font-bold">
+              {(dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments) > 999 
+                ? `${((dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments) / 1000).toFixed(1)}k`
+                : (dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments)
+              }
             </div>
-            <p className="text-xs text-muted-foreground">
-              {dashboardData.stats.posts.totalLikes} likes • {dashboardData.stats.posts.totalComments} comments
+            <p className="text-[8px] sm:text-xs text-muted-foreground">
+              {dashboardData.stats.posts.totalLikes}♥ {dashboardData.stats.posts.totalComments}💬
             </p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Achievements</CardTitle>
-            <Trophy className="h-4 w-4 text-yellow-600" />
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
+            <CardTitle className="text-[10px] sm:text-sm font-medium">Badges</CardTitle>
+            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.user.badges.length}</div>
-            <p className="text-xs text-muted-foreground">{dashboardData.achievements.length} recent unlocks</p>
+          <CardContent className="pt-1 sm:pt-2">
+            <div className="text-sm sm:text-xl font-bold">{dashboardData.user.badges.length}</div>
+            <p className="text-[8px] sm:text-xs text-muted-foreground">{dashboardData.achievements.length} recent</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
         {/* Activity Chart */}
         <Card>
           <CardHeader>
@@ -224,7 +227,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={200}>
               <LineChart data={activityChartData}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="date" />
@@ -246,7 +249,7 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={300}>
+            <ResponsiveContainer width="100%" height={200}>
               <PieChart>
                 <Pie
                   data={xpBreakdownData}
@@ -283,10 +286,10 @@ export default function DashboardPage() {
 
       {/* Tabs for detailed views */}
       <Tabs defaultValue="achievements" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="achievements" className="text-xs sm:text-sm">Achievements</TabsTrigger>
-          <TabsTrigger value="activity" className="text-xs sm:text-sm">Activity</TabsTrigger>
-          <TabsTrigger value="goals" className="text-xs sm:text-sm">Goals</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 mb-4">
+          <TabsTrigger value="achievements" className="text-xs sm:text-sm px-2 py-1">Achievements</TabsTrigger>
+          <TabsTrigger value="activity" className="text-xs sm:text-sm px-2 py-1">Activity</TabsTrigger>
+          <TabsTrigger value="goals" className="text-xs sm:text-sm px-2 py-1">Goals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="achievements">

@@ -8,6 +8,7 @@ import MissionCard, { type Mission } from "@/components/mission-card"
 import DensityToggle, { type Density } from "@/components/density-toggle"
 import { apiClient } from "@/lib/api-client"
 import { Loader2 } from "lucide-react"
+import { MissionsSkeleton } from "@/components/skeletons/missions-skeleton"
 
 export default function MissionsPage() {
   const [tab, setTab] = useState<"available" | "active" | "completed">("available")
@@ -67,18 +68,7 @@ export default function MissionsPage() {
   const completedCount = allMissions.filter(m => m.userProgress?.status === "completed").length
 
   if (loading) {
-    return (
-      <main className="min-h-[100svh] bg-muted/30">
-        <div className="mx-auto w-full max-w-[110rem] px-4 py-6">
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground">Loading missions...</p>
-            </div>
-          </div>
-        </div>
-      </main>
-    )
+    return <MissionsSkeleton />
   }
 
   if (error) {

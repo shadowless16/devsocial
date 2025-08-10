@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Plus } from "lucide-react"
@@ -8,6 +8,7 @@ import Link from "next/link"
 import ProjectsFilters, { type ProjectFiltersState } from "@/components/projects/projects-filters"
 import ProjectCard, { type Project } from "@/components/projects/project-card"
 import DensityToggle, { type Density } from "@/components/projects/density-toggle"
+import { ProjectsSkeleton } from "@/components/skeletons/projects-skeleton"
 
 const ALL_PROJECTS: Project[] = [
   {
@@ -108,6 +109,12 @@ export default function ProjectsPage() {
     experienceLevel: "all",
   })
   const [density, setDensity] = useState<Density>("compact")
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const timer = setTimeout(() => setLoading(false), 1000)
+    return () => clearTimeout(timer)
+  }, [])
 
   const projects = useMemo(() => {
     return ALL_PROJECTS.filter((p) => {
@@ -122,6 +129,10 @@ export default function ProjectsPage() {
       return techOk && typeOk && statusOk && commitmentOk && experienceOk
     })
   }, [filters])
+
+  if (loading) {
+    return <ProjectsSkeleton />
+  }
 
   return (
     <main className="min-h-[100svh] bg-muted/30">

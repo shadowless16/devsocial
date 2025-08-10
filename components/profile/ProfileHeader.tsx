@@ -49,35 +49,36 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
   }
 
   return (
-    <Card className="mb-2">
-      <CardContent className="p-3">
-        <div className="flex items-start gap-3">
+    <Card className="mb-3">
+      <CardContent className="p-4">
+        <div className="flex items-start gap-4">
           {/* Profile Photo */}
           <div className="relative flex-shrink-0">
-            <Avatar className="w-12 h-12 border-2 border-primary/20">
+            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/20">
               <AvatarImage src={profile.avatar} alt={profile.name} />
-              <AvatarFallback className="text-sm">
+              <AvatarFallback className="text-lg sm:text-xl">
                 {profile.name.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>
             </Avatar>
-            <div className="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
           </div>
 
           {/* Profile Info */}
           <div className="flex-1 min-w-0">
-            <div className="flex items-start justify-between mb-2">
+            <div className="flex items-start justify-between mb-3">
               <div className="flex-1 min-w-0">
-                <h1 className="text-lg font-semibold text-foreground truncate">
+                <h1 className="text-lg sm:text-xl font-semibold text-foreground truncate">
                   {profile.name}
                 </h1>
-                <p className="text-sm text-muted-foreground">{profile.title}</p>
+                <p className="text-sm sm:text-base text-muted-foreground">{profile.title}</p>
               </div>
               
               <div className="flex-shrink-0 ml-2">
                 {isOwnProfile ? (
-                  <Button variant="outline" size="sm" onClick={handleEditToggle}>
+                  <Button variant="outline" size="sm" onClick={handleEditToggle} className="h-8 px-3 text-xs">
                     <Edit2 size={12} className="mr-1" />
-                    {isEditing ? 'Cancel' : 'Edit'}
+                    <span className="hidden sm:inline">{isEditing ? 'Cancel' : 'Edit'}</span>
+                    <span className="sm:hidden">Edit</span>
                   </Button>
                 ) : (
                   profile.userId && profile.username && currentUser && (
@@ -102,25 +103,25 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
               </div>
             </div>
 
-            <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+            <div className="flex items-center gap-2 sm:gap-3 text-xs text-muted-foreground mb-3 flex-wrap">
               <div className="flex items-center gap-1">
-                <MapPin size={10} />
-                <span>{profile.location}</span>
+                <MapPin size={12} />
+                <span className="truncate">{profile.location}</span>
               </div>
               <div className="flex items-center gap-1">
-                <Calendar size={10} />
-                <span>Joined {profile.joinDate}</span>
+                <Calendar size={12} />
+                <span className="truncate">Joined {profile.joinDate}</span>
               </div>
             </div>
 
             {/* Bio */}
             {profile.bio && (
-              <p className="text-sm text-foreground leading-relaxed mb-2 overflow-hidden" style={{display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical'}}>{profile.bio}</p>
+              <p className="text-xs sm:text-sm text-foreground leading-relaxed mb-3 overflow-hidden" style={{display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical'}}>{profile.bio}</p>
             )}
 
             {/* Follow Stats */}
             {profile.userId && profile.username && (
-              <div className="mb-2">
+              <div className="mb-3">
                 <FollowStats
                   key={profile.userId}
                   userId={profile.userId}
@@ -135,14 +136,14 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
             {/* Tech Stack */}
             {profile.techStack && profile.techStack.length > 0 && (
               <div className="flex flex-wrap gap-1">
-                {profile.techStack.slice(0, 4).map((tech, index) => (
-                  <Badge key={index} variant="secondary" className="text-xs px-2 py-0">
+                {profile.techStack.slice(0, 3).map((tech, index) => (
+                  <Badge key={index} variant="secondary" className="text-[10px] sm:text-xs px-1.5 py-0">
                     {tech}
                   </Badge>
                 ))}
-                {profile.techStack.length > 4 && (
-                  <Badge variant="outline" className="text-xs px-2 py-0">
-                    +{profile.techStack.length - 4}
+                {profile.techStack.length > 3 && (
+                  <Badge variant="outline" className="text-[10px] sm:text-xs px-1.5 py-0">
+                    +{profile.techStack.length - 3}
                   </Badge>
                 )}
               </div>

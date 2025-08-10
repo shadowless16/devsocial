@@ -27,7 +27,7 @@ const navItems = [
   { icon: Home, href: "/home", label: "Home" },
   { icon: Compass, href: "/trending", label: "Trending" },
   { icon: Plus, href: "#", label: "Create", isAction: true },
-  { icon: Trophy, href: "/leaderboard", label: "Leaderboard" },
+  { icon: User, href: "/profile", label: "Profile" },
   { icon: Menu, href: "#", label: "Menu", isMenu: true },
 ]
 

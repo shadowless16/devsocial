@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { FeedItem } from "@/components/feed/FeedItem"
 import { UserLink } from "@/components/shared/UserLink"
 import { apiClient } from "@/lib/api-client"
+import { TrendingSkeleton } from "@/components/skeletons/trending-skeleton"
 
 interface TrendingPost {
   id: string
@@ -132,6 +133,10 @@ export default function TrendingPage() {
     } catch (error) {
       console.error("Failed to toggle like:", error)
     }
+  }
+
+  if (loading) {
+    return <TrendingSkeleton />
   }
 
   return (

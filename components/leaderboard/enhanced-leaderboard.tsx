@@ -137,118 +137,113 @@ export function EnhancedLeaderboard() {
         </div>
       </CardHeader>
 
-      <CardContent>
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1">
-            {leaderboardTypes.map((type) => {
-              const Icon = type.icon
-              return (
-                <TabsTrigger key={type.key} value={type.key} className="flex items-center justify-center space-x-1 text-xs sm:text-sm p-2">
-                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
-                  <span className="hidden sm:inline">{type.label}</span>
-                  <span className="sm:hidden text-[10px]">{type.label.split(' ')[0]}</span>
-                </TabsTrigger>
-              )
-            })}
-          </TabsList>
+      <CardContent className="px-2 sm:px-6">
+        <div className="w-full">
+          <div className="flex overflow-x-auto scrollbar-hide mb-4">
+            <div className="flex space-x-1 min-w-max">
+              {leaderboardTypes.map((type) => {
+                const Icon = type.icon
+                const isActive = activeTab === type.key
+                return (
+                  <button
+                    key={type.key}
+                    onClick={() => setActiveTab(type.key)}
+                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                      isActive 
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Icon className="w-3 h-3" />
+                    <span className="hidden sm:inline">{type.label}</span>
+                    <span className="sm:hidden">{type.key === 'all-time' ? 'All' : type.key === 'weekly' ? 'Week' : type.key === 'monthly' ? 'Month' : type.key === 'referrals' ? 'Refs' : 'Quest'}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
 
-          {leaderboardTypes.map((type) => (
-            <TabsContent key={type.key} value={type.key} className="mt-6">
+          {activeTab && (
+            <div className="mt-4">
               {leaderboard.length === 0 ? (
-                <div className="text-center py-8">
-                  <type.icon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No data available</p>
-                  <p className="text-sm text-gray-400">Be the first to appear on this leaderboard!</p>
+                <div className="text-center py-6">
+                  <Trophy className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">No data available</p>
+                  <p className="text-xs text-gray-400">Be the first to appear!</p>
                 </div>
               ) : (
-                <div className="space-y-2 sm:space-y-3">
+                <div className="space-y-2">
                   {leaderboard.map((entry, index) => {
                     const position = index + 1
                     return (
                       <div
                         key={entry._id}
-                        className={`flex items-center space-x-2 sm:space-x-4 p-3 sm:p-4 rounded-lg border transition-all hover:shadow-md ${
+                        className={`flex items-center space-x-2 p-2 rounded-lg border transition-all ${
                           position <= 3
-                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200"
-                            : "bg-white hover:bg-gray-50"
+                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
+                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
                         }`}
                       >
                         {/* Rank */}
-                        <div className="flex-shrink-0">{getRankIcon(position)}</div>
+                        <div className="flex-shrink-0 w-6">
+                          {position <= 3 ? (
+                            position === 1 ? <Crown className="w-4 h-4 text-yellow-500" /> :
+                            position === 2 ? <Medal className="w-4 h-4 text-gray-400" /> :
+                            <Award className="w-4 h-4 text-amber-600" />
+                          ) : (
+                            <span className="text-xs font-bold text-gray-500">#{position}</span>
+                          )}
+                        </div>
+
+                        {/* Avatar */}
+                        <UserLink username={entry.user.username}>
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={entry.user.avatar || "/placeholder.svg"} />
+                            <AvatarFallback className="text-xs">
+                              {(entry.user.displayName || entry.user.username || 'U')
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")}
+                            </AvatarFallback>
+                          </Avatar>
+                        </UserLink>
 
                         {/* User Info */}
-                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
-                          <UserLink username={entry.user.username}>
-                            <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
-                              <AvatarImage src={entry.user.avatar || "/placeholder.svg"} />
-                              <AvatarFallback className="text-xs sm:text-sm">
-                                {(entry.user.displayName || entry.user.username || 'U')
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                          </UserLink>
-
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center space-x-1 sm:space-x-2 mb-1">
-                              <UserLink username={entry.user.username}>
-                                <h3 className="font-semibold text-sm sm:text-base text-gray-900 hover:text-emerald-600 transition-colors truncate max-w-[120px] sm:max-w-none">{entry.user.displayName || entry.user.username}</h3>
-                              </UserLink>
-                              <Badge variant="outline" className="text-[10px] sm:text-xs text-emerald-600 border-emerald-200 px-1 flex-shrink-0">
-                                L{entry.user.level}
-                              </Badge>
-                              {position <= 3 && <Badge className={`${getRankBadgeColor(position)} text-[10px] sm:text-xs px-1 flex-shrink-0`}>#{position}</Badge>}
-                            </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center space-x-1">
                             <UserLink username={entry.user.username}>
-                              <p className="text-xs sm:text-sm text-gray-500 hover:text-emerald-600 transition-colors truncate max-w-[120px] sm:max-w-none">@{entry.user.username}</p>
+                              <h3 className="font-medium text-xs text-gray-900 truncate max-w-[100px]">{entry.user.displayName || entry.user.username}</h3>
                             </UserLink>
+                            <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-200 px-1 py-0">
+                              L{entry.user.level}
+                            </Badge>
                           </div>
+                          <UserLink username={entry.user.username}>
+                            <p className="text-[10px] text-gray-500 truncate max-w-[100px]">@{entry.user.username}</p>
+                          </UserLink>
                         </div>
 
                         {/* Stats */}
-                        <div className="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm">
-                          <div className="text-center">
-                            <div className="flex items-center space-x-1">
-                              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
-                              <span className="font-bold text-gray-900 text-xs sm:text-sm">
-                                {getStatValue(entry, activeTab).toLocaleString()}
-                              </span>
-                            </div>
-                            <p className="text-[10px] sm:text-xs text-gray-500">{getStatLabel(activeTab)}</p>
+                        <div className="text-right">
+                          <div className="flex items-center space-x-1">
+                            <Zap className="w-3 h-3 text-yellow-500" />
+                            <span className="font-bold text-xs text-gray-900">
+                              {getStatValue(entry, activeTab) > 999 
+                                ? `${(getStatValue(entry, activeTab) / 1000).toFixed(1)}k`
+                                : getStatValue(entry, activeTab)
+                              }
+                            </span>
                           </div>
-
-                          {activeTab === "all-time" && (
-                            <>
-                              <div className="text-center hidden sm:block">
-                                <p className="font-medium text-gray-900">{entry.totalPosts || 0}</p>
-                                <p className="text-xs text-gray-500">Posts</p>
-                              </div>
-                              <div className="text-center hidden sm:block">
-                                <p className="font-medium text-gray-900">{entry.totalLikes || 0}</p>
-                                <p className="text-xs text-gray-500">Likes</p>
-                              </div>
-                            </>
-                          )}
-
-                          {activeTab === "challenges" && entry.firstCompletions && (
-                            <div className="text-center hidden sm:block">
-                              <div className="flex items-center space-x-1">
-                                <Crown className="w-4 h-4 text-yellow-500" />
-                                <span className="font-bold text-gray-900">{entry.firstCompletions}</span>
-                              </div>
-                              <p className="text-xs text-gray-500">First!</p>
-                            </div>
-                          )}
+                          <p className="text-[9px] text-gray-500">{getStatLabel(activeTab)}</p>
                         </div>
                       </div>
                     )
                   })}
                 </div>
               )}
-            </TabsContent>
-          ))}
-        </Tabs>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   )

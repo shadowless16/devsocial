@@ -9,6 +9,7 @@ import AchievementShowcase from '@/components/profile/AchievementShowcase'
 import ActivityFeed from '@/components/profile/ActivityFeed'
 import SkillProgress from '@/components/profile/SkillProgress'
 import PrivacySettings from '@/components/profile/PrivacySettings'
+import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
 import { Button } from '@/components/ui/button'
 
 export default function MyProfile() {
@@ -172,22 +173,11 @@ export default function MyProfile() {
   ]
 
   if (loading) {
-    return (
-      <div className="container mx-auto p-3 max-w-4xl">
-        <div className="animate-pulse space-y-3">
-          <div className="h-24 bg-gray-200 rounded-lg" />
-          <div className="grid grid-cols-4 gap-2">
-            {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-12 bg-gray-200 rounded-lg" />
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+    return <ProfileSkeleton />
   }
 
   return (
-    <div className="container mx-auto p-2 max-w-4xl">
+    <div className="w-full py-4 sm:py-6 px-1 sm:px-4">
       {/* Profile Header - Always Visible */}
       <ProfileHeader 
         profile={profileData} 
@@ -200,52 +190,55 @@ export default function MyProfile() {
       {statsData && <ProfileStats stats={statsData} />}
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 mb-2 overflow-x-auto">
-        {tabOptions.map((tab) => (
-          <Button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            variant={activeTab === tab.id ? "default" : "ghost"}
-            className="whitespace-nowrap"
-          >
-            <tab.icon size={16} className="mr-2" />
-            {tab.label}
-          </Button>
-        ))}
+      <div className="flex overflow-x-auto scrollbar-hide mb-4">
+        <div className="flex space-x-1 min-w-max">
+          {tabOptions.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <tab.icon size={14} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tab Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+      <div className="space-y-3">
         {activeTab === 'overview' && (
-          <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
             <div className="lg:col-span-4">
               <AchievementShowcase achievements={achievementsData} />
             </div>
             <div className="lg:col-span-8">
               <ActivityFeed activities={activitiesData.slice(0, 6)} />
             </div>
-          </>
-        )}
-
-        {activeTab === 'activity' && (
-          <div className="lg:col-span-12">
-            <ActivityFeed activities={activitiesData} />
           </div>
         )}
 
+        {activeTab === 'activity' && (
+          <ActivityFeed activities={activitiesData} />
+        )}
+
         {activeTab === 'skills' && (
-          <>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
             <div className="lg:col-span-8">
               <SkillProgress skills={skillsData} />
             </div>
             <div className="lg:col-span-4">
               <AchievementShowcase achievements={achievementsData} />
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === 'privacy' && (
-          <div className="lg:col-span-6 lg:col-start-4">
+          <div className="max-w-md mx-auto">
             <PrivacySettings 
               settings={privacySettings}
               onSettingsChange={handlePrivacySettingsChange}
