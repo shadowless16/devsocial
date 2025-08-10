@@ -62,15 +62,15 @@ export default function SideNav() {
   }
 
   const calculateProgress = (currentXP: number, level: number) => {
-    const baseXP = level * 1000
-    const nextLevelXP = (level + 1) * 1000
-    const progress = ((currentXP - baseXP) / (nextLevelXP - baseXP)) * 100
+    const currentLevelXP = (level - 1) * 1000
+    const nextLevelXP = level * 1000
+    const progress = ((currentXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100
     return Math.max(0, Math.min(100, progress))
   }
 
   const getXPToNext = (currentXP: number, level: number) => {
-    const nextLevelXP = (level + 1) * 1000
-    return nextLevelXP - currentXP
+    const nextLevelXP = level * 1000
+    return Math.max(0, nextLevelXP - currentXP)
   }
 
   return (
