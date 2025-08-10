@@ -1,6 +1,6 @@
 // WebSocket server utility with controlled logging
 import { Server as SocketIOServer } from 'socket.io';
-import { logger } from './logger';
+import logger from './logger';
 
 const isDev = process.env.NODE_ENV === 'development';
 const shouldLogConnections = process.env.LOG_WEBSOCKET === 'true';

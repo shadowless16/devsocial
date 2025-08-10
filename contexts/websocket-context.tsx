@@ -21,7 +21,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
   const { user } = useAuth()
 
   useEffect(() => {
-    if (user) {
+    if (user && typeof window !== 'undefined') {
       const token = localStorage.getItem("auth_token")
       if (token) {
         const newSocket = io(process.env.NEXT_PUBLIC_WS_URL || "http://localhost:3000", {

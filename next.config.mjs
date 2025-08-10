@@ -17,9 +17,40 @@ const nextConfig = {
       },
     ],
   },
-  // Fix production build issues
-  output: 'standalone',
-  trailingSlash: false,
+  
+  // Fix pnpm vendor chunk issues
+  webpack: (config, { dev, isServer }) => {
+    // Fix pnpm module resolution issues
+    config.resolve.symlinks = false;
+    
+    // Prevent vendor chunk errors
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      };
+    }
+    
+    // Fix chunk loading issues
+    config.optimization = {
+      ...config.optimization,
+      splitChunks: {
+        ...config.optimization.splitChunks,
+        cacheGroups: {
+          ...config.optimization.splitChunks?.cacheGroups,
+          vendor: {
+            test: /[\\/]node_modules[\\/]/,
+            name: 'vendors',
+            chunks: 'all',
+          },
+        },
+      },
+    };
+    
+    return config;
+  },
   
   // Reduce logging in development
   logging: {
@@ -27,21 +58,13 @@ const nextConfig = {
       fullUrl: false,
     },
   },
-  // Suppress repetitive compilation messages
-  onDemandEntries: {
-    // period (in ms) where the server will keep pages in the buffer
-    maxInactiveAge: 25 * 1000,
-    // number of pages that should be kept simultaneously without being disposed
-    pagesBufferLength: 2,
-  },
-  // Fix streaming issues
+  
+  // Fix experimental features
   experimental: {
-    serverComponentsExternalPackages: [],
-    // Disable problematic features in development
-    ...(process.env.NODE_ENV === 'development' && {
-      webVitalsAttribution: ['CLS', 'LCP'],
-    }),
+    serverComponentsExternalPackages: ['mongoose'],
+    optimizePackageImports: ['lucide-react'],
   },
+  
   // Handle DevTools requests gracefully
   async rewrites() {
     return [

@@ -6,12 +6,7 @@ import { AuthProvider } from "@/contexts/auth-context"
 import { FollowProvider } from "@/contexts/follow-context"
 import { WebSocketProvider } from "@/contexts/websocket-context"
 import { ThemeProvider } from "@/components/theme-provider"
-import { LoggerInitializer } from "@/components/logger-initializer"
 import { Toaster } from "@/components/ui/toaster"
-// import { NextSSRPlugin } from "@uploadthing/react/next-ssr-plugin"
-// import { extractRouterConfig } from "uploadthing/server"
-// import { ourFileRouter } from "@/app/api/uploadthing/core"
-import { Analytics } from "@vercel/analytics/react"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -36,7 +31,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <LoggerInitializer />
         <ThemeProvider>
           <AuthProvider>
             <WebSocketProvider>
@@ -47,7 +41,6 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         <Toaster />
-        <Analytics />
       </body>
     </html>
   )
