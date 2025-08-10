@@ -1,5 +1,7 @@
 "use client"
 
+import { useEffect } from "react"
+import { useRouter, usePathname } from "next/navigation"
 import { TooltipProvider } from "@/components/ui/tooltip"
 import SideNav from "@/components/side-nav"
 import RightRail from "@/components/right-rail"
@@ -12,6 +14,15 @@ export default function AuthenticatedLayout({
 }: {
   children: React.ReactNode
 }) {
+  const router = useRouter()
+  const pathname = usePathname()
+  
+  useEffect(() => {
+    if (pathname === '/') {
+      router.replace('/home')
+    }
+  }, [pathname, router])
+  
   return (
     <TooltipProvider>
       <main className="min-h-[100svh] bg-muted/30">
