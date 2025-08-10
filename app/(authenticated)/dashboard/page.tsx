@@ -21,6 +21,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/contexts/auth-context"
+import { DashboardSkeleton } from "@/components/skeletons/dashboard-skeleton"
 
 interface DashboardData {
   user: {
@@ -106,30 +107,14 @@ export default function DashboardPage() {
   }
 
   if (loading) {
-    return (
-      <div className="max-w-7xl mx-auto py-6 px-4">
-        <div className="animate-pulse space-y-6">
-          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[...Array(4)].map((_, i) => (
-              <div key={i} className="h-32 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {[...Array(2)].map((_, i) => (
-              <div key={i} className="h-80 bg-gray-200 rounded"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-    )
+    return <DashboardSkeleton />
   }
 
   if (!dashboardData) {
     return (
-      <div className="max-w-7xl mx-auto py-6 px-4">
+      <div className="w-full py-4 sm:py-6 px-3 sm:px-4">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Unable to load dashboard</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Unable to load dashboard</h2>
           <Button onClick={fetchDashboardData}>Try Again</Button>
         </div>
       </div>
@@ -149,7 +134,7 @@ export default function DashboardPage() {
   }))
 
   return (
-    <div className="w-full lg:max-w-7xl lg:mx-auto py-4 sm:py-6 px-3 sm:px-4">
+    <div className="w-full py-4 sm:py-6 px-3 sm:px-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
         <div className="mb-4 sm:mb-0">
@@ -174,15 +159,15 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total XP</CardTitle>
+            <CardTitle className="text-xs sm:text-sm font-medium">Total XP</CardTitle>
             <Zap className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{dashboardData.user.points.toLocaleString()}</div>
-            <p className="text-xs text-muted-foreground">
+            <div className="text-xl sm:text-2xl font-bold">{dashboardData.user.points.toLocaleString()}</div>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">
               Level {dashboardData.user.level} • Rank #{dashboardData.user.rank}
             </p>
           </CardContent>
@@ -229,7 +214,7 @@ export default function DashboardPage() {
       </div>
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
         {/* Activity Chart */}
         <Card>
           <CardHeader>
@@ -268,8 +253,7 @@ export default function DashboardPage() {
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ name, percent }) => `${name} ${((percent || 0) * 100).toFixed(0)}%`}
-                  outerRadius={80}
+                  outerRadius={60}
                   fill="#8884d8"
                   dataKey="value"
                 >
@@ -277,19 +261,32 @@ export default function DashboardPage() {
                     <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                   ))}
                 </Pie>
-                <Tooltip />
+                <Tooltip formatter={(value, name) => [`${value} XP`, name]} />
               </PieChart>
             </ResponsiveContainer>
+            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {xpBreakdownData.map((entry, index) => (
+                <div key={entry.name} className="flex items-center space-x-2">
+                  <div 
+                    className="w-3 h-3 rounded-full" 
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span className="text-xs sm:text-sm text-gray-600">
+                    {entry.name}: {entry.value} XP
+                  </span>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs for detailed views */}
-      <Tabs defaultValue="achievements" className="space-y-6">
-        <TabsList>
-          <TabsTrigger value="achievements">Recent Achievements</TabsTrigger>
-          <TabsTrigger value="activity">Activity Log</TabsTrigger>
-          <TabsTrigger value="goals">Goals & Missions</TabsTrigger>
+      <Tabs defaultValue="achievements" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="achievements" className="text-xs sm:text-sm">Achievements</TabsTrigger>
+          <TabsTrigger value="activity" className="text-xs sm:text-sm">Activity</TabsTrigger>
+          <TabsTrigger value="goals" className="text-xs sm:text-sm">Goals</TabsTrigger>
         </TabsList>
 
         <TabsContent value="achievements">
@@ -299,18 +296,18 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               {dashboardData.achievements.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3 sm:space-y-4">
                   {dashboardData.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg">
-                      <div className="bg-yellow-100 p-2 rounded-full">
-                        <Trophy className="h-5 w-5 text-yellow-600" />
+                    <div key={index} className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                      <div className="bg-yellow-100 p-2 rounded-full flex-shrink-0">
+                        <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-semibold">{achievement.type.replace("_", " ").toUpperCase()}</h4>
-                        <p className="text-sm text-gray-600">{achievement.description}</p>
-                        <p className="text-xs text-gray-500">{new Date(achievement.createdAt).toLocaleDateString()}</p>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-sm sm:text-base truncate">{achievement.type.replace("_", " ").toUpperCase()}</h4>
+                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{achievement.description}</p>
+                        <p className="text-[10px] sm:text-xs text-gray-500">{new Date(achievement.createdAt).toLocaleDateString()}</p>
                       </div>
-                      <Badge variant="secondary">+{achievement.metadata?.xpEarned || 0} XP</Badge>
+                      <Badge variant="secondary" className="text-xs flex-shrink-0">+{achievement.metadata?.xpEarned || 0} XP</Badge>
                     </div>
                   ))}
                 </div>

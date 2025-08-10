@@ -53,10 +53,10 @@ const navigationItems: NavItem[] = [
   { label: "My Projects", icon: Briefcase, href: "/projects/my" },
   { label: "Search", icon: Search, href: "/search" },
   { label: "Trending", icon: Compass, href: "/trending" },
-  { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
+  { label: "Challenges", icon: ListOrdered, href: "/challenges", badge: "3" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
-  { label: "My Profile", icon: User, href: "/profile" },
-  { label: "Messages", icon: MessageCircle, href: "/messages" },
+  { label: "Dev Profile", icon: User, href: "/profile" },
+  { label: "Connect", icon: MessageCircle, href: "/messages" },
   { label: "Moderation", icon: Shield, href: "/moderation", adminOnly: true },
 ]
 

@@ -1,50 +1,73 @@
-// XP System Configuration and Logic
+// Bloated XP System Configuration
 export const XP_VALUES = {
-  // Account & Onboarding
-  account_created: 10, // Already present
-  profile_completed: 15,
-  profile_picture_added: 5,
-  github_connected: 10,
-  onboarding_completed: 15,
-  email_verified: 10,
+  // Account & Onboarding (INCREASED)
+  account_created: 50,
+  profile_completed: 100,
+  profile_picture_added: 25,
+  github_connected: 100,
+  onboarding_completed: 150,
+  email_verified: 75,
 
-  // Content Creation
-post_created: 8, // Base XP for creating a post
-  post_with_code_snippet: 11, // +3 bonus for code snippet included
-  first_post_of_day: 2, // +2 bonus for first post of the day
-comment_created: 4, // Base XP for creating a comment
-  solution_provided: 5, // +5 bonus for providing a solution
-  anonymous_confess: 5,
+  // Content Creation (BLOATED)
+  post_created: 15, // Was 8, now 15
+  post_with_code_snippet: 25, // Big bonus for code
+  quality_post_bonus: 35, // 500+ chars with code
+  viral_post_bonus: 100, // 100+ likes
+  first_post_of_day: 20, // Big daily bonus
+  comment_created: 8, // Was 4, now 8
+  helpful_comment_bonus: 15,
+  solution_provided: 25, // Was 5, now 25
+  anonymous_confess: 12,
 
-  // Engagement
-  post_liked: 2,
-  mod_super_like: 10,
+  // Engagement (INCREASED)
+  post_liked: 3, // Was 2, now 3
+  comment_liked: 2,
+  post_received_like: 2, // Get XP when others like your post
+  comment_received_like: 1,
+  mod_super_like: 25, // Was 10, now 25
 
-  // Challenges & Activities
-  weekly_challenge_joined: 12,
-  first_responder_bonus: 20,
+  // Social Actions (NEW)
+  user_followed: 5,
+  got_followed: 10,
+  profile_viewed: 1,
 
-  // Community
-  bug_reported: 15,
-  friend_referred: 25,
+  // Challenges & Activities (MASSIVE)
+  weekly_challenge_joined: 50, // Was 12, now 50
+  challenge_completed: 200,
+  first_responder_bonus: 75, // Was 20, now 75
 
-  // Streaks
-  daily_login: 5,
+  // Community (INCREASED)
+  bug_reported: 75, // Was 15, now 75
+  friend_referred: 150, // Was 25, now 150
 
-  // Special Actions
-  helpful_content_bonus: 2,
-  solution_provided_bonus: 5,
+  // Streaks (BLOATED)
+  daily_login: 10, // Was 5, now 10
+  streak_3_days: 30,
+  streak_7_days: 100,
+  streak_30_days: 500,
+
+  // Special Achievements
+  first_100_likes: 500,
+  first_1000_views: 1000,
+  verified_profile: 200,
+  birthday_bonus: 1000,
+
+  // Multiplier Bonuses
+  helpful_content_bonus: 5, // Was 2, now 5
+  solution_provided_bonus: 15, // Was 5, now 15
 } as const
 
 export type XPAction = keyof typeof XP_VALUES
 
-// Daily limits for certain actions
-export const DAILY_LIMITS = {  // Limit the number of times XP can be gained from specific actions
-  post_liked: 20,
-  comment_liked: 20,
-  post_created: 5,
-  comment_created: 10,
+// Generous Daily Limits
+export const DAILY_LIMITS = {
+  post_liked: 50, // Was 20, now 50
+  comment_liked: 50, // Was 20, now 50
+  post_created: 10, // Was 5, now 10
+  comment_created: 20, // Was 10, now 20
   daily_login: 1,
+  profile_viewed: 100, // New
+  user_followed: 25, // New
 } as const
 
 // XP Cap Implementation
@@ -138,7 +161,7 @@ export function getStreakBonus(streakDays: number): number {
   return 0
 }
 
-// Time-based multipliers
+// Enhanced Time-based multipliers
 export function getTimeMultiplier(): number {
   const now = new Date()
   const day = now.getDay()
@@ -146,18 +169,23 @@ export function getTimeMultiplier(): number {
   
   // Weekend warrior bonus (Saturday & Sunday)
   if (day === 0 || day === 6) {
-    return 1.5
+    return 2.0 // Increased from 1.5 to 2.0
   }
   
   // Happy hour (6 PM - 8 PM daily)
   if (hour >= 18 && hour < 20) {
-    return 2.0
+    return 3.0 // Increased from 2.0 to 3.0
+  }
+  
+  // Morning boost (6 AM - 9 AM)
+  if (hour >= 6 && hour < 9) {
+    return 1.5
   }
   
   return 1.0
 }
 
-// Enhanced XP calculation with all bonuses
+// Bloated XP calculation with generous bonuses
 export function calculateXPWithBonuses(
   action: XPAction,
   userLevel: number = 1,
@@ -167,6 +195,8 @@ export function calculateXPWithBonuses(
     isFirstOfDay?: boolean
     isSolution?: boolean
     hasReceivedSuperLike?: boolean
+    isViral?: boolean
+    likesCount?: number
   }
 ): number {
   let baseXP = XP_VALUES[action]
@@ -178,6 +208,11 @@ export function calculateXPWithBonuses(
       totalBonus += XP_VALUES.helpful_content_bonus
     }
     totalBonus += calculateContentBonus(content, action)
+    
+    // Quality post bonus for long posts with code
+    if (content.length >= 500 && hasCodeSnippet(content)) {
+      totalBonus += XP_VALUES.quality_post_bonus
+    }
   }
   
   // Special bonuses
@@ -189,14 +224,19 @@ export function calculateXPWithBonuses(
     totalBonus += XP_VALUES.solution_provided
   }
   
-  // Calculate with multipliers
-  const levelMultiplier = 1 + 0.1 * (userLevel - 1)
-  const streakMultiplier = 1 + Math.min(streakDays * 0.05, 0.5)
+  // Viral content bonus
+  if (options?.isViral || (options?.likesCount && options.likesCount >= 100)) {
+    totalBonus += XP_VALUES.viral_post_bonus
+  }
+  
+  // Calculate with generous multipliers
+  const levelMultiplier = 1 + 0.15 * (userLevel - 1) // Increased from 0.1 to 0.15
+  const streakMultiplier = 1 + Math.min(streakDays * 0.08, 0.8) // Increased from 0.05 to 0.08, max from 0.5 to 0.8
   const timeMultiplier = getTimeMultiplier()
   
   const finalXP = Math.floor(
     (baseXP + totalBonus) * levelMultiplier * streakMultiplier * timeMultiplier
   )
   
-  return Math.max(finalXP, 1)
+  return Math.max(finalXP, 5) // Minimum 5 XP instead of 1
 }

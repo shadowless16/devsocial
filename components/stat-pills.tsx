@@ -30,26 +30,26 @@ export default function StatPills() {
   ]
 
   return (
-    <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <div className="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-3 mb-4">
       {items.map((item) => (
         <Card
           key={item.title}
-          className="group relative overflow-hidden border-0 p-4 ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px]"
+          className="group relative overflow-hidden border-0 p-3 sm:p-4 ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px]"
         >
-          <div className="mb-2 flex items-center gap-2">
+          <div className="mb-2 flex items-center gap-1 sm:gap-2">
             <span
               className={`
-                grid h-6 w-6 place-items-center rounded-md
+                grid h-5 w-5 sm:h-6 sm:w-6 place-items-center rounded-md
                 ${item.tone === "emerald" ? "bg-emerald-100 text-emerald-700" : ""}
                 ${item.tone === "orange" ? "bg-orange-100 text-orange-700" : ""}
                 ${item.tone === "purple" ? "bg-purple-100 text-purple-700" : ""}
               `}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className="h-3 w-3 sm:h-4 sm:w-4" />
             </span>
             <Badge
               className={`
-                border-0 text-[11px]
+                border-0 text-[10px] sm:text-[11px] px-1 sm:px-2
                 ${item.tone === "emerald" ? "bg-emerald-50 text-emerald-700" : ""}
                 ${item.tone === "orange" ? "bg-orange-50 text-orange-700" : ""}
                 ${item.tone === "purple" ? "bg-purple-50 text-purple-700" : ""}
@@ -58,10 +58,10 @@ export default function StatPills() {
               {item.title}
             </Badge>
           </div>
-          <div className="line-clamp-2 text-sm font-medium">{item.description}</div>
+          <div className="line-clamp-2 text-xs sm:text-sm font-medium">{item.description}</div>
           <div
             className={`
-              mt-2 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium
+              mt-1 sm:mt-2 inline-flex items-center rounded-full px-1.5 sm:px-2 py-0.5 text-[10px] sm:text-[11px] font-medium
               ${item.tone === "emerald" ? "bg-emerald-50 text-emerald-700" : ""}
               ${item.tone === "orange" ? "bg-orange-50 text-orange-700" : ""}
               ${item.tone === "purple" ? "bg-purple-50 text-purple-700" : ""}

@@ -457,23 +457,23 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-      <div className="bg-white rounded-lg w-full max-w-2xl max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-4 sm:p-6 border-b border-gray-200">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-900">Create Post</h2>
-          <Button variant="ghost" size="sm" onClick={onClose}>
-            <X className="w-5 h-5" />
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
+      <div className="bg-white rounded-t-lg sm:rounded-lg w-full max-w-2xl h-[95vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto">
+        <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
+          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Create Post</h2>
+          <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
+            <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+        <form onSubmit={handleSubmit} className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           <div className="space-y-2">
             <Label htmlFor="content">What's on your mind?</Label>
             <MentionInput
               value={content}
               onChange={setContent}
               placeholder="Share your thoughts, ask questions, or start a discussion..."
-              className="min-h-[120px] resize-none"
+              className="min-h-[100px] sm:min-h-[120px] resize-none text-sm"
             />
             <p className="text-xs text-gray-500 mt-1">
               Use Markdown for formatting. For code snippets, use triple backticks, e.g., ```javascript console.log("Hello"); ```
@@ -825,18 +825,19 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
 
-          <div className="flex justify-between pt-4 border-t border-gray-200">
-            <div className="flex items-center space-x-2 relative">
+          <div className="flex flex-col sm:flex-row justify-between pt-3 sm:pt-4 border-t border-gray-200 gap-3 sm:gap-0">
+            <div className="flex items-center space-x-1 sm:space-x-2 relative overflow-x-auto">
               <div className="relative">
                 <Button 
                   type="button" 
                   variant="outline" 
                   size="sm" 
                   onClick={handleCodeSnippetClick}
-                  className={`${postType === 'code' ? 'bg-blue-50 border-blue-300' : ''} ${showLanguageSelector ? 'ring-2 ring-blue-200' : ''}`}
+                  className={`text-xs sm:text-sm h-8 px-2 sm:px-3 ${postType === 'code' ? 'bg-blue-50 border-blue-300' : ''} ${showLanguageSelector ? 'ring-2 ring-blue-200' : ''}`}
                 >
-                  <Code className="w-4 h-4 mr-2" />
-                  ✨ Code Snippet
+                  <Code className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                  <span className="hidden sm:inline">✨ Code Snippet</span>
+                  <span className="sm:hidden">Code</span>
                 </Button>
                 
                 {showLanguageSelector && (
@@ -929,13 +930,13 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               </div>
             </div>
 
-            <div className="flex space-x-3">
-              <Button type="button" variant="outline" onClick={onClose}>
+            <div className="flex space-x-2 sm:space-x-3">
+              <Button type="button" variant="outline" onClick={onClose} className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4">
                 Cancel
               </Button>
               <Button
                 type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
                 disabled={!content.trim() || isUploading}
               >
                 {isUploading ? "Uploading..." : "Post"}

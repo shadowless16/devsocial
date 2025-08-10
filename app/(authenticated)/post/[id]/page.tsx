@@ -350,6 +350,11 @@ export default function PostPage() {
     });
   };
 
+  const formatTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    return date.toLocaleDateString('en-US') + " " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+  }
+
   const handleDeletePost = async () => {
     if (!user || (!post?.isAnonymous && post?.author?.username !== user.username)) {
       toast({
@@ -379,7 +384,7 @@ export default function PostPage() {
 
   if (loading) {
     return (
-      <div className="max-w-full sm:max-w-2xl mx-auto py-4 lg:py-6 px-2 sm:px-4">
+      <div className="w-full py-4 lg:py-6 px-2 sm:px-4">
         <div className="mb-4">
           <Button variant="ghost" onClick={() => router.back()} className="flex items-center space-x-2">
             <ArrowLeft className="w-4 h-4" />
@@ -398,7 +403,7 @@ export default function PostPage() {
 
   if (error || !post) {
     return (
-      <div className="max-w-full sm:max-w-2xl mx-auto py-4 lg:py-6 px-2 sm:px-4">
+      <div className="w-full py-4 lg:py-6 px-2 sm:px-4">
         <div className="mb-4">
           <Button variant="ghost" onClick={() => router.back()} className="flex items-center space-x-2">
             <ArrowLeft className="w-4 h-4" />
@@ -471,7 +476,7 @@ export default function PostPage() {
   };
 
   return (
-    <div className="max-w-full sm:max-w-2xl mx-auto py-4 lg:py-6 px-2 sm:px-4">
+    <div className="w-full py-4 lg:py-6 px-2 sm:px-4">
       {/* Back Button */}
       <div className="mb-4">
         <Button variant="ghost" onClick={() => router.back()} className="flex items-center space-x-2">
@@ -520,7 +525,7 @@ export default function PostPage() {
                       : `@${author.username}`}
                   </span>
                   <span>•</span>
-                  <span>{post.createdAt}</span>
+                  <span>{formatTimestamp(post.createdAt)}</span>
                 </div>
               </div>
             </div>
@@ -703,7 +708,7 @@ export default function PostPage() {
                         </Badge>
                         <span className="text-sm text-gray-500">@{comment.author.username}</span>
                         <span className="text-gray-400">•</span>
-                        <span className="text-sm text-gray-500">{comment.createdAt}</span>
+                        <span className="text-sm text-gray-500">{formatTimestamp(comment.createdAt)}</span>
                       </div>
                       <p className="text-gray-800 mb-3 leading-relaxed">{comment.content}</p>
                       <div className="flex items-center justify-between">
@@ -803,7 +808,7 @@ export default function PostPage() {
                                     </Badge>
                                     <span className="text-xs text-gray-500">@{reply.author.username}</span>
                                     <span className="text-gray-400">•</span>
-                                    <span className="text-xs text-gray-500">{reply.createdAt}</span>
+                                    <span className="text-xs text-gray-500">{formatTimestamp(reply.createdAt)}</span>
                                   </div>
                                   <p className="text-gray-800 text-sm mb-2 leading-relaxed">{reply.content}</p>
                                   <div className="flex items-center justify-between">

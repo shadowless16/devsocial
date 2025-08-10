@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Loader2, Users, Search, X } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/contexts/auth-context";
+import { GAMIFIED_TERMS } from "@/lib/gamified-terms";
 
 interface User {
   _id: string;
@@ -217,7 +218,7 @@ export function FollowListModal({
       return (
         <div className="text-center py-8 text-gray-500">
           <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-          <p className="text-sm">No {activeTab} found.</p>
+          <p className="text-sm">No {activeTab === 'followers' ? GAMIFIED_TERMS.FOLLOWERS.toLowerCase() : 'connected users'} found.</p>
           {count > 0 && !searchQuery && (
             <p className="text-xs mt-2 text-gray-400">
               Data may be updating. Try refreshing the page.
@@ -326,10 +327,10 @@ export function FollowListModal({
           <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
               <TabsTrigger value="followers">
-                Followers ({followersCount})
+                {GAMIFIED_TERMS.FOLLOWERS} ({followersCount})
               </TabsTrigger>
               <TabsTrigger value="following">
-                Following ({followingCount})
+                {GAMIFIED_TERMS.FOLLOWING_LIST} ({followingCount})
               </TabsTrigger>
             </TabsList>
           
@@ -338,7 +339,7 @@ export function FollowListModal({
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
               <Input
                 type="text"
-                placeholder={`Search ${activeTab}...`}
+                placeholder={activeTab === 'followers' ? GAMIFIED_TERMS.SEARCH_CONNECTIONS : GAMIFIED_TERMS.SEARCH_CONNECTED}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-10 pr-10"

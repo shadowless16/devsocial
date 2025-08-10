@@ -6,6 +6,7 @@ import { Users } from 'lucide-react';
 import { FollowListModal } from '@/components/shared/FollowListModal';
 import { useWebSocket } from '@/contexts/websocket-context';
 import { useFollow } from '@/contexts/follow-context';
+import { getConnectionText, GAMIFIED_TERMS } from '@/lib/gamified-terms';
 
 interface FollowStatsProps {
   userId: string;
@@ -60,7 +61,7 @@ export function FollowStats({
         >
           <span className="font-semibold text-sm">{followersCount}</span>
           <span className="text-gray-600 dark:text-gray-400 text-sm">
-            {followersCount === 1 ? 'Follower' : 'Followers'}
+            {getConnectionText(followersCount)}
           </span>
         </Button>
 
@@ -71,7 +72,7 @@ export function FollowStats({
           className="flex items-center space-x-1 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors p-1"
         >
           <span className="font-semibold text-sm">{followingCount}</span>
-          <span className="text-gray-600 dark:text-gray-400 text-sm">Following</span>
+          <span className="text-gray-600 dark:text-gray-400 text-sm">{GAMIFIED_TERMS.FOLLOWING_LIST}</span>
         </Button>
       </div>
 

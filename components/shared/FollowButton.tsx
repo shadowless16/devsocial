@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/websocket-context";
 import { useFollow } from "@/contexts/follow-context";
 import { useAuth } from "@/contexts/auth-context";
+import { getFollowActionText, getFollowingActionText, getFollowTooltip } from "@/lib/gamified-terms";
 
 interface FollowButtonProps {
   userId: string;
@@ -66,16 +67,16 @@ export function FollowButton({
         // Unfollow
         await apiClient.unfollowUser(userId);
         toast({
-          title: "Unfollowed",
-          description: `You have unfollowed @${username}`,
+          title: "Disconnected",
+          description: `You have disconnected from @${username}`,
           variant: "default",
         });
       } else {
         // Follow
         await apiClient.followUser(userId);
         toast({
-          title: "Following",
-          description: `You are now following @${username}`,
+          title: "Connected",
+          description: `You are now connected with @${username}`,
           variant: "default",
         });
       }
@@ -104,7 +105,7 @@ export function FollowButton({
         className={className}
       >
         <Loader2 className={`${showIcon ? "mr-2" : ""} h-4 w-4 animate-spin`} />
-        {showIcon ? (isFollowing ? "Unfollowing..." : "Following...") : "..."}
+        {showIcon ? `${getFollowingActionText(isFollowing)}...` : "..."}
       </Button>
     );
   }
@@ -115,6 +116,7 @@ export function FollowButton({
       size={size}
       variant={isFollowing ? "outline" : variant}
       className={`${isFollowing ? "hover:bg-red-50 hover:border-red-200 hover:text-red-600" : ""} ${className}`}
+      title={getFollowTooltip(isFollowing)}
     >
       {showIcon && (
         <>
@@ -125,7 +127,7 @@ export function FollowButton({
           )}
         </>
       )}
-      {isFollowing ? "Unfollow" : "Follow"}
+      {getFollowActionText(isFollowing)}
     </Button>
   );
 }

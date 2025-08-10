@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Trophy, Medal, Award, Users, Zap, Target, TrendingUp, Crown } from "lucide-react"
 import { useRealtimeLeaderboard } from "@/hooks/use-realtime-leaderboard"
 import { UserLink } from "@/components/shared/UserLink"
+import { LeaderboardSkeleton } from "@/components/skeletons/leaderboard-skeleton"
 
 interface LeaderboardEntry {
   _id: string
@@ -115,41 +116,21 @@ export function EnhancedLeaderboard() {
   }
 
   if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Leaderboard</CardTitle>
-          <CardDescription>Loading rankings...</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex items-center space-x-4 p-4 border rounded-lg animate-pulse">
-                <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
-                <div className="flex-1">
-                  <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-                  <div className="h-3 bg-gray-200 rounded w-1/2"></div>
-                </div>
-                <div className="h-6 bg-gray-200 rounded w-16"></div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-    )
+    return <LeaderboardSkeleton />
   }
 
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
-          <div>
+          <div className="min-w-0 flex-1">
             <CardTitle className="flex items-center space-x-2">
-              <Trophy className="w-5 h-5 text-yellow-500" />
-              <span>Leaderboard</span>
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
+              <span className="text-base sm:text-lg">Leaderboard</span>
             </CardTitle>
-            <CardDescription>
-              Top performers in the DevSocial community
+            <CardDescription className="text-xs sm:text-sm">
+              <span className="hidden sm:inline">Top performers in the DevSocial community</span>
+              <span className="sm:hidden">Top performers</span>
               {isConnected && <span className="text-green-500 ml-2">• Live</span>}
             </CardDescription>
           </div>
@@ -158,13 +139,14 @@ export function EnhancedLeaderboard() {
 
       <CardContent>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 gap-1">
             {leaderboardTypes.map((type) => {
               const Icon = type.icon
               return (
-                <TabsTrigger key={type.key} value={type.key} className="flex items-center space-x-1">
-                  <Icon className="w-4 h-4" />
+                <TabsTrigger key={type.key} value={type.key} className="flex items-center justify-center space-x-1 text-xs sm:text-sm p-2">
+                  <Icon className="w-3 h-3 sm:w-4 sm:h-4" />
                   <span className="hidden sm:inline">{type.label}</span>
+                  <span className="sm:hidden text-[10px]">{type.label.split(' ')[0]}</span>
                 </TabsTrigger>
               )
             })}
@@ -179,13 +161,13 @@ export function EnhancedLeaderboard() {
                   <p className="text-sm text-gray-400">Be the first to appear on this leaderboard!</p>
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-2 sm:space-y-3">
                   {leaderboard.map((entry, index) => {
                     const position = index + 1
                     return (
                       <div
                         key={entry._id}
-                        className={`flex items-center space-x-4 p-4 rounded-lg border transition-all hover:shadow-md ${
+                        className={`flex items-center space-x-2 sm:space-x-4 p-3 sm:p-4 rounded-lg border transition-all hover:shadow-md ${
                           position <= 3
                             ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200"
                             : "bg-white hover:bg-gray-50"
@@ -195,11 +177,11 @@ export function EnhancedLeaderboard() {
                         <div className="flex-shrink-0">{getRankIcon(position)}</div>
 
                         {/* User Info */}
-                        <div className="flex items-center space-x-3 flex-1">
+                        <div className="flex items-center space-x-2 sm:space-x-3 flex-1 min-w-0">
                           <UserLink username={entry.user.username}>
-                            <Avatar className="w-12 h-12">
+                            <Avatar className="w-10 h-10 sm:w-12 sm:h-12">
                               <AvatarImage src={entry.user.avatar || "/placeholder.svg"} />
-                              <AvatarFallback>
+                              <AvatarFallback className="text-xs sm:text-sm">
                                 {(entry.user.displayName || entry.user.username || 'U')
                                   .split(" ")
                                   .map((n) => n[0])
@@ -208,41 +190,41 @@ export function EnhancedLeaderboard() {
                             </Avatar>
                           </UserLink>
 
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-1 sm:space-x-2 mb-1">
                               <UserLink username={entry.user.username}>
-                                <h3 className="font-semibold text-gray-900 hover:text-emerald-600 transition-colors">{entry.user.displayName || entry.user.username}</h3>
+                                <h3 className="font-semibold text-sm sm:text-base text-gray-900 hover:text-emerald-600 transition-colors truncate max-w-[120px] sm:max-w-none">{entry.user.displayName || entry.user.username}</h3>
                               </UserLink>
-                              <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200">
+                              <Badge variant="outline" className="text-[10px] sm:text-xs text-emerald-600 border-emerald-200 px-1 flex-shrink-0">
                                 L{entry.user.level}
                               </Badge>
-                              {position <= 3 && <Badge className={getRankBadgeColor(position)}>#{position}</Badge>}
+                              {position <= 3 && <Badge className={`${getRankBadgeColor(position)} text-[10px] sm:text-xs px-1 flex-shrink-0`}>#{position}</Badge>}
                             </div>
                             <UserLink username={entry.user.username}>
-                              <p className="text-sm text-gray-500 hover:text-emerald-600 transition-colors">@{entry.user.username}</p>
+                              <p className="text-xs sm:text-sm text-gray-500 hover:text-emerald-600 transition-colors truncate max-w-[120px] sm:max-w-none">@{entry.user.username}</p>
                             </UserLink>
                           </div>
                         </div>
 
                         {/* Stats */}
-                        <div className="flex items-center space-x-6 text-sm">
+                        <div className="flex items-center space-x-3 sm:space-x-6 text-xs sm:text-sm">
                           <div className="text-center">
                             <div className="flex items-center space-x-1">
-                              <Zap className="w-4 h-4 text-yellow-500" />
-                              <span className="font-bold text-gray-900">
+                              <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+                              <span className="font-bold text-gray-900 text-xs sm:text-sm">
                                 {getStatValue(entry, activeTab).toLocaleString()}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-500">{getStatLabel(activeTab)}</p>
+                            <p className="text-[10px] sm:text-xs text-gray-500">{getStatLabel(activeTab)}</p>
                           </div>
 
                           {activeTab === "all-time" && (
                             <>
-                              <div className="text-center">
+                              <div className="text-center hidden sm:block">
                                 <p className="font-medium text-gray-900">{entry.totalPosts || 0}</p>
                                 <p className="text-xs text-gray-500">Posts</p>
                               </div>
-                              <div className="text-center">
+                              <div className="text-center hidden sm:block">
                                 <p className="font-medium text-gray-900">{entry.totalLikes || 0}</p>
                                 <p className="text-xs text-gray-500">Likes</p>
                               </div>
@@ -250,7 +232,7 @@ export function EnhancedLeaderboard() {
                           )}
 
                           {activeTab === "challenges" && entry.firstCompletions && (
-                            <div className="text-center">
+                            <div className="text-center hidden sm:block">
                               <div className="flex items-center space-x-1">
                                 <Crown className="w-4 h-4 text-yellow-500" />
                                 <span className="font-bold text-gray-900">{entry.firstCompletions}</span>

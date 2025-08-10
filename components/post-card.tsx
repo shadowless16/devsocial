@@ -11,6 +11,7 @@ import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useToast } from "@/hooks/use-toast"
+import { getLikeTooltip, GAMIFIED_TERMS } from "@/lib/gamified-terms"
 
 interface PostCardProps {
   author?: string
@@ -30,6 +31,7 @@ interface PostCardProps {
   onDelete?: (postId: string) => void
   onLike?: (postId: string) => void
   onComment?: (postId: string) => void
+  onClick?: (postId: string) => void
 }
 
 export default function PostCard({
@@ -49,7 +51,8 @@ export default function PostCard({
   commentsCount = 0,
   onDelete,
   onLike,
-  onComment
+  onComment,
+  onClick
 }: PostCardProps) {
   const { toast } = useToast()
   const [showDropdown, setShowDropdown] = useState(false)
@@ -116,37 +119,37 @@ export default function PostCard({
   }
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp)
-    return date.toLocaleDateString() + " " + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    return date.toLocaleDateString('en-US') + " " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
   }
 
   return (
     <Card className="border-0 ring-1 ring-black/5">
-      <CardContent className="p-4">
-        <div className="flex items-start gap-3">
+      <CardContent className="p-3 md:p-4">
+        <div className="flex items-start gap-2 md:gap-3">
           <Avatar 
-            className="h-10 w-10 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all"
+            className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all flex-shrink-0"
             onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
           >
             <AvatarImage src={avatar || "/generic-user-avatar.png"} alt={author} />
-            <AvatarFallback>{author.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+            <AvatarFallback className="text-xs md:text-sm">{author.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
           
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
                 <span 
-                  className="font-medium text-sm cursor-pointer hover:text-emerald-500 transition-colors"
+                  className="font-medium text-xs md:text-sm cursor-pointer hover:text-emerald-500 transition-colors truncate"
                   onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
                 >{author}</span>
-                <Badge className="bg-emerald-50 text-emerald-700 text-xs">{level}</Badge>
+                <Badge className="bg-emerald-50 text-emerald-700 text-[10px] md:text-xs px-1 md:px-2">{level}</Badge>
                 <span 
-                  className="text-xs text-muted-foreground cursor-pointer hover:text-emerald-500 transition-colors"
+                  className="text-[10px] md:text-xs text-muted-foreground cursor-pointer hover:text-emerald-500 transition-colors hidden sm:inline"
                   onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
                 >{handle}</span>
-                <span className="text-xs text-muted-foreground">•</span>
-                <span className="text-xs text-muted-foreground">{formatTimestamp(timestamp)}</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">•</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">{formatTimestamp(timestamp)}</span>
                 {xpDelta > 0 && (
-                  <Badge className="bg-yellow-50 text-yellow-700 text-xs">
+                  <Badge className="bg-yellow-50 text-yellow-700 text-[10px] md:text-xs px-1 md:px-2">
                     +{xpDelta}
                   </Badge>
                 )}
@@ -172,7 +175,10 @@ export default function PostCard({
               </DropdownMenu>
             </div>
             
-            <div className="text-sm mb-3 prose prose-sm max-w-none">
+            <div 
+              className="text-xs md:text-sm mb-2 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-gray-50/50 rounded-md p-1 md:p-2 -m-1 md:-m-2 transition-colors"
+              onClick={() => postId && onClick?.(postId)}
+            >
               <ReactMarkdown
                 components={{
                   code({ className, children, ...props }: any) {
@@ -213,52 +219,55 @@ export default function PostCard({
             </div>
             
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2 md:gap-4">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`h-8 gap-2 transition-colors ${
+                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors ${
                     isLiked 
                       ? 'text-green-500 hover:text-green-600' 
                       : 'text-muted-foreground hover:text-green-500'
                   }`}
+                  title={getLikeTooltip(isLiked)}
                   onClick={handleLike}
                 >
-                  <Heart className={`h-4 w-4 transition-colors ${isLiked ? 'fill-green-500 text-green-500' : ''}`} />
-                  <span className="text-xs">{currentLikesCount}</span>
+                  <Heart className={`h-3 w-3 md:h-4 md:w-4 transition-colors ${isLiked ? 'fill-green-500 text-green-500' : ''}`} />
+                  <span className="text-[10px] md:text-xs">{currentLikesCount}</span>
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`h-8 gap-2 transition-colors ${
+                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors ${
                     isCommentHovered 
                       ? 'text-blue-500 hover:text-blue-600' 
                       : 'text-muted-foreground hover:text-blue-500'
                   }`}
+                  title={GAMIFIED_TERMS.COMMENT_TOOLTIP}
                   onClick={handleComment}
                   onMouseEnter={() => setIsCommentHovered(true)}
                   onMouseLeave={() => setIsCommentHovered(false)}
                 >
-                  <MessageCircle className={`h-4 w-4 transition-colors ${isCommentHovered ? 'text-blue-500' : ''}`} />
-                  <span className="text-xs">{commentsCount}</span>
+                  <MessageCircle className={`h-3 w-3 md:h-4 md:w-4 transition-colors ${isCommentHovered ? 'text-blue-500' : ''}`} />
+                  <span className="text-[10px] md:text-xs">{commentsCount}</span>
                 </Button>
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`h-8 gap-2 transition-colors ${
+                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors ${
                     isShareHovered 
                       ? 'text-purple-500 hover:text-purple-600' 
                       : 'text-muted-foreground hover:text-purple-500'
                   }`}
+                  title={GAMIFIED_TERMS.SHARE_TOOLTIP}
                   onClick={handleShare}
                   onMouseEnter={() => setIsShareHovered(true)}
                   onMouseLeave={() => setIsShareHovered(false)}
                 >
-                  <Share className={`h-4 w-4 transition-colors ${isShareHovered ? 'text-purple-500' : ''}`} />
+                  <Share className={`h-3 w-3 md:h-4 md:w-4 transition-colors ${isShareHovered ? 'text-purple-500' : ''}`} />
                 </Button>
               </div>
               
-              <span className="text-xs text-muted-foreground">{views} view{views !== 1 ? 's' : ''}</span>
+              <span className="text-[10px] md:text-xs text-muted-foreground">{views} {GAMIFIED_TERMS.VIEWS.toLowerCase()}</span>
             </div>
           </div>
         </div>
