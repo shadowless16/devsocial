@@ -9,7 +9,14 @@ import { awardXP, checkFirstTimeAction } from "@/utils/awardXP";
 import UserStats from "@/models/UserStats";
 import { checkReferralMiddleware } from "@/utils/check-referral-middleware";
 import { processMentions } from "@/utils/mention-utils";
-import MissionProgress from "@/models/MissionProgress";
+// Only import mission models if needed
+let MissionProgress: any = null;
+
+try {
+  MissionProgress = require("@/models/MissionProgress").default;
+} catch (error) {
+  console.warn("MissionProgress model not available:", error);
+}
 
 export const dynamic = 'force-dynamic'
 
@@ -178,52 +185,54 @@ export async function POST(req: NextRequest) {
     // Check if this user has completed any referral requirements
     await checkReferralMiddleware(authorId);
 
-    // Auto-track mission progress for post creation
-    try {
-      const activeMissions = await MissionProgress.find({
-        user: authorId,
-        status: "active"
-      }).populate('mission');
+    // Only track mission progress if user has explicitly joined missions
+    if (MissionProgress) {
+      try {
+        const activeMissions = await MissionProgress.find({
+          user: authorId,
+          status: "active"
+        }).populate('mission');
 
-      for (const progress of activeMissions) {
-        if (!progress.mission) continue;
-        
-        const mission = progress.mission;
-        let progressUpdated = false;
-        
-        for (const step of mission.steps || []) {
-          const stepId = step.id || step._id?.toString();
-          if (stepId && !progress.stepsCompleted.includes(stepId)) {
-            // Check if this step is related to creating posts
-            const stepText = ((step.title || '') + ' ' + (step.description || '')).toLowerCase();
-            if (stepText.includes('post') && (stepText.includes('create') || stepText.includes('share') || stepText.includes('publish'))) {
-              // Get current post count for user
-              const userPostCount = await Post.countDocuments({ author: authorId });
-              
-              // Check if target is met
-              if (userPostCount >= (step.target || 1)) {
-                progress.stepsCompleted.push(stepId);
-                progressUpdated = true;
+        for (const progress of activeMissions) {
+          if (!progress.mission) continue;
+          
+          const mission = progress.mission;
+          let progressUpdated = false;
+          
+          for (const step of mission.steps || []) {
+            const stepId = step.id || step._id?.toString();
+            if (stepId && !progress.stepsCompleted.includes(stepId)) {
+              // Check if this step is related to creating posts
+              const stepText = ((step.title || '') + ' ' + (step.description || '')).toLowerCase();
+              if (stepText.includes('post') && (stepText.includes('create') || stepText.includes('share') || stepText.includes('publish'))) {
+                // Get current post count for user
+                const userPostCount = await Post.countDocuments({ author: authorId });
+                
+                // Check if target is met
+                if (userPostCount >= (step.target || 1)) {
+                  progress.stepsCompleted.push(stepId);
+                  progressUpdated = true;
+                }
               }
             }
           }
+          
+          // Check if mission is completed
+          if (progress.stepsCompleted.length >= (mission.steps?.length || 0) && progress.status !== 'completed') {
+            progress.status = "completed";
+            progress.completedAt = new Date();
+            progress.xpEarned = mission.rewards?.xp || 0;
+            progressUpdated = true;
+          }
+          
+          if (progressUpdated) {
+            await progress.save();
+          }
         }
-        
-        // Check if mission is completed
-        if (progress.stepsCompleted.length >= (mission.steps?.length || 0) && progress.status !== 'completed') {
-          progress.status = "completed";
-          progress.completedAt = new Date();
-          progress.xpEarned = mission.rewards?.xp || 0;
-          progressUpdated = true;
-        }
-        
-        if (progressUpdated) {
-          await progress.save();
-        }
+      } catch (missionError) {
+        console.warn('Mission progress tracking failed, continuing with post creation:', missionError);
+        // Don't fail the post creation if mission tracking fails
       }
-    } catch (missionError) {
-      console.error('Mission progress tracking error:', missionError);
-      // Don't fail the post creation if mission tracking fails
     }
 
     const responseData = {

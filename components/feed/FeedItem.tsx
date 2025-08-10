@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import Image from "next/image";
 import ReactMarkdown from "react-markdown";
 import { Textarea } from "@/components/ui/textarea"
@@ -314,197 +315,186 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
   };
 
   return (
-    <Card className="border-0 shadow-sm hover:shadow-md transition-shadow cursor-pointer w-full bg-white dark:bg-gray-950" onClick={handlePostClick} data-post-id={post.id}>
-      <CardContent className="p-2">
-        <div className="flex items-start space-x-2 mb-2">
-          {post.isAnonymous ? (
-            <Avatar className="w-6 h-6 flex-shrink-0">
-              <AvatarImage src={author.avatar || "/placeholder.svg"} />
-              <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">?</AvatarFallback>
+    <TooltipProvider>
+      <Card className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-full" onClick={handlePostClick} data-post-id={post.id}>
+        <div className="flex flex-row items-start gap-3 space-y-0 p-4 md:p-6">
+        {post.isAnonymous ? (
+          <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
+            <AvatarImage src={author.avatar || "/placeholder.svg"} alt={`${author.displayName} avatar`} />
+            <AvatarFallback>?</AvatarFallback>
+          </Avatar>
+        ) : (
+          <UserLink username={author.username}>
+            <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
+              <AvatarImage src={author.avatar || "/placeholder.svg"} alt={`${author.displayName} avatar`} />
+              <AvatarFallback>
+                {(author.displayName || author.username || "A")
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")}
+              </AvatarFallback>
             </Avatar>
-          ) : (
-            <UserLink username={author.username}>
-              <Avatar className="w-6 h-6 flex-shrink-0">
-                <AvatarImage src={author.avatar || "/placeholder.svg"} />
-                <AvatarFallback className="bg-gray-300 text-gray-700 text-xs">
-                  {(author.displayName || author.username || "A")
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                </AvatarFallback>
-              </Avatar>
-            </UserLink>
-          )}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center space-x-1 mb-0.5">
-              {post.isAnonymous ? (
-                <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-xs truncate">
-                  Anonymous
-                </h3>
-              ) : (
-                <UserLink username={author.username}>
-                  <h3 className="font-semibold text-gray-900 dark:text-gray-100 text-xs hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate">
-                    {author.displayName}
-                  </h3>
-                </UserLink>
-              )}
-              {!post.isAnonymous && (
-                <Badge
-                  variant="outline"
-                  className="text-xs text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-900/20 flex-shrink-0 px-1 py-0"
-                >
-                  L{author.level}
-                </Badge>
-              )}
-            </div>
-            <div className="flex items-center space-x-1 text-xs text-gray-500 dark:text-gray-400">
-              {post.isAnonymous ? (
-                <span className="truncate">Anonymous User</span>
-              ) : (
-                <UserLink username={author.username}>
-                  <span className="hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors truncate">
-                    @{author.username}
-                  </span>
-                </UserLink>
-              )}
-              <span>•</span>
-              <span className="truncate">{post.createdAt}</span>
-            </div>
-          </div>
-          <div className="flex items-center space-x-1">
-            <div className="flex items-center space-x-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 px-1 py-0.5 rounded-full text-xs font-medium">
-              <Zap className="w-2 h-2" />
-              <span>+{post.xpAwarded}</span>
-            </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={(e) => e.stopPropagation()}
-                  className="h-4 w-4 p-0"
-                >
-                  <MoreHorizontal className="w-3 h-3" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-32" align="end" onClick={(e) => e.stopPropagation()}>
-                {canDeletePost && (
-                  <DropdownMenuItem 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePost();
-                    }} 
-                    className="text-red-600 focus:text-red-600 text-xs"
-                  >
-                    <Trash className="w-3 h-3 mr-1" />
-                    Delete Post
-                  </DropdownMenuItem>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
+          </UserLink>
+        )}
+        <div className="flex-1">
+          <div className="flex flex-wrap items-center gap-2 text-sm">
+            {post.isAnonymous ? (
+              <div className="font-medium">Anonymous</div>
+            ) : (
+              <UserLink username={author.username}>
+                <div className="font-medium hover:text-emerald-600 transition-colors">
+                  {author.displayName}
+                </div>
+              </UserLink>
+            )}
+            {!post.isAnonymous && (
+              <Badge className="rounded-full bg-emerald-50 px-2 py-0 text-[10px] font-semibold leading-5 text-emerald-700 hover:bg-emerald-50">
+                L{author.level}
+              </Badge>
+            )}
+            {post.isAnonymous ? (
+              <span className="text-muted-foreground">Anonymous User</span>
+            ) : (
+              <UserLink username={author.username}>
+                <span className="text-muted-foreground hover:text-emerald-600 transition-colors">
+                  @{author.username}
+                </span>
+              </UserLink>
+            )}
+            <span className="text-muted-foreground">•</span>
+            <time className="text-muted-foreground">{post.createdAt}</time>
           </div>
         </div>
-
-        <div className="mb-2">
-          <div className="text-xs text-gray-800 dark:text-gray-200">
-            <PostContent content={post.content} onCopyCode={handleCopyCode} />
-          </div>
-
-          {/* Legacy single image support */}
-          {post.imageUrl && (
-            <div className="mt-3 rounded-lg overflow-hidden">
-              {post.imageUrl.includes('video') || post.imageUrl.match(/\.(mp4|webm|ogg)$/i) ? (
-                <video 
-                  controls
-                  className="w-full max-h-96 object-cover rounded-lg"
-                  preload="metadata"
+        <div className="ml-auto flex items-center gap-2">
+          <span className="inline-flex items-center rounded-full bg-yellow-100 px-2 py-0.5 text-[11px] font-medium text-yellow-700">
+            ⚡ +{post.xpAwarded}
+          </span>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button size="icon" variant="ghost" className="h-8 w-8" onClick={(e) => e.stopPropagation()}>
+                <MoreHorizontal className="h-4 w-4" />
+                <span className="sr-only">More options</span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-32" align="end" onClick={(e) => e.stopPropagation()}>
+              {canDeletePost && (
+                <DropdownMenuItem 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeletePost();
+                  }} 
+                  className="text-red-600 focus:text-red-600 text-xs"
                 >
-                  <source src={post.imageUrl} type="video/mp4" />
-                  <source src={post.imageUrl} type="video/webm" />
-                  <source src={post.imageUrl} type="video/ogg" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
+                  <Trash className="w-3 h-3 mr-1" />
+                  Delete Post
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        </div>
+
+        <CardContent className="px-4 pb-0 md:px-6">
+        <p className="text-[15px] leading-7 mb-3">
+          <PostContent content={post.content} onCopyCode={handleCopyCode} />
+        </p>
+
+        {/* Legacy single image support */}
+        {post.imageUrl && (
+          <div className="mb-3 rounded-lg overflow-hidden">
+            {post.imageUrl.includes('video') || post.imageUrl.match(/\.(mp4|webm|ogg)$/i) ? (
+              <video 
+                controls
+                className="w-full max-h-96 object-cover rounded-lg"
+                preload="metadata"
+              >
+                <source src={post.imageUrl} type="video/mp4" />
+                <source src={post.imageUrl} type="video/webm" />
+                <source src={post.imageUrl} type="video/ogg" />
+                Your browser does not support the video tag.
+              </video>
+            ) : (
+              <Image
+                src={post.imageUrl}
+                alt="Post image"
+                width={500}
+                height={300}
+                className="w-full h-auto object-cover max-h-96 rounded-lg"
+                unoptimized
+              />
+            )}
+          </div>
+        )}
+
+        {/* Multiple images support */}
+        {post.imageUrls && post.imageUrls.length > 0 && (
+          <div className="mb-3">
+            {post.imageUrls.length === 1 ? (
+              <div className="rounded-lg overflow-hidden">
                 <Image
-                  src={post.imageUrl}
+                  src={post.imageUrls[0]}
                   alt="Post image"
                   width={500}
                   height={300}
                   className="w-full h-auto object-cover max-h-96 rounded-lg"
                   unoptimized
                 />
-              )}
-            </div>
-          )}
-
-          {/* Multiple images support */}
-          {post.imageUrls && post.imageUrls.length > 0 && (
-            <div className="mt-3 space-y-2">
-              {post.imageUrls.length === 1 ? (
-                <div className="rounded-lg overflow-hidden">
-                  <Image
-                    src={post.imageUrls[0]}
-                    alt="Post image"
-                    width={500}
-                    height={300}
-                    className="w-full h-auto object-cover max-h-96"
-                  />
-                </div>
-              ) : (
-                <div className={`grid gap-2 rounded-lg overflow-hidden ${
-                  post.imageUrls.length === 2 ? 'grid-cols-2' :
-                  post.imageUrls.length === 3 ? 'grid-cols-2' :
-                  'grid-cols-2'
-                }`}>
-                  {post.imageUrls.map((imageUrl, index) => (
-                    <div 
-                      key={index} 
-                      className={`relative ${
-                        post.imageUrls!.length === 3 && index === 0 ? 'row-span-2' : ''
-                      }`}
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`Post image ${index + 1}`}
-                        width={250}
-                        height={200}
-                        className="w-full h-full object-cover rounded-md"
-                      />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Videos support */}
-          {post.videoUrls && post.videoUrls.length > 0 && (
-            <div className="mt-3 space-y-2">
-              {post.videoUrls.map((videoUrl, index) => (
-                <div key={index} className="rounded-lg overflow-hidden">
-                  <video 
-                    controls
-                    className="w-full max-h-96 object-cover"
-                    preload="metadata"
+              </div>
+            ) : (
+              <div className={`grid gap-2 rounded-lg overflow-hidden ${
+                post.imageUrls.length === 2 ? 'grid-cols-2' :
+                post.imageUrls.length === 3 ? 'grid-cols-2' :
+                'grid-cols-2'
+              }`}>
+                {post.imageUrls.map((imageUrl, index) => (
+                  <div 
+                    key={index} 
+                    className={`relative ${
+                      post.imageUrls!.length === 3 && index === 0 ? 'row-span-2' : ''
+                    }`}
                   >
-                    <source src={videoUrl} type="video/mp4" />
-                    <source src={videoUrl} type="video/webm" />
-                    <source src={videoUrl} type="video/ogg" />
-                    Your browser does not support the video tag.
-                  </video>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                    <Image
+                      src={imageUrl}
+                      alt={`Post image ${index + 1}`}
+                      width={250}
+                      height={200}
+                      className="w-full h-full object-cover rounded-md"
+                      unoptimized
+                    />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Videos support */}
+        {post.videoUrls && post.videoUrls.length > 0 && (
+          <div className="mb-3">
+            {post.videoUrls.map((videoUrl, index) => (
+              <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
+                <video 
+                  controls
+                  className="w-full max-h-96 object-cover rounded-lg"
+                  preload="metadata"
+                >
+                  <source src={videoUrl} type="video/mp4" />
+                  <source src={videoUrl} type="video/webm" />
+                  <source src={videoUrl} type="video/ogg" />
+                  Your browser does not support the video tag.
+                </video>
+              </div>
+            ))}
+          </div>
+        )}
 
         {post.tags && post.tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-2">
+          <div className="flex flex-wrap gap-1 mb-3">
             {post.tags.map((tag) => (
               <Badge
                 key={tag}
                 variant="outline"
-                className="text-emerald-600 dark:text-emerald-400 border-emerald-200 dark:border-emerald-800 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 cursor-pointer text-xs px-1 py-0"
+                className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer text-xs px-2 py-0.5"
                 onClick={(e) => e.stopPropagation()}
               >
                 {tag}
@@ -512,49 +502,64 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
             ))}
           </div>
         )}
+        </CardContent>
 
-        <div className="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-gray-800 interactive-element">
-          <div className="flex items-center space-x-3">
+        <div className="flex items-center gap-6 p-3 md:px-6 interactive-element">
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleLikeClick}
-              className={`flex items-center space-x-1 text-xs hover:bg-transparent p-1 ${
-                post.isLiked
-                  ? "text-emerald-600 hover:text-emerald-700"
-                  : "text-gray-500 dark:text-gray-400 hover:text-emerald-600"
+              className={`h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-emerald-700 ${
+                post.isLiked ? "text-emerald-600" : ""
               }`}
+              onClick={handleLikeClick}
+              aria-pressed={post.isLiked}
             >
-              <Heart
-                className={`w-3 h-3 ${post.isLiked ? "fill-current text-emerald-600" : ""}`}
-              />
-              <span>{post.likesCount}</span>
+              <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-emerald-600 text-emerald-600" : ""}`} />
+              <span className="text-xs">{post.likesCount}</span>
+              <span className="sr-only">Like</span>
             </Button>
+          </TooltipTrigger>
+          <TooltipContent>Like</TooltipContent>
+        </Tooltip>
 
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-foreground"
               onClick={handleCommentClick}
-              className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-blue-500 text-xs hover:bg-transparent p-1"
             >
-              <MessageCircle className="w-3 h-3" />
-              <span>{post.commentsCount}</span>
+              <MessageCircle className="h-4 w-4" />
+              <span className="text-xs">{post.commentsCount}</span>
+              <span className="sr-only">Comment</span>
             </Button>
+          </TooltipTrigger>
+          <TooltipContent>Comment</TooltipContent>
+        </Tooltip>
 
+        <Tooltip>
+          <TooltipTrigger asChild>
             <Button
               variant="ghost"
               size="sm"
+              className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-foreground"
               onClick={handleShareClick}
-              className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 hover:text-green-500 text-xs hover:bg-transparent p-1"
             >
-              <Share className="w-3 h-3" />
+              <Share className="h-4 w-4" />
+              <span className="text-xs">Share</span>
+              <span className="sr-only">Share</span>
             </Button>
+          </TooltipTrigger>
+          <TooltipContent>Share</TooltipContent>
+        </Tooltip>
 
-            <div className="flex items-center space-x-1 text-gray-500 dark:text-gray-400 text-xs">
-              <Eye className="w-3 h-3" />
-              <span>{post.viewsCount || 0}</span>
-            </div>
-          </div>
+        <div className="ml-auto inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[11px] text-muted-foreground">
+          <Eye className="h-3.5 w-3.5" />
+          <span>{post.viewsCount || 0}</span>
+        </div>
         </div>
 
         {showComments && (
@@ -686,7 +691,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
             )}
           </div>
         )}
-      </CardContent>
-    </Card>
+      </Card>
+    </TooltipProvider>
   );
 }

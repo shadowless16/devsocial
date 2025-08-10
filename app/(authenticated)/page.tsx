@@ -7,23 +7,13 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { TooltipProvider } from "@/components/ui/tooltip"
 import { ImageIcon, Plus, Search, Upload, Loader2 } from "lucide-react"
-import SideNav from "@/components/side-nav"
-import RightRail from "@/components/right-rail"
 import PostCard from "@/components/post-card"
 import StatPills from "@/components/stat-pills"
 import { PostModal } from "@/components/modals/post-modal"
 import { useToast } from "@/hooks/use-toast"
 
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
-
-export default function AuthenticatedLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function HomePage() {
   const { user } = useAuth()
   const { toast } = useToast()
   const [posts, setPosts] = useState<any[]>([])
@@ -73,67 +63,83 @@ export default function AuthenticatedLayout({
     }
   }
 
+  const handleLikePost = async (postId: string) => {
+    try {
+      const response = await apiClient.togglePostLike(postId)
+      if (response.success) {
+        setPosts(posts.map(post => {
+          if (post.id === postId) {
+            const wasLiked = post.isLiked
+            return {
+              ...post,
+              isLiked: !wasLiked,
+              likesCount: wasLiked ? post.likesCount - 1 : post.likesCount + 1
+            }
+          }
+          return post
+        }))
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: "Failed to update like", variant: "destructive" })
+      throw error
+    }
+  }
+
+  const handleCommentPost = (postId: string) => {
+    window.location.href = `/post/${postId}`
+  }
+
   return (
-    <TooltipProvider>
-      <main className="min-h-[100svh] bg-muted/30">
-        <div className="mx-auto grid w-full max-w-[120rem] grid-cols-1 gap-6 px-4 py-6 md:grid-cols-[156px_1fr] lg:grid-cols-[168px_1fr_216px]">
-          <aside className="hidden md:block">
-            <SideNav />
-          </aside>
-
-          <section aria-label="Feed" className="grid gap-6">
-            <HeaderBar onCreateClick={() => setShowPostModal(true)} />
-            <StatPills />
-            <Compose onCreateClick={() => setShowPostModal(true)} />
-            <div className="grid gap-4">
-              {loading ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="w-6 h-6 animate-spin" />
-                  <span className="ml-2">Loading posts...</span>
-                </div>
-              ) : posts.length === 0 ? (
-                <div className="text-center py-8">
-                  <p className="text-muted-foreground mb-4">No posts yet. Be the first to share something!</p>
-                  <Button onClick={() => setShowPostModal(true)} className="bg-emerald-600 hover:bg-emerald-700">
-                    <Plus className="w-4 h-4 mr-2" />
-                    Create Your First Post
-                  </Button>
-                </div>
-              ) : (
-                posts.map((post) => (
-                  <PostCard
-                    key={post.id}
-                    postId={post.id}
-                    author={post.author?.displayName || post.author?.username}
-                    handle={`@${post.author?.username}`}
-                    level={`L${post.author?.level || 1}`}
-                    xpDelta={post.xpAwarded}
-                    content={post.content}
-                    views={post.viewsCount}
-                    liked={post.isLiked}
-                    timestamp={post.createdAt}
-                    avatar={post.author?.avatar}
-                    currentUserId={user?.id}
-                    authorId={post.author?.id}
-                    onDelete={handleDeletePost}
-                  />
-                ))
-              )}
-            </div>
-          </section>
-
-          <aside className="hidden lg:block">
-            <RightRail />
-          </aside>
-        </div>
-        
-        <PostModal
-          isOpen={showPostModal}
-          onClose={() => setShowPostModal(false)}
-          onSubmit={handleCreatePost}
-        />
-      </main>
-    </TooltipProvider>
+    <>
+      <HeaderBar onCreateClick={() => setShowPostModal(true)} />
+      <StatPills />
+      <Compose onCreateClick={() => setShowPostModal(true)} />
+      <div className="grid gap-4">
+        {loading ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="w-6 h-6 animate-spin" />
+            <span className="ml-2">Loading posts...</span>
+          </div>
+        ) : posts.length === 0 ? (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground mb-4">No posts yet. Be the first to share something!</p>
+            <Button onClick={() => setShowPostModal(true)} className="bg-emerald-600 hover:bg-emerald-700">
+              <Plus className="w-4 h-4 mr-2" />
+              Create Your First Post
+            </Button>
+          </div>
+        ) : (
+          posts.map((post) => (
+            <PostCard
+              key={post.id}
+              postId={post.id}
+              author={post.author?.displayName || post.author?.username}
+              handle={`@${post.author?.username}`}
+              level={`L${post.author?.level || 1}`}
+              xpDelta={post.xpAwarded}
+              content={post.content}
+              views={post.viewsCount}
+              liked={post.isLiked}
+              timestamp={post.createdAt}
+              avatar={post.author?.avatar}
+              currentUserId={user?.id}
+              authorId={post.author?.id}
+              likesCount={post.likesCount}
+              commentsCount={post.commentsCount}
+              onDelete={handleDeletePost}
+              onLike={handleLikePost}
+              onComment={handleCommentPost}
+            />
+          ))
+        )}
+      </div>
+      
+      <PostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSubmit={handleCreatePost}
+      />
+    </>
   )
 }
 

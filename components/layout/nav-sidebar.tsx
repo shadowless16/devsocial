@@ -25,7 +25,9 @@ import {
   LogOut,
   Settings2,
   MessageCircle,
-  Shield
+  Shield,
+  FolderOpen,
+  Briefcase
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { PostModal } from "@/components/modals/post-modal"
@@ -47,6 +49,8 @@ type NavItem = {
 const navigationItems: NavItem[] = [
   { label: "Home", icon: Home, href: "/home" },
   { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
+  { label: "Projects", icon: FolderOpen, href: "/projects" },
+  { label: "My Projects", icon: Briefcase, href: "/projects/my" },
   { label: "Search", icon: Search, href: "/search" },
   { label: "Trending", icon: Compass, href: "/trending" },
   { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },

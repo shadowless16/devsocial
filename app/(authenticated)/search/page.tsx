@@ -160,7 +160,7 @@ export default function SearchPage() {
   const totalResults = searchResults.posts.length + searchResults.users.length + searchResults.tags.length
 
   return (
-    <div className="max-w-4xl mx-auto py-4 lg:py-6 px-4">
+    <div className="w-full">
       {/* Header */}
       <div className="text-center mb-8">
         <div className="flex items-center justify-center mb-4">

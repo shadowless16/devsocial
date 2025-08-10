@@ -43,7 +43,7 @@ export async function GET(
 
     // Get followers with user details
     const followersData = await Follow.find({ following: user._id })
-      .populate("follower", "username displayName avatar level bio")
+      .populate("follower", "username displayName firstName lastName avatar level bio")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -53,27 +53,35 @@ export async function GET(
     const totalFollowers = await Follow.countDocuments({ following: user._id });
 
     // Transform the data
-    const followers = followersData.map((follow: any) => ({
-      _id: follow.follower._id.toString(),
-      username: follow.follower.username,
-      displayName: follow.follower.displayName || follow.follower.username,
-      avatar: follow.follower.avatar || "/placeholder.svg",
-      level: follow.follower.level || 1,
-      bio: follow.follower.bio || "",
-      followedAt: follow.createdAt
-    }));
+    const followers = followersData
+      .filter((follow: any) => follow.follower)
+      .map((follow: any) => ({
+        _id: follow.follower._id.toString(),
+        username: follow.follower.username,
+        displayName: follow.follower.displayName || 
+                    (follow.follower.firstName && follow.follower.lastName 
+                      ? `${follow.follower.firstName} ${follow.follower.lastName}` 
+                      : follow.follower.username),
+        avatar: follow.follower.avatar || "/placeholder.svg",
+        level: follow.follower.level || 1,
+        bio: follow.follower.bio || "",
+        followedAt: follow.createdAt
+      }));
 
-    return NextResponse.json(
-      successResponse({
-        followers,
-        pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(totalFollowers / limit),
-          totalCount: totalFollowers,
-          hasMore: skip + followers.length < totalFollowers
-        }
-      })
-    );
+    const responseData = {
+      followers,
+      pagination: {
+        currentPage: page,
+        totalPages: Math.ceil(totalFollowers / limit),
+        totalCount: totalFollowers,
+        hasMore: skip + followers.length < totalFollowers
+      }
+    };
+    
+    return NextResponse.json({
+      success: true,
+      data: responseData
+    });
 
   } catch (error) {
     console.error("Error fetching followers:", error);

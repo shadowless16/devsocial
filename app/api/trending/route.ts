@@ -85,14 +85,20 @@ export async function GET(request: NextRequest) {
       }
     ])
 
-    // Trending topics (tags)
+    // Trending topics (tags) - Fixed aggregation
     const trendingTopics = await Post.aggregate([
       {
         $match: {
           createdAt: { $gte: dateFilter },
+          tags: { $exists: true, $ne: [], $not: { $size: 0 } } // Only posts with non-empty tags
         },
       },
       { $unwind: "$tags" },
+      {
+        $match: {
+          tags: { $nin: [null, ""] } // Filter out null/empty tags
+        }
+      },
       {
         $group: {
           _id: "$tags",
@@ -120,6 +126,43 @@ export async function GET(request: NextRequest) {
         },
       },
     ])
+
+    // Fallback: If no trending topics from recent posts, get from all posts
+    let fallbackTopics = [];
+    if (trendingTopics.length === 0) {
+      fallbackTopics = await Post.aggregate([
+        {
+          $match: {
+            tags: { $exists: true, $ne: [], $not: { $size: 0 } }
+          },
+        },
+        { $unwind: "$tags" },
+        {
+          $match: {
+            tags: { $nin: [null, ""] }
+          }
+        },
+        {
+          $group: {
+            _id: "$tags",
+            posts: { $sum: 1 },
+            totalLikes: { $sum: "$likesCount" },
+            totalComments: { $sum: "$commentsCount" },
+          },
+        },
+        { $sort: { posts: -1 } },
+        { $limit: 5 },
+        {
+          $project: {
+            tag: "$_id",
+            posts: 1,
+            growth: "+0%",
+            trend: "up",
+            description: "Popular topic in the community",
+          },
+        },
+      ]);
+    }
 
     // Rising users (most active in the period)
     const risingUsers = await User.aggregate([
@@ -220,13 +263,15 @@ export async function GET(request: NextRequest) {
       engagements: formatNumber(totalEngagements[0]?.total || 0),
     }
 
+    const finalTrendingTopics = trendingTopics.length > 0 ? trendingTopics : fallbackTopics;
+
     return NextResponse.json({
       success: true,
       data: {
         period,
         stats,
         trendingPosts,
-        trendingTopics,
+        trendingTopics: finalTrendingTopics,
         risingUsers,
       }
     })

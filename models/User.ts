@@ -40,6 +40,8 @@ export interface IUser extends Document {
   lastStreakDate?: Date;
   referralCode?: string;
   onboardingCompleted: boolean;
+  followersCount: number;
+  followingCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -173,6 +175,16 @@ const UserSchema = new Schema<IUser>(
     onboardingCompleted: {
       type: Boolean,
       default: false,
+      index: true,
+    },
+    followersCount: {
+      type: Number,
+      default: 0,
+      index: true,
+    },
+    followingCount: {
+      type: Number,
+      default: 0,
       index: true,
     },
   },
