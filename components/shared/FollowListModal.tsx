@@ -113,9 +113,9 @@ export function FollowListModal({
         if (page === 1) {
           setFollowers(response.data.followers);
         } else {
-          setFollowers(prev => [...prev, ...response.data.followers]);
+          setFollowers(prev => [...prev, ...response.data!.followers]);
         }
-        setHasMoreFollowers(response.data.pagination.hasMore);
+        setHasMoreFollowers(response.data!.pagination.hasMore);
         setFollowersPage(page);
       }
     } catch (error) {
@@ -140,9 +140,9 @@ export function FollowListModal({
         if (page === 1) {
           setFollowing(response.data.following);
         } else {
-          setFollowing(prev => [...prev, ...response.data.following]);
+          setFollowing(prev => [...prev, ...response.data!.following]);
         }
-        setHasMoreFollowing(response.data.pagination.hasMore);
+        setHasMoreFollowing(response.data!.pagination.hasMore);
         setFollowingPage(page);
       }
     } catch (error) {

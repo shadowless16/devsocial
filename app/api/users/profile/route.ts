@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth";
 import User, { IUser } from "@/models/User";
 import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
-import { logger } from "@/lib/logger";
+import logger from "@/lib/logger";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -23,11 +23,11 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
     
-    logger.api('Profile API called, attempting DB connection');
+    logger.info('Profile API called, attempting DB connection');
     
     try {
       await connectDB();
-      logger.api('Database connected successfully');
+      logger.info('Database connected successfully');
     } catch (dbError: any) {
       logger.error('Database connection failed:', dbError.message);
       return NextResponse.json({ 
@@ -39,33 +39,33 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions);
     
     if (!session || !session.user?.id) {
-      logger.api('No session found');
+      logger.info('No session found');
       return NextResponse.json({ 
         success: false, 
         error: "Unauthorized" 
       }, { status: 401 });
     }
 
-    logger.api('Session found for user:', session.user.id);
+    logger.info('Session found for user:', { userId: session.user.id });
     
     const user = await User.findById(session.user.id).select("-password").lean();
 
     if (!user) {
-      logger.api('User not found in database');
+      logger.info('User not found in database');
       return NextResponse.json({ 
         success: false, 
         error: "User not found" 
       }, { status: 404 });
     }
 
-    logger.api('User found, returning profile');
+    logger.info('User found, returning profile');
     
     return NextResponse.json({
       success: true,
       data: { user }
     });
   } catch (error: any) {
-    logger.error('Profile API error:', error.message, error.stack);
+    logger.error('Profile API error:', { message: error.message, stack: error.stack });
     return NextResponse.json({ 
       success: false, 
       error: "Internal server error",

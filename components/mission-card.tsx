@@ -224,7 +224,7 @@ export default function MissionCard({
               if (!isJoined) {
                 setJoining(true)
                 try {
-                  const response = await fetch(`/api/missions/${mission._id || mission.id}/join`, {
+                  const response = await fetch(`/api/missions/${(mission as any)._id || mission.id}/join`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                   })

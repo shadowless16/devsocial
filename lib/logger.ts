@@ -1,24 +1,30 @@
-// Simple logger utility to control console output in development
-const isDev = process.env.NODE_ENV === 'development';
+// File: src/lib/logger.ts
+// Tiny logger wrapper — swap easily for pino/winston in future.
+// Usage:
+//  import logger from "@/lib/logger";
+//  logger.info("message", { extra: 1 });
 
-export const logger = {
-  info: (message: string, ...args: any[]) => {
-    if (isDev) console.log(`[INFO] ${message}`, ...args);
+const isProd = process.env.NODE_ENV === "production";
+
+function timestamp() {
+  return new Date().toISOString();
+}
+
+const logger = {
+  info: (msg: string, meta?: Record<string, unknown>) => {
+    console.log(JSON.stringify({ level: "info", time: timestamp(), msg, ...meta }));
   },
-  
-  error: (message: string, ...args: any[]) => {
-    console.error(`[ERROR] ${message}`, ...args);
+  warn: (msg: string, meta?: Record<string, unknown>) => {
+    console.warn(JSON.stringify({ level: "warn", time: timestamp(), msg, ...meta }));
   },
-  
-  warn: (message: string, ...args: any[]) => {
-    if (isDev) console.warn(`[WARN] ${message}`, ...args);
+  error: (msg: string, meta?: Record<string, unknown>) => {
+    console.error(JSON.stringify({ level: "error", time: timestamp(), msg, ...meta }));
   },
-  
-  // Use this for API calls to reduce noise
-  api: (message: string, ...args: any[]) => {
-    // Only log API calls in production or when explicitly needed
-    if (process.env.LOG_API_CALLS === 'true') {
-      console.log(`[API] ${message}`, ...args);
+  debug: (msg: string, meta?: Record<string, unknown>) => {
+    if (!isProd) {
+      console.debug(JSON.stringify({ level: "debug", time: timestamp(), msg, ...meta }));
     }
-  }
+  },
 };
+
+export default logger;

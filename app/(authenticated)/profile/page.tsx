@@ -23,24 +23,24 @@ export default function MyProfile() {
     name: user?.displayName || user?.username || "User",
     title: "Full Stack Developer",
     location: "San Francisco, CA",
-    joinDate: new Date(user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
+    joinDate: new Date((user as any)?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
     bio: user?.bio || `Passionate developer building amazing applications and contributing to the community.`,
     avatar: user?.avatar || "/placeholder.svg",
-    techStack: user?.techStack || ["JavaScript", "React", "Node.js", "TypeScript"],
+    techStack: (user as any)?.techStack || ["JavaScript", "React", "Node.js", "TypeScript"],
     socialLinks: [
-      { platform: "GitHub", icon: "Github", url: user?.githubUsername ? `https://github.com/${user.githubUsername}` : "#" },
-      { platform: "LinkedIn", icon: "Linkedin", url: user?.linkedinUrl || "#" },
-      { platform: "Portfolio", icon: "Globe", url: user?.portfolioUrl || "#" }
+      { platform: "GitHub", icon: "Github", url: (user as any)?.githubUsername ? `https://github.com/${(user as any).githubUsername}` : "#" },
+      { platform: "LinkedIn", icon: "Linkedin", url: (user as any)?.linkedinUrl || "#" },
+      { platform: "Portfolio", icon: "Globe", url: (user as any)?.portfolioUrl || "#" }
     ].filter(link => link.url !== "#"),
-    userId: user?._id,
+    userId: (user as any)?._id,
     username: user?.username,
-    followersCount: user?.followersCount || 0,
-    followingCount: user?.followingCount || 0,
+    followersCount: (user as any)?.followersCount || 0,
+    followingCount: (user as any)?.followingCount || 0,
     isFollowing: false
   }
 
   const achievementsData = {
-    badges: user?.badges?.map(badge => ({
+    badges: (user as any)?.badges?.map((badge: string) => ({
       name: badge.charAt(0).toUpperCase() + badge.slice(1),
       icon: "Trophy",
       date: "Dec 2024"
@@ -142,7 +142,7 @@ export default function MyProfile() {
         console.error('Error fetching profile data:', error)
         // Fallback to mock data
         setStatsData({
-          totalXP: user?.points || 0,
+          totalXP: (user as any)?.points || 0,
           challengesCompleted: 0,
           communityRank: 999,
           postsCreated: 0

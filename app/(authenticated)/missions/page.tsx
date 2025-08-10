@@ -31,7 +31,7 @@ export default function MissionsPage() {
       setLoading(true)
       const response = await apiClient.getMissions()
       if (response.success && response.data) {
-        setAllMissions(response.data.missions || [])
+        setAllMissions((response.data as any).missions || [])
       } else {
         setError("Failed to load missions")
       }

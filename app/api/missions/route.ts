@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
       // Calculate current progress for each step
       const progressWithCounts = userProgressData ? {
         ...userProgressData.toObject(),
-        progress: await Promise.all(mission.steps.map(async step => {
+        progress: await Promise.all(mission.steps.map(async (step: any) => {
           const stepId = step.id || step._id?.toString()
           let current = 0
           
