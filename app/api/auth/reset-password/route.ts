@@ -17,6 +17,9 @@ const resetPasswordSchema = z.object({
     ),
 })
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB()

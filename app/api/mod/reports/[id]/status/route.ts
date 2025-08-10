@@ -5,6 +5,9 @@ import { authMiddleware, authorizeRoles } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 
 // PATCH /api/mod/reports/[id]/status - Update report status
+
+export const dynamic = 'force-dynamic'
+
 export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     await connectDB()

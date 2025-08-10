@@ -115,6 +115,9 @@ import { AuthService, type TokenPayload } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/utils/response";
 import bcrypt from "bcryptjs";
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   // This log will prove if the env var is loaded. Check your server console.
   console.log("[Login Route] JWT_SECRET loaded:", !!process.env.JWT_SECRET);

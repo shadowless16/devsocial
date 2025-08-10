@@ -3,6 +3,9 @@ import { authMiddleware } from "@/middleware/auth"
 import { ChallengeSystem } from "@/utils/challenge-system"
 import { successResponse, errorResponse } from "@/utils/response"
 
+
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     const challenges = await ChallengeSystem.getActiveChallenges()

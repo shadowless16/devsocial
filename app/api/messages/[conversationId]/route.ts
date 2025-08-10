@@ -6,6 +6,9 @@ import connectDB from "@/lib/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 
+
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
   try {
     await connectDB()

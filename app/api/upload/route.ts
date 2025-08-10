@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import cloudinary from '@/lib/cloudinary-server';
 import { type UploadApiResponse } from 'cloudinary';
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();

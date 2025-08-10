@@ -82,32 +82,11 @@ const nextConfig = {
       },
     ],
   },
-  // Fix production build issues
-  output: 'standalone',
-  trailingSlash: false,
   
-  // Reduce logging in development
-  logging: {
-    fetches: {
-      fullUrl: false,
-    },
-  },
-  // Suppress repetitive compilation messages
-  onDemandEntries: {
-    // period (in ms) where the server will keep pages in the buffer
-    maxInactiveAge: 25 * 1000,
-    // number of pages that should be kept simultaneously without being disposed
-    pagesBufferLength: 2,
-  },
-  // Fix streaming issues
   experimental: {
-    serverComponentsExternalPackages: [],
-    // Disable problematic features in development
-    ...(process.env.NODE_ENV === 'development' && {
-      webVitalsAttribution: ['CLS', 'LCP'],
-    }),
+    serverComponentsExternalPackages: ['mongoose'],
   },
-  // Handle DevTools requests gracefully
+  
   async rewrites() {
     return [
       {

@@ -12,6 +12,9 @@ import { ReferralSystem } from "@/utils/referral-system"
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB()

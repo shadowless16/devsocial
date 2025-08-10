@@ -9,6 +9,9 @@ const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address"),
 })
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB()

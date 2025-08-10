@@ -4,6 +4,8 @@ import { authMiddleware } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 import { FeedAlgorithm } from "@/utils/feed-algorithm"
 
+export const dynamic = 'force-dynamic'
+
 export async function GET(request: NextRequest) {
   try {
     await connectDB()

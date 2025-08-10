@@ -5,6 +5,9 @@ import connectDB from "@/lib/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest, { params }: { params: { messageId: string } }) {
   try {
     await connectDB()

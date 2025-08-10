@@ -7,6 +7,9 @@ import { authMiddleware } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 
 // POST /api/user/block/[userId] - Block a user
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
   try {
     await connectDB()

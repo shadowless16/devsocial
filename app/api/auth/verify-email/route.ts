@@ -4,6 +4,9 @@ import User from "@/models/User"
 import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB()

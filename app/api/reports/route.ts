@@ -6,6 +6,9 @@ import { createReportSchema } from "@/utils/validation"
 import { successResponse, errorResponse, validationErrorResponse } from "@/utils/response"
 
 // POST /api/reports - Create report
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     await connectDB()

@@ -3,6 +3,9 @@ import { authMiddleware } from "@/middleware/auth"
 import { GamificationService } from "@/utils/gamification-service"
 import { successResponse, errorResponse } from "@/utils/response"
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authMiddleware(request)

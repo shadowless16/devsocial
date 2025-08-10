@@ -3,6 +3,9 @@ import { authMiddleware } from "@/middleware/auth"
 import { ReferralSystem } from "@/utils/referral-system"
 
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest) {
   try {
     const authResult = await authMiddleware(request)

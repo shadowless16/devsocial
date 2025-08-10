@@ -4,6 +4,9 @@ import connectDB from '@/lib/db'
 import Mission from '@/models/Mission'
 import MissionProgress from '@/models/MissionProgress'
 
+
+export const dynamic = 'force-dynamic'
+
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
     await connectDB()

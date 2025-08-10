@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { successResponse, errorResponse } from "@/utils/response";
 import { MongoClient } from "mongodb";
 
+
+export const dynamic = 'force-dynamic'
+
 export async function GET(req: NextRequest) {
   let client;
   
