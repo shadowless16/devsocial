@@ -316,7 +316,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
 
   return (
     <TooltipProvider>
-      <Card className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-full" onClick={handlePostClick} data-post-id={post.id}>
+      <Card className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-full max-w-full overflow-hidden" onClick={handlePostClick} data-post-id={post.id}>
         <div className="flex flex-row items-start gap-3 space-y-0 p-4 md:p-6">
         {post.isAnonymous ? (
           <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
@@ -394,10 +394,10 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         </div>
         </div>
 
-        <CardContent className="px-4 pb-0 md:px-6">
-        <p className="text-[15px] leading-7 mb-3">
+        <CardContent className="px-4 pb-0 md:px-6 max-w-full overflow-hidden">
+        <div className="text-[15px] leading-7 mb-3 break-words overflow-wrap-anywhere">
           <PostContent content={post.content} onCopyCode={handleCopyCode} />
-        </p>
+        </div>
 
         {/* Legacy single image support */}
         {post.imageUrl && (

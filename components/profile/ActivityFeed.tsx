@@ -63,22 +63,22 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
     : activities.filter(activity => activity.type === filter.slice(0, -1))
 
   return (
-    <Card>
-      <CardContent className="p-3">
-        <div className="flex items-center justify-between mb-2">
-          <h2 className="text-sm font-semibold text-foreground">Recent Activity</h2>
-          <Clock size={16} className="text-muted-foreground" />
+    <Card className="w-full max-w-full overflow-hidden">
+      <CardContent className="p-3 max-w-full overflow-hidden">
+        <div className="flex items-center justify-between mb-2 max-w-full overflow-hidden">
+          <h2 className="text-sm font-semibold text-foreground truncate">Recent Activity</h2>
+          <Clock size={16} className="text-muted-foreground flex-shrink-0" />
         </div>
 
         {/* Filter Tabs */}
-        <div className="flex gap-1 mb-3 overflow-x-auto">
+        <div className="flex gap-1 mb-3 overflow-x-auto scrollbar-hide">
           {filterOptions.map((option) => (
             <Button
               key={option.value}
               variant={filter === option.value ? "default" : "ghost"}
               size="sm"
               onClick={() => setFilter(option.value)}
-              className="whitespace-nowrap"
+              className="whitespace-nowrap flex-shrink-0"
             >
               <option.icon size={12} className="mr-1" />
               {option.label}
@@ -87,13 +87,13 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
         </div>
 
         {/* Activity Timeline */}
-        <div className="space-y-2 max-h-48 overflow-y-auto">
+        <div className="space-y-2 max-h-48 overflow-y-auto max-w-full">
           {filteredActivities.map((activity, index) => {
             const IconComponent = getActivityIcon(activity.type)
             return (
               <div
                 key={index}
-                className="flex gap-1.5 p-1.5 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer"
+                className="flex gap-1.5 p-1.5 hover:bg-muted/50 rounded-lg transition-colors cursor-pointer w-full max-w-full overflow-hidden"
               >
                 <div className="w-4 h-4 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                   <IconComponent 
@@ -102,47 +102,47 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
                   />
                 </div>
                 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex-1">
-                      <p className="text-xs text-foreground font-medium">
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex items-start justify-between gap-2 max-w-full overflow-hidden">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <p className="text-xs text-foreground font-medium truncate">
                         {activity.title}
                       </p>
-                      <p className="text-xs text-muted-foreground mt-0.5">
+                      <p className="text-xs text-muted-foreground mt-0.5 break-words">
                         {activity.description}
                       </p>
                       
                       {activity.content && (
-                        <div className="mt-2 p-2 bg-muted rounded text-xs text-muted-foreground">
+                        <div className="mt-2 p-2 bg-muted rounded text-xs text-muted-foreground break-words overflow-hidden">
                           {activity.content}
                         </div>
                       )}
                       
                       {activity.xpEarned && (
                         <div className="flex items-center gap-1 mt-2">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs flex-shrink-0">
                             +{activity.xpEarned} XP
                           </Badge>
                         </div>
                       )}
                     </div>
                     
-                    <div className="text-xs text-muted-foreground whitespace-nowrap">
+                    <div className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
                       {activity.timestamp}
                     </div>
                   </div>
                   
                   {activity.engagement && (
-                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">
-                      <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground overflow-x-auto">
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <Heart size={12} />
                         <span>{activity.engagement.likes}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <MessageCircle size={12} />
                         <span>{activity.engagement.comments}</span>
                       </div>
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 flex-shrink-0">
                         <Share2 size={12} />
                         <span>{activity.engagement.shares}</span>
                       </div>

@@ -95,8 +95,24 @@
   * {
     @apply border-border;
   }
+  
+  html, body {
+    @apply overflow-x-hidden;
+    width: 100%;
+    max-width: 100%;
+  }
+  
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Prevent horizontal overflow globally */
+  * {
+    box-sizing: border-box;
+  }
+  
+  *:not(.allow-overflow) {
+    max-width: 100%;
   }
   
   /* Custom scrollbar styles */

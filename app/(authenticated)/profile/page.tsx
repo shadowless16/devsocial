@@ -177,7 +177,7 @@ export default function MyProfile() {
   }
 
   return (
-    <div className="w-full py-4 sm:py-6 px-1 sm:px-4">
+    <div className="w-full max-w-full py-4 sm:py-6 px-1 sm:px-4 overflow-hidden">
       {/* Profile Header - Always Visible */}
       <ProfileHeader 
         profile={profileData} 
@@ -210,35 +210,37 @@ export default function MyProfile() {
       </div>
 
       {/* Tab Content */}
-      <div className="space-y-3">
+      <div className="space-y-3 w-full max-w-full overflow-hidden">
         {activeTab === 'overview' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-            <div className="lg:col-span-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 w-full max-w-full overflow-hidden">
+            <div className="lg:col-span-4 w-full max-w-full overflow-hidden">
               <AchievementShowcase achievements={achievementsData} />
             </div>
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 w-full max-w-full overflow-hidden">
               <ActivityFeed activities={activitiesData.slice(0, 6)} />
             </div>
           </div>
         )}
 
         {activeTab === 'activity' && (
-          <ActivityFeed activities={activitiesData} />
+          <div className="w-full max-w-full overflow-hidden">
+            <ActivityFeed activities={activitiesData} />
+          </div>
         )}
 
         {activeTab === 'skills' && (
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
-            <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 w-full max-w-full overflow-hidden">
+            <div className="lg:col-span-8 w-full max-w-full overflow-hidden">
               <SkillProgress skills={skillsData} />
             </div>
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-4 w-full max-w-full overflow-hidden">
               <AchievementShowcase achievements={achievementsData} />
             </div>
           </div>
         )}
 
         {activeTab === 'privacy' && (
-          <div className="max-w-md mx-auto">
+          <div className="max-w-md mx-auto w-full overflow-hidden">
             <PrivacySettings 
               settings={privacySettings}
               onSettingsChange={handlePrivacySettingsChange}

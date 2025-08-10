@@ -120,15 +120,15 @@ export function EnhancedLeaderboard() {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="min-w-0 flex-1">
-            <CardTitle className="flex items-center space-x-2">
-              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500" />
-              <span className="text-base sm:text-lg">Leaderboard</span>
+    <Card className="w-full max-w-full overflow-hidden">
+      <CardHeader className="max-w-full overflow-hidden">
+        <div className="flex items-center justify-between max-w-full overflow-hidden">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <CardTitle className="flex items-center space-x-2 truncate">
+              <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
+              <span className="text-base sm:text-lg truncate">Leaderboard</span>
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">
+            <CardDescription className="text-xs sm:text-sm truncate">
               <span className="hidden sm:inline">Top performers in the DevSocial community</span>
               <span className="sm:hidden">Top performers</span>
               {isConnected && <span className="text-green-500 ml-2">• Live</span>}
@@ -137,8 +137,8 @@ export function EnhancedLeaderboard() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-2 sm:px-6">
-        <div className="w-full">
+      <CardContent className="px-2 sm:px-6 max-w-full overflow-hidden">
+        <div className="w-full max-w-full overflow-hidden">
           <div className="flex overflow-x-auto scrollbar-hide mb-4">
             <div className="flex space-x-1 min-w-max">
               {leaderboardTypes.map((type) => {
@@ -178,7 +178,7 @@ export function EnhancedLeaderboard() {
                     return (
                       <div
                         key={entry._id}
-                        className={`flex items-center space-x-2 p-2 rounded-lg border transition-all ${
+                        className={`flex items-center space-x-2 p-2 rounded-lg border transition-all w-full max-w-full overflow-hidden ${
                           position <= 3
                             ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
                             : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
@@ -209,32 +209,32 @@ export function EnhancedLeaderboard() {
                         </UserLink>
 
                         {/* User Info */}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center space-x-1">
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <div className="flex items-center space-x-1 overflow-hidden">
                             <UserLink username={entry.user.username}>
-                              <h3 className="font-medium text-xs text-gray-900 truncate max-w-[100px]">{entry.user.displayName || entry.user.username}</h3>
+                              <h3 className="font-medium text-xs text-gray-900 truncate max-w-[80px]">{entry.user.displayName || entry.user.username}</h3>
                             </UserLink>
-                            <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-200 px-1 py-0">
+                            <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-200 px-1 py-0 flex-shrink-0">
                               L{entry.user.level}
                             </Badge>
                           </div>
                           <UserLink username={entry.user.username}>
-                            <p className="text-[10px] text-gray-500 truncate max-w-[100px]">@{entry.user.username}</p>
+                            <p className="text-[10px] text-gray-500 truncate max-w-[80px]">@{entry.user.username}</p>
                           </UserLink>
                         </div>
 
                         {/* Stats */}
-                        <div className="text-right">
+                        <div className="text-right flex-shrink-0">
                           <div className="flex items-center space-x-1">
-                            <Zap className="w-3 h-3 text-yellow-500" />
-                            <span className="font-bold text-xs text-gray-900">
+                            <Zap className="w-3 h-3 text-yellow-500 flex-shrink-0" />
+                            <span className="font-bold text-xs text-gray-900 truncate">
                               {getStatValue(entry, activeTab) > 999 
                                 ? `${(getStatValue(entry, activeTab) / 1000).toFixed(1)}k`
                                 : getStatValue(entry, activeTab)
                               }
                             </span>
                           </div>
-                          <p className="text-[9px] text-gray-500">{getStatLabel(activeTab)}</p>
+                          <p className="text-[9px] text-gray-500 truncate">{getStatLabel(activeTab)}</p>
                         </div>
                       </div>
                     )
