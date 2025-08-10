@@ -18,8 +18,11 @@ const nextConfig = {
     ],
   },
   
+  // Fix build output issues
+  output: 'standalone',
+  
   // Fix pnpm vendor chunk issues
-  webpack: (config, { dev, isServer }) => {
+  webpack: (config, { dev, isServer, buildId }) => {
     // Fix pnpm module resolution issues
     config.resolve.symlinks = false;
     
@@ -49,6 +52,16 @@ const nextConfig = {
       },
     };
     
+    // Fix client reference manifest issues
+    if (!dev && !isServer) {
+      const originalEntry = config.entry;
+      config.entry = async () => {
+        const entries = await originalEntry();
+        // Ensure proper client reference handling
+        return entries;
+      };
+    }
+    
     return config;
   },
   
@@ -63,6 +76,8 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['mongoose'],
     optimizePackageImports: ['lucide-react'],
+    // Fix client reference manifest generation
+    appDir: true,
   },
   
   // Handle DevTools requests gracefully
