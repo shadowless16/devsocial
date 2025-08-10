@@ -30,6 +30,11 @@ export default withAuth(
     if (token && (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/signup'))) {
       return NextResponse.redirect(new URL('/home', req.url))
     }
+    
+    // Redirect root authenticated route to home
+    if (token && pathname === '/') {
+      return NextResponse.redirect(new URL('/home', req.url))
+    }
 
     // Allow onboarding page for authenticated users
     if (pathname === '/onboarding' && token) {
