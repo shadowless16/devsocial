@@ -93,8 +93,10 @@ useEffect(() => {
       })
       
       toast.success("Account created successfully! Welcome to DevSocial!")
-      // Force immediate redirect
-      window.location.href = "/onboarding"
+      // Force immediate redirect to onboarding
+      setTimeout(() => {
+        window.location.href = "/onboarding"
+      }, 100)
     } catch (error: any) {
       console.error("Signup error:", error);
       

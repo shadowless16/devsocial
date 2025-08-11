@@ -3,6 +3,7 @@
 @tailwind utilities;
 
 @import "../styles/uploadthing.css";
+@import "../styles/theme-fixes.css";
 
 @layer utilities {
   .text-balance {
@@ -39,7 +40,7 @@
     --destructive-foreground: 0 0% 98%;
     --border: 0 0% 89.8%;
     --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
+    --ring: 160 84% 39%;
     --chart-1: 12 76% 61%;
     --chart-2: 173 58% 39%;
     --chart-3: 197 37% 24%;
@@ -53,7 +54,7 @@
     --sidebar-accent: 240 4.8% 95.9%;
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 160 84% 39%;
   }
   .dark {
     --background: 222 84% 4.9%;
@@ -74,7 +75,7 @@
     --destructive-foreground: 210 40% 98%;
     --border: 217 32.6% 17.5%;
     --input: 217 32.6% 17.5%;
-    --ring: 224.3 76.3% 48%;
+    --ring: 160 84% 39%;
     --chart-1: 220 70% 50%;
     --chart-2: 160 60% 45%;
     --chart-3: 30 80% 55%;
@@ -82,12 +83,12 @@
     --chart-5: 340 75% 55%;
     --sidebar-background: 222 84% 4.9%;
     --sidebar-foreground: 210 40% 98%;
-    --sidebar-primary: 217.2 91.2% 59.8%;
-    --sidebar-primary-foreground: 222 84% 4.9%;
+    --sidebar-primary: 160 84% 39%;
+    --sidebar-primary-foreground: 0 0% 98%;
     --sidebar-accent: 217 32.6% 17.5%;
     --sidebar-accent-foreground: 210 40% 98%;
     --sidebar-border: 217 32.6% 17.5%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-ring: 160 84% 39%;
   }
 }
 
@@ -104,6 +105,84 @@
   
   body {
     @apply bg-background text-foreground;
+  }
+  
+  /* Remove default focus outlines and use consistent theming */
+  *:focus {
+    outline: none;
+  }
+  
+  /* Ensure proper text colors in dark mode */
+  .dark {
+    color-scheme: dark;
+  }
+  
+  .dark * {
+    border-color: hsl(var(--border));
+  }
+  
+  /* Fix input focus states */
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible {
+    outline: none;
+    ring: 2px solid hsl(var(--ring));
+    ring-offset: 2px;
+    ring-offset-color: hsl(var(--background));
+  }
+  
+  /* Ensure text is visible in dark mode */
+  .dark input,
+  .dark textarea,
+  .dark select {
+    color: hsl(var(--foreground));
+    background-color: hsl(var(--background));
+  }
+  
+  .dark input::placeholder,
+  .dark textarea::placeholder {
+    color: hsl(var(--muted-foreground));
+  }
+  
+  /* Fix any remaining dark mode text issues */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6,
+  .dark p,
+  .dark span,
+  .dark div,
+  .dark label {
+    color: hsl(var(--foreground));
+  }
+  
+  /* Ensure buttons have proper theming */
+  .dark button {
+    color: inherit;
+  }
+  
+  /* Fix any hardcoded colors that might cause issues */
+  .dark .text-black {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .dark .text-gray-900 {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  .dark .text-gray-800 {
+    color: hsl(var(--foreground)) !important;
+  }
+  
+  /* Ensure proper contrast for links */
+  .dark a {
+    color: hsl(var(--primary));
+  }
+  
+  .dark a:hover {
+    color: hsl(var(--primary)) / 0.8;
   }
   
   /* Prevent horizontal overflow globally */

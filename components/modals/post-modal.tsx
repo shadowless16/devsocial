@@ -458,9 +458,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-white rounded-t-lg sm:rounded-lg w-full max-w-2xl h-[95vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto">
-        <div className="sticky top-0 bg-white z-10 flex items-center justify-between p-3 sm:p-4 border-b border-gray-200">
-          <h2 className="text-base sm:text-lg font-semibold text-gray-900">Create Post</h2>
+      <div className="bg-background rounded-t-lg sm:rounded-lg w-full max-w-2xl h-[95vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto border border-border">
+        <div className="sticky top-0 bg-background z-10 flex items-center justify-between p-3 sm:p-4 border-b border-border">
+          <h2 className="text-base sm:text-lg font-semibold text-foreground">Create Post</h2>
           <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
             <X className="w-4 h-4 sm:w-5 sm:h-5" />
           </Button>
@@ -475,10 +475,10 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               placeholder="Share your thoughts, ask questions, or start a discussion..."
               className="min-h-[100px] sm:min-h-[120px] resize-none text-sm"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-muted-foreground mt-1">
               Use Markdown for formatting. For code snippets, use triple backticks, e.g., ```javascript console.log("Hello"); ```
             </p>
-            <div className="flex justify-between text-xs text-gray-500">
+            <div className="flex justify-between text-xs text-muted-foreground">
               <span>{content.length}/2000 characters</span>
             </div>
           </div>
@@ -513,7 +513,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               
               <TabsContent value="images" className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">Upload up to 4 images (max 4MB each)</p>
+                  <p className="text-sm text-muted-foreground">Upload up to 4 images (max 4MB each)</p>
                   <div className="relative">
                     <input
                       ref={imageInputRef}
@@ -527,7 +527,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                     {originalImageUrl && (
                       <div className="space-y-4">
                         <div className="flex flex-wrap gap-2 mb-3">
-                          <span className="text-sm text-gray-600">Aspect Ratio:</span>
+                          <span className="text-sm text-muted-foreground">Aspect Ratio:</span>
                           {aspectRatios.map((ratio) => (
                             <Button
                               key={ratio.label}
@@ -543,7 +543,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                             </Button>
                           ))}
                         </div>
-                        <div className="relative bg-gray-100 rounded-lg p-2 sm:p-4 max-h-[50vh] overflow-auto">
+                        <div className="relative bg-muted rounded-lg p-2 sm:p-4 max-h-[50vh] overflow-auto">
                           <ReactCrop
                             crop={crop}
                             onChange={(c) => setCrop(c)}
@@ -654,7 +654,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               
               <TabsContent value="videos" className="space-y-3">
                 <div className="flex items-center justify-between">
-                  <p className="text-sm text-gray-600">Upload 1 video (max 128MB)</p>
+                  <p className="text-sm text-muted-foreground">Upload 1 video (max 128MB)</p>
                   <div className="relative">
                     <input
                       ref={videoInputRef}
@@ -707,9 +707,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             </Tabs>
             
             {isUploading && (
-              <div className="flex items-center justify-center py-4 bg-blue-50 rounded-lg border border-blue-200">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                <span className="ml-2 text-sm text-blue-700">Uploading files...</span>
+              <div className="flex items-center justify-center py-4 bg-primary/10 rounded-lg border border-primary/20">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+                <span className="ml-2 text-sm text-primary">Uploading files...</span>
               </div>
             )}
             
@@ -756,7 +756,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               </Button>
             </div>
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">Suggested tags:</p>
+              <p className="text-sm text-muted-foreground">Suggested tags:</p>
               <div className="flex flex-wrap gap-2">
                 {suggestedTags.slice(0, 8).map((tag) => (
                   <Badge
@@ -773,12 +773,12 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
           </div>
 
           {selectedChallenge && (
-            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
                   <div className="flex items-center space-x-2 mb-2">
                     <Target className="w-4 h-4 text-blue-600" />
-                    <h3 className="font-medium text-blue-900">{selectedChallenge.title}</h3>
+                    <h3 className="font-medium text-foreground">{selectedChallenge.title}</h3>
                     <Badge variant="outline" className={`text-xs ${
                       selectedChallenge.difficulty === 'Beginner' ? 'bg-green-50 text-green-700' :
                       selectedChallenge.difficulty === 'Intermediate' ? 'bg-yellow-50 text-yellow-700' :
@@ -790,7 +790,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                       {selectedChallenge.xp} XP
                     </Badge>
                   </div>
-                  <p className="text-sm text-blue-700 mb-2">{selectedChallenge.description}</p>
+                  <p className="text-sm text-muted-foreground mb-2">{selectedChallenge.description}</p>
                   <div className="flex flex-wrap gap-1">
                     {selectedChallenge.tags.map((tag: string) => (
                       <Badge key={tag} variant="secondary" className="text-xs">
@@ -812,20 +812,20 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             </div>
           )}
 
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+          <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center space-x-3">
-              {isAnonymous ? <EyeOff className="w-5 h-5 text-gray-500" /> : <Eye className="w-5 h-5 text-gray-500" />}
+              {isAnonymous ? <EyeOff className="w-5 h-5 text-muted-foreground" /> : <Eye className="w-5 h-5 text-muted-foreground" />}
               <div>
-                <Label htmlFor="anonymous" className="font-medium">
+                <Label htmlFor="anonymous" className="font-medium text-foreground">
                   Post Anonymously
                 </Label>
-                <p className="text-sm text-gray-600">Your identity will be hidden from other users</p>
+                <p className="text-sm text-muted-foreground">Your identity will be hidden from other users</p>
               </div>
             </div>
             <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between pt-3 sm:pt-4 border-t border-gray-200 gap-3 sm:gap-0">
+          <div className="flex flex-col sm:flex-row justify-between pt-3 sm:pt-4 border-t border-border gap-3 sm:gap-0">
             <div className="flex items-center space-x-1 sm:space-x-2 relative overflow-x-auto">
               <div className="relative">
                 <Button 
@@ -841,8 +841,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                 </Button>
                 
                 {showLanguageSelector && (
-                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
-                    <div className="p-3 border-b border-gray-100">
+                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-96 bg-background border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
+                    <div className="p-3 border-b border-border">
                       <div className="flex items-center space-x-2 mb-2">
                         <Search className="w-4 h-4 text-gray-400" />
                         <Input
@@ -852,7 +852,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                           className="border-0 focus:ring-0 p-0 text-sm"
                         />
                       </div>
-                      <p className="text-xs text-gray-500">Choose a language to insert a code template:</p>
+                      <p className="text-xs text-muted-foreground">Choose a language to insert a code template:</p>
                     </div>
                     <div className="max-h-64 overflow-y-auto p-2">
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
@@ -860,12 +860,12 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                           <div
                             key={language.id}
                             onClick={() => selectLanguage(language)}
-                            className="flex items-center space-x-3 p-3 hover:bg-gray-50 cursor-pointer rounded-md transition-colors"
+                            className="flex items-center space-x-3 p-3 hover:bg-muted/50 cursor-pointer rounded-md transition-colors"
                           >
                             <span className="text-xl">{language.icon}</span>
                             <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-gray-900 truncate">{language.name}</p>
-                              <p className="text-xs text-gray-500 truncate">
+                              <p className="font-medium text-sm text-foreground truncate">{language.name}</p>
+                              <p className="text-xs text-muted-foreground truncate">
                                 {language.template.split('\n')[0].substring(0, 30)}...
                               </p>
                             </div>
@@ -873,7 +873,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                         ))}
                       </div>
                       {filteredLanguages.length === 0 && (
-                        <div className="text-center py-6 text-gray-500 text-sm">
+                        <div className="text-center py-6 text-muted-foreground text-sm">
                           No languages found matching "{languageFilter}"
                         </div>
                       )}
@@ -895,19 +895,19 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                 </Button>
                 
                 {showChallengeDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-80 bg-background border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                     <div className="p-2">
-                      <p className="text-sm text-gray-600 mb-2 px-2">Select a challenge to attach:</p>
+                      <p className="text-sm text-muted-foreground mb-2 px-2">Select a challenge to attach:</p>
                       {sampleChallenges.map((challenge) => (
                         <div
                           key={challenge.id}
                           onClick={() => selectChallenge(challenge)}
-                          className="p-3 hover:bg-gray-50 cursor-pointer rounded-md border-b border-gray-100 last:border-b-0"
+                          className="p-3 hover:bg-muted/50 cursor-pointer rounded-md border-b border-border last:border-b-0"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <h4 className="font-medium text-sm text-gray-900">{challenge.title}</h4>
-                              <p className="text-xs text-gray-600 mt-1">{challenge.description}</p>
+                              <h4 className="font-medium text-sm text-foreground">{challenge.title}</h4>
+                              <p className="text-xs text-muted-foreground mt-1">{challenge.description}</p>
                               <div className="flex items-center space-x-2 mt-2">
                                 <Badge variant="outline" className={`text-xs ${
                                   challenge.difficulty === 'Beginner' ? 'bg-green-50 text-green-700' :

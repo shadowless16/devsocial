@@ -82,7 +82,7 @@ export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) 
 
   if (collapsed) {
     return (
-      <div className="h-full flex flex-col bg-white dark:bg-gray-950 p-2">
+      <div className="h-full flex flex-col bg-background p-2">
         <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-white shadow-sm mx-auto mb-4">
           {"</>"}  
         </div>
@@ -97,7 +97,7 @@ export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) 
   }
 
   return (
-    <div className="h-full w-full flex flex-col bg-white dark:bg-gray-950 p-3 overflow-y-auto overflow-x-hidden">
+    <div className="h-full w-full flex flex-col bg-background p-3 overflow-y-auto overflow-x-hidden">
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <div className="grid h-9 w-9 place-items-center rounded-lg bg-emerald-600 text-white shadow-sm">{"</>"}  </div>
@@ -108,14 +108,14 @@ export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) 
         </div>
 
         {displayUser.username && (
-          <Card className="border-0 p-3 ring-1 ring-black/5 w-full">
+          <Card className="border-0 p-3 ring-1 ring-border w-full">
             <div className="flex items-center gap-2">
               <Avatar className="h-8 w-8 ring-1 ring-emerald-100 flex-shrink-0">
                 <AvatarImage src={displayUser.avatar || "/placeholder.svg"} alt={displayUser.displayName || displayUser.username} />
                 <AvatarFallback>{((displayUser.displayName || displayUser.username || "G")).charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium break-words">{displayUser.displayName || displayUser.username}</div>
+                <div className="text-sm font-medium break-words text-foreground">{displayUser.displayName || displayUser.username}</div>
                 <div className="text-xs text-muted-foreground">{(displayUser.points ?? 0).toLocaleString()} XP</div>
               </div>
             </div>

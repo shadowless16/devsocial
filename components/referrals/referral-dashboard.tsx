@@ -216,9 +216,9 @@ export function ReferralDashboard() {
                     <Avatar className="w-10 h-10">
                       <AvatarImage src={referral.referred.avatar || "/placeholder.svg"} />
                       <AvatarFallback>
-                        {referral.referred.displayName
+                        {(referral.referred.displayName || referral.referred.username || "U")
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>

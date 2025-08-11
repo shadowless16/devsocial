@@ -226,7 +226,8 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         body: JSON.stringify(userData),
       });
       
-      if (!response.success) {
+      // Check if signup actually succeeded (API returns success OR has user data)
+      if (!response.success && !(response as any).data?.user) {
         // Create detailed error object to preserve validation details
         const error: any = new Error(response.message || "Signup failed");
         // Preserve any additional error details from the response
