@@ -1,352 +1,242 @@
 "use client"
 
-import { useState } from "react"
-import { Shield, AlertTriangle, CheckCircle, X, Eye, Flag } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { FeedItem } from "@/components/feed/FeedItem"
-
-// Mock flagged content
-const flaggedPosts = [
-  {
-    id: "1",
-    author: {
-      username: "troubleuser",
-      displayName: "Trouble User",
-      avatar: "/placeholder.svg?height=40&width=40",
-      level: 3,
-    },
-    content: "This post contains inappropriate content that violates community guidelines...",
-    imageUrl: null,
-    tags: ["#inappropriate"],
-    likesCount: 2,
-    commentsCount: 1,
-    viewsCount: 15,
-    xpAwarded: 10,
-    createdAt: "1 hour ago",
-    isAnonymous: false,
-    isLiked: false,
-    flaggedBy: "user123",
-    flagReason: "Inappropriate content",
-    flaggedAt: "30 minutes ago",
-    status: "pending",
-  },
-  {
-    id: "2",
-    author: {
-      username: "spammer",
-      displayName: "Spam Account",
-      avatar: "/placeholder.svg?height=40&width=40",
-      level: 1,
-    },
-    content: "Buy my course! Get rich quick! Click this link now!!! 💰💰💰",
-    imageUrl: null,
-    tags: ["#spam"],
-    likesCount: 0,
-    commentsCount: 0,
-    viewsCount: 3,
-    xpAwarded: 5,
-    createdAt: "3 hours ago",
-    isAnonymous: false,
-    isLiked: false,
-    flaggedBy: "moderator1",
-    flagReason: "Spam/Self-promotion",
-    flaggedAt: "2 hours ago",
-    status: "pending",
-  },
-]
-
-const flaggedComments = [
-  {
-    id: "c1",
-    postId: "123",
-    author: {
-      username: "rudeuser",
-      displayName: "Rude User",
-      avatar: "/placeholder.svg?height=32&width=32",
-      level: 5,
-    },
-    content: "This is a very rude and offensive comment that should be moderated...",
-    likesCount: 0,
-    createdAt: "2 hours ago",
-    isLiked: false,
-    flaggedBy: "user456",
-    flagReason: "Harassment/Bullying",
-    flaggedAt: "1 hour ago",
-    status: "pending",
-  },
-]
-
-const moderationLog = [
-  {
-    id: "1",
-    action: "Post Approved",
-    moderator: "admin",
-    target: "Post by @alexchen",
-    reason: "Content reviewed - no violations found",
-    timestamp: "2 hours ago",
-    type: "approve",
-  },
-  {
-    id: "2",
-    action: "Comment Deleted",
-    moderator: "moderator1",
-    target: "Comment by @baduser",
-    reason: "Violated community guidelines - harassment",
-    timestamp: "4 hours ago",
-    type: "delete",
-  },
-  {
-    id: "3",
-    action: "User Warning",
-    moderator: "admin",
-    target: "@spamuser",
-    reason: "Multiple spam reports",
-    timestamp: "1 day ago",
-    type: "warning",
-  },
-]
+import { useState, useEffect } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Shield, AlertTriangle, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { useAuth } from '@/contexts/auth-context'
+import { toast } from 'sonner'
 
 export default function ModerationPage() {
-  const [activeTab, setActiveTab] = useState("posts")
+  const { user } = useAuth()
+  const [reports, setReports] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [filter, setFilter] = useState('pending')
 
-  const handleApprove = (id: string, type: "post" | "comment") => {
-    console.log(`Approved ${type} ${id}`)
-    // Handle approval logic
+  useEffect(() => {
+    if (user?.role === 'admin') {
+      fetchReports()
+    }
+  }, [user, filter])
+
+  const fetchReports = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch(`/api/reports?status=${filter}`)
+      const data = await response.json()
+      if (data.success) {
+        setReports(data.data.reports)
+      }
+    } catch (error) {
+      console.error('Error fetching reports:', error)
+    } finally {
+      setLoading(false)
+    }
   }
 
-  const handleDelete = (id: string, type: "post" | "comment") => {
-    console.log(`Deleted ${type} ${id}`)
-    // Handle deletion logic
+  if (user?.role !== 'admin') {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <Shield className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+        <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+        <p className="text-gray-600">You need admin privileges to access this page.</p>
+      </div>
+    )
   }
 
-  const getActionIcon = (type: string) => {
-    switch (type) {
-      case "approve":
-        return <CheckCircle className="w-4 h-4 text-green-500" />
-      case "delete":
-        return <X className="w-4 h-4 text-red-500" />
-      case "warning":
-        return <AlertTriangle className="w-4 h-4 text-yellow-500" />
-      default:
-        return <Shield className="w-4 h-4 text-gray-500" />
+  return (
+    <div className="container mx-auto px-3 md:px-4 py-4 md:py-8 max-w-6xl overflow-hidden">
+      <div className="flex items-center gap-3 mb-6 md:mb-8">
+        <Shield className="h-6 w-6 md:h-8 md:w-8 text-emerald-600" />
+        <div>
+          <h1 className="text-2xl md:text-3xl font-bold">Moderation Dashboard</h1>
+          <p className="text-gray-600 mt-1 text-sm md:text-base">Review and manage reported content</p>
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {['pending', 'reviewed', 'resolved', 'dismissed'].map((status) => (
+          <Button
+            key={status}
+            variant={filter === status ? 'default' : 'outline'}
+            onClick={() => setFilter(status)}
+            className="capitalize text-xs md:text-sm"
+            size="sm"
+          >
+            {status}
+          </Button>
+        ))}
+      </div>
+
+      {/* Reports List */}
+      <div className="space-y-4">
+        {loading ? (
+          <div className="text-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Loading reports...</p>
+          </div>
+        ) : reports.length === 0 ? (
+          <Card>
+            <CardContent className="p-8 text-center">
+              <CheckCircle className="h-16 w-16 mx-auto mb-4 text-gray-400" />
+              <h3 className="text-lg font-medium mb-2">No {filter} reports</h3>
+              <p className="text-gray-600">All clear! No reports to review in this category.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          reports.map((report) => (
+            <ReportCard key={report._id} report={report} onUpdate={fetchReports} />
+          ))
+        )}
+      </div>
+    </div>
+  )
+}
+
+function ReportCard({ report, onUpdate }: { report: any; onUpdate: () => void }) {
+  const [processing, setProcessing] = useState(false)
+
+  const getReasonColor = (reason: string) => {
+    switch (reason) {
+      case 'spam': return 'bg-orange-100 text-orange-800'
+      case 'harassment': return 'bg-red-100 text-red-800'
+      case 'inappropriate': return 'bg-purple-100 text-purple-800'
+      case 'misinformation': return 'bg-yellow-100 text-yellow-800'
+      case 'copyright': return 'bg-blue-100 text-blue-800'
+      default: return 'bg-gray-100 text-gray-800'
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'pending': return <Clock className="h-4 w-4 text-yellow-500" />
+      case 'reviewed': return <AlertTriangle className="h-4 w-4 text-blue-500" />
+      case 'resolved': return <CheckCircle className="h-4 w-4 text-green-500" />
+      case 'dismissed': return <XCircle className="h-4 w-4 text-gray-500" />
+      default: return null
+    }
+  }
+
+  const handleAction = async (action: string) => {
+    setProcessing(true)
+    try {
+      const response = await fetch(`/api/reports/${report._id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action, status: action === 'dismiss' ? 'dismissed' : 'resolved' })
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        toast.success(`Report ${action === 'dismiss' ? 'dismissed' : 'resolved'} successfully`)
+        onUpdate()
+      } else {
+        toast.error(data.error || 'Failed to update report')
+      }
+    } catch (error) {
+      toast.error('Failed to update report')
+    } finally {
+      setProcessing(false)
     }
   }
 
   return (
-    <div className="max-w-6xl mx-auto py-4 lg:py-6 px-4">
-      {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="bg-gradient-to-r from-red-400 to-pink-500 p-3 rounded-full">
-            <Shield className="w-8 h-8 text-white" />
+    <Card>
+      <CardContent className="p-3 md:p-6">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-2 flex-wrap">
+            {getStatusIcon(report.status)}
+            <Badge className={`${getReasonColor(report.reason)} text-xs`}>
+              {report.reason.replace('_', ' ')}
+            </Badge>
+            <span className="text-xs md:text-sm text-gray-500">
+              {new Date(report.createdAt).toLocaleDateString()}
+            </span>
           </div>
         </div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-navy-900 mb-2">Moderation Dashboard</h1>
-        <p className="text-gray-600">Review flagged content and maintain community standards</p>
-      </div>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-red-600 mb-1">{flaggedPosts.length}</div>
-            <div className="text-sm text-gray-600">Flagged Posts</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-orange-600 mb-1">{flaggedComments.length}</div>
-            <div className="text-sm text-gray-600">Flagged Comments</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-600 mb-1">12</div>
-            <div className="text-sm text-gray-600">Resolved Today</div>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardContent className="p-4 text-center">
-            <div className="text-2xl font-bold text-blue-600 mb-1">3</div>
-            <div className="text-sm text-gray-600">Active Moderators</div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Tabs */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="posts">Flagged Posts</TabsTrigger>
-          <TabsTrigger value="comments">Flagged Comments</TabsTrigger>
-          <TabsTrigger value="log">Moderation Log</TabsTrigger>
-        </TabsList>
-
-        {/* Flagged Posts */}
-        <TabsContent value="posts" className="space-y-4 mt-6">
-          {flaggedPosts.map((post) => (
-            <Card key={post.id} className="border-red-200 bg-red-50">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Flag className="w-4 h-4 text-red-500" />
-                    <span className="text-sm font-medium text-red-700">Flagged Content</span>
-                    <Badge variant="outline" className="text-red-600 border-red-300">
-                      {post.status}
-                    </Badge>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Flagged {post.flaggedAt} by @{post.flaggedBy}
-                  </div>
-                </div>
-                <div className="text-sm text-red-600 font-medium">Reason: {post.flagReason}</div>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-4">
-                  <FeedItem post={post} onLike={() => {}} />
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleApprove(post.id, "post")}
-                    className="text-green-600 border-green-300 hover:bg-green-50"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-blue-600 border-blue-300 hover:bg-blue-50 bg-transparent"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Full
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(post.id, "post")}
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {/* Flagged Comments */}
-        <TabsContent value="comments" className="space-y-4 mt-6">
-          {flaggedComments.map((comment) => (
-            <Card key={comment.id} className="border-orange-200 bg-orange-50">
-              <CardHeader className="pb-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-2">
-                    <Flag className="w-4 h-4 text-orange-500" />
-                    <span className="text-sm font-medium text-orange-700">Flagged Comment</span>
-                    <Badge variant="outline" className="text-orange-600 border-orange-300">
-                      {comment.status}
-                    </Badge>
-                  </div>
-                  <div className="text-sm text-gray-600">
-                    Flagged {comment.flaggedAt} by @{comment.flaggedBy}
-                  </div>
-                </div>
-                <div className="text-sm text-orange-600 font-medium">Reason: {comment.flagReason}</div>
-              </CardHeader>
-              <CardContent>
-                <div className="bg-white rounded-lg p-4 mb-4">
-                  <div className="flex items-start space-x-3">
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={comment.author.avatar || "/placeholder.svg"} />
-                      <AvatarFallback>
-                        {comment.author.displayName
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h4 className="font-semibold text-sm text-gray-900">{comment.author.displayName}</h4>
-                        <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200">
-                          L{comment.author.level}
-                        </Badge>
-                        <span className="text-xs text-gray-500">@{comment.author.username}</span>
-                        <span className="text-xs text-gray-500">•</span>
-                        <span className="text-xs text-gray-500">{comment.createdAt}</span>
-                      </div>
-                      <p className="text-gray-900 text-sm">{comment.content}</p>
-                    </div>
-                  </div>
-                </div>
-                <div className="flex justify-end space-x-3">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleApprove(comment.id, "comment")}
-                    className="text-green-600 border-green-300 hover:bg-green-50"
-                  >
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                    Approve
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-blue-600 border-blue-300 hover:bg-blue-50 bg-transparent"
-                  >
-                    <Eye className="w-4 h-4 mr-2" />
-                    View Post
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleDelete(comment.id, "comment")}
-                    className="text-red-600 border-red-300 hover:bg-red-50"
-                  >
-                    <X className="w-4 h-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        {/* Moderation Log */}
-        <TabsContent value="log" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Moderation Actions</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {moderationLog.map((entry) => (
-                  <div key={entry.id} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex-shrink-0 mt-1">{getActionIcon(entry.type)}</div>
-                    <div className="flex-1">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-gray-900">{entry.action}</span>
-                        <span className="text-sm text-gray-500">by @{entry.moderator}</span>
-                        <span className="text-sm text-gray-500">•</span>
-                        <span className="text-sm text-gray-500">{entry.timestamp}</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-1">Target: {entry.target}</p>
-                      <p className="text-sm text-gray-500">{entry.reason}</p>
-                    </div>
-                  </div>
-                ))}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          {/* Reporter Info */}
+          <div>
+            <h4 className="font-medium mb-2 text-sm md:text-base">Reported by</h4>
+            <div className="flex items-center gap-2 mb-3">
+              <Avatar className="h-6 w-6 md:h-8 md:w-8">
+                <AvatarImage src={report.reporter.avatar} />
+                <AvatarFallback className="text-xs">
+                  {report.reporter.displayName?.[0] || report.reporter.username[0]}
+                </AvatarFallback>
+              </Avatar>
+              <span className="text-xs md:text-sm truncate">
+                {report.reporter.displayName || report.reporter.username}
+              </span>
+            </div>
+            {report.description && (
+              <div>
+                <h5 className="text-xs md:text-sm font-medium mb-1">Description</h5>
+                <p className="text-xs md:text-sm text-gray-600 bg-gray-50 p-2 rounded line-clamp-3">
+                  {report.description}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-    </div>
+            )}
+          </div>
+
+          {/* Reported Content */}
+          <div>
+            <h4 className="font-medium mb-2 text-sm md:text-base">Reported Post</h4>
+            <div className="bg-gray-50 p-3 rounded mb-3">
+              <div className="flex items-center gap-2 mb-2">
+                <Avatar className="h-5 w-5 md:h-6 md:w-6">
+                  <AvatarImage src={report.reportedUser.avatar} />
+                  <AvatarFallback className="text-xs">
+                    {report.reportedUser.displayName?.[0] || report.reportedUser.username[0]}
+                  </AvatarFallback>
+                </Avatar>
+                <span className="text-xs md:text-sm font-medium truncate">
+                  {report.reportedUser.displayName || report.reportedUser.username}
+                </span>
+              </div>
+              <p className="text-xs md:text-sm text-gray-700 line-clamp-3">
+                {report.reportedPost.content}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {report.status === 'pending' && (
+          <div className="flex flex-wrap gap-2 mt-4 pt-4 border-t">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAction('dismiss')}
+              disabled={processing}
+              className="text-gray-600 text-xs"
+            >
+              Dismiss
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAction('warning')}
+              disabled={processing}
+              className="text-yellow-600 text-xs"
+            >
+              Warning
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAction('post_removed')}
+              disabled={processing}
+              className="text-red-600 text-xs"
+            >
+              Remove Post
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   )
 }
