@@ -1,42 +1,37 @@
-import { type NextRequest, NextResponse } from "next/server"
-import { authMiddleware } from "@/middleware/auth"
-import Notification from "@/models/Notification"
-import connectDB from "@/lib/db"
-import { successResponse, errorResponse } from "@/utils/response"
-
-export const dynamic = 'force-dynamic'
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import connectDB from '@/lib/db'
+import Notification from '@/models/Notification'
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
     await connectDB()
 
-    const authResult = await authMiddleware(request)
-    if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
-    }
-
-    const userId = authResult.user!.id
     const { searchParams } = new URL(request.url)
-    const page = Number.parseInt(searchParams.get("page") || "1")
-    const limit = Number.parseInt(searchParams.get("limit") || "20")
-    const unreadOnly = searchParams.get("unread") === "true"
-    const skip = (page - 1) * limit
+    const page = parseInt(searchParams.get('page') || '1')
+    const limit = parseInt(searchParams.get('limit') || '20')
+    const unreadOnly = searchParams.get('unread') === 'true'
 
-    const filter: any = { recipient: userId }
+    const query: any = { recipient: session.user.id }
     if (unreadOnly) {
-      filter.isRead = false
+      query.read = false
     }
 
-    const notifications = await Notification.find(filter)
-      .populate("sender", "username displayName avatar")
+    const notifications = await Notification.find(query)
+      .populate('sender', 'username displayName avatar level')
       .sort({ createdAt: -1 })
-      .skip(skip)
       .limit(limit)
+      .skip((page - 1) * limit)
 
-    const totalNotifications = await Notification.countDocuments(filter)
     const unreadCount = await Notification.countDocuments({
-      recipient: userId,
-      isRead: false,
+      recipient: session.user.id,
+      read: false
     })
 
     return NextResponse.json({
@@ -44,60 +39,45 @@ export async function GET(request: NextRequest) {
       data: {
         notifications,
         unreadCount,
-        pagination: {
-          currentPage: page,
-          totalPages: Math.ceil(totalNotifications / limit),
-          totalNotifications,
-          hasMore: skip + notifications.length < totalNotifications,
-        },
+        hasMore: notifications.length === limit
       }
     })
   } catch (error) {
-    console.error("Error fetching notifications:", error)
-    return NextResponse.json(errorResponse("Failed to fetch notifications"), { status: 500 })
+    console.error('Error fetching notifications:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }
 
-export async function PATCH(request: NextRequest) {
+export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
     await connectDB()
 
-    const authResult = await authMiddleware(request)
-    if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
-    }
+    const { recipient, type, title, message, relatedPost, relatedProject, actionUrl } = await request.json()
 
-    const userId = authResult.user!.id
-    const { notificationIds, markAsRead } = await request.json()
+    const notification = new Notification({
+      recipient,
+      sender: session.user.id,
+      type,
+      title,
+      message,
+      relatedPost,
+      relatedProject,
+      actionUrl
+    })
 
-    if (!Array.isArray(notificationIds)) {
-      return NextResponse.json(errorResponse("Invalid notification IDs"), { status: 400 })
-    }
-
-    const updateData: any = {}
-    if (markAsRead !== undefined) {
-      updateData.isRead = markAsRead
-      if (markAsRead) {
-        updateData.readAt = new Date()
-      }
-    }
-
-    await Notification.updateMany(
-      {
-        _id: { $in: notificationIds },
-        recipient: userId,
-      },
-      updateData,
-    )
+    await notification.save()
 
     return NextResponse.json({
       success: true,
-      data: {
-        message: `${notificationIds.length} notifications updated`,
-      }
+      data: notification
     })
   } catch (error) {
-    console.error("Error updating notifications:", error)
-    return NextResponse.json(errorResponse("Failed to update notifications"), { status: 500 })
+    console.error('Error creating notification:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

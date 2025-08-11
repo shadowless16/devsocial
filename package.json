@@ -11,13 +11,17 @@
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
     "migrate:branch-to-affiliation": "node scripts/migrate-branch-to-affiliation.js",
-    "migrate:branch-to-affiliation:ts": "ts-node scripts/migrate-branch-to-affiliation.ts"
+    "migrate:branch-to-affiliation:ts": "ts-node scripts/migrate-branch-to-affiliation.ts",
+    "mcp:dev": "node mcp-server/index.js",
+    "mcp:start": "NODE_ENV=production node mcp-server/index.js",
+    "dev:with-mcp": "concurrently \"npm run mcp:dev\" \"npm run dev\""
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
     "@emotion/is-prop-valid": "latest",
     "@hashgraph/sdk": "^2.70.0",
     "@hookform/resolvers": "^3.9.1",
+    "@modelcontextprotocol/sdk": "^0.4.0",
     "@radix-ui/react-accordion": "1.2.2",
     "@radix-ui/react-alert-dialog": "1.1.4",
     "@radix-ui/react-aspect-ratio": "1.1.1",
@@ -88,7 +92,8 @@
     "tailwindcss-animate": "^1.0.7",
     "uploadthing": "^7.7.3",
     "vaul": "^0.9.6",
-    "zod": "^3.24.1"
+    "zod": "^3.24.1",
+    "concurrently": "^8.2.2"
   },
   "devDependencies": {
     "@types/jest": "^29.5.12",

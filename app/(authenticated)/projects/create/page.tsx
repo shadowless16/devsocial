@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { ArrowLeft, ArrowRight, Check, Plus, X } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { toast } from "sonner"
 
 type ProjectFormData = {
   title: string
@@ -145,11 +146,34 @@ export default function CreateProjectPage() {
   }
 
   const handleSubmit = async () => {
-    // In real app, submit to API
-    console.log("Project data:", formData)
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-    router.push("/projects/my")
+    try {
+      toast.loading('Creating project...', { id: 'create-project' })
+      
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: formData.title,
+          description: formData.description,
+          technologies: formData.techStack,
+          githubUrl: formData.githubUrl,
+          liveUrl: formData.demoUrl,
+          status: 'in-progress'
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success('Project created successfully! (+50 XP)', { id: 'create-project' })
+        router.push('/projects')
+      } else {
+        toast.error(data.details || data.error || 'Failed to create project', { id: 'create-project' })
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+      toast.error('Network error. Please try again.', { id: 'create-project' })
+    }
   }
 
   return (
@@ -202,6 +226,7 @@ export default function CreateProjectPage() {
                       value={formData.description}
                       onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                       className="mt-1 min-h-[120px]"
+                      maxLength={4500}
                     />
                   </div>
 

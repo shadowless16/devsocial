@@ -5,8 +5,10 @@ import "./globals.css"
 import { AuthProvider } from "@/contexts/auth-context"
 import { FollowProvider } from "@/contexts/follow-context"
 import { WebSocketProvider } from "@/contexts/websocket-context"
+import { NotificationProvider } from "@/contexts/notification-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { Toaster as SonnerToaster } from "sonner"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -35,13 +37,16 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <WebSocketProvider>
-              <FollowProvider>
-                {children}
-              </FollowProvider>
+              <NotificationProvider>
+                <FollowProvider>
+                  {children}
+                </FollowProvider>
+              </NotificationProvider>
             </WebSocketProvider>
           </AuthProvider>
         </ThemeProvider>
         <Toaster />
+        <SonnerToaster position="top-right" richColors />
       </body>
     </html>
   )

@@ -95,7 +95,7 @@ export default function HomePage() {
   }
 
   return (
-    <>
+    <div className="container mx-auto px-3 md:px-4 py-4 max-w-4xl overflow-hidden">
       <HeaderBar onCreateClick={() => setShowPostModal(true)} />
       <StatPills />
       <Compose onCreateClick={() => setShowPostModal(true)} />
@@ -142,7 +142,7 @@ export default function HomePage() {
         onClose={() => setShowPostModal(false)}
         onSubmit={handleCreatePost}
       />
-    </>
+    </div>
   )
 }
 

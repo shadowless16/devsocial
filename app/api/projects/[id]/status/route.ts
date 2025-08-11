@@ -1,0 +1,45 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import connectDB from '@/lib/db'
+import Project from '@/models/Project'
+
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    }
+
+    await connectDB()
+    
+    const { status } = await request.json()
+    
+    if (!['planning', 'in-progress', 'completed', 'on-hold'].includes(status)) {
+      return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 })
+    }
+
+    const project = await Project.findById(params.id)
+    if (!project) {
+      return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
+    }
+
+    if (project.author.toString() !== session.user.id) {
+      return NextResponse.json({ success: false, error: 'Not authorized to update this project' }, { status: 403 })
+    }
+
+    project.status = status
+    await project.save()
+
+    return NextResponse.json({
+      success: true,
+      data: { status: project.status }
+    })
+  } catch (error) {
+    console.error('Error updating project status:', error)
+    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
+  }
+}

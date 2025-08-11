@@ -6,12 +6,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Copy } from "lucide-react"
+import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Copy, Flag } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useToast } from "@/hooks/use-toast"
 import { getLikeTooltip, GAMIFIED_TERMS } from "@/lib/gamified-terms"
+import { ReportModal } from "@/components/modals/report-modal"
 
 interface PostCardProps {
   author?: string
@@ -60,6 +61,7 @@ export default function PostCard({
   const [currentLikesCount, setCurrentLikesCount] = useState(likesCount)
   const [isCommentHovered, setIsCommentHovered] = useState(false)
   const [isShareHovered, setIsShareHovered] = useState(false)
+  const [showReportModal, setShowReportModal] = useState(false)
 
   const copyToClipboard = async (text: string) => {
     try {
@@ -162,13 +164,21 @@ export default function PostCard({
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {currentUserId === authorId && (
+                  {currentUserId === authorId ? (
                     <DropdownMenuItem 
                       onClick={() => postId && onDelete?.(postId)}
                       className="text-red-600 focus:text-red-600"
                     >
                       <Trash2 className="h-4 w-4 mr-2" />
                       Delete
+                    </DropdownMenuItem>
+                  ) : (
+                    <DropdownMenuItem 
+                      onClick={() => setShowReportModal(true)}
+                      className="text-red-600 focus:text-red-600"
+                    >
+                      <Flag className="h-4 w-4 mr-2" />
+                      Report
                     </DropdownMenuItem>
                   )}
                 </DropdownMenuContent>
@@ -272,6 +282,14 @@ export default function PostCard({
           </div>
         </div>
       </CardContent>
+      
+      {showReportModal && postId && (
+        <ReportModal
+          isOpen={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          postId={postId}
+        />
+      )}
     </Card>
   )
 }

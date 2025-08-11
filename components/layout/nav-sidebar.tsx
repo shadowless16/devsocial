@@ -31,7 +31,7 @@ import {
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { PostModal } from "@/components/modals/post-modal"
-import { NotificationCenter } from "@/components/notifications/notification-center"
+import { NotificationBell } from "@/components/notifications/notification-bell"
 
 interface NavSidebarProps {
   collapsed?: boolean
@@ -55,6 +55,7 @@ const navigationItems: NavItem[] = [
   { label: "Trending", icon: Compass, href: "/trending" },
   { label: "Challenges", icon: ListOrdered, href: "/challenges", badge: "3" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
+  { label: "Notifications", icon: Bell, href: "/notifications" },
   { label: "Dev Profile", icon: User, href: "/profile" },
   { label: "Connect", icon: MessageCircle, href: "/messages" },
   { label: "Moderation", icon: Shield, href: "/moderation", adminOnly: true },
@@ -64,7 +65,7 @@ export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) 
   const pathname = usePathname()
   const { user, logout } = useAuth()
   const [showCreatePost, setShowCreatePost] = useState(false)
-  const [showNotifications, setShowNotifications] = useState(false)
+
 
   const displayUser = user || {
     username: "",
@@ -170,14 +171,9 @@ export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) 
               <Plus className="mr-1 h-3 w-3" />
               Create
             </Button>
-            <Button 
-              variant="secondary" 
-              className="flex-1 gap-1 text-xs px-2 py-1"
-              onClick={() => setShowNotifications(true)}
-            >
-              <Bell className="h-3 w-3" />
-              <span>3</span>
-            </Button>
+            <div className="flex-1 flex justify-center">
+              <NotificationBell />
+            </div>
           </div>
         </div>
 
@@ -231,9 +227,7 @@ export function NavSidebar({ collapsed = false, onItemClick }: NavSidebarProps) 
         />
       )}
       
-      {showNotifications && (
-        <NotificationCenter isOpen={showNotifications} onClose={() => setShowNotifications(false)} />
-      )}
+
     </div>
   );
 }

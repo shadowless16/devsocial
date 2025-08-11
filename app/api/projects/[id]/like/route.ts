@@ -1,0 +1,83 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
+import connectDB from '@/lib/db'
+import Project from '@/models/Project'
+import User from '@/models/User'
+import Notification from '@/models/Notification'
+
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { id: string } }
+) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json(
+        { success: false, error: 'Unauthorized' },
+        { status: 401 }
+      )
+    }
+    
+    await connectDB()
+    
+    const project = await Project.findById(params.id)
+    if (!project) {
+      return NextResponse.json(
+        { success: false, error: 'Project not found' },
+        { status: 404 }
+      )
+    }
+    
+    const userId = session.user.id
+    const isLiked = project.likes.includes(userId)
+    
+    if (isLiked) {
+      // Unlike
+      await Project.findByIdAndUpdate(params.id, {
+        $pull: { likes: userId }
+      })
+    } else {
+      // Like
+      await Project.findByIdAndUpdate(params.id, {
+        $addToSet: { likes: userId }
+      })
+      
+      // Award XP to project author (not the liker)
+      if (project.author.toString() !== userId) {
+        await User.findByIdAndUpdate(project.author, {
+          $inc: { points: 5 }
+        })
+        
+        // Create notification for project author
+        await Notification.create({
+          recipient: project.author,
+          sender: userId,
+          type: 'project_like',
+          title: 'Project Liked',
+          message: `Someone liked your project "${project.title}"`,
+          relatedProject: project._id,
+          actionUrl: `/projects/${project._id}`
+        })
+      }
+    }
+    
+    const updatedProject = await Project.findById(params.id)
+      .populate('author', 'username displayName avatar level')
+      .lean()
+    
+    return NextResponse.json({
+      success: true,
+      data: {
+        project: updatedProject,
+        isLiked: !isLiked,
+        likesCount: updatedProject.likes.length
+      }
+    })
+  } catch (error) {
+    return NextResponse.json(
+      { success: false, error: 'Failed to toggle like' },
+      { status: 500 }
+    )
+  }
+}

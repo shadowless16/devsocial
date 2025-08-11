@@ -1,51 +1,53 @@
-import mongoose, { Schema, type Document } from "mongoose"
+import mongoose from 'mongoose'
 
-export interface IReport extends Document {
-  reporter: mongoose.Types.ObjectId
-  reportedItemType: "post" | "comment"
-  reportedItemId: mongoose.Types.ObjectId
-  reason: string
-  status: "pending" | "resolved" | "dismissed"
-  createdAt: Date
-  updatedAt: Date
-}
-
-const ReportSchema = new Schema<IReport>(
-  {
-    reporter: {
-      type: Schema.Types.ObjectId,
-      ref: "User",
-      required: true,
-      index: true,
-    },
-    reportedItemType: {
-      type: String,
-      enum: ["post", "comment"],
-      required: true,
-    },
-    reportedItemId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      index: true,
-    },
-    reason: {
-      type: String,
-      required: true,
-      maxlength: 500,
-    },
-    status: {
-      type: String,
-      enum: ["pending", "resolved", "dismissed"],
-      default: "pending",
-      index: true,
-    },
+const ReportSchema = new mongoose.Schema({
+  reporter: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   },
-  {
-    timestamps: true,
+  reportedPost: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Post',
+    required: true
   },
-)
+  reportedUser: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  reason: {
+    type: String,
+    enum: ['spam', 'harassment', 'inappropriate', 'misinformation', 'copyright', 'other'],
+    required: true
+  },
+  description: {
+    type: String,
+    maxlength: 500
+  },
+  status: {
+    type: String,
+    enum: ['pending', 'reviewed', 'resolved', 'dismissed'],
+    default: 'pending'
+  },
+  reviewedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  },
+  reviewedAt: {
+    type: Date
+  },
+  action: {
+    type: String,
+    enum: ['none', 'warning', 'post_removed', 'user_suspended', 'user_banned']
+  }
+}, {
+  timestamps: true
+})
 
-// Index for efficient querying
-ReportSchema.index({ status: 1, createdAt: -1 })
+ReportSchema.index({ reportedPost: 1 })
+ReportSchema.index({ reporter: 1 })
+ReportSchema.index({ status: 1 })
+ReportSchema.index({ createdAt: -1 })
 
-export default mongoose.models.Report || mongoose.model<IReport>("Report", ReportSchema)
+export default mongoose.models.Report || mongoose.model('Report', ReportSchema)

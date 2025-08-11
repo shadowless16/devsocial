@@ -59,14 +59,47 @@ export function EnhancedLeaderboard() {
   const fetchLeaderboard = async (type: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
+      // Use MCP for faster direct database access
+      const response = await fetch('/api/mcp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tool: 'get_leaderboard',
+          args: { limit: 50 }
+        })
+      })
+      
       const data = await response.json()
-
-      if (data.success) {
-        setLeaderboard(data.data.leaderboard)
+      
+      if (response.ok && data) {
+        // Transform MCP data to match expected format
+        const transformedData = data.map((user: any, index: number) => ({
+          _id: user._id,
+          user: {
+            _id: user._id,
+            username: user.username,
+            displayName: user.displayName,
+            avatar: user.avatar,
+            level: user.level
+          },
+          totalXP: user.points,
+          rank: index + 1,
+          level: user.level
+        }))
+        setLeaderboard(transformedData)
       }
     } catch (error) {
       console.error("Error fetching leaderboard:", error)
+      // Fallback to original API
+      try {
+        const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
+        const data = await response.json()
+        if (data.success) {
+          setLeaderboard(data.data.leaderboard)
+        }
+      } catch (fallbackError) {
+        console.error("Fallback API also failed:", fallbackError)
+      }
     } finally {
       setLoading(false)
     }

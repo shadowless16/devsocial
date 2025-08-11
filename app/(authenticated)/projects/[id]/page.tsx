@@ -1,494 +1,325 @@
 "use client"
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Badge } from "@/components/ui/badge"
+import { useState, useEffect } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
-import { Textarea } from "@/components/ui/textarea"
-import { Calendar, Eye, Github, Globe, Heart, MessageCircle, Play, Share2, Users } from "lucide-react"
-import Image from "next/image"
+import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ArrowLeft, Github, ExternalLink, Heart, Eye, Share2, Settings } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Label } from "@/components/ui/label"
+import { toast } from "sonner"
+import { useAuth } from "@/contexts/auth-context"
 
-// Mock data - in real app this would come from API
-const PROJECT_DATA = {
-  id: "ai-code-reviewer",
-  title: "AI Code Reviewer",
-  description: `An intelligent code review tool that provides automated feedback and suggestions for better code quality. 
-
-This project aims to revolutionize the way developers approach code reviews by leveraging advanced AI models to provide instant, contextual feedback. The tool integrates seamlessly with popular version control systems and provides detailed suggestions for improvements, potential bugs, and best practices.
-
-Key features include:
-- Real-time code analysis and suggestions
-- Integration with GitHub, GitLab, and Bitbucket
-- Customizable review rules and standards
-- Team collaboration features
-- Performance metrics and insights`,
-  techStack: ["React", "Node.js", "OpenAI", "TypeScript", "PostgreSQL", "Docker"],
-  projectType: "startup" as const,
-  status: "in-development" as const,
-  timeCommitment: "part-time" as const,
-  experienceLevel: "intermediate" as const,
-  views: 1247,
-  applications: 23,
-  likes: 89,
-  createdAt: "2024-01-15",
-  lastActivity: "2 hours ago",
-  images: ["/placeholder.jpg", "/placeholder.jpg", "/placeholder.jpg"],
-  demoUrl: "https://demo.ai-code-reviewer.com",
-  githubUrl: "https://github.com/team/ai-code-reviewer",
-  owner: {
-    id: "sarah-chen",
-    name: "Sarah Chen",
-    avatar: "/placeholder-user.jpg",
-    level: "L4",
-    role: "Project Lead",
-  },
-  team: [
-    {
-      id: "sarah-chen",
-      name: "Sarah Chen",
-      avatar: "/placeholder-user.jpg",
-      level: "L4",
-      role: "Project Lead",
-      joinedAt: "2024-01-15",
-    },
-    {
-      id: "mike-johnson",
-      name: "Mike Johnson",
-      avatar: "/placeholder-user.jpg",
-      level: "L3",
-      role: "Backend Developer",
-      joinedAt: "2024-01-20",
-    },
-    {
-      id: "lisa-wang",
-      name: "Lisa Wang",
-      avatar: "/placeholder-user.jpg",
-      level: "L2",
-      role: "Frontend Developer",
-      joinedAt: "2024-02-01",
-    },
-  ],
-  openPositions: [
-    {
-      title: "Backend Developer",
-      description: "Experience with Node.js and AI/ML APIs required",
-      requirements: ["Node.js", "Express", "PostgreSQL", "OpenAI API"],
-      timeCommitment: "15-20 hours/week",
-    },
-    {
-      title: "UI/UX Designer",
-      description: "Design intuitive interfaces for developer tools",
-      requirements: ["Figma", "User Research", "Prototyping"],
-      timeCommitment: "10-15 hours/week",
-    },
-  ],
-  updates: [
-    {
-      id: "1",
-      author: "Sarah Chen",
-      avatar: "/placeholder-user.jpg",
-      content:
-        "Just integrated the new OpenAI GPT-4 model for better code analysis! The accuracy has improved significantly.",
-      timestamp: "2 hours ago",
-      likes: 12,
-    },
-    {
-      id: "2",
-      author: "Mike Johnson",
-      avatar: "/placeholder-user.jpg",
-      content: "Database optimization complete. Query performance improved by 40%!",
-      timestamp: "1 day ago",
-      likes: 8,
-    },
-  ],
+interface Project {
+  _id: string
+  title: string
+  description: string
+  author: {
+    _id: string
+    username: string
+    displayName: string
+    avatar?: string
+    level: number
+  }
+  technologies: string[]
+  githubUrl?: string
+  liveUrl?: string
+  status: string
+  likes: string[]
+  views: number
+  createdAt: string
 }
 
-const RELATED_PROJECTS = [
-  {
-    id: "code-mentor",
-    title: "Code Mentor AI",
-    description: "AI-powered coding assistant for beginners",
-    image: "/placeholder.jpg",
-    techStack: ["Python", "React", "OpenAI"],
-    teamSize: 4,
-  },
-  {
-    id: "dev-analytics",
-    title: "Developer Analytics Dashboard",
-    description: "Track coding productivity and habits",
-    image: "/placeholder.jpg",
-    techStack: ["Vue.js", "Node.js", "MongoDB"],
-    teamSize: 3,
-  },
-]
-
 export default function ProjectDetailPage() {
-  const [comment, setComment] = useState("")
+  const params = useParams()
+  const router = useRouter()
+  const [project, setProject] = useState<Project | null>(null)
+  const [loading, setLoading] = useState(true)
   const [isLiked, setIsLiked] = useState(false)
-  const [applying, setApplying] = useState(false)
+  const [updatingStatus, setUpdatingStatus] = useState(false)
+  const { user } = useAuth()
+
+  useEffect(() => {
+    fetchProject()
+  }, [params.id])
+
+  const fetchProject = async () => {
+    try {
+      const response = await fetch(`/api/projects/${params.id}`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setProject(data.data)
+        // Check if user has liked this project
+        // setIsLiked(data.data.likes.includes(currentUserId))
+      } else {
+        toast.error('Project not found')
+        router.push('/projects')
+      }
+    } catch (error) {
+      console.error('Error fetching project:', error)
+      toast.error('Failed to load project')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleLike = async () => {
+    if (!project) return
+    
+    try {
+      const response = await fetch(`/api/projects/${project._id}/like`, {
+        method: 'POST'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setIsLiked(data.data.isLiked)
+        setProject(prev => prev ? {
+          ...prev,
+          likes: data.data.project.likes
+        } : null)
+      }
+    } catch (error) {
+      console.error('Error liking project:', error)
+      toast.error('Failed to like project')
+    }
+  }
+
+  const handleStatusUpdate = async (newStatus: string) => {
+    if (!project || updatingStatus) return
+    
+    setUpdatingStatus(true)
+    try {
+      const response = await fetch(`/api/projects/${project._id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        setProject(prev => prev ? { ...prev, status: newStatus } : null)
+        toast.success('Project status updated')
+      } else {
+        toast.error(data.error || 'Failed to update status')
+      }
+    } catch (error) {
+      console.error('Error updating status:', error)
+      toast.error('Failed to update status')
+    } finally {
+      setUpdatingStatus(false)
+    }
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'completed': return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+      case 'in-progress': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400'
+      case 'planning': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400'
+      case 'on-hold': return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-12 bg-gray-200 rounded w-3/4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!project) {
+    return (
+      <div className="container mx-auto px-4 py-8 text-center">
+        <h1 className="text-2xl font-bold mb-4">Project not found</h1>
+        <Button onClick={() => router.push('/projects')}>Back to Projects</Button>
+      </div>
+    )
+  }
 
   return (
-    <main className="min-h-[100svh] bg-muted/30">
-      <div className="mx-auto w-full max-w-[110rem] px-4 py-6">
-        {/* Breadcrumb */}
-        <nav className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
-          <Link href="/projects" className="hover:text-foreground">
-            Projects
-          </Link>
-          <span>/</span>
-          <span className="text-foreground">{PROJECT_DATA.title}</span>
-        </nav>
+    <div className="container mx-auto px-4 py-8 max-w-4xl">
+      {/* Header */}
+      <Button
+        variant="ghost"
+        onClick={() => router.back()}
+        className="mb-6 gap-2 px-0"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back to Projects
+      </Button>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_300px]">
-          {/* Main Content */}
-          <div className="space-y-6">
-            {/* Project Header */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="p-6">
-                <div className="flex flex-wrap items-start justify-between gap-4">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-2xl font-semibold tracking-tight">{PROJECT_DATA.title}</h1>
-                      <Badge className={`rounded-full px-3 py-1 text-xs font-medium bg-emerald-50 text-emerald-700`}>
-                        {PROJECT_DATA.status.replace("-", " ")}
-                      </Badge>
-                      <Badge className={`rounded-full px-3 py-1 text-xs font-medium bg-red-50 text-red-700`}>
-                        {PROJECT_DATA.projectType}
-                      </Badge>
-                    </div>
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {PROJECT_DATA.techStack.map((tech) => (
-                        <Badge key={tech} variant="secondary" className="rounded-full">
-                          {tech}
-                        </Badge>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-6 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Eye className="h-4 w-4" />
-                        <span>{PROJECT_DATA.views} views</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Users className="h-4 w-4" />
-                        <span>{PROJECT_DATA.team.length} members</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>Created {PROJECT_DATA.createdAt}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className={`gap-2 ${isLiked ? "text-red-600" : ""}`}
-                      onClick={() => setIsLiked(!isLiked)}
-                    >
-                      <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
-                      {PROJECT_DATA.likes + (isLiked ? 1 : 0)}
-                    </Button>
-                    <Button variant="outline" size="sm" className="gap-2 bg-transparent">
-                      <Share2 className="h-4 w-4" />
-                      Share
-                    </Button>
-                  </div>
+      {/* Project Header */}
+      <div className="mb-8">
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <Badge className={getStatusColor(project.status)}>
+                {project.status.replace('-', ' ')}
+              </Badge>
+              {user?.id === project.author._id && (
+                <Select value={project.status} onValueChange={handleStatusUpdate} disabled={updatingStatus}>
+                  <SelectTrigger className="w-40 h-8">
+                    <Settings className="h-3 w-3 mr-1" />
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="planning">Planning</SelectItem>
+                    <SelectItem value="in-progress">In Progress</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="on-hold">On Hold</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+            <h1 className="text-3xl font-bold mb-4">{project.title}</h1>
+            
+            {/* Author Info */}
+            <div className="flex items-center gap-3 mb-4">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={project.author.avatar} />
+                <AvatarFallback>
+                  {(project.author.displayName || project.author.username)[0].toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="font-medium">{project.author.displayName || project.author.username}</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="text-xs">
+                    L{project.author.level}
+                  </Badge>
+                  <span className="text-sm text-gray-500">
+                    Created {new Date(project.createdAt).toLocaleDateString()}
+                  </span>
                 </div>
-              </CardHeader>
-            </Card>
-
-            {/* Media Section */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h2 className="text-lg font-semibold">Media & Links</h2>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-3">
-                  {PROJECT_DATA.images.map((image, idx) => (
-                    <div key={idx} className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                      <Image
-                        src={image || "/placeholder.svg"}
-                        alt={`${PROJECT_DATA.title} screenshot ${idx + 1}`}
-                        fill
-                        className="object-cover"
-                      />
-                    </div>
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  <Button variant="outline" className="gap-2 bg-transparent" asChild>
-                    <a href={PROJECT_DATA.demoUrl} target="_blank" rel="noopener noreferrer">
-                      <Play className="h-4 w-4" />
-                      Live Demo
-                    </a>
-                  </Button>
-                  <Button variant="outline" className="gap-2 bg-transparent" asChild>
-                    <a href={PROJECT_DATA.githubUrl} target="_blank" rel="noopener noreferrer">
-                      <Github className="h-4 w-4" />
-                      GitHub
-                    </a>
-                  </Button>
-                  <Button variant="outline" className="gap-2 bg-transparent">
-                    <Globe className="h-4 w-4" />
-                    Website
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Description */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h2 className="text-lg font-semibold">About This Project</h2>
-              </CardHeader>
-              <CardContent>
-                <div className="prose prose-sm max-w-none">
-                  {PROJECT_DATA.description.split("\n\n").map((paragraph, idx) => (
-                    <p key={idx} className="mb-4 leading-relaxed text-muted-foreground">
-                      {paragraph}
-                    </p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Team Section */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h2 className="text-lg font-semibold">Team Members</h2>
-              </CardHeader>
-              <CardContent>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {PROJECT_DATA.team.map((member) => (
-                    <div key={member.id} className="flex items-center gap-3 p-3 rounded-lg bg-muted/50">
-                      <Avatar className="h-10 w-10 ring-1 ring-emerald-100">
-                        <AvatarImage src={member.avatar || "/placeholder.svg"} alt={member.name} />
-                        <AvatarFallback>{member.name.slice(0, 2)}</AvatarFallback>
-                      </Avatar>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <div className="font-medium">{member.name}</div>
-                          <Badge className="bg-emerald-50 text-emerald-700 text-xs">{member.level}</Badge>
-                        </div>
-                        <div className="text-sm text-muted-foreground">{member.role}</div>
-                        <div className="text-xs text-muted-foreground">Joined {member.joinedAt}</div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Project Updates */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h2 className="text-lg font-semibold">Recent Updates</h2>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {PROJECT_DATA.updates.map((update) => (
-                  <div key={update.id} className="flex gap-3 p-4 rounded-lg bg-muted/30">
-                    <Avatar className="h-8 w-8 ring-1 ring-emerald-100">
-                      <AvatarImage src={update.avatar || "/placeholder.svg"} alt={update.author} />
-                      <AvatarFallback>{update.author.slice(0, 2)}</AvatarFallback>
-                    </Avatar>
-                    <div className="min-w-0 flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <div className="font-medium text-sm">{update.author}</div>
-                        <div className="text-xs text-muted-foreground">{update.timestamp}</div>
-                      </div>
-                      <p className="text-sm leading-relaxed">{update.content}</p>
-                      <div className="flex items-center gap-4 mt-2">
-                        <Button variant="ghost" size="sm" className="h-6 gap-1 px-2 text-xs">
-                          <Heart className="h-3 w-3" />
-                          {update.likes}
-                        </Button>
-                        <Button variant="ghost" size="sm" className="h-6 gap-1 px-2 text-xs">
-                          <MessageCircle className="h-3 w-3" />
-                          Reply
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
-
-            {/* Comments Section */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h2 className="text-lg font-semibold">Discussion</h2>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex gap-3">
-                  <Avatar className="h-8 w-8 ring-1 ring-emerald-100">
-                    <AvatarImage src="/placeholder-user.jpg" alt="You" />
-                    <AvatarFallback>YO</AvatarFallback>
-                  </Avatar>
-                  <div className="flex-1 space-y-2">
-                    <Textarea
-                      placeholder="Share your thoughts about this project..."
-                      value={comment}
-                      onChange={(e) => setComment(e.target.value)}
-                      className="min-h-[80px] resize-none"
-                    />
-                    <div className="flex justify-end">
-                      <Button size="sm" className="bg-emerald-600 hover:bg-emerald-600/90">
-                        Post Comment
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-                <Separator />
-                <div className="text-sm text-muted-foreground text-center py-4">
-                  No comments yet. Be the first to share your thoughts!
-                </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </div>
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Open Positions */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h3 className="font-semibold">Open Positions</h3>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {PROJECT_DATA.openPositions.map((position, idx) => (
-                  <div key={idx} className="space-y-3 p-4 rounded-lg bg-emerald-50/50">
-                    <div>
-                      <div className="font-medium text-emerald-800">{position.title}</div>
-                      <div className="text-sm text-emerald-700 mt-1">{position.description}</div>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="text-xs font-medium text-emerald-800">Requirements:</div>
-                      <div className="flex flex-wrap gap-1">
-                        {position.requirements.map((req) => (
-                          <Badge key={req} className="bg-emerald-100 text-emerald-700 text-xs">
-                            {req}
-                          </Badge>
-                        ))}
-                      </div>
-                    </div>
-                    <div className="text-xs text-emerald-700">Time: {position.timeCommitment}</div>
-                  </div>
-                ))}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button className="w-full bg-emerald-600 hover:bg-emerald-600/90">Apply to Join</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Apply to Join Project</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="position">Position</Label>
-                        <select className="w-full mt-1 p-2 border rounded-lg">
-                          {PROJECT_DATA.openPositions.map((pos, idx) => (
-                            <option key={idx} value={pos.title}>
-                              {pos.title}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div>
-                        <Label htmlFor="message">Cover Message</Label>
-                        <Textarea
-                          id="message"
-                          placeholder="Tell the team why you'd be a great fit..."
-                          className="mt-1"
-                        />
-                      </div>
-                      <Button
-                        className="w-full bg-emerald-600 hover:bg-emerald-600/90"
-                        disabled={applying}
-                        onClick={async () => {
-                          setApplying(true)
-                          await new Promise((r) => setTimeout(r, 1000))
-                          setApplying(false)
-                        }}
-                      >
-                        {applying ? "Sending Application..." : "Send Application"}
-                      </Button>
-                    </div>
-                  </DialogContent>
-                </Dialog>
-              </CardContent>
-            </Card>
-
-            {/* Project Owner */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h3 className="font-semibold">Project Owner</h3>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-12 w-12 ring-1 ring-emerald-100">
-                    <AvatarImage src={PROJECT_DATA.owner.avatar || "/placeholder.svg"} alt={PROJECT_DATA.owner.name} />
-                    <AvatarFallback>{PROJECT_DATA.owner.name.slice(0, 2)}</AvatarFallback>
-                  </Avatar>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="font-medium">{PROJECT_DATA.owner.name}</div>
-                      <Badge className="bg-emerald-50 text-emerald-700 text-xs">{PROJECT_DATA.owner.level}</Badge>
-                    </div>
-                    <div className="text-sm text-muted-foreground">{PROJECT_DATA.owner.role}</div>
-                  </div>
-                </div>
-                <Button variant="outline" className="w-full mt-4 bg-transparent">
-                  Message Owner
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Related Projects */}
-            <Card className="border-0 ring-1 ring-black/5">
-              <CardHeader className="pb-4">
-                <h3 className="font-semibold">Related Projects</h3>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {RELATED_PROJECTS.map((project) => (
-                  <Link key={project.id} href={`/projects/${project.id}`}>
-                    <div className="flex gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                      <div className="relative h-12 w-12 overflow-hidden rounded-lg bg-muted">
-                        <Image
-                          src={project.image || "/placeholder.svg"}
-                          alt={project.title}
-                          fill
-                          className="object-cover"
-                        />
-                      </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium text-sm line-clamp-1">{project.title}</div>
-                        <div className="text-xs text-muted-foreground line-clamp-2 mt-1">{project.description}</div>
-                        <div className="flex items-center gap-2 mt-2">
-                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <Users className="h-3 w-3" />
-                            {project.teamSize}
-                          </div>
-                          <div className="flex gap-1">
-                            {project.techStack.slice(0, 2).map((tech) => (
-                              <Badge key={tech} variant="secondary" className="text-[10px] px-1">
-                                {tech}
-                              </Badge>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </Link>
-                ))}
-              </CardContent>
-            </Card>
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            <Button
+              variant={isLiked ? "default" : "outline"}
+              size="sm"
+              onClick={handleLike}
+              className="gap-2"
+            >
+              <Heart className={`h-4 w-4 ${isLiked ? "fill-current" : ""}`} />
+              {project.likes.length}
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Eye className="h-4 w-4" />
+              {project.views}
+            </Button>
+            <Button variant="outline" size="sm" className="gap-2">
+              <Share2 className="h-4 w-4" />
+              Share
+            </Button>
           </div>
         </div>
       </div>
-    </main>
+
+      {/* Main Content */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Left Column - Description */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle>About This Project</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="prose prose-sm max-w-none">
+                <div className="whitespace-pre-wrap text-sm leading-relaxed">
+                  {project.description}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Column - Details */}
+        <div className="space-y-6">
+          {/* Technologies */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Technologies</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex flex-wrap gap-2">
+                {project.technologies.map((tech) => (
+                  <Badge key={tech} variant="secondary">
+                    {tech}
+                  </Badge>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Links */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Project Links</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {project.githubUrl && (
+                <Button variant="outline" className="w-full justify-start gap-2" asChild>
+                  <a href={project.githubUrl} target="_blank" rel="noopener noreferrer">
+                    <Github className="h-4 w-4" />
+                    View Source Code
+                  </a>
+                </Button>
+              )}
+              {project.liveUrl && (
+                <Button variant="outline" className="w-full justify-start gap-2" asChild>
+                  <a href={project.liveUrl} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-4 w-4" />
+                    Live Demo
+                  </a>
+                </Button>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Author Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">Project Owner</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-3 mb-4">
+                <Avatar className="h-12 w-12">
+                  <AvatarImage src={project.author.avatar} />
+                  <AvatarFallback>
+                    {(project.author.displayName || project.author.username)[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h4 className="font-medium">{project.author.displayName || project.author.username}</h4>
+                  <p className="text-sm text-gray-500">@{project.author.username}</p>
+                  <Badge variant="outline" className="text-xs mt-1">
+                    Level {project.author.level}
+                  </Badge>
+                </div>
+              </div>
+              <Button className="w-full" asChild>
+                <Link href={`/profile/${project.author.username}`}>
+                  View Profile
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    </div>
   )
 }
