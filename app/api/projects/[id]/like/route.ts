@@ -64,7 +64,7 @@ export async function POST(
     
     const updatedProject = await Project.findById(params.id)
       .populate('author', 'username displayName avatar level')
-      .lean()
+      .lean() as any
     
     if (!updatedProject) {
       return NextResponse.json(
@@ -78,7 +78,7 @@ export async function POST(
       data: {
         project: updatedProject,
         isLiked: !isLiked,
-        likesCount: updatedProject.likes.length
+        likesCount: updatedProject.likes?.length || 0
       }
     })
   } catch (error) {

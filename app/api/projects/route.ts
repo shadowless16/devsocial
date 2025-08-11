@@ -48,10 +48,10 @@ export async function GET(request: NextRequest) {
         }
       }
     })
-  } catch (error) {
+  } catch (error: any) {
     console.error('Project fetch error:', error)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch projects', details: error.message },
+      { success: false, error: 'Failed to fetch projects', details: error?.message || 'Unknown error' },
       { status: 500 }
     )
   }

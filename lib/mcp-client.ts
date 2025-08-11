@@ -3,8 +3,8 @@ const { StdioClientTransport } = require('@modelcontextprotocol/sdk/client/stdio
 const { spawn } = require('child_process');
 
 class MCPClient {
-  private client: Client | null = null;
-  private transport: StdioClientTransport | null = null;
+  private client: any = null;
+  private transport: any = null;
 
   async connect() {
     if (this.client) return this.client;

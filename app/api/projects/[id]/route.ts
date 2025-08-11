@@ -14,7 +14,7 @@ export async function GET(
     
     const project = await Project.findById(params.id)
       .populate('author', 'username displayName avatar level')
-      .lean()
+      .lean() as any
     
     if (!project) {
       return NextResponse.json(
@@ -25,7 +25,7 @@ export async function GET(
     
     // Increment view count only if user hasn't viewed before
     if (session?.user?.id) {
-      const hasViewed = project.viewedBy?.some(id => id.toString() === session.user.id)
+      const hasViewed = project.viewedBy?.some((id: any) => id.toString() === session.user.id)
       if (!hasViewed) {
         await Project.findByIdAndUpdate(params.id, {
           $inc: { views: 1 },
