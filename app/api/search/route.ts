@@ -60,20 +60,20 @@ export async function GET(request: NextRequest) {
       results.users = users
     }
 
-    // Search tags - now search in Tag collection
+    // Search tags - search in post tags array
     if (type === "all" || type === "tags") {
-      const Tag = (await import("@/models/Tag")).default
-      const tags = await Tag.find({
-        name: searchRegex
-      })
-        .select("name usageCount")
-        .sort({ usageCount: -1 })
-        .limit(type === "tags" ? limit : 10)
-
-      results.tags = tags.map((tag) => ({
-        tag: tag.name,
-        count: tag.usageCount,
-        posts: tag.usageCount,
+      const postTags = await Post.aggregate([
+        { $unwind: "$tags" },
+        { $match: { tags: searchRegex } },
+        { $group: { _id: "$tags", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: type === "tags" ? limit : 10 }
+      ])
+      
+      results.tags = postTags.map((tag) => ({
+        tag: tag._id,
+        count: tag.count,
+        posts: tag.count,
       }))
     }
 

@@ -67,14 +67,14 @@ export default function HomePage() {
   const handleLikePost = async (postId: string) => {
     try {
       const response = await apiClient.togglePostLike(postId)
-      if (response.success) {
+      if (response.success && response.data) {
+        const data = response.data as { liked: boolean; likesCount: number }
         setPosts(posts.map(post => {
           if (post.id === postId) {
-            const wasLiked = post.isLiked
             return {
               ...post,
-              isLiked: !wasLiked,
-              likesCount: wasLiked ? post.likesCount - 1 : post.likesCount + 1
+              isLiked: data.liked,
+              likesCount: data.likesCount
             }
           }
           return post
@@ -95,7 +95,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto px-3 md:px-4 py-4 max-w-4xl overflow-hidden">
+    <div className="container mx-auto px-4 md:px-6 py-4 max-w-4xl">
       <HeaderBar onCreateClick={() => setShowPostModal(true)} />
       <StatPills />
       <Compose onCreateClick={() => setShowPostModal(true)} />

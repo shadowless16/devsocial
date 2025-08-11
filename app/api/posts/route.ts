@@ -32,6 +32,17 @@ export async function GET(req: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "10", 10);
     const skip = (page - 1) * limit;
 
+    // Get current user ID if authenticated
+    let currentUserId = null;
+    try {
+      const authResult = await authMiddleware(req);
+      if (authResult.success) {
+        currentUserId = (req as AuthenticatedRequest).user.id;
+      }
+    } catch (error) {
+      // Continue without authentication for public posts
+    }
+
     // Fetch posts and ensure author exists
     const posts = await Post.find({})
       .populate({
@@ -42,6 +53,14 @@ export async function GET(req: NextRequest) {
       .skip(skip)
       .limit(limit)
       .lean();
+
+    // Get user likes if authenticated
+    let userLikes = new Set();
+    if (currentUserId) {
+      const Like = (await import("@/models/Like")).default;
+      const likes = await Like.find({ user: currentUserId }).select('post').lean();
+      userLikes = new Set(likes.map(like => like.post.toString()));
+    }
 
     // Filter out posts where author population failed and transform data
     const validPosts = posts
@@ -59,7 +78,7 @@ export async function GET(req: NextRequest) {
         createdAt: new Date(post.createdAt).toISOString(),
         tags: post.tags || [],
         viewsCount: post.viewsCount || 0,
-        isLiked: false,
+        isLiked: currentUserId ? userLikes.has(post._id.toString()) : false,
       }));
 
     const totalPosts = await Post.countDocuments({

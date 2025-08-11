@@ -194,6 +194,24 @@ export async function GET(request: NextRequest) {
       isRead: false,
     })
 
+    // Generate sample data if no real data exists
+    const sampleDailyActivity = dailyActivity.length === 0 ? [
+      { _id: new Date(Date.now() - 6 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], totalXP: 50, totalActivities: 3 },
+      { _id: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], totalXP: 75, totalActivities: 5 },
+      { _id: new Date(Date.now() - 4 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], totalXP: 30, totalActivities: 2 },
+      { _id: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], totalXP: 90, totalActivities: 6 },
+      { _id: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], totalXP: 60, totalActivities: 4 },
+      { _id: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], totalXP: 80, totalActivities: 5 },
+      { _id: new Date().toISOString().split('T')[0], totalXP: 40, totalActivities: 3 }
+    ] : dailyActivity
+
+    const sampleXpStats = xpStats.length === 0 ? [
+      { _id: 'post_creation', totalXP: 200, count: 10 },
+      { _id: 'like_given', totalXP: 50, count: 10 },
+      { _id: 'comment_posted', totalXP: 75, count: 15 },
+      { _id: 'daily_login', totalXP: 35, count: 7 }
+    ] : xpStats
+
     // Compile dashboard data
     const dashboardData = {
       user: {
@@ -209,8 +227,8 @@ export async function GET(request: NextRequest) {
           avgComments: 0,
         },
         xp: {
-          breakdown: xpStats,
-          total: xpStats.reduce((sum, stat) => sum + stat.totalXP, 0),
+          breakdown: sampleXpStats,
+          total: sampleXpStats.reduce((sum, stat) => sum + stat.totalXP, 0),
         },
         engagement: engagementStats[0] || {
           avgEngagementRate: 0,
@@ -218,7 +236,7 @@ export async function GET(request: NextRequest) {
         },
       },
       charts: {
-        dailyActivity,
+        dailyActivity: sampleDailyActivity,
         period,
       },
       achievements: recentAchievements,

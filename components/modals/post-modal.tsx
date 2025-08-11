@@ -841,7 +841,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                 </Button>
                 
                 {showLanguageSelector && (
-                  <div className="absolute top-full left-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
+                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-96 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
                     <div className="p-3 border-b border-gray-100">
                       <div className="flex items-center space-x-2 mb-2">
                         <Search className="w-4 h-4 text-gray-400" />
@@ -855,7 +855,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                       <p className="text-xs text-gray-500">Choose a language to insert a code template:</p>
                     </div>
                     <div className="max-h-64 overflow-y-auto p-2">
-                      <div className="grid grid-cols-2 gap-1">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
                         {filteredLanguages.map((language) => (
                           <div
                             key={language.id}
@@ -895,7 +895,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                 </Button>
                 
                 {showChallengeDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                     <div className="p-2">
                       <p className="text-sm text-gray-600 mb-2 px-2">Select a challenge to attach:</p>
                       {sampleChallenges.map((challenge) => (

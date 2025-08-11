@@ -58,10 +58,11 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
       const response = await fetch('/api/notifications?unread=true&limit=1')
       const data = await response.json()
       if (data.success) {
-        setUnreadCount(data.data.unreadCount)
+        setUnreadCount(data.data.unreadCount || 0)
       }
     } catch (error) {
       console.error('Error fetching unread count:', error)
+      setUnreadCount(0)
     }
   }
 
@@ -122,6 +123,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshUnreadCount()
+    // Also fetch notifications on mount to get initial data
+    fetchNotifications()
     const interval = setInterval(refreshUnreadCount, 30000)
     return () => clearInterval(interval)
   }, [])

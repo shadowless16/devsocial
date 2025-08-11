@@ -27,7 +27,8 @@ import {
   MessageCircle,
   Shield,
   FolderOpen,
-  Briefcase
+  Briefcase,
+  Users
 } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { PostModal } from "@/components/modals/post-modal"
@@ -55,6 +56,7 @@ const navigationItems: NavItem[] = [
   { label: "Trending", icon: Compass, href: "/trending" },
   { label: "Challenges", icon: ListOrdered, href: "/challenges", badge: "3" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
+  { label: "Referrals", icon: Users, href: "/referrals" },
   { label: "Notifications", icon: Bell, href: "/notifications" },
   { label: "Dev Profile", icon: User, href: "/profile" },
   { label: "Connect", icon: MessageCircle, href: "/messages" },

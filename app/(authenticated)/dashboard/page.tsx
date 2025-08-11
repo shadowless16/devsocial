@@ -1,18 +1,9 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import {
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  PieChart,
-  Pie,
-  Cell,
-} from "recharts"
+import dynamic from "next/dynamic"
+
+import { ActivityChart, XPChart } from '@/components/simple-charts'
 import { Activity, MessageSquare, Heart, Trophy, Target, Zap } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -70,7 +61,7 @@ interface DashboardData {
   }
 }
 
-const COLORS = ["#10B981", "#3B82F6", "#8B5CF6", "#F59E0B", "#EF4444"]
+
 
 export default function DashboardPage() {
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
@@ -121,17 +112,23 @@ export default function DashboardPage() {
     )
   }
 
-  const xpBreakdownData = dashboardData.stats.xp.breakdown.map((item) => ({
-    name: item._id.replace("_", " ").toUpperCase(),
-    value: item.totalXP,
-    count: item.count,
-  }))
+  const xpBreakdownData = dashboardData?.stats?.xp?.breakdown?.map((item) => ({
+    name: item._id?.replace(/_/g, " ").toUpperCase() || 'Unknown',
+    value: item.totalXP || 0,
+    count: item.count || 0,
+  })) || []
 
-  const activityChartData = dashboardData.charts.dailyActivity.map((item) => ({
-    date: new Date(item._id).toLocaleDateString("en-US", { month: "short", day: "numeric" }),
-    xp: item.totalXP,
-    activities: item.totalActivities,
-  }))
+  const activityChartData = dashboardData?.charts?.dailyActivity?.map((item) => ({
+    date: item._id ? new Date(item._id).toLocaleDateString("en-US", { month: "short", day: "numeric" }) : 'Unknown',
+    xp: item.totalXP || 0,
+    activities: item.totalActivities || 0,
+  })) || []
+
+  console.log("Chart data:", { xpBreakdownData, activityChartData })
+  console.log("Activity chart data length:", activityChartData?.length)
+  console.log("XP breakdown data length:", xpBreakdownData?.length)
+  console.log("Sample activity data:", activityChartData?.[0])
+  console.log("Sample XP data:", xpBreakdownData?.[0])
 
   return (
     <div className="w-full py-4 sm:py-6 px-1 sm:px-4">
@@ -227,16 +224,9 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <LineChart data={activityChartData}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="date" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="xp" stroke="#10B981" strokeWidth={2} name="XP Earned" />
-                <Line type="monotone" dataKey="activities" stroke="#3B82F6" strokeWidth={2} name="Activities" />
-              </LineChart>
-            </ResponsiveContainer>
+            <div className="w-full" style={{ minHeight: '200px' }}>
+              <ActivityChart data={activityChartData} />
+            </div>
           </CardContent>
         </Card>
 
@@ -249,36 +239,8 @@ export default function DashboardPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <ResponsiveContainer width="100%" height={200}>
-              <PieChart>
-                <Pie
-                  data={xpBreakdownData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  outerRadius={60}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {xpBreakdownData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip formatter={(value, name) => [`${value} XP`, name]} />
-              </PieChart>
-            </ResponsiveContainer>
-            <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {xpBreakdownData.map((entry, index) => (
-                <div key={entry.name} className="flex items-center space-x-2">
-                  <div 
-                    className="w-3 h-3 rounded-full" 
-                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
-                  />
-                  <span className="text-xs sm:text-sm text-gray-600">
-                    {entry.name}: {entry.value} XP
-                  </span>
-                </div>
-              ))}
+            <div className="w-full" style={{ minHeight: '200px' }}>
+              <XPChart data={xpBreakdownData} />
             </div>
           </CardContent>
         </Card>

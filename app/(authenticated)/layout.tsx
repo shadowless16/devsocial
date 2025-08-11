@@ -26,17 +26,17 @@ export default function AuthenticatedLayout({
   
   return (
     <TooltipProvider>
-      <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full max-w-full overflow-x-hidden">
-        <div className="mx-auto grid w-full max-w-[120rem] grid-cols-1 gap-6 px-2 sm:px-4 py-6 md:grid-cols-[156px_1fr] lg:grid-cols-[168px_1fr_216px] overflow-x-hidden">
-          <aside className="hidden md:block w-full max-w-full overflow-hidden">
+      <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full">
+        <div className="mx-auto grid w-full max-w-[120rem] grid-cols-1 gap-6 px-2 sm:px-4 py-6 md:grid-cols-[156px_1fr] lg:grid-cols-[168px_1fr_216px]">
+          <aside className="hidden md:block w-full">
             <SideNav />
           </aside>
 
-          <section aria-label="Feed" className="grid gap-6 w-full max-w-full overflow-hidden min-w-0 pr-2 sm:pr-0">
+          <section aria-label="Feed" className="grid gap-6 w-full min-w-0 px-2 sm:px-0">
             {children}
           </section>
 
-          <aside className="hidden lg:block w-full max-w-full overflow-hidden">
+          <aside className="hidden lg:block w-full">
             <RightRail />
           </aside>
         </div>

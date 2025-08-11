@@ -28,6 +28,11 @@ import {
   LogOut,
   Settings2,
 } from "lucide-react"
+import { PostModal } from "@/components/modals/post-modal"
+import { useNotifications } from "@/contexts/notification-context"
+import { useRouter } from "next/navigation"
+import { apiClient } from "@/lib/api-client"
+import { useToast } from "@/hooks/use-toast"
 
 type NavItem = {
   label: string
@@ -37,7 +42,7 @@ type NavItem = {
 }
 
 const nav: NavItem[] = [
-  { label: "Home", icon: Home, href: "/" },
+  { label: "Home", icon: Home, href: "/home" },
   { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
   { label: "Search", icon: Search, href: "/search" },
   { label: "Trending", icon: Compass, href: "/trending" },
@@ -50,12 +55,19 @@ const nav: NavItem[] = [
 export default function SideNav() {
   const pathname = usePathname()
   const { user } = useAuth()
-  const [active, setActive] = useState(() => {
-    if (pathname.startsWith("/projects")) {
-      return "Projects"
+  const [active, setActive] = useState("")
+  
+  useEffect(() => {
+    // Update active state based on current pathname
+    const currentPath = pathname === '/' || pathname === '/home' ? '/home' : pathname
+    const activeItem = nav.find(item => {
+      if (item.href === '/' && (currentPath === '/home' || currentPath === '/')) return true
+      return item.href === currentPath
+    })
+    if (activeItem) {
+      setActive(activeItem.label)
     }
-    return "Home"
-  })
+  }, [pathname])
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
@@ -138,14 +150,8 @@ export default function SideNav() {
       <div className="grid gap-1">
         <div className="text-[10px] font-medium text-muted-foreground">Quick Actions</div>
         <div className="flex items-center gap-1">
-          <Button className="flex-1 bg-emerald-600 hover:bg-emerald-600/90 text-xs h-7">
-            <Plus className="mr-1 h-3 w-3" />
-            Create
-          </Button>
-          <Button variant="secondary" className="flex-1 gap-1 text-xs h-7">
-            <Bell className="h-3 w-3" />
-            <span>3</span>
-          </Button>
+          <CreateButton />
+          <NotificationButton />
         </div>
       </div>
 
@@ -181,5 +187,57 @@ export default function SideNav() {
         </Button>
       </div>
     </div>
+  )
+}
+
+function CreateButton() {
+  const [showPostModal, setShowPostModal] = useState(false)
+  const { toast } = useToast()
+
+  const handleCreatePost = async (postData: any) => {
+    try {
+      const response = await apiClient.createPost(postData)
+      if (response.success) {
+        toast({ title: "Success", description: "Post created successfully!" })
+        setShowPostModal(false)
+        window.location.reload()
+      }
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
+    }
+  }
+
+  return (
+    <>
+      <Button 
+        className="flex-1 bg-emerald-600 hover:bg-emerald-600/90 text-xs h-7"
+        onClick={() => setShowPostModal(true)}
+      >
+        <Plus className="mr-1 h-3 w-3" />
+        Create
+      </Button>
+      
+      <PostModal
+        isOpen={showPostModal}
+        onClose={() => setShowPostModal(false)}
+        onSubmit={handleCreatePost}
+      />
+    </>
+  )
+}
+
+function NotificationButton() {
+  const { unreadCount } = useNotifications()
+  const router = useRouter()
+
+  return (
+    <Button 
+      variant="secondary" 
+      className="flex-1 gap-1 text-xs h-7"
+      onClick={() => router.push('/notifications')}
+    >
+      <Bell className="h-3 w-3" />
+      <span>{unreadCount > 0 ? unreadCount : '0'}</span>
+    </Button>
   )
 }

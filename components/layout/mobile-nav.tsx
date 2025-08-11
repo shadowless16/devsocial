@@ -53,7 +53,7 @@ export function MobileNav({ className }: MobileNavProps) {
         <div className="flex items-center justify-center px-6 py-3">
           <div className="flex items-center justify-between w-full max-w-xs bg-white dark:bg-gray-900 rounded-full px-4 py-2 shadow-lg border border-gray-200 dark:border-gray-700">
             {navItems.map((item) => {
-              const isActive = pathname === item.href
+              const isActive = (pathname === '/' && item.href === '/home') || pathname === item.href
               const isCreateButton = item.isAction
               const isMenuButton = item.isMenu
 
@@ -122,7 +122,25 @@ export function MobileNav({ className }: MobileNavProps) {
           isOpen={showCreatePost}
           onClose={() => setShowCreatePost(false)}
           onSubmit={async (postData) => {
-            setShowCreatePost(false)
+            try {
+              const response = await fetch('/api/posts', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(postData),
+              })
+              
+              if (response.ok) {
+                setShowCreatePost(false)
+                // Refresh the page to show new post
+                window.location.reload()
+              } else {
+                console.error('Failed to create post')
+              }
+            } catch (error) {
+              console.error('Error creating post:', error)
+            }
           }}
         />
       )}

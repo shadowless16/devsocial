@@ -10,6 +10,7 @@ import { FeedItem } from "@/components/feed/FeedItem"
 import { UserLink } from "@/components/shared/UserLink"
 import { apiClient } from "@/lib/api-client"
 import { TrendingSkeleton } from "@/components/skeletons/trending-skeleton"
+import { formatTimeAgo } from "@/lib/time-utils"
 
 interface TrendingPost {
   id: string
@@ -268,7 +269,7 @@ export default function TrendingPage() {
                   </Card>
                 )}
 
-                <FeedItem post={{...post, id: post.id || post._id || ''}} onLike={() => handleLike(post.id || post._id || '')} />
+                <FeedItem post={{...post, id: post.id || post._id || '', createdAt: formatTimeAgo(post.createdAt)}} onLike={() => handleLike(post.id || post._id || '')} />
               </div>
             ))
           )}

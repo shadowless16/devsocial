@@ -61,30 +61,49 @@ export class ReferralSystem {
     const pendingReferrals = await Referral.find({
       referred: userId,
       status: "pending",
+      expiresAt: { $gt: new Date() }, // Only check non-expired referrals
     })
 
     for (const referral of pendingReferrals) {
-      const user = await User.findById(userId)
-      const userStats = await UserStats.findOne({ user: userId })
+      try {
+        const user = await User.findById(userId)
+        if (!user) continue
 
-      if (!user || !userStats) continue
+        // Ensure UserStats exists
+        let userStats = await UserStats.findOne({ user: userId })
+        if (!userStats) {
+          userStats = await UserStats.create({
+            user: userId,
+            totalPosts: 0,
+            totalXP: user.points || 0,
+            totalReferrals: 0
+          })
+        }
 
-      // Check completion criteria: user has at least 1 post and 50 XP
-      const hasMinimumActivity = userStats.totalPosts >= 1 && userStats.totalXP >= 50
+        // Check completion criteria: user has at least 1 post and 50 XP
+        const hasMinimumActivity = userStats.totalPosts >= 1 && userStats.totalXP >= 50
 
-      if (hasMinimumActivity) {
-        // Mark referral as completed
-        referral.status = "completed"
-        referral.completedAt = new Date()
-        referral.rewardsClaimed = true
-        await referral.save()
+        if (hasMinimumActivity) {
+          // Mark referral as completed
+          referral.status = "completed"
+          referral.completedAt = new Date()
+          referral.rewardsClaimed = true
+          await referral.save()
 
-        // Award XP to both users
-        await awardXP(referral.referrer.toString(), "referral_success", referral._id.toString())
-        await awardXP(userId, "referral_bonus", referral._id.toString())
+          // Award XP to both users
+          await awardXP(referral.referrer.toString(), "referral_success", referral._id.toString())
+          await awardXP(userId, "referral_bonus", referral._id.toString())
 
-        // Update referral stats
-        await UserStats.findOneAndUpdate({ user: referral.referrer }, { $inc: { totalReferrals: 1 } }, { upsert: true })
+          // Update referral stats
+          await UserStats.findOneAndUpdate(
+            { user: referral.referrer }, 
+            { $inc: { totalReferrals: 1 } }, 
+            { upsert: true }
+          )
+        }
+      } catch (error) {
+        console.error(`Error processing referral completion for ${userId}:`, error)
+        // Continue with other referrals
       }
     }
   }
@@ -95,8 +114,9 @@ export class ReferralSystem {
     // First, check for any pending referrals that should be completed
     await this.checkUserReferrals(userId)
 
+    const userObjectId = new User.base.Types.ObjectId(userId)
     const stats = await Referral.aggregate([
-      { $match: { referrer: userId } },
+      { $match: { referrer: userObjectId } },
       {
         $group: {
           _id: "$status",
@@ -106,7 +126,7 @@ export class ReferralSystem {
       },
     ])
 
-    const recentReferrals = await Referral.find({ referrer: userId })
+    const recentReferrals = await Referral.find({ referrer: userObjectId })
       .populate("referred", "username displayName avatar")
       .sort({ createdAt: -1 })
       .limit(10)
@@ -144,9 +164,19 @@ export class ReferralSystem {
 
     for (const referral of pendingReferrals) {
       try {
-        const userStats = await UserStats.findOne({ user: referral.referred._id })
+        const referredUser = await User.findById(referral.referred._id)
+        if (!referredUser) continue
 
-        if (!userStats) continue
+        // Ensure UserStats exists
+        let userStats = await UserStats.findOne({ user: referral.referred._id })
+        if (!userStats) {
+          userStats = await UserStats.create({
+            user: referral.referred._id,
+            totalPosts: 0,
+            totalXP: referredUser.points || 0,
+            totalReferrals: 0
+          })
+        }
 
         // Check completion criteria: at least 1 post and 50 XP
         if (userStats.totalPosts >= 1 && userStats.totalXP >= 50) {

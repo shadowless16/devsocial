@@ -227,8 +227,13 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       });
       
       if (!response.success) {
-        const errorMessage = response.message || "Signup failed";
-        throw new Error(errorMessage);
+        // Create detailed error object to preserve validation details
+        const error: any = new Error(response.message || "Signup failed");
+        // Preserve any additional error details from the response
+        if ((response as any).error) {
+          error.error = (response as any).error;
+        }
+        throw error;
       }
       
       // After successful signup, automatically log the user in

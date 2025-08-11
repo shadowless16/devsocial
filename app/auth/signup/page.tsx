@@ -93,49 +93,56 @@ useEffect(() => {
       })
       
       toast.success("Account created successfully! Welcome to DevSocial!")
-      router.push("/onboarding")
+      // Force immediate redirect
+      window.location.href = "/onboarding"
     } catch (error: any) {
       console.error("Signup error:", error);
-      // Handle different error types
+      
       let errorMessage = "Signup failed";
       
-      if (typeof error === 'string') {
-        errorMessage = error;
-      } else if (error?.response) {
-        // Handle API response errors
-        const responseData = error.response.data;
-        if (responseData?.error?.message) {
-          errorMessage = responseData.error.message;
-        } else if (responseData?.error?.details) {
-          // Handle validation errors
-          const details = responseData.error.details;
-          const validationErrors = [];
+      // Extract detailed error messages
+      if (error?.message) {
+        errorMessage = error.message;
+      } else if (error?.error) {
+        if (typeof error.error === 'string') {
+          errorMessage = error.error;
+        } else if (error.error.message) {
+          errorMessage = error.error.message;
+        } else if (error.error.details) {
+          // Handle Zod validation errors
+          const details = error.error.details;
+          const validationErrors: string[] = [];
+          
           for (const field in details) {
-            if (details[field]?._errors) {
+            if (details[field]?._errors && Array.isArray(details[field]._errors)) {
               validationErrors.push(...details[field]._errors);
             }
           }
-          errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
-        } else if (responseData?.message) {
-          errorMessage = responseData.message;
-        }
-      } else if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.error?.message) {
-        errorMessage = error.error.message;
-      } else if (error?.error?.details) {
-        // Handle validation errors
-        const details = error.error.details;
-        const validationErrors = [];
-        for (const field in details) {
-          if (details[field]?._errors) {
-            validationErrors.push(...details[field]._errors);
+          
+          if (validationErrors.length > 0) {
+            errorMessage = validationErrors.join('. ');
           }
         }
-        errorMessage = validationErrors.length > 0 ? validationErrors.join(', ') : "Validation failed";
-      } else {
-        // Fallback for unknown error structures
-        errorMessage = JSON.stringify(error);
+      } else if (error?.response?.data) {
+        const responseData = error.response.data;
+        if (responseData.error?.message) {
+          errorMessage = responseData.error.message;
+        } else if (responseData.error?.details) {
+          const details = responseData.error.details;
+          const validationErrors: string[] = [];
+          
+          for (const field in details) {
+            if (details[field]?._errors && Array.isArray(details[field]._errors)) {
+              validationErrors.push(...details[field]._errors);
+            }
+          }
+          
+          if (validationErrors.length > 0) {
+            errorMessage = validationErrors.join('. ');
+          }
+        } else if (responseData.message) {
+          errorMessage = responseData.message;
+        }
       }
       
       setError(errorMessage);
@@ -350,6 +357,9 @@ useEffect(() => {
                 onChange={handleChange}
                 placeholder="Create a strong password"
               />
+              <p className="text-xs text-muted-foreground">
+                Must be at least 8 characters with uppercase, lowercase, and number
+              </p>
             </div>
 
             <div className="space-y-2">

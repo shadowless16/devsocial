@@ -153,10 +153,10 @@ export function EnhancedLeaderboard() {
   }
 
   return (
-    <Card className="w-full max-w-full overflow-hidden">
-      <CardHeader className="max-w-full overflow-hidden">
-        <div className="flex items-center justify-between max-w-full overflow-hidden">
-          <div className="min-w-0 flex-1 overflow-hidden">
+    <Card className="w-full">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div className="min-w-0 flex-1">
             <CardTitle className="flex items-center space-x-2 truncate">
               <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
               <span className="text-base sm:text-lg truncate">Leaderboard</span>
@@ -170,8 +170,8 @@ export function EnhancedLeaderboard() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-2 sm:px-6 max-w-full overflow-hidden">
-        <div className="w-full max-w-full overflow-hidden">
+      <CardContent className="px-2 sm:px-6">
+        <div className="w-full">
           <div className="flex overflow-x-auto scrollbar-hide mb-4">
             <div className="flex space-x-1 min-w-max">
               {leaderboardTypes.map((type) => {
@@ -211,7 +211,7 @@ export function EnhancedLeaderboard() {
                     return (
                       <div
                         key={entry._id}
-                        className={`flex items-center space-x-2 p-2 rounded-lg border transition-all w-full max-w-full overflow-hidden ${
+                        className={`flex items-center space-x-2 p-2 rounded-lg border transition-all w-full ${
                           position <= 3
                             ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
                             : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"

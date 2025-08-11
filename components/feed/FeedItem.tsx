@@ -156,8 +156,27 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
     }
   };
 
-  const handleShareClick = (e: React.MouseEvent) => {
+  const handleShareClick = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    try {
+      const postUrl = `${window.location.origin}/post/${post.id}`
+      
+      if (navigator.share) {
+        await navigator.share({
+          title: `Post by ${author.displayName}`,
+          text: post.content?.substring(0, 100) + (post.content && post.content.length > 100 ? '...' : ''),
+          url: postUrl
+        })
+      } else {
+        await navigator.clipboard.writeText(postUrl)
+        toast({
+          title: "Link copied!",
+          description: "Post link copied to clipboard",
+        })
+      }
+    } catch (error) {
+      console.log('Share cancelled or failed')
+    }
   };
 
   const handleCommentSubmit = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {

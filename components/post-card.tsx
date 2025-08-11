@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useToast } from "@/hooks/use-toast"
 import { getLikeTooltip, GAMIFIED_TERMS } from "@/lib/gamified-terms"
 import { ReportModal } from "@/components/modals/report-modal"
+import { formatTimeAgo } from "@/lib/time-utils"
 
 interface PostCardProps {
   author?: string
@@ -59,6 +60,12 @@ export default function PostCard({
   const [showDropdown, setShowDropdown] = useState(false)
   const [isLiked, setIsLiked] = useState(liked)
   const [currentLikesCount, setCurrentLikesCount] = useState(likesCount)
+  
+  // Update state when props change (important for like persistence)
+  useEffect(() => {
+    setIsLiked(liked)
+    setCurrentLikesCount(likesCount)
+  }, [liked, likesCount])
   const [isCommentHovered, setIsCommentHovered] = useState(false)
   const [isShareHovered, setIsShareHovered] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
@@ -82,16 +89,19 @@ export default function PostCard({
   const handleLike = async () => {
     if (!postId || !onLike) return
     
+    const previousLiked = isLiked
+    const previousCount = currentLikesCount
+    
     // Optimistic update
-    setIsLiked(!isLiked)
-    setCurrentLikesCount(isLiked ? currentLikesCount - 1 : currentLikesCount + 1)
+    setIsLiked(!previousLiked)
+    setCurrentLikesCount(previousLiked ? previousCount - 1 : previousCount + 1)
     
     try {
       await onLike(postId)
     } catch (error) {
       // Revert on error
-      setIsLiked(isLiked)
-      setCurrentLikesCount(currentLikesCount)
+      setIsLiked(previousLiked)
+      setCurrentLikesCount(previousCount)
     }
   }
 
@@ -102,14 +112,16 @@ export default function PostCard({
 
   const handleShare = async () => {
     try {
+      const postUrl = `${window.location.origin}/post/${postId}`
+      
       if (navigator.share) {
         await navigator.share({
           title: `Post by ${author}`,
-          text: content,
-          url: window.location.href
+          text: content?.substring(0, 100) + (content && content.length > 100 ? '...' : ''),
+          url: postUrl
         })
       } else {
-        await navigator.clipboard.writeText(window.location.href)
+        await navigator.clipboard.writeText(postUrl)
         toast({
           title: "Link copied!",
           description: "Post link copied to clipboard",
@@ -120,14 +132,13 @@ export default function PostCard({
     }
   }
   const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US') + " " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    return formatTimeAgo(timestamp)
   }
 
   return (
-    <Card className="border-0 ring-1 ring-black/5">
-      <CardContent className="p-3 md:p-4">
-        <div className="flex items-start gap-2 md:gap-3">
+    <Card className="border-0 ring-1 ring-black/5 w-full overflow-hidden">
+      <CardContent className="p-3 md:p-4 w-full">
+        <div className="flex items-start gap-2 md:gap-3 w-full">
           <Avatar 
             className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all flex-shrink-0"
             onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
@@ -136,22 +147,22 @@ export default function PostCard({
             <AvatarFallback className="text-xs md:text-sm">{author.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
           
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center justify-between mb-1">
-              <div className="flex items-center gap-1 md:gap-2 flex-wrap">
+          <div className="flex-1 min-w-0 w-full overflow-hidden">
+            <div className="flex items-center justify-between mb-1 w-full">
+              <div className="flex items-center gap-1 md:gap-2 flex-wrap min-w-0 flex-1 mr-2">
                 <span 
                   className="font-medium text-xs md:text-sm cursor-pointer hover:text-emerald-500 transition-colors truncate"
                   onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
                 >{author}</span>
-                <Badge className="bg-emerald-50 text-emerald-700 text-[10px] md:text-xs px-1 md:px-2">{level}</Badge>
+                <Badge className="bg-emerald-50 text-emerald-700 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">{level}</Badge>
                 <span 
-                  className="text-[10px] md:text-xs text-muted-foreground cursor-pointer hover:text-emerald-500 transition-colors hidden sm:inline"
+                  className="text-[10px] md:text-xs text-muted-foreground cursor-pointer hover:text-emerald-500 transition-colors hidden sm:inline truncate"
                   onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
                 >{handle}</span>
-                <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">•</span>
-                <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline">{formatTimestamp(timestamp)}</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline flex-shrink-0">•</span>
+                <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline flex-shrink-0">{formatTimestamp(timestamp)}</span>
                 {xpDelta > 0 && (
-                  <Badge className="bg-yellow-50 text-yellow-700 text-[10px] md:text-xs px-1 md:px-2">
+                  <Badge className="bg-yellow-50 text-yellow-700 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">
                     +{xpDelta}
                   </Badge>
                 )}
@@ -159,7 +170,7 @@ export default function PostCard({
               
               <DropdownMenu open={showDropdown} onOpenChange={setShowDropdown}>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -186,7 +197,7 @@ export default function PostCard({
             </div>
             
             <div 
-              className="text-xs md:text-sm mb-2 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-gray-50/50 rounded-md p-1 md:p-2 -m-1 md:-m-2 transition-colors"
+              className="text-xs md:text-sm mb-2 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-gray-50/50 rounded-md p-1 md:p-2 -m-1 md:-m-2 transition-colors w-full overflow-hidden break-words"
               onClick={() => postId && onClick?.(postId)}
             >
               <ReactMarkdown
@@ -228,12 +239,12 @@ export default function PostCard({
               </ReactMarkdown>
             </div>
             
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-1 md:gap-4 flex-1 min-w-0">
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors ${
+                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors flex-shrink-0 ${
                     isLiked 
                       ? 'text-green-500 hover:text-green-600' 
                       : 'text-muted-foreground hover:text-green-500'
@@ -247,7 +258,7 @@ export default function PostCard({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors ${
+                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors flex-shrink-0 ${
                     isCommentHovered 
                       ? 'text-blue-500 hover:text-blue-600' 
                       : 'text-muted-foreground hover:text-blue-500'
@@ -263,7 +274,7 @@ export default function PostCard({
                 <Button 
                   variant="ghost" 
                   size="sm" 
-                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors ${
+                  className={`h-6 md:h-8 gap-1 md:gap-2 px-1 md:px-2 transition-colors flex-shrink-0 ${
                     isShareHovered 
                       ? 'text-purple-500 hover:text-purple-600' 
                       : 'text-muted-foreground hover:text-purple-500'
@@ -277,7 +288,7 @@ export default function PostCard({
                 </Button>
               </div>
               
-              <span className="text-[10px] md:text-xs text-muted-foreground">{views} {GAMIFIED_TERMS.VIEWS.toLowerCase()}</span>
+              <span className="text-[10px] md:text-xs text-muted-foreground flex-shrink-0 ml-2">{views} {GAMIFIED_TERMS.VIEWS.toLowerCase()}</span>
             </div>
           </div>
         </div>
