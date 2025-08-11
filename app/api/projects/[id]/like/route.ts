@@ -66,6 +66,13 @@ export async function POST(
       .populate('author', 'username displayName avatar level')
       .lean()
     
+    if (!updatedProject) {
+      return NextResponse.json(
+        { success: false, error: 'Project not found after update' },
+        { status: 404 }
+      )
+    }
+    
     return NextResponse.json({
       success: true,
       data: {
