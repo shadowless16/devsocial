@@ -132,7 +132,7 @@ export default function UserProfile() {
   }
 
   return (
-    <div className="container mx-auto p-2 max-w-4xl">
+    <div className="w-full max-w-full py-4 sm:py-6 px-1 sm:px-4 overflow-hidden">
       {/* Profile Header */}
       <ProfileHeader 
         profile={profileData} 
@@ -145,48 +145,53 @@ export default function UserProfile() {
       {statsData && <ProfileStats stats={statsData} />}
 
       {/* Tab Navigation */}
-      <div className="flex gap-1 mb-2 overflow-x-auto">
-        {tabOptions.map((tab) => (
-          <Button
-            key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
-            variant={activeTab === tab.id ? "default" : "ghost"}
-            className="whitespace-nowrap"
-          >
-            <tab.icon size={16} className="mr-2" />
-            {tab.label}
-          </Button>
-        ))}
+      <div className="flex overflow-x-auto scrollbar-hide mb-4">
+        <div className="flex space-x-1 min-w-max">
+          {tabOptions.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                  : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+              }`}
+            >
+              <tab.icon size={14} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Tab Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-2">
+      <div className="space-y-3 w-full max-w-full overflow-hidden">
         {activeTab === 'overview' && (
-          <>
-            <div className="lg:col-span-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 w-full max-w-full overflow-hidden">
+            <div className="lg:col-span-4 w-full max-w-full overflow-hidden">
               <AchievementShowcase achievements={achievementsData} />
             </div>
-            <div className="lg:col-span-8">
+            <div className="lg:col-span-8 w-full max-w-full overflow-hidden">
               <ActivityFeed activities={activitiesData.slice(0, 6)} />
             </div>
-          </>
+          </div>
         )}
 
         {activeTab === 'activity' && (
-          <div className="lg:col-span-12">
+          <div className="w-full max-w-full overflow-hidden">
             <ActivityFeed activities={activitiesData} />
           </div>
         )}
 
         {activeTab === 'skills' && (
-          <>
-            <div className="lg:col-span-8">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 w-full max-w-full overflow-hidden">
+            <div className="lg:col-span-8 w-full max-w-full overflow-hidden">
               <SkillProgress skills={skillsData} />
             </div>
-            <div className="lg:col-span-4">
+            <div className="lg:col-span-4 w-full max-w-full overflow-hidden">
               <AchievementShowcase achievements={achievementsData} />
             </div>
-          </>
+          </div>
         )}
       </div>
     </div>
