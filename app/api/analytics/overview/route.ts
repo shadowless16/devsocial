@@ -7,13 +7,21 @@ export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
     
+    console.log('Analytics API - Session:', JSON.stringify(session, null, 2))
+    
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    console.log('Analytics API - User role:', session.user.role)
+    
     // Check if user has analytics access (admin or analytics role)
     if (session.user.role !== 'admin' && session.user.role !== 'analytics') {
-      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+      return NextResponse.json({ 
+        error: 'Access denied. Analytics access required.',
+        userRole: session.user.role,
+        requiredRoles: ['admin', 'analytics']
+      }, { status: 403 })
     }
     
     const { searchParams } = new URL(request.url)

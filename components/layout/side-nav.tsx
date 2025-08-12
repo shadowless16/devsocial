@@ -28,6 +28,7 @@ import {
   LogOut,
   Settings2,
   BarChart3,
+  Shield,
 } from "lucide-react"
 import { PostModal } from "@/components/modals/post-modal"
 import { useNotifications } from "@/contexts/notification-context"
@@ -55,9 +56,10 @@ const getNavItems = (userRole?: string): NavItem[] => {
     { label: "My Profile", icon: User, href: "/profile" },
   ]
 
-  // Add analytics for admin and moderator users
+  // Add admin/moderator specific items
   if (userRole === 'admin' || userRole === 'moderator') {
     baseNav.splice(-1, 0, { label: "Analytics", icon: BarChart3, href: "/analytics" })
+    baseNav.splice(-1, 0, { label: "Moderation", icon: Shield, href: "/moderation" })
   }
 
   return baseNav

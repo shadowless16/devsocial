@@ -1,39 +1,41 @@
-const mongoose = require('mongoose');
-const User = require('../models/User').default;
+const { MongoClient } = require('mongodb');
 
-// MongoDB connection string - update this to match your database
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/devsocial';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://niitsocialhub:devsocial@cluster0.5m149pf.mongodb.net/devsocial-frontend?retryWrites=true&w=majority&appName=Cluster0';
 
 async function makeUserAdmin() {
+  const client = new MongoClient(MONGODB_URI);
+  
   try {
-    // Connect to MongoDB
-    await mongoose.connect(MONGODB_URI);
+    await client.connect();
     console.log('Connected to MongoDB');
-
-    // Find and update the user "akdavid" to admin role
-    const result = await User.findOneAndUpdate(
-      { username: 'AkDavid' },
-      { role: 'admin' },
-      { new: true }
+    
+    const db = client.db();
+    const users = db.collection('users');
+    
+    // First, let's see what users exist
+    const allUsers = await users.find({}).limit(10).toArray();
+    console.log('Available users:');
+    allUsers.forEach(u => console.log(`- Username: "${u.username}", Email: ${u.email}`));
+    
+    // Check current role first
+    const currentUser = await users.findOne({ username: "AkDavid" });
+    console.log(`Current role: ${currentUser.role || 'undefined'}`);
+    
+    const result = await users.updateOne(
+      { username: "AkDavid" },
+      { $set: { role: 'admin' } }
     );
-
-    if (result) {
-      console.log(`✅ Successfully updated user "${result.username}" to admin role`);
-      console.log(`User ID: ${result._id}`);
-      console.log(`Email: ${result.email}`);
-      console.log(`Role: ${result.role}`);
-    } else {
-      console.log('❌ User "akdavid" not found');
-    }
-
+    
+    // Always show the final result
+    const updatedUser = await users.findOne({ username: "AkDavid" });
+    console.log(`✅ User: ${updatedUser.username}, Final Role: ${updatedUser.role}`);
+    console.log(`Modified: ${result.modifiedCount > 0 ? 'Yes' : 'No (already admin)'}`);
+    
   } catch (error) {
     console.error('Error updating user role:', error);
   } finally {
-    // Close the connection
-    await mongoose.connection.close();
-    console.log('Database connection closed');
+    await client.close();
   }
 }
 
-// Run the script
 makeUserAdmin();

@@ -3,7 +3,7 @@
 
 const { MongoClient } = require('mongodb');
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/devsocial';
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb+srv://niitsocialhub:devsocial@cluster0.5m149pf.mongodb.net/devsocial-frontend?retryWrites=true&w=majority&appName=Cluster0';
 
 async function updateUserRole() {
   const client = new MongoClient(MONGODB_URI);
@@ -17,7 +17,7 @@ async function updateUserRole() {
     
     // First, let's find the user with case-insensitive search
     const existingUser = await users.findOne({ 
-      username: { $regex: /^akdavid$/i } 
+      username: { $regex: /^AkDavid$/i } 
     });
     
     if (existingUser) {
@@ -32,6 +32,12 @@ async function updateUserRole() {
       if (result.modifiedCount > 0) {
         console.log('✅ Successfully updated user to admin role');
         console.log(`User: ${existingUser.username}, New Role: admin`);
+        
+        // Verify the update
+        const updatedUser = await users.findOne({ _id: existingUser._id });
+        if (updatedUser) {
+          console.log(`✅ Verified - User role is now: ${updatedUser.role}`);
+        }
       } else {
         console.log('⚠️ User was already admin or update failed');
       }
