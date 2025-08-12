@@ -49,7 +49,7 @@ describe('Signup API', () => {
       _id: 'user123',
       ...validSignupData,
       password: 'hashedPassword123',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testuser',
+      avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testuser',
       points: 10,
       badges: ['newcomer'],
       level: 1,
@@ -132,7 +132,7 @@ describe('Signup API', () => {
       _id: 'user123',
       ...validSignupData,
       password: 'hashedPassword123',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testuser',
+      avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testuser',
       points: 10,
       badges: ['newcomer']
     };
@@ -147,10 +147,10 @@ describe('Signup API', () => {
     const data = await response.json();
 
     expect(response.status).toBe(201);
-    expect(data.data.user.avatar).toContain('dicebear.com');
+    expect(data.data.user.avatar).toContain('readyplayer.me');
     expect(mockUser.create).toHaveBeenCalledWith(
       expect.objectContaining({
-        avatar: expect.stringContaining('dicebear.com')
+        avatar: expect.stringContaining('readyplayer.me')
       })
     );
   });
@@ -179,7 +179,7 @@ describe('Signup API', () => {
       _id: 'user123',
       ...validSignupData,
       password: 'hashedPassword123',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testuser',
+      avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testuser',
       points: 10,
       badges: ['newcomer']
     };

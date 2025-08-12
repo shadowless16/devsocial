@@ -1,55 +1,43 @@
-// Avatar generation utility - now supports both DiceBear (fallback) and Ready Player Me
+// Avatar generation utility - Ready Player Me integration
 export interface AvatarOptions {
   seed?: string;
   gender?: 'male' | 'female' | 'other';
-  style?: 'avataaars' | 'personas' | 'lorelei' | 'notionists';
+  style?: 'casual' | 'formal' | 'sporty' | 'creative';
 }
 
-// Generate Ready Player Me avatar URL (for random generation)
-export function generateReadyPlayerMeAvatar(gender?: 'male' | 'female' | 'other'): string {
+// Generate Ready Player Me avatar URL
+export function generateReadyPlayerMeAvatar(options: AvatarOptions = {}): string {
+  const { gender, seed, style = 'casual' } = options;
+  
   const genders = gender ? [gender] : ['male', 'female'];
-  const hairColors = ['blonde', 'brown', 'black', 'red', 'gray'];
-  const skinTones = ['light', 'medium', 'dark'];
-  const outfits = ['casual', 'formal', 'sporty'];
+  const hairColors = ['blonde', 'brown', 'black', 'red', 'gray', 'white'];
+  const skinTones = ['light', 'medium', 'dark', 'tan'];
+  const outfits = ['casual', 'formal', 'sporty', 'creative'];
   
-  const selectedGender = genders[Math.floor(Math.random() * genders.length)];
-  const hair = hairColors[Math.floor(Math.random() * hairColors.length)];
-  const skin = skinTones[Math.floor(Math.random() * skinTones.length)];
-  const outfit = outfits[Math.floor(Math.random() * outfits.length)];
+  // Use seed for consistent generation if provided
+  const seedNum = seed ? seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : Math.random() * 1000;
   
-  return `https://readyplayer.me/avatar?frameApi&bodyType=halfbody&gender=${selectedGender}&hairColor=${hair}&skinTone=${skin}&outfit=${outfit}&timestamp=${Date.now()}`;
+  const selectedGender = genders[Math.floor(seedNum % genders.length)];
+  const hair = hairColors[Math.floor(seedNum % hairColors.length)];
+  const skin = skinTones[Math.floor(seedNum % skinTones.length)];
+  const outfit = style || outfits[Math.floor(seedNum % outfits.length)];
+  
+  return `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&gender=${selectedGender}&hair=${hair}&skin=${skin}&outfit=${outfit}&seed=${seed || Date.now()}`;
 }
 
-// Fallback DiceBear avatar generation
+// Main avatar generation function
 export function generateAvatar(options: AvatarOptions = {}): string {
-  const { 
-    seed = Math.random().toString(36).substring(7), 
-    gender, 
-    style = 'avataaars' 
-  } = options;
-
-  const baseUrl = `https://api.dicebear.com/7.x/${style}/svg`;
-  const params = new URLSearchParams({ seed });
-
-  if (style === 'avataaars' && gender) {
-    if (gender === 'male') {
-      params.append('gender', 'male');
-    } else if (gender === 'female') {
-      params.append('gender', 'female');
-    }
-  }
-
-  return `${baseUrl}?${params.toString()}`;
+  return generateReadyPlayerMeAvatar(options);
 }
 
-// Use Ready Player Me by default, fallback to DiceBear
+// Generate random avatar
 export function generateRandomAvatar(gender?: 'male' | 'female' | 'other'): string {
   const randomSeed = Math.random().toString(36).substring(2, 15);
   return generateAvatar({ seed: randomSeed, gender });
 }
 
+// Generate avatar from username for consistency
 export function generateAvatarFromUsername(username: string, gender?: 'male' | 'female' | 'other'): string {
-  // For username-based avatars, use DiceBear for consistency
   return generateAvatar({ seed: username, gender });
 }
 

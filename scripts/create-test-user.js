@@ -38,7 +38,7 @@
   
 //   if (this.isNew && !this.avatar) {
 //     const avatarStyle = 'adventurer';
-//     this.avatar = `https://api.dicebear.com/8.x/${avatarStyle}/svg?seed=${this.username}`;
+//     this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=${this.username}`;
 //   }
   
 //   next();

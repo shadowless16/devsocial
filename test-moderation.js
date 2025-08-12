@@ -75,7 +75,7 @@ async function setupTestData() {
       password: hashedPassword,
       displayName: 'Test Admin',
       role: 'admin',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testadmin'
+      avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testadmin'
     });
 
     const regularUser = await User.create({
@@ -84,7 +84,7 @@ async function setupTestData() {
       password: hashedPassword,
       displayName: 'Test User',
       role: 'user',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testuser'
+      avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testuser'
     });
 
     const reporterUser = await User.create({
@@ -93,7 +93,7 @@ async function setupTestData() {
       password: hashedPassword,
       displayName: 'Test Reporter',
       role: 'user',
-      avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testreporter'
+      avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testreporter'
     });
 
     // Create test posts

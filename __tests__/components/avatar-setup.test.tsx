@@ -33,10 +33,10 @@ describe('AvatarSetup Component', () => {
       user: {
         id: 'user123',
         username: 'testuser',
-        avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=testuser'
+        avatar: 'https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=testuser'
       }
     });
-    mockGenerateRandomAvatar.mockReturnValue('https://api.dicebear.com/7.x/avataaars/svg?seed=random123');
+    mockGenerateRandomAvatar.mockReturnValue('https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=random123');
   });
 
   it('should render avatar setup form', () => {

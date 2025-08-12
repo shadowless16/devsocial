@@ -236,11 +236,11 @@ UserSchema.pre("save", function (next) {
   if (this.isNew && !this.avatar) {
     const seed = this.username;
     if (this.gender === "male") {
-      this.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&gender=male`;
+      this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&gender=male&seed=${seed}`;
     } else if (this.gender === "female") {
-      this.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}&gender=female`;
+      this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&gender=female&seed=${seed}`;
     } else {
-      this.avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+      this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&seed=${seed}`;
     }
   }
 

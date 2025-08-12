@@ -16,7 +16,7 @@ This document describes the test suite for the signup functionality and avatar g
 **Problem**: Users had no avatar when signing up, needed manual avatar generation during onboarding.
 
 **Solution**: 
-- Created avatar generator utility using DiceBear API
+- Created avatar generator utility using Ready Player Me API
 - Generate initial avatar on signup using username as seed
 - Allow regeneration during onboarding with gender-specific options
 
@@ -37,7 +37,7 @@ This document describes the test suite for the signup functionality and avatar g
 ```typescript
 expect(response.status).toBe(201);
 expect(data.success).toBe(true);
-expect(data.data.user.avatar).toContain('dicebear.com');
+expect(data.data.user.avatar).toContain('readyplayer.me');
 expect(data.data.user.password).toBeUndefined(); // Security check
 ```
 
@@ -47,13 +47,13 @@ expect(data.data.user.password).toBeUndefined(); // Security check
 - ✅ **Default avatar generation**: Creates avatar with random seed
 - ✅ **Custom seed**: Uses provided seed for consistent avatars
 - ✅ **Gender-specific avatars**: Generates male/female specific avatars
-- ✅ **Different styles**: Supports multiple DiceBear styles
+- ✅ **Different styles**: Supports multiple Ready Player Me styles
 - ✅ **Username-based generation**: Creates consistent avatars from usernames
 - ✅ **Random generation**: Creates unique avatars each time
 
 #### Key Assertions:
 ```typescript
-expect(avatar).toContain('https://api.dicebear.com/7.x/avataaars/svg');
+expect(avatar).toContain('https://models.readyplayer.me');
 expect(avatar).toContain('seed=testuser');
 expect(avatar).toContain('gender=male');
 ```
@@ -84,7 +84,7 @@ expect(screen.getByText('13/250 characters')).toBeInTheDocument();
 ```typescript
 export function generateAvatar(options: AvatarOptions = {}): string {
   const { seed, gender, style = 'avataaars' } = options;
-  const baseUrl = `https://api.dicebear.com/7.x/${style}/svg`;
+  const baseUrl = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb`;
   const params = new URLSearchParams({ seed });
   
   if (style === 'avataaars' && gender) {
@@ -197,7 +197,7 @@ const validSignupData = {
 ## Future Enhancements
 
 1. **File Upload Integration**: Enable UploadThing for custom avatars
-2. **More Avatar Styles**: Add support for additional DiceBear styles
+2. **More Avatar Styles**: Add support for additional Ready Player Me customizations
 3. **Avatar Customization**: Allow users to customize avatar features
 4. **Bulk Avatar Generation**: Generate avatars for existing users
 5. **Avatar Analytics**: Track avatar generation and usage patterns

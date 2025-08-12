@@ -67,7 +67,7 @@ paths:
   /upload/avatar:
     post:
       summary: "Upload user avatar"
-      description: "Upload a new avatar image. If no file is provided, a DiceBear avatar will be generated."
+      description: "Upload a new avatar image. If no file is provided, a Ready Player Me avatar will be generated."
       requestBody:
         content:
           multipart/form-data:
@@ -94,7 +94,7 @@ paths:
                     example: true
                   url:
                     type: "string"
-                    example: "https://api.dicebear.com/8.x/adventurer/svg?seed=username"
+                    example: "https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?seed=username"
                   filename:
                     type: "string"
                     example: "avatar_1699123456789.jpg"
@@ -146,7 +146,7 @@ components:
           type: "string"
         avatar:
           type: "string"
-          description: "Avatar URL - either uploaded or DiceBear generated"
+          description: "Avatar URL - either uploaded or Ready Player Me generated"
         level:
           type: "number"
         points:

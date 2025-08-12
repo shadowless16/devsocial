@@ -5,7 +5,7 @@ describe('Avatar Generator', () => {
   describe('generateAvatar', () => {
     it('should generate avatar with default parameters', () => {
       const avatar = generateAvatar();
-      expect(avatar).toContain('https://api.dicebear.com/7.x/avataaars/svg');
+      expect(avatar).toContain('https://models.readyplayer.me');
       expect(avatar).toContain('seed=');
     });
 
@@ -34,7 +34,7 @@ describe('Avatar Generator', () => {
 
     it('should use different avatar styles', () => {
       const avatar = generateAvatar({ seed: 'testuser', style: 'personas' });
-      expect(avatar).toContain('https://api.dicebear.com/7.x/personas/svg');
+      expect(avatar).toContain('https://models.readyplayer.me');
       expect(avatar).toContain('seed=testuser');
     });
   });
@@ -44,8 +44,8 @@ describe('Avatar Generator', () => {
       const avatar1 = generateRandomAvatar();
       const avatar2 = generateRandomAvatar();
       
-      expect(avatar1).toContain('https://api.dicebear.com/7.x/avataaars/svg');
-      expect(avatar2).toContain('https://api.dicebear.com/7.x/avataaars/svg');
+      expect(avatar1).toContain('https://models.readyplayer.me');
+      expect(avatar2).toContain('https://models.readyplayer.me');
       expect(avatar1).not.toBe(avatar2); // Should be different due to random seed
     });
 
