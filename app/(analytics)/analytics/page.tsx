@@ -32,6 +32,27 @@ import { AnalyticsStatus } from "@/components/analytics/analytics-status"
 import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
+// Types
+interface AnalyticsData {
+  summary?: {
+    totalUsers?: number
+    activeUsers?: number
+    totalPosts?: number
+    engagementRate?: number
+  }
+  trends?: {
+    userGrowth?: any[]
+    contentGrowth?: any[]
+    platformMetrics?: any[]
+  }
+  topContent?: {
+    tags?: Array<{ tag: string; count: number }>
+  }
+  demographics?: {
+    countries?: Array<{ country: string; percentage: number }>
+  }
+}
+
 // Mock data for charts
 const userGrowthData = [
   { date: "Jan 1", users: 1200, newUsers: 45 },
@@ -74,13 +95,13 @@ const peakHoursData = [
 ]
 
 export default function AnalyticsPage() {
-  const [analyticsData, setAnalyticsData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [lastRefresh, setLastRefresh] = useState(new Date())
-  const [useSampleData, setUseSampleData] = useState(false)
+  const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
+  const [useSampleData, setUseSampleData] = useState<boolean>(false)
 
   // Fetch analytics overview data
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = async (): Promise<void> => {
     try {
       setLoading(true)
       const response = await fetch('/api/analytics/overview?days=30')
@@ -90,10 +111,10 @@ export default function AnalyticsPage() {
         }
         throw new Error('Failed to fetch analytics')
       }
-      const data = await response.json()
+      const data = await response.json() as AnalyticsData
       setAnalyticsData(data)
       setLastRefresh(new Date())
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching analytics:', error)
       // Show error to user instead of fallback data
       setAnalyticsData(null)
@@ -314,12 +335,12 @@ export default function AnalyticsPage() {
 
       {/* Engagement Analytics */}
       <div className="grid gap-4 md:grid-cols-3">
-        <InteractiveChart title="Top Content Tags" description="Most popular content tags" data={analyticsData.topContent?.tags || []}>
+        <InteractiveChart title="Top Content Tags" description="Most popular content tags" data={(analyticsData as AnalyticsData)?.topContent?.tags || []}>
           <div style={{ width: '100%', height: '250px' }}>
             {displayData?.topContent?.tags && displayData.topContent.tags.length > 0 ? (
               <PieChart width={300} height={250}>
                 <Pie
-                  data={(displayData.topContent.tags || []).slice(0, 5).map((tag, index) => ({
+                  data={(displayData.topContent.tags || []).slice(0, 5).map((tag: { tag: string; count: number }, index: number) => ({
                     name: tag.tag,
                     value: tag.count,
                     color: ['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'][index]
@@ -328,9 +349,9 @@ export default function AnalyticsPage() {
                   cy={125}
                   outerRadius={80}
                   dataKey="value"
-                  label={({ name, value }) => `${name}: ${value}`}
+                  label={({ name, value }: any) => `${name}: ${value}`}
                 >
-                  {(displayData.topContent.tags || []).slice(0, 5).map((_, index) => (
+                  {(displayData.topContent.tags || []).slice(0, 5).map((_: any, index: number) => (
                     <Cell key={`cell-${index}`} fill={['#22c55e', '#3b82f6', '#f59e0b', '#8b5cf6', '#6b7280'][index]} />
                   ))}
                 </Pie>
@@ -366,7 +387,7 @@ export default function AnalyticsPage() {
             <CardDescription>Top user locations</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {demographics.countries?.slice(0, 5).map((country, index) => (
+            {demographics.countries?.slice(0, 5).map((country: { country: string; percentage: number }, index: number) => (
               <div key={country.country} className="flex items-center justify-between">
                 <span className="text-sm">{country.country}</span>
                 <Badge variant="secondary">{country.percentage}%</Badge>
@@ -376,11 +397,11 @@ export default function AnalyticsPage() {
                 <p>No geographic data available</p>
               </div>
             )}
-            {demographics.countries?.length > 5 && (
+            {(demographics.countries?.length || 0) > 5 && (
               <div className="flex items-center justify-between">
                 <span className="text-sm text-muted-foreground">Others</span>
                 <Badge variant="outline">
-                  {100 - demographics.countries.slice(0, 5).reduce((sum, c) => sum + c.percentage, 0)}%
+                  {100 - (demographics.countries?.slice(0, 5).reduce((sum: number, c: { country: string; percentage: number }) => sum + c.percentage, 0) || 0)}%
                 </Badge>
               </div>
             )}
