@@ -247,7 +247,7 @@ export default function ContentAnalyticsPage() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {engagementDistribution.map((entry, index) => (
+                    {engagementDistribution.map((entry: any, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
