@@ -71,14 +71,15 @@ export default function SideNav() {
   useEffect(() => {
     // Update active state based on current pathname
     const currentPath = pathname === '/' || pathname === '/home' ? '/home' : pathname
-    const activeItem = nav.find(item => {
+    const navItems = getNavItems(user?.role)
+    const activeItem = navItems.find(item => {
       if (item.href === '/' && (currentPath === '/home' || currentPath === '/')) return true
       return item.href === currentPath
     })
     if (activeItem) {
       setActive(activeItem.label)
     }
-  }, [pathname])
+  }, [pathname, user?.role])
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
