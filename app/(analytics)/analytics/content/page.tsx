@@ -201,7 +201,7 @@ export default function ContentAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topTags.length > 0 ? topTags.slice(0, 6).map((tag, index) => (
+              {topTags.length > 0 ? topTags.slice(0, 6).map((tag: any, index: number) => (
                 <div key={tag._id || tag.tag || index} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-medium text-emerald-700">
