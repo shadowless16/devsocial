@@ -31,8 +31,8 @@ export function useDataModeAPI() {
 
   return {
     dataMode,
-    isDemo: dataMode === 'demo',
-    isDatabase: dataMode === 'database',
+    isDemo: dataMode === 'generated',
+    isDatabase: dataMode === 'real',
     get,
     post,
     fetchWithDataMode,
