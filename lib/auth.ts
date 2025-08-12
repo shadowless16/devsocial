@@ -1,5 +1,5 @@
 // middleware/auth.ts
-import NextAuth, { AuthOptions, Session, User, AdapterUser, getServerSession } from "next-auth";
+import NextAuth, { AuthOptions, Session, User, getServerSession } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { MongoDBAdapter } from "@auth/mongodb-adapter";
