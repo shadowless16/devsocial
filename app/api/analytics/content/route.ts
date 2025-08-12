@@ -3,6 +3,14 @@ import { ContentAnalytics } from '@/models/Analytics'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/db'
+import Post from '@/models/Post'
+
+// Types
+interface TopTag {
+  tag: string
+  count: number
+  growth: number
+}
 
 export async function GET(request: NextRequest) {
   try {
@@ -57,9 +65,9 @@ export async function GET(request: NextRequest) {
     const latestAnalytics = contentAnalytics[0]
     
     // Get real-time top tags directly from posts
-    let topTags = []
+    let topTags: TopTag[] = []
     try {
-      topTags = await Post.aggregate([
+      const tagAggregation = await Post.aggregate([
         {
           $match: {
             createdAt: { $gte: startDate, $lte: endDate },
@@ -75,15 +83,15 @@ export async function GET(request: NextRequest) {
         },
         { $sort: { count: -1 } },
         { $limit: 10 }
-      ])
+      ]) as Array<{ _id: string; count: number }>
       
       // Add growth calculation after aggregation
-      topTags = topTags.map(tag => ({
+      topTags = tagAggregation.map((tag: { _id: string; count: number }) => ({
         tag: tag._id,
         count: tag.count,
         growth: Math.floor(Math.random() * 20)
       }))
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching tags:', error)
       topTags = []
     }
@@ -92,7 +100,6 @@ export async function GET(request: NextRequest) {
     const avgEngagement = contentAnalytics.reduce((sum, day) => sum + (day.engagementRate || 0), 0) / contentAnalytics.length
     
     // Get viral content (top posts by engagement)
-    const Post = (await import('@/models/Post')).default
     const viralContent = await Post.find({
       createdAt: { $gte: startDate, $lte: endDate }
     })
@@ -102,7 +109,7 @@ export async function GET(request: NextRequest) {
     .lean()
     
     // Calculate viral scores and add engagement metrics
-    const viralContentWithScores = viralContent.map(post => {
+    const viralContentWithScores = viralContent.map((post: any) => {
       const engagement = (post.likesCount || 0) + (post.commentsCount || 0)
       const viralScore = Math.min(10, Math.round((engagement / 10) * 10) / 10)
       
@@ -122,12 +129,12 @@ export async function GET(request: NextRequest) {
     const engagementDistribution = [
       {
         name: "High Engagement",
-        value: Math.round((allPosts.filter(p => (p.likesCount || 0) + (p.commentsCount || 0) > 20).length / Math.max(allPosts.length, 1)) * 100),
+        value: Math.round((allPosts.filter((p: any) => (p.likesCount || 0) + (p.commentsCount || 0) > 20).length / Math.max(allPosts.length, 1)) * 100),
         color: "#22c55e"
       },
       {
         name: "Medium Engagement",
-        value: Math.round((allPosts.filter(p => {
+        value: Math.round((allPosts.filter((p: any) => {
           const eng = (p.likesCount || 0) + (p.commentsCount || 0)
           return eng >= 5 && eng <= 20
         }).length / Math.max(allPosts.length, 1)) * 100),
@@ -135,7 +142,7 @@ export async function GET(request: NextRequest) {
       },
       {
         name: "Low Engagement",
-        value: Math.round((allPosts.filter(p => (p.likesCount || 0) + (p.commentsCount || 0) < 5).length / Math.max(allPosts.length, 1)) * 100),
+        value: Math.round((allPosts.filter((p: any) => (p.likesCount || 0) + (p.commentsCount || 0) < 5).length / Math.max(allPosts.length, 1)) * 100),
         color: "#f59e0b"
       }
     ]
@@ -174,7 +181,7 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(response)
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Content analytics error:', error)
     return NextResponse.json(
       { error: 'Failed to fetch content analytics' },
