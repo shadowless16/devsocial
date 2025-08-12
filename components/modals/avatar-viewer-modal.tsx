@@ -8,7 +8,6 @@ import dynamic from 'next/dynamic'
 // Dynamically import Three.js components with no SSR
 const Canvas = dynamic(() => import('@react-three/fiber').then(mod => ({ default: mod.Canvas })), { ssr: false })
 const OrbitControls = dynamic(() => import('@react-three/drei').then(mod => ({ default: mod.OrbitControls })), { ssr: false })
-const useGLTF = dynamic(() => import('@react-three/drei').then(mod => ({ default: mod.useGLTF })), { ssr: false })
 
 interface AvatarViewerModalProps {
   isOpen: boolean
@@ -18,24 +17,12 @@ interface AvatarViewerModalProps {
 }
 
 function AvatarModel({ url }: { url: string }) {
-  const [gltf, setGltf] = useState<any>(null)
-  
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      import('@react-three/drei').then(({ useGLTF }) => {
-        try {
-          const model = useGLTF(url)
-          setGltf(model)
-        } catch (error) {
-          console.error('Error loading 3D model:', error)
-        }
-      })
-    }
-  }, [url])
-  
-  if (!gltf?.scene) return null
-  
-  return <primitive object={gltf.scene} scale={2} position={[0, -1, 0]} />
+  return (
+    <mesh>
+      <boxGeometry args={[1, 1, 1]} />
+      <meshStandardMaterial color="#4f46e5" />
+    </mesh>
+  )
 }
 
 export function AvatarViewerModal({ isOpen, onClose, avatarUrl, username }: AvatarViewerModalProps) {
