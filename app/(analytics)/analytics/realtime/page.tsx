@@ -13,8 +13,49 @@ import { GenerateDataButton } from "@/components/analytics/generate-data-button"
 import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
+// Types
+interface DeviceData {
+  name: string
+  value: number
+  color: string
+}
+
+interface TopPage {
+  page: string
+  views: number
+  users: number
+}
+
+interface RecentActivity {
+  id: number
+  user: string
+  action: string
+  target: string
+  time: string
+  avatar: string
+}
+
+interface GeographicData {
+  country: string
+  users: number
+  percentage: number
+}
+
+interface RealtimeData {
+  activeUsers?: number
+  pageViews?: number
+  newPosts?: number
+  newComments?: number
+  likes?: number
+  shares?: number
+  deviceDistribution?: DeviceData[]
+  topPages?: TopPage[]
+  recentActivity?: RecentActivity[]
+  geographicData?: GeographicData[]
+}
+
 // Fetch real-time data from API
-const fetchRealtimeData = async () => {
+const fetchRealtimeData = async (): Promise<RealtimeData> => {
   try {
     const response = await fetch('/api/analytics/realtime')
     if (!response.ok) {
@@ -23,21 +64,21 @@ const fetchRealtimeData = async () => {
       }
       throw new Error('Failed to fetch real-time data')
     }
-    return await response.json()
-  } catch (error) {
+    return await response.json() as RealtimeData
+  } catch (error: any) {
     console.error('Error fetching realtime data:', error)
     throw error
   }
 }
 
 // Default fallback data
-const defaultDeviceData = [
+const defaultDeviceData: DeviceData[] = [
   { name: "Desktop", value: 45, color: "#3b82f6" },
   { name: "Mobile", value: 38, color: "#06b6d4" },
   { name: "Tablet", value: 17, color: "#10b981" },
 ]
 
-const defaultTopPages = [
+const defaultTopPages: TopPage[] = [
   { page: "/feed", views: 2340, users: 1890 },
   { page: "/projects", views: 1890, users: 1456 },
   { page: "/missions", views: 1560, users: 1234 },
@@ -45,7 +86,7 @@ const defaultTopPages = [
   { page: "/analytics", views: 567, users: 445 },
 ]
 
-const defaultRecentActivity = [
+const defaultRecentActivity: RecentActivity[] = [
   {
     id: 1,
     user: "Alex Chen",
@@ -88,7 +129,7 @@ const defaultRecentActivity = [
   },
 ]
 
-const defaultGeographicData = [
+const defaultGeographicData: GeographicData[] = [
   { country: "United States", users: 456, percentage: 32 },
   { country: "United Kingdom", users: 234, percentage: 16 },
   { country: "Germany", users: 189, percentage: 13 },
@@ -98,17 +139,17 @@ const defaultGeographicData = [
 ]
 
 export default function RealtimePage() {
-  const [realtimeData, setRealtimeData] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [lastUpdate, setLastUpdate] = useState(new Date())
+  const [realtimeData, setRealtimeData] = useState<RealtimeData | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [lastUpdate, setLastUpdate] = useState<Date>(new Date())
 
   // Fetch real-time data
-  const loadRealtimeData = async () => {
+  const loadRealtimeData = async (): Promise<void> => {
     try {
       const data = await fetchRealtimeData()
       setRealtimeData(data)
       setLastUpdate(new Date())
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading realtime data:', error)
       setRealtimeData(null)
     } finally {
@@ -151,12 +192,12 @@ export default function RealtimePage() {
     )
   }
 
-  // Use API data
-  const realtimeStats = realtimeData
-  const deviceData = realtimeData.deviceDistribution || defaultDeviceData
-  const topPages = realtimeData.topPages?.length > 0 ? realtimeData.topPages : defaultTopPages
-  const recentActivity = realtimeData.recentActivity || defaultRecentActivity
-  const geographicData = realtimeData.geographicData || defaultGeographicData
+  // Use API data with null checks
+  const realtimeStats = realtimeData as any || {}
+  const deviceData = realtimeData?.deviceDistribution || defaultDeviceData
+  const topPages = (realtimeData?.topPages?.length || 0) > 0 ? (realtimeData.topPages || defaultTopPages) : defaultTopPages
+  const recentActivity = realtimeData?.recentActivity || defaultRecentActivity
+  const geographicData = realtimeData?.geographicData || defaultGeographicData
 
   return (
     <div className="space-y-6">
@@ -184,7 +225,7 @@ export default function RealtimePage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{realtimeStats.activeUsers.toLocaleString()}</div>
+            <div className="text-2xl font-bold">{(realtimeStats.activeUsers || 0).toLocaleString()}</div>
             <div className="text-xs text-muted-foreground">Right now</div>
           </CardContent>
         </Card>
@@ -195,7 +236,7 @@ export default function RealtimePage() {
             <Eye className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{realtimeStats.pageViews}</div>
+            <div className="text-2xl font-bold">{realtimeStats.pageViews || 0}</div>
             <div className="text-xs text-muted-foreground">Last 5 minutes</div>
           </CardContent>
         </Card>
@@ -206,7 +247,7 @@ export default function RealtimePage() {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{realtimeStats.newPosts}</div>
+            <div className="text-2xl font-bold">{realtimeStats.newPosts || 0}</div>
             <div className="text-xs text-muted-foreground">Last hour</div>
           </CardContent>
         </Card>
@@ -217,7 +258,7 @@ export default function RealtimePage() {
             <MessageSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{realtimeStats.newComments}</div>
+            <div className="text-2xl font-bold">{realtimeStats.newComments || 0}</div>
             <div className="text-xs text-muted-foreground">Last hour</div>
           </CardContent>
         </Card>
@@ -228,7 +269,7 @@ export default function RealtimePage() {
             <Heart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{realtimeStats.likes}</div>
+            <div className="text-2xl font-bold">{realtimeStats.likes || 0}</div>
             <div className="text-xs text-muted-foreground">Last hour</div>
           </CardContent>
         </Card>
@@ -239,7 +280,7 @@ export default function RealtimePage() {
             <Share2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{realtimeStats.shares}</div>
+            <div className="text-2xl font-bold">{realtimeStats.shares || 0}</div>
             <div className="text-xs text-muted-foreground">Last hour</div>
           </CardContent>
         </Card>
@@ -258,14 +299,14 @@ export default function RealtimePage() {
           <CardContent>
             <ScrollArea className="h-[400px]">
               <div className="space-y-4">
-                {recentActivity.map((activity) => (
+                {recentActivity.map((activity: RecentActivity) => (
                   <div key={activity.id} className="flex items-start gap-3">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={activity.avatar || "/placeholder.svg"} alt={activity.user} />
                       <AvatarFallback>
                         {activity.user
                           .split(" ")
-                          .map((n) => n[0])
+                          .map((n: string) => n[0])
                           .join("")}
                       </AvatarFallback>
                     </Avatar>
@@ -306,16 +347,16 @@ export default function RealtimePage() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {deviceData.map((entry, index) => (
+                    {deviceData.map((entry: DeviceData, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value}%`, 'Usage']} />
+                  <Tooltip formatter={(value: any) => [`${value}%`, 'Usage']} />
                 </PieChart>
               </div>
             </div>
             <div className="mt-4 space-y-2">
-              {deviceData.map((device) => (
+              {deviceData.map((device: DeviceData) => (
                 <div key={device.name} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
                     <div
@@ -342,7 +383,7 @@ export default function RealtimePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topPages.map((page, index) => (
+              {topPages.map((page: TopPage, index: number) => (
                 <div key={page.page} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
@@ -374,7 +415,7 @@ export default function RealtimePage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {geographicData.map((country) => (
+              {geographicData.map((country: GeographicData) => (
                 <div key={country.country} className="space-y-2">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-medium">{country.country}</span>

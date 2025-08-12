@@ -21,19 +21,47 @@ import { FileText, MessageSquare, Heart, Share2, Eye, Flag, TrendingUp, Hash, Cl
 import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
+// Types
+interface EngagementDistribution {
+  name: string
+  value: number
+  color: string
+}
+
+interface ContentAnalytics {
+  summary?: {
+    totalPosts?: number
+    totalComments?: number
+    avgEngagementRate?: string
+    totalEngagements?: number
+  }
+  trends?: any[]
+  topTags?: any[]
+  viralContent?: any[]
+  engagementDistribution?: EngagementDistribution[]
+  moderationData?: any[]
+}
+
+interface ModerationItem {
+  category: string
+  count: number
+  resolved: number
+  pending: number
+}
+
 // Default fallback data
-const defaultEngagementDistribution = [
+const defaultEngagementDistribution: EngagementDistribution[] = [
   { name: "High Engagement", value: 35, color: "#22c55e" },
   { name: "Medium Engagement", value: 45, color: "#3b82f6" },
   { name: "Low Engagement", value: 20, color: "#f59e0b" },
 ]
 
 export default function ContentAnalyticsPage() {
-  const [contentAnalytics, setContentAnalytics] = useState(null)
-  const [loading, setLoading] = useState(true)
+  const [contentAnalytics, setContentAnalytics] = useState<ContentAnalytics | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
 
   // Fetch content analytics data
-  const fetchContentAnalytics = async (days = 30) => {
+  const fetchContentAnalytics = async (days: number = 30): Promise<void> => {
     try {
       setLoading(true)
       const response = await fetch(`/api/analytics/content?days=${days}`)
@@ -43,9 +71,9 @@ export default function ContentAnalyticsPage() {
         }
         throw new Error('Failed to fetch content analytics')
       }
-      const data = await response.json()
+      const data = await response.json() as ContentAnalytics
       setContentAnalytics(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching content analytics:', error)
       setContentAnalytics(null)
     } finally {
@@ -83,12 +111,12 @@ export default function ContentAnalyticsPage() {
     )
   }
 
-  const summary = (contentAnalytics as any)?.summary || {}
-  const trends = (contentAnalytics as any)?.trends || []
-  const topTags = (contentAnalytics as any)?.topTags || []
-  const viralContent = (contentAnalytics as any)?.viralContent || []
-  const engagementDistribution = (contentAnalytics as any)?.engagementDistribution || defaultEngagementDistribution
-  const moderationData = (contentAnalytics as any)?.moderationData || [
+  const summary = contentAnalytics?.summary || {}
+  const trends = contentAnalytics?.trends || []
+  const topTags = contentAnalytics?.topTags || []
+  const viralContent = contentAnalytics?.viralContent || []
+  const engagementDistribution = contentAnalytics?.engagementDistribution || defaultEngagementDistribution
+  const moderationData: ModerationItem[] = contentAnalytics?.moderationData || [
     { category: "Spam", count: 45, resolved: 42, pending: 3 },
     { category: "Inappropriate Content", count: 23, resolved: 20, pending: 3 },
     { category: "Harassment", count: 12, resolved: 11, pending: 1 },
@@ -247,15 +275,15 @@ export default function ContentAnalyticsPage() {
                     paddingAngle={5}
                     dataKey="value"
                   >
-                    {engagementDistribution.map((entry: any, index: number) => (
+                    {engagementDistribution.map((entry: EngagementDistribution, index: number) => (
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value) => [`${value}%`, 'Posts']} />
+                  <Tooltip formatter={(value: any) => [`${value}%`, 'Posts']} />
                 </PieChart>
               </div>
               <div className="grid grid-cols-1 gap-2">
-                {engagementDistribution.map((item) => (
+                {engagementDistribution.map((item: EngagementDistribution) => (
                   <div key={item.name} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <div
@@ -292,10 +320,10 @@ export default function ContentAnalyticsPage() {
               >
                 <div className="flex-1">
                   <h4 className="font-medium hover:text-primary transition-colors">
-                    {post.content?.substring(0, 80) + (post.content?.length > 80 ? '...' : '') || 'Post Content'}
+                    {(post.content?.substring(0, 80) + (post.content?.length > 80 ? '...' : '')) || 'Post Content'}
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    by @{typeof post.author === 'object' ? post.author?.username : 'Unknown'} • {new Date(post.createdAt).toLocaleDateString()}
+                    by @{typeof post.author === 'object' ? (post.author as any)?.username || 'Unknown' : 'Unknown'} • {new Date(post.createdAt).toLocaleDateString()}
                   </p>
                   <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
@@ -327,7 +355,7 @@ export default function ContentAnalyticsPage() {
                 <p>No viral content data available</p>
                 <p className="text-sm">Posts with high engagement will appear here</p>
               </div>
-            )}}
+            )}
           </div>
         </CardContent>
       </Card>
@@ -343,7 +371,7 @@ export default function ContentAnalyticsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {moderationData.map((item) => (
+            {moderationData.map((item: ModerationItem) => (
               <div key={item.category} className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="font-medium">{item.category}</div>

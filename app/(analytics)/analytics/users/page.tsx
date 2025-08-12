@@ -28,8 +28,66 @@ import {
 import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
+// Types
+interface RegistrationSource {
+  source: string
+  users: number
+  percentage: number
+  color: string
+}
+
+interface AcquisitionChannel {
+  channel: string
+  users: number
+  percentage: number
+}
+
+interface Country {
+  country: string
+  count: number
+  percentage: number
+}
+
+interface RetentionData {
+  date: string
+  day1: number
+  day7: number
+  day30: number
+}
+
+interface TrendData {
+  date: string
+  newUsers?: number
+  activeUsers?: number
+  weeklyActiveUsers?: number
+  monthlyActiveUsers?: number
+  totalUsers?: number
+  growth?: number
+}
+
+interface UserAnalytics {
+  summary?: {
+    totalUsers?: number
+    newUsersToday?: number
+    activeUsersToday?: number
+    weeklyActiveUsers?: number
+    monthlyActiveUsers?: number
+    avgRetention?: {
+      day1?: number
+      day7?: number
+      day30?: number
+    }
+  }
+  trends?: TrendData[]
+  demographics?: {
+    countries?: Country[]
+    acquisitionChannels?: AcquisitionChannel[]
+  }
+  retention?: RetentionData[]
+}
+
 // Default fallback data
-const defaultRegistrationSources = [
+const defaultRegistrationSources: RegistrationSource[] = [
   { source: "Organic Search", users: 0, percentage: 35, color: "#22c55e" },
   { source: "Social Media", users: 0, percentage: 25, color: "#3b82f6" },
   { source: "Direct", users: 0, percentage: 20, color: "#f59e0b" },
@@ -38,12 +96,12 @@ const defaultRegistrationSources = [
 ]
 
 export default function UserAnalyticsPage() {
-  const [userAnalytics, setUserAnalytics] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [timeRange, setTimeRange] = useState('30d')
+  const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [timeRange, setTimeRange] = useState<string>('30d')
 
   // Fetch user analytics data
-  const fetchUserAnalytics = async (days = 30) => {
+  const fetchUserAnalytics = async (days: number = 30): Promise<void> => {
     try {
       setLoading(true)
       const response = await fetch(`/api/analytics/users?days=${days}`)
@@ -53,9 +111,9 @@ export default function UserAnalyticsPage() {
         }
         throw new Error('Failed to fetch user analytics')
       }
-      const data = await response.json()
+      const data = await response.json() as UserAnalytics
       setUserAnalytics(data)
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user analytics:', error)
       setUserAnalytics(null)
     } finally {
@@ -93,13 +151,13 @@ export default function UserAnalyticsPage() {
     )
   }
 
-  const summary = userAnalytics.summary || {}
-  const trends = userAnalytics.trends || []
-  const demographics = userAnalytics.demographics || { countries: [] }
-  const retention = userAnalytics.retention || []
+  const summary = (userAnalytics as UserAnalytics)?.summary || {}
+  const trends = (userAnalytics as UserAnalytics)?.trends || []
+  const demographics = (userAnalytics as UserAnalytics)?.demographics || { countries: [] }
+  const retention = (userAnalytics as UserAnalytics)?.retention || []
   
   // Process registration sources from API data
-  const registrationSources = demographics.acquisitionChannels?.map((channel: any, index: number) => ({
+  const registrationSources: RegistrationSource[] = demographics.acquisitionChannels?.map((channel: AcquisitionChannel, index: number) => ({
     source: channel.channel,
     users: channel.users,
     percentage: channel.percentage,
@@ -296,7 +354,7 @@ export default function UserAnalyticsPage() {
                 <div className="mt-6">
                   <h4 className="font-medium mb-3">Retention Trends</h4>
                   <div className="space-y-2">
-                    {retention.slice(-5).map((item: any, index: number) => (
+                    {retention.slice(-5).map((item: RetentionData, index: number) => (
                       <div key={index} className="flex items-center justify-between text-sm">
                         <span>{item.date}</span>
                         <div className="flex gap-4">
@@ -328,9 +386,9 @@ export default function UserAnalyticsPage() {
                   cy={100}
                   outerRadius={80}
                   dataKey="users"
-                  label={({ source, percentage }) => `${source}: ${percentage}%`}
+                  label={({ source, percentage }: any) => `${source}: ${percentage}%`}
                 >
-                  {registrationSources.map((entry, index) => (
+                  {registrationSources.map((entry: RegistrationSource, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
@@ -338,7 +396,7 @@ export default function UserAnalyticsPage() {
               </PieChart>
             </div>
               <div className="space-y-2">
-                {registrationSources.map((source) => (
+                {registrationSources.map((source: RegistrationSource) => (
                   <div key={source.source} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="h-3 w-3 rounded" style={{ backgroundColor: source.color }} />
@@ -405,12 +463,12 @@ export default function UserAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {demographics.countries?.length > 0 ? demographics.countries.slice(0, 5).map((country: any) => (
+              {(demographics.countries?.length || 0) > 0 ? demographics.countries!.slice(0, 5).map((country: Country) => (
                 <div key={country.country} className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{country.country}</span>
                     <div className="flex items-center gap-2">
-                      <span className="text-sm">{country.count?.toLocaleString() || '0'}</span>
+                      <span className="text-sm">{(country.count || 0).toLocaleString()}</span>
                       <Badge variant="secondary">{country.percentage}%</Badge>
                     </div>
                   </div>

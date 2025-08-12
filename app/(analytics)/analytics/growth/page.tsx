@@ -20,14 +20,80 @@ import {
 import { TrendingUp, UserMinus, Target, Repeat, RefreshCw, Clock, Users, TestTube, Database } from "lucide-react"
 import { useEffect, useState } from "react"
 
-const retentionCohortData = [
+// Types
+interface CohortData {
+  cohort: string
+  day0: number
+  day1: number
+  day7: number
+  day30: number
+  day90: number
+}
+
+interface ConversionFunnelData {
+  stage: string
+  value: number
+}
+
+interface LTVData {
+  segment: string
+  ltv: number
+  users: number
+}
+
+interface AcquisitionChannel {
+  channel: string
+  users: number
+  cac: number
+}
+
+interface GrowthVsChurnData {
+  date: string
+  growth: number
+  churn: number
+}
+
+interface GrowthData {
+  summary?: {
+    currentGrowthRate?: number
+    netGrowth?: number
+    churnRate?: number
+  }
+  acquisitionChannels?: AcquisitionChannel[]
+  cohortAnalysis?: CohortData[]
+  metrics?: {
+    growthVsChurn?: GrowthVsChurnData[]
+  }
+  userCounts?: {
+    total?: number
+    real?: number
+  }
+}
+
+interface McpData {
+  totalUsers?: number
+  newUsers?: number
+  growthRate?: number
+  acquisitionChannels?: AcquisitionChannel[]
+  userCounts?: {
+    total?: number
+    real?: number
+  }
+}
+
+interface UserCounts {
+  total?: number
+  real?: number
+}
+
+const retentionCohortData: CohortData[] = [
   { cohort: "Dec 2023", day0: 100, day1: 78, day7: 45, day30: 23, day90: 12 },
   { cohort: "Jan 2024", day0: 100, day1: 82, day7: 52, day30: 28, day90: 15 },
   { cohort: "Feb 2024", day0: 100, day1: 85, day7: 58, day30: 34, day90: 18 },
   { cohort: "Mar 2024", day0: 100, day1: 88, day7: 62, day30: 38, day90: 21 },
 ]
 
-const conversionFunnelData = [
+const conversionFunnelData: ConversionFunnelData[] = [
   { stage: "Visitors", value: 10000 },
   { stage: "Sign-ups", value: 2500 },
   { stage: "Email Verified", value: 2100 },
@@ -35,7 +101,7 @@ const conversionFunnelData = [
   { stage: "First Post", value: 1200 },
 ]
 
-const ltv_data = [
+const ltv_data: LTVData[] = [
   { segment: "Power Users", ltv: 450, users: 1200 },
   { segment: "Regular Users", ltv: 180, users: 8900 },
   { segment: "Casual Users", ltv: 45, users: 15600 },
@@ -43,13 +109,13 @@ const ltv_data = [
 ]
 
 export default function GrowthMetricsPage() {
-  const [growthData, setGrowthData] = useState<any>(null)
-  const [mcpData, setMcpData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  const [growthData, setGrowthData] = useState<GrowthData | null>(null)
+  const [mcpData, setMcpData] = useState<McpData | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
   const [dataMode, setDataMode] = useState<'all' | 'real' | 'demo'>('all')
-  const [userCounts, setUserCounts] = useState<any>(null)
+  const [userCounts, setUserCounts] = useState<UserCounts | null>(null)
 
-  const fetchGrowthData = async (days = 30, userType = dataMode) => {
+  const fetchGrowthData = async (days: number = 30, userType: string = dataMode): Promise<void> => {
     if (userType === 'demo') {
       setLoading(false)
       return
@@ -67,13 +133,13 @@ export default function GrowthMetricsPage() {
       ])
       
       if (apiResponse?.ok) {
-        const apiData = await apiResponse.json()
+        const apiData = await apiResponse.json() as GrowthData
         setGrowthData(apiData)
-        setUserCounts(apiData.userCounts)
+        setUserCounts(apiData.userCounts || null)
       }
       
       if (mcpResponse?.ok) {
-        const mcpResult = await mcpResponse.json()
+        const mcpResult = await mcpResponse.json() as McpData
         setMcpData(mcpResult)
         if (mcpResult.userCounts) {
           setUserCounts(mcpResult.userCounts)
@@ -92,14 +158,14 @@ export default function GrowthMetricsPage() {
           ]
         })
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching growth data:', error)
     } finally {
       setLoading(false)
     }
   }
 
-  const markGeneratedUsers = async () => {
+  const markGeneratedUsers = async (): Promise<void> => {
     try {
       const response = await fetch('/api/users/manage-generated', {
         method: 'POST',
@@ -108,11 +174,11 @@ export default function GrowthMetricsPage() {
       })
       
       if (response.ok) {
-        const result = await response.json()
+        const result = await response.json() as { message: string }
         alert(result.message)
         fetchGrowthData()
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error marking users:', error)
     }
   }
@@ -167,8 +233,8 @@ export default function GrowthMetricsPage() {
   const summary = dataMode === 'demo' ? sampleData.summary : (growthData?.summary || {})
   const acquisitionChannels = dataMode === 'demo' ? sampleData.acquisitionChannels : (growthData?.acquisitionChannels || mcpData?.acquisitionChannels || [])
   const cohortAnalysis = dataMode === 'demo' ? retentionCohortData : (growthData?.cohortAnalysis || [])
-  const displayMcpData = dataMode === 'demo' ? sampleMcpData : mcpData
-  const displayGrowthData = dataMode === 'demo' ? sampleData : growthData
+  const displayMcpData = dataMode === 'demo' ? sampleMcpData : (mcpData || {})
+  const displayGrowthData = dataMode === 'demo' ? sampleData : (growthData || {})
 
   return (
     <div className="space-y-6">
@@ -312,7 +378,7 @@ export default function GrowthMetricsPage() {
               <CardContent>
                 <div className="space-y-4">
                   {acquisitionChannels.length > 0 ? (
-                    acquisitionChannels.map((channel: any, index: number) => (
+                    acquisitionChannels.map((channel: AcquisitionChannel, index: number) => (
                       <div key={channel.channel || index} className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
@@ -321,12 +387,12 @@ export default function GrowthMetricsPage() {
                           <div>
                             <div className="font-medium">{channel.channel || 'Unknown'}</div>
                             <div className="text-sm text-muted-foreground">
-                              CAC: ${channel.cac?.toFixed(2) || '0.00'}
+                              CAC: ${(channel.cac || 0).toFixed(2)}
                             </div>
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-medium">{channel.users?.toLocaleString() || '0'}</div>
+                          <div className="font-medium">{(channel.users || 0).toLocaleString()}</div>
                           <div className="text-sm text-muted-foreground">users</div>
                         </div>
                       </div>
@@ -374,7 +440,7 @@ export default function GrowthMetricsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {(cohortAnalysis.length > 0 ? cohortAnalysis : retentionCohortData).map((cohort: any) => (
+                  {(cohortAnalysis.length > 0 ? cohortAnalysis : retentionCohortData).map((cohort: CohortData) => (
                     <div key={cohort.cohort} className="space-y-2">
                       <div className="flex items-center justify-between text-sm">
                         <span className="font-medium">{cohort.cohort}</span>
@@ -422,7 +488,7 @@ export default function GrowthMetricsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {conversionFunnelData.map((step, index) => {
+                  {conversionFunnelData.map((step: ConversionFunnelData, index: number) => {
                     const nextStep = conversionFunnelData[index + 1]
                     const conversionRate = nextStep ? ((nextStep.value / step.value) * 100).toFixed(1) : null
                     
@@ -467,7 +533,7 @@ export default function GrowthMetricsPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="segment" />
                     <YAxis />
-                    <Tooltip formatter={(value) => [`$${value}`, 'LTV']} />
+                    <Tooltip formatter={(value: any) => [`$${value}`, 'LTV']} />
                     <Bar dataKey="ltv" fill="#10b981" />
                   </BarChart>
                 </div>
@@ -481,7 +547,7 @@ export default function GrowthMetricsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {ltv_data.map((segment) => (
+                  {ltv_data.map((segment: LTVData) => (
                     <div key={segment.segment} className="flex items-center justify-between">
                       <div className="flex items-center gap-3">
                         <div className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
