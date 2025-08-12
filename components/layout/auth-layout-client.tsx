@@ -6,11 +6,12 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Menu, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { NavSidebar } from "@/components/layout/nav-sidebar"
-import { RightSidebar } from "@/components/layout/right-sidebar"
+import SideNav from "@/components/layout/side-nav"
+import RightRail from "@/components/layout/right-rail"
 import { XPBar } from "@/components/gamification/xp-bar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
 import { cn } from "@/lib/utils"
+
 
 export function AuthLayoutClient({
   children,
@@ -103,7 +104,7 @@ export function AuthLayoutClient({
               )}
             </Button>
           </div>
-          <NavSidebar collapsed={leftSidebarCollapsed} />
+          <SideNav />
         </div>
 
         {leftSidebarOpen && (
@@ -124,7 +125,7 @@ export function AuthLayoutClient({
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              <NavSidebar onItemClick={() => setLeftSidebarOpen(false)} />
+              <SideNav />
             </div>
           </div>
         )}
@@ -156,7 +157,7 @@ export function AuthLayoutClient({
               )}
             </Button>
           </div>
-          <RightSidebar collapsed={rightSidebarCollapsed} />
+          <RightRail />
         </div>
 
         {rightSidebarOpen && (
@@ -177,7 +178,7 @@ export function AuthLayoutClient({
                   <X className="w-5 h-5" />
                 </Button>
               </div>
-              <RightSidebar />
+              <RightRail />
             </div>
           </div>
         )}
