@@ -9,6 +9,7 @@ import { awardXP, checkFirstTimeAction } from "@/utils/awardXP";
 import UserStats from "@/models/UserStats";
 import { checkReferralMiddleware } from "@/utils/check-referral-middleware";
 import { processMentions } from "@/utils/mention-utils";
+
 // Only import mission models if needed
 let MissionProgress: any = null;
 
@@ -30,6 +31,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
     const page = parseInt(searchParams.get("page") || "1", 10);
     const limit = parseInt(searchParams.get("limit") || "10", 10);
+    const dataMode = searchParams.get("dataMode") as 'real' | 'generated' || 'real';
     const skip = (page - 1) * limit;
 
     // Get current user ID if authenticated
@@ -43,11 +45,23 @@ export async function GET(req: NextRequest) {
       // Continue without authentication for public posts
     }
 
-    // Fetch posts and ensure author exists
-    const posts = await Post.find({})
+    // Build user filter based on data mode
+    let userFilter = {};
+    if (dataMode === 'real') {
+      userFilter = { isGenerated: { $ne: true } };
+    } else if (dataMode === 'generated') {
+      userFilter = { isGenerated: true };
+    }
+
+    // Get user IDs that match the filter
+    const filteredUsers = await User.find(userFilter).select('_id');
+    const userIds = filteredUsers.map(u => u._id);
+
+    // Fetch posts from filtered users
+    const posts = await Post.find({ author: { $in: userIds } })
       .populate({
         path: "author",
-        select: "username firstName lastName avatar level",
+        select: "username firstName lastName avatar level isGenerated",
       })
       .sort({ createdAt: -1 })
       .skip(skip)
@@ -82,7 +96,7 @@ export async function GET(req: NextRequest) {
       }));
 
     const totalPosts = await Post.countDocuments({
-      author: { $exists: true, $ne: null },
+      author: { $in: userIds },
     });
 
     const responseData = {

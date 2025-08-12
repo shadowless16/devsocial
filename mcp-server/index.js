@@ -89,6 +89,26 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
           },
           required: ['userId', 'xpGain']
         }
+      },
+      {
+        name: 'get_growth_metrics',
+        description: 'Get user growth and retention analytics',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            days: { type: 'number', default: 30 }
+          }
+        }
+      },
+      {
+        name: 'get_user_analytics',
+        description: 'Get detailed user analytics and activity',
+        inputSchema: {
+          type: 'object',
+          properties: {
+            days: { type: 'number', default: 30 }
+          }
+        }
       }
     ]
   };
@@ -148,6 +168,100 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                 success: true, 
                 newPoints: user.points, 
                 newLevel: user.level 
+              })
+            }
+          ]
+        };
+
+      case 'get_growth_metrics':
+        const days = args.days || 30;
+        const endDate = new Date();
+        const startDate = new Date();
+        startDate.setDate(startDate.getDate() - days);
+        
+        // Get user registration data
+        const totalUsers = await User.countDocuments();
+        const newUsers = await User.countDocuments({
+          createdAt: { $gte: startDate, $lte: endDate }
+        });
+        
+        // Calculate growth rate
+        const previousPeriodStart = new Date(startDate);
+        previousPeriodStart.setDate(previousPeriodStart.getDate() - days);
+        const previousUsers = await User.countDocuments({
+          createdAt: { $gte: previousPeriodStart, $lt: startDate }
+        });
+        
+        const growthRate = previousUsers > 0 ? 
+          Math.round(((newUsers - previousUsers) / previousUsers) * 100) / 100 : 0;
+        
+        // Get acquisition channels
+        const acquisitionData = await User.aggregate([
+          { $match: { createdAt: { $gte: startDate, $lte: endDate } } },
+          { $group: { _id: '$registrationSource', count: { $sum: 1 } } }
+        ]);
+        
+        const acquisitionChannels = acquisitionData.map(item => ({
+          channel: item._id || 'direct',
+          users: item.count,
+          percentage: Math.round((item.count / Math.max(newUsers, 1)) * 100)
+        }));
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                totalUsers,
+                newUsers,
+                growthRate,
+                acquisitionChannels,
+                period: { days, startDate, endDate }
+              })
+            }
+          ]
+        };
+
+      case 'get_user_analytics':
+        const analyticsDays = args.days || 30;
+        const analyticsEndDate = new Date();
+        const analyticsStartDate = new Date();
+        analyticsStartDate.setDate(analyticsStartDate.getDate() - analyticsDays);
+        
+        // Active users
+        const activeUsers = await User.countDocuments({
+          lastActive: { $gte: analyticsStartDate, $lte: analyticsEndDate }
+        });
+        
+        // User activity by day
+        const dailyActivity = await User.aggregate([
+          {
+            $match: {
+              lastActive: { $gte: analyticsStartDate, $lte: analyticsEndDate }
+            }
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: {
+                  format: '%Y-%m-%d',
+                  date: '$lastActive'
+                }
+              },
+              activeUsers: { $sum: 1 }
+            }
+          },
+          { $sort: { '_id': 1 } }
+        ]);
+        
+        return {
+          content: [
+            {
+              type: 'text',
+              text: JSON.stringify({
+                activeUsers,
+                dailyActivity,
+                period: { days: analyticsDays, startDate: analyticsStartDate, endDate: analyticsEndDate }
               })
             }
           ]

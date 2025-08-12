@@ -14,11 +14,16 @@
     "migrate:branch-to-affiliation:ts": "ts-node scripts/migrate-branch-to-affiliation.ts",
     "mcp:dev": "node mcp-server/index.js",
     "mcp:start": "NODE_ENV=production node mcp-server/index.js",
+    "mcp:check": "node check-mcp-status.js",
+    "test:growth": "jest __tests__/analytics/growth-simple.test.ts",
+    "test:mcp": "jest __tests__/analytics/mcp-growth.test.ts",
+    "generate:test-data": "node scripts/generate-test-growth-data.js",
     "dev:with-mcp": "concurrently \"npm run mcp:dev\" \"npm run dev\""
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
     "@emotion/is-prop-valid": "latest",
+    "@google/model-viewer": "^4.1.0",
     "@hashgraph/sdk": "^2.70.0",
     "@hookform/resolvers": "^3.9.1",
     "@modelcontextprotocol/sdk": "^0.4.0",
@@ -49,6 +54,9 @@
     "@radix-ui/react-toggle": "1.1.1",
     "@radix-ui/react-toggle-group": "1.1.1",
     "@radix-ui/react-tooltip": "1.1.6",
+    "@react-three/drei": "^10.6.1",
+    "@react-three/fiber": "^9.3.0",
+    "@readyplayerme/react-avatar-creator": "^0.5.0",
     "@uploadthing/react": "^7.3.2",
     "@vercel/analytics": "^1.5.0",
     "autoprefixer": "^10.4.20",
@@ -91,11 +99,15 @@
     "sonner": "^1.7.1",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.179.1",
     "uploadthing": "^7.7.3",
     "vaul": "^0.9.6",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.6.4",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
     "@types/jest": "^29.5.12",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^22",
@@ -106,11 +118,14 @@
     "dotenv": "^16.3.1",
     "eslint": "^9.33.0",
     "jest": "^29.7.0",
+    "jest-environment-jsdom": "^30.0.5",
     "jest-environment-node": "^29.7.0",
+    "jsdom": "^26.1.0",
     "mongodb-memory-server": "^10.2.0",
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "ts-jest": "^29.1.2",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^3.2.4"
   }
 }

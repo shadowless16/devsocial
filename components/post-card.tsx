@@ -139,13 +139,22 @@ export default function PostCard({
     <Card className="border-0 ring-1 ring-black/5 w-full overflow-hidden">
       <CardContent className="p-3 md:p-4 w-full">
         <div className="flex items-start gap-2 md:gap-3 w-full">
-          <Avatar 
-            className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all flex-shrink-0"
+          <div 
+            className="cursor-pointer hover:ring-emerald-200 transition-all flex-shrink-0"
             onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
           >
-            <AvatarImage src={avatar || "/generic-user-avatar.png"} alt={author} />
-            <AvatarFallback className="text-xs md:text-sm">{author.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-          </Avatar>
+            <Avatar className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-emerald-100">
+              <AvatarImage 
+                src={avatar?.includes('models.readyplayer.me') && avatar.endsWith('.glb') 
+                  ? avatar.replace('.glb', '.png') 
+                  : avatar || "/placeholder.svg"} 
+                alt={author}
+              />
+              <AvatarFallback>
+                {author.split(' ').map(n => n[0]).join('')}
+              </AvatarFallback>
+            </Avatar>
+          </div>
           
           <div className="flex-1 min-w-0 w-full overflow-hidden">
             <div className="flex items-center justify-between mb-1 w-full">

@@ -17,7 +17,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { gender, userType, bio, techStack, experienceLevel, githubUsername, linkedinUrl, portfolioUrl } = body
+    const { gender, userType, bio, techStack, experienceLevel, githubUsername, linkedinUrl, portfolioUrl, avatar } = body
 
     const user = await User.findById(session.user.id)
     if (!user) {
@@ -34,9 +34,11 @@ export async function PUT(req: NextRequest) {
     if (linkedinUrl) user.linkedinUrl = linkedinUrl
     if (portfolioUrl) user.portfolioUrl = portfolioUrl
 
-    // Generate gender-specific avatar if gender is provided
-    if (gender && !user.avatar.includes('uploaded')) {
-      user.avatar = generateGenderAvatar(user.username, gender)
+    // Update avatar if provided (from RPM), otherwise generate gender-specific avatar
+    if (avatar) {
+      user.avatar = avatar
+    } else if (gender && !user.avatar.includes('readyplayer.me')) {
+      user.avatar = generateGenderAvatar(gender)
     }
 
     // Mark onboarding as completed

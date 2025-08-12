@@ -6,6 +6,7 @@ import { AuthProvider } from "@/contexts/auth-context"
 import { FollowProvider } from "@/contexts/follow-context"
 import { WebSocketProvider } from "@/contexts/websocket-context"
 import { NotificationProvider } from "@/contexts/notification-context"
+import { DataModeProvider } from "@/contexts/data-mode-context"
 import { ThemeProvider } from "@/components/theme-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { Toaster as SonnerToaster } from "sonner"
@@ -35,15 +36,17 @@ export default function RootLayout({
     <html lang="en" className="overflow-x-hidden">
       <body className={`${inter.className} overflow-x-hidden w-full max-w-full`}>
         <ThemeProvider>
-          <AuthProvider>
-            <WebSocketProvider>
-              <NotificationProvider>
-                <FollowProvider>
-                  {children}
-                </FollowProvider>
-              </NotificationProvider>
-            </WebSocketProvider>
-          </AuthProvider>
+          <DataModeProvider>
+            <AuthProvider>
+              <WebSocketProvider>
+                <NotificationProvider>
+                  <FollowProvider>
+                    {children}
+                  </FollowProvider>
+                </NotificationProvider>
+              </WebSocketProvider>
+            </AuthProvider>
+          </DataModeProvider>
         </ThemeProvider>
         <Toaster />
         <SonnerToaster position="top-right" richColors />

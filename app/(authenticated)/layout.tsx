@@ -3,8 +3,8 @@
 import { useEffect } from "react"
 import { useRouter, usePathname } from "next/navigation"
 import { TooltipProvider } from "@/components/ui/tooltip"
-import SideNav from "@/components/side-nav"
-import RightRail from "@/components/right-rail"
+import SideNav from "@/components/layout/side-nav"
+import RightRail from "@/components/layout/right-rail"
 import { MobileNav } from "@/components/layout/mobile-nav"
 
 export const dynamic = 'force-dynamic'

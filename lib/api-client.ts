@@ -239,6 +239,10 @@ class ApiClient {
     return this.request<T>("/users/profile", { method: "GET" });
   }
 
+  public getProfile<T>(): Promise<ApiResponse<T>> {
+    return this.request<T>("/profile", { method: "GET" });
+  }
+
   public updateProfile<T>(data: any): Promise<ApiResponse<T>> {
     return this.request<T>("/users/profile", { method: "PUT", body: JSON.stringify(data) });
   }
@@ -337,7 +341,17 @@ class ApiClient {
   }
 
   public getAffiliations(): Promise<ApiResponse<any>> {
-    return this.request<any>("/affiliations");
+    try {
+      return this.request<any>("/affiliations", { 
+        method: "GET",
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
+    } catch (error: any) {
+      console.error('Affiliations API error:', error);
+      throw new Error(`Failed to fetch affiliations: ${error.message}`);
+    }
   }
 
   public trackPostView<T>(postId: string): Promise<ApiResponse<T>> {

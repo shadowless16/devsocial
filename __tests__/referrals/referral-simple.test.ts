@@ -2,10 +2,10 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/glo
 import { config } from 'dotenv'
 import path from 'path'
 import mongoose from 'mongoose'
-import User from '../models/User'
-import Referral from '../models/Referral'
-import UserStats from '../models/UserStats'
-import { ReferralSystem } from '../utils/referral-system'
+import User from '../../models/User'
+import Referral from '../../models/Referral'
+import UserStats from '../../models/UserStats'
+import { ReferralSystem } from '../../utils/referral-system'
 
 // Load environment variables
 config({ path: path.resolve(process.cwd(), '.env.local') })

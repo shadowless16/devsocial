@@ -4,11 +4,29 @@ import React, { useState } from 'react'
 import { MapPin, Calendar, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { FollowStats } from '@/components/shared/FollowStats'
 import { FollowButton } from '@/components/shared/FollowButton'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/contexts/auth-context'
+import dynamic from 'next/dynamic'
+
+const SmartAvatar = dynamic(() => import('@/components/ui/smart-avatar').then(mod => ({ default: mod.SmartAvatar })), {
+  ssr: false,
+  loading: () => (
+    <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/20">
+      <AvatarFallback className="text-lg sm:text-xl">...</AvatarFallback>
+    </Avatar>
+  )
+})
+
+const AvatarViewer3D = dynamic(() => import('@/components/modals/avatar-viewer-3d').then(mod => ({ default: mod.AvatarViewer3D })), {
+  ssr: false
+})
+
+const RPMAvatarModal = dynamic(() => import('@/components/modals/rpm-avatar-modal').then(mod => ({ default: mod.RPMAvatarModal })), {
+  ssr: false
+})
 
 interface SocialLink {
   platform: string
@@ -41,6 +59,8 @@ interface ProfileHeaderProps {
 
 export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, setProfileData }: ProfileHeaderProps) {
   const [isEditing, setIsEditing] = useState(false)
+  const [showRPMModal, setShowRPMModal] = useState(false)
+  const [showViewerModal, setShowViewerModal] = useState(false)
   const { user: currentUser } = useAuth()
 
   const handleEditToggle = () => {
@@ -54,12 +74,18 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
         <div className="flex items-start gap-4">
           {/* Profile Photo */}
           <div className="relative flex-shrink-0">
-            <Avatar className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/20">
-              <AvatarImage src={profile.avatar} alt={profile.name} />
-              <AvatarFallback className="text-lg sm:text-xl">
-                {profile.name.split(' ').map(n => n[0]).join('')}
-              </AvatarFallback>
-            </Avatar>
+            <div 
+              className="cursor-pointer transition-transform hover:scale-105"
+              onClick={() => setShowViewerModal(true)}
+            >
+              <SmartAvatar 
+                src={profile.avatar} 
+                alt={profile.name}
+                fallback={profile.name.split(' ').map(n => n[0]).join('')}
+                className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/20"
+                size={80}
+              />
+            </div>
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
           </div>
 
@@ -151,6 +177,41 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
           </div>
         </div>
       </CardContent>
+      
+      {showViewerModal && (
+        <AvatarViewer3D
+          isOpen={showViewerModal}
+          onClose={() => setShowViewerModal(false)}
+          avatarUrl={profile.avatar}
+          username={profile.name}
+        />
+      )}
+      
+      {showRPMModal && (
+        <RPMAvatarModal
+          isOpen={showRPMModal}
+          onClose={() => setShowRPMModal(false)}
+          onAvatarExported={async (avatarUrl) => {
+            try {
+              const response = await fetch('/api/save-avatar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ avatarUrl })
+              })
+              if (response.ok) {
+                console.log('Avatar saved successfully')
+                // Update profile data
+                if (setProfileData) {
+                  setProfileData(prev => ({ ...prev, avatar: avatarUrl }))
+                }
+              }
+            } catch (error) {
+              console.error('Failed to save avatar:', error)
+            }
+            setShowRPMModal(false)
+          }}
+        />
+      )}
     </Card>
   )
 }

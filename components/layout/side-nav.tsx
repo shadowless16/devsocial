@@ -48,6 +48,7 @@ const nav: NavItem[] = [
   { label: "Trending", icon: Compass, href: "/trending" },
   { label: "Projects", icon: FolderOpen, href: "/projects" },
   { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
+  { label: "referrals", icon: Plus, href: "/referrals" },
   { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
   { label: "My Profile", icon: User, href: "/profile" },
 ]
@@ -98,7 +99,12 @@ export default function SideNav() {
       <Card className="border-0 p-2 ring-1 ring-black/5">
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6 ring-1 ring-emerald-100">
-            <AvatarImage src={user?.avatar || "/abstract-geometric-shapes.png"} alt={user?.displayName || user?.username} />
+            <AvatarImage 
+              src={user?.avatar?.includes('models.readyplayer.me') && user.avatar.endsWith('.glb') 
+                ? user.avatar.replace('.glb', '.png') 
+                : user?.avatar || "/placeholder.svg"} 
+              alt={user?.displayName || user?.username}
+            />
             <AvatarFallback className="text-xs">{getInitials(user?.displayName || user?.username || 'User')}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">

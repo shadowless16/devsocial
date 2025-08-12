@@ -14,7 +14,7 @@ export interface IUser extends Document {
   affiliation: string;
   avatar: string;
   bannerUrl: string;
-  role: "user" | "moderator" | "admin";
+  role: "user" | "moderator" | "admin" | "analytics";
   gender?: "male" | "female" | "other";
   userType?: "student" | "developer" | "designer" | "entrepreneur" | "other";
   techCareerPath?: string;
@@ -42,6 +42,12 @@ export interface IUser extends Document {
   onboardingCompleted: boolean;
   followersCount: number;
   followingCount: number;
+  lastActive?: Date;
+  sessionStart?: Date;
+  registrationSource?: string;
+  referrer?: string;
+  country?: string;
+  isGenerated?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -144,7 +150,7 @@ const UserSchema = new Schema<IUser>(
     },
     role: {
       type: String,
-      enum: ["user", "moderator", "admin"],
+      enum: ["user", "moderator", "admin", "analytics"],
       default: "user",
     },
     points: {
@@ -187,6 +193,33 @@ const UserSchema = new Schema<IUser>(
       default: 0,
       index: true,
     },
+    lastActive: {
+      type: Date,
+      default: Date.now,
+      index: true,
+    },
+    sessionStart: {
+      type: Date,
+      default: Date.now,
+    },
+    registrationSource: {
+      type: String,
+      enum: ['organic', 'referral', 'social', 'direct', 'email', 'search'],
+      default: 'direct'
+    },
+    referrer: {
+      type: String,
+      default: ''
+    },
+    country: {
+      type: String,
+      trim: true,
+    },
+    isGenerated: {
+      type: Boolean,
+      default: false,
+      index: true,
+    },
   },
   { timestamps: true }
 );
@@ -194,12 +227,12 @@ const UserSchema = new Schema<IUser>(
 // --- START: COMBINED MIDDLEWARE ---
 
 UserSchema.pre("save", function (next) {
-  // 1. Your existing level calculation logic
+  // 1. Level calculation logic
   if (this.isModified("points")) {
     this.level = Math.floor(this.points / 1000) + 1;
   }
 
-  // 2. Gender-specific DiceBear Avatar Logic
+  // 2. Generate avatar for new users (will be overridden during onboarding)
   if (this.isNew && !this.avatar) {
     const seed = this.username;
     if (this.gender === "male") {
@@ -219,7 +252,7 @@ UserSchema.pre("save", function (next) {
     this.referralCode = `${username}${timestamp}${random}`;
   }
 
-  next(); // Continue with the save operation
+  next();
 });
 
 // --- END: COMBINED MIDDLEWARE ---

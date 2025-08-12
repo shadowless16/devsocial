@@ -9,6 +9,7 @@ import { signupSchema } from "@/utils/validation"
 import { successResponse, errorResponse, validationErrorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
 import { ReferralSystem } from "@/utils/referral-system"
+import { generateAvatarFromUsername } from "@/utils/avatar-generator"
 
 const JWT_SECRET = process.env.JWT_SECRET!
 
@@ -50,6 +51,9 @@ export async function POST(request: NextRequest) {
     const saltRounds = 12
     const hashedPassword = await bcrypt.hash(password, saltRounds)
 
+    // Generate initial avatar (will be updated during onboarding)
+    const initialAvatar = generateAvatarFromUsername(username);
+
     // Create user
     const user = await User.create({
       username,
@@ -60,6 +64,7 @@ export async function POST(request: NextRequest) {
       birthMonth,
       birthDay,
       affiliation: affiliation || "Other",
+      avatar: initialAvatar,
       points: 10, // Starting XP
       badges: ["newcomer"], // Starting badge
     })

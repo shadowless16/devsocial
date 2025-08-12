@@ -1,11 +1,11 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
 import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import User from '../models/User'
-import Referral from '../models/Referral'
-import UserStats from '../models/UserStats'
-import { ReferralSystem } from '../utils/referral-system'
-import { awardXP } from '../utils/awardXP'
+import User from '../../models/User'
+import Referral from '../../models/Referral'
+import UserStats from '../../models/UserStats'
+import { ReferralSystem } from '../../utils/referral-system'
+import { awardXP } from '../../utils/awardXP'
 
 let mongoServer: MongoMemoryServer
 

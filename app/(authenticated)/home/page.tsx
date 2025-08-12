@@ -179,8 +179,15 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
     <Card className="group border-0 shadow-none ring-1 ring-black/5 transition-colors hover:bg-background mb-4">
       <CardContent className="flex items-start gap-3 p-3 md:p-4">
         <Avatar className="h-8 w-8 md:h-9 md:w-9 ring-1 ring-emerald-100 flex-shrink-0">
-          <AvatarImage src={user?.avatar || "/generic-user-avatar.png"} alt="Your avatar" />
-          <AvatarFallback>{(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}</AvatarFallback>
+          <AvatarImage 
+            src={user?.avatar?.includes('models.readyplayer.me') && user.avatar.endsWith('.glb') 
+              ? user.avatar.replace('.glb', '.png') 
+              : user?.avatar || "/placeholder.svg"} 
+            alt="Your avatar"
+          />
+          <AvatarFallback>
+            {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
+          </AvatarFallback>
         </Avatar>
         <div className="flex-1 min-w-0">
           <Input

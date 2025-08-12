@@ -106,7 +106,15 @@ function TopDevs() {
                   className="h-5 w-5 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all"
                   onClick={() => window.location.href = `/profile/${username}`}
                 >
-                  <AvatarImage src={dev.user?.avatar || dev.avatar || "/diverse-avatars.png"} alt={displayName} />
+                  <AvatarImage 
+                    src={(() => {
+                      const avatar = dev.user?.avatar || dev.avatar
+                      return avatar?.includes('models.readyplayer.me') && avatar.endsWith('.glb') 
+                        ? avatar.replace('.glb', '.png') 
+                        : avatar || "/placeholder.svg"
+                    })()} 
+                    alt={displayName}
+                  />
                   <AvatarFallback className="text-[10px]">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="min-w-0 flex-1">

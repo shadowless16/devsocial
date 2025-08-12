@@ -2,14 +2,16 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { Upload, User } from "lucide-react"
+import { useState, useEffect } from "react"
+import { User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { ReadyPlayerMeAvatar } from "./ready-player-me-avatar"
+import { useAuth } from "@/contexts/auth-context"
 
 interface AvatarSetupProps {
   data: any
@@ -18,26 +20,33 @@ interface AvatarSetupProps {
 }
 
 export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
+  const { user } = useAuth();
   const [formData, setFormData] = useState({
-    avatar: data.avatar || "",
+    avatar: data.avatar || user?.avatar || "",
     bio: data.bio || "",
     gender: data.gender || "",
     userType: data.userType || "",
     socials: data.socials || { twitter: "", linkedin: "" },
-  })
+  });
+
+  // Set initial avatar from user context if available
+  useEffect(() => {
+    if (user?.avatar && !formData.avatar) {
+      setFormData(prev => ({ ...prev, avatar: user.avatar }));
+    }
+  }, [user?.avatar, formData.avatar]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onNext(formData)
   }
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (file) {
-      // TODO: Implement UploadThing integration
-      const mockUrl = URL.createObjectURL(file)
-      setFormData((prev) => ({ ...prev, avatar: mockUrl }))
-    }
+  const handleAvatarSelect = (avatarUrl: string) => {
+    setFormData(prev => ({ ...prev, avatar: avatarUrl }))
+  }
+
+  const handleGenderChange = (gender: string) => {
+    setFormData(prev => ({ ...prev, gender }))
   }
 
   return (
@@ -47,33 +56,37 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
         <p className="text-gray-600">Upload an avatar and tell us about yourself</p>
       </div>
 
-      {/* Avatar Upload */}
-      <div className="flex flex-col items-center space-y-4">
-        <Avatar className="w-24 h-24">
-          <AvatarImage src={formData.avatar || "/placeholder.svg"} />
-          <AvatarFallback>
-            <User className="w-12 h-12 text-gray-400" />
-          </AvatarFallback>
-        </Avatar>
-
-        <div className="relative">
-          <input
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-          />
-          <Button type="button" variant="outline" className="flex items-center space-x-2 bg-transparent">
-            <Upload className="w-4 h-4" />
-            <span>Upload Avatar</span>
-          </Button>
-        </div>
+      {/* Ready Player Me Avatar */}
+      <div className="space-y-4">
+        <ReadyPlayerMeAvatar 
+          onAvatarSelect={handleAvatarSelect}
+          currentAvatar={formData.avatar}
+        />
+        
+        {formData.avatar && (
+          <div className="flex justify-center">
+            <div className="text-center">
+              <Avatar className="w-24 h-24 mx-auto mb-2">
+                <AvatarImage 
+                  src={formData.avatar?.includes('models.readyplayer.me') && formData.avatar.endsWith('.glb') 
+                    ? formData.avatar.replace('.glb', '.png') 
+                    : formData.avatar || "/placeholder.svg"} 
+                  alt="Avatar preview"
+                />
+                <AvatarFallback>
+                  <User className="w-12 h-12" />
+                </AvatarFallback>
+              </Avatar>
+              <p className="text-sm text-emerald-600 font-medium">✓ Avatar Selected</p>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Gender Selection */}
       <div className="space-y-2">
         <Label htmlFor="gender">Gender</Label>
-        <Select value={formData.gender} onValueChange={(value) => setFormData((prev) => ({ ...prev, gender: value }))}>
+        <Select value={formData.gender} onValueChange={handleGenderChange}>
           <SelectTrigger>
             <SelectValue placeholder="Select your gender" />
           </SelectTrigger>
@@ -83,6 +96,9 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
             <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>
+        <p className="text-xs text-gray-500">
+          Selecting gender will generate a new avatar automatically
+        </p>
       </div>
 
       {/* User Type Selection */}

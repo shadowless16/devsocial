@@ -2,11 +2,11 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/glo
 import { NextRequest } from 'next/server'
 import mongoose from 'mongoose'
 import { MongoMemoryServer } from 'mongodb-memory-server'
-import User from '../models/User'
-import Referral from '../models/Referral'
-import UserStats from '../models/UserStats'
-import { POST as createReferral, GET as getReferralCode } from '../app/api/referrals/create/route'
-import { GET as getReferralStats } from '../app/api/referrals/stats/route'
+import User from '../../models/User'
+import Referral from '../../models/Referral'
+import UserStats from '../../models/UserStats'
+import { POST as createReferral, GET as getReferralCode } from '../../app/api/referrals/create/route'
+import { GET as getReferralStats } from '../../app/api/referrals/stats/route'
 
 let mongoServer: MongoMemoryServer
 
