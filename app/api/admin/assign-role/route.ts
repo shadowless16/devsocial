@@ -12,6 +12,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     
+    await connectDB()
+    
+    const { userId, role } = await request.json()
+    
     // For development: allow users to assign analytics role to themselves
     // In production, only admins should be able to assign roles
     if (session.user.role !== 'admin' && role !== 'analytics') {
@@ -22,10 +26,6 @@ export async function POST(request: NextRequest) {
     if (session.user.role !== 'admin' && userId !== session.user.id) {
       return NextResponse.json({ error: 'Can only assign analytics role to yourself' }, { status: 403 })
     }
-    
-    await connectDB()
-    
-    const { userId, role } = await request.json()
     
     if (!userId || !role) {
       return NextResponse.json({ error: 'User ID and role are required' }, { status: 400 })
