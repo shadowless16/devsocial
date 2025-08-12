@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import User from '@/models/User'
-import { sampleLeaderboard, getDataByMode } from '@/lib/data-mode-utils'
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,18 +9,7 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '10')
     const timeframe = searchParams.get('timeframe') || 'all-time' // 'all-time', 'weekly', 'monthly'
 
-    // If demo mode, return sample data
-    if (dataMode === 'demo') {
-      return NextResponse.json({
-        success: true,
-        data: {
-          leaderboard: sampleLeaderboard.slice(0, limit),
-          timeframe,
-          totalUsers: sampleLeaderboard.length
-        }
-      })
-    }
-
+  
     await connectDB()
 
     // Build time filter for weekly/monthly
