@@ -6,11 +6,19 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from '@/contexts/auth-context'
 
+// Types
+interface CurrentUser {
+  id: string
+  username: string
+  email: string
+  role: string
+}
+
 export default function AdminRolesPage() {
   const { user, loading: authLoading } = useAuth()
-  const [currentUser, setCurrentUser] = useState(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState('')
+  const [currentUser, setCurrentUser] = useState<CurrentUser | null>(null)
+  const [loading, setLoading] = useState<boolean>(true)
+  const [error, setError] = useState<string>('')
 
   useEffect(() => {
     if (!authLoading) {
@@ -18,18 +26,18 @@ export default function AdminRolesPage() {
     }
   }, [authLoading, user])
 
-  const fetchCurrentUser = async () => {
+  const fetchCurrentUser = async (): Promise<void> => {
     try {
       console.log('Fetching current user...')
       
       // First try to get user from auth context
       if (user) {
-        console.log('Using user from auth context:', { id: user.id, username: user.username, role: user.role })
+        console.log('Using user from auth context:', { id: (user as any).id, username: (user as any).username, role: (user as any).role })
         setCurrentUser({
-          id: user.id,
-          username: user.username,
-          email: user.email,
-          role: user.role
+          id: (user as any).id,
+          username: (user as any).username,
+          email: (user as any).email,
+          role: (user as any).role
         })
         setLoading(false)
         return
@@ -40,23 +48,23 @@ export default function AdminRolesPage() {
       console.log('Fetch response status:', response.status)
       
       if (response.ok) {
-        const data = await response.json()
+        const data = await response.json() as { user: CurrentUser }
         console.log('User data from API:', data)
         setCurrentUser(data.user)
       } else {
-        const errorData = await response.json()
+        const errorData = await response.json() as { error: string }
         console.error('Error fetching user:', errorData)
         setError(`Error fetching user: ${errorData.error}`)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user:', error)
-      setError(`Failed to fetch user: ${error.message}`)
+      setError(`Failed to fetch user: ${(error as Error).message}`)
     } finally {
       setLoading(false)
     }
   }
 
-  const assignAnalyticsRole = async () => {
+  const assignAnalyticsRole = async (): Promise<void> => {
     if (!currentUser) {
       alert('No user found. Please refresh the page.')
       return
@@ -77,7 +85,7 @@ export default function AdminRolesPage() {
       })
       
       console.log('Response status:', response.status)
-      const data = await response.json()
+      const data = await response.json() as { user: CurrentUser; error?: string }
       console.log('Response data:', data)
       
       if (response.ok) {
@@ -87,9 +95,9 @@ export default function AdminRolesPage() {
       } else {
         alert(`Error: ${data.error || 'Unknown error'}`)
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error assigning role:', error)
-      alert(`Failed to assign role: ${error.message}`)
+      alert(`Failed to assign role: ${(error as Error).message}`)
     }
   }
 
