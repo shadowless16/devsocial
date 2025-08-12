@@ -163,7 +163,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
           lastLogin: userData.lastLogin,
           loginStreak: userData.loginStreak || 0,
           lastStreakDate: userData.lastStreakDate,
-          onboardingCompleted: userData.onboardingCompleted !== false, // Default to true if not specified
+          onboardingCompleted: userData.onboardingCompleted === true, // Default to false for new users
           xpToNext: xpToNext >= 0 ? xpToNext : 0,
           totalXpForLevel,
         };
@@ -217,7 +217,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
           displayName: session.user.username || 'Unknown',
           refreshTokens: [],
           loginStreak: 0,
-          onboardingCompleted: true,
+          onboardingCompleted: false, // New users need onboarding
           xpToNext: 1000,
           totalXpForLevel: 1000,
         };
@@ -268,37 +268,35 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       const response = await apiClient.request("/auth/signup", {
         method: "POST",
         body: JSON.stringify(userData),
-      });
+      }) as any;
       
       console.log('Signup API response:', response);
       
-      // Check if signup succeeded - API returns success: true OR has user data
-      const hasUserData = response?.data?.user || (response as any)?.user;
-      const isSuccess = response?.success === true || hasUserData;
+      // Check multiple success indicators
+      const hasUserData = response?.data?.user || response?.user || response?.data?.id || response?.id;
+      const isSuccess = response?.success === true || response?.status === 'success' || response?.message?.includes('success') || hasUserData;
       
-      if (!isSuccess) {
-        const error: any = new Error(response?.message || "Signup failed");
-        if ((response as any)?.error) {
-          error.error = (response as any).error;
-        }
+      if (!isSuccess && response?.error) {
+        const error: any = new Error(response?.message || response?.error || "Signup failed");
+        error.error = response?.error;
         throw error;
       }
       
       // After successful signup, automatically log the user in
-      const tokenData = response?.data || response;
-      if (tokenData?.token && hasUserData) {
-        const result = await signIn("credentials", {
-          usernameOrEmail: userData.email,
-          password: userData.password,
-          redirect: false,
-        });
-        
-        if (result?.error) {
-          throw new Error("Account created successfully! Please log in manually.");
-        }
-      } else {
-        throw new Error("Account created but missing login data. Please log in manually.");
+      console.log('Signup successful, attempting auto-login...');
+      const result = await signIn("credentials", {
+        usernameOrEmail: userData.email,
+        password: userData.password,
+        redirect: false,
+      });
+      
+      if (result?.error) {
+        console.log('Auto-login failed, but signup was successful:', result.error);
+        // Don't throw error here - signup was successful
+        return;
       }
+      
+      console.log('Auto-login successful, user will be redirected to onboarding');
     } catch (error: any) {
       console.error('Signup error:', error);
       throw error;
