@@ -27,6 +27,7 @@ import {
   User,
   LogOut,
   Settings2,
+  BarChart3,
 } from "lucide-react"
 import { PostModal } from "@/components/modals/post-modal"
 import { useNotifications } from "@/contexts/notification-context"
@@ -41,17 +42,26 @@ type NavItem = {
   badge?: string
 }
 
-const nav: NavItem[] = [
-  { label: "Home", icon: Home, href: "/home" },
-  { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
-  { label: "Search", icon: Search, href: "/search" },
-  { label: "Trending", icon: Compass, href: "/trending" },
-  { label: "Projects", icon: FolderOpen, href: "/projects" },
-  { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
-  { label: "referrals", icon: Plus, href: "/referrals" },
-  { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
-  { label: "My Profile", icon: User, href: "/profile" },
-]
+const getNavItems = (userRole?: string): NavItem[] => {
+  const baseNav: NavItem[] = [
+    { label: "Home", icon: Home, href: "/home" },
+    { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
+    { label: "Search", icon: Search, href: "/search" },
+    { label: "Trending", icon: Compass, href: "/trending" },
+    { label: "Projects", icon: FolderOpen, href: "/projects" },
+    { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
+    { label: "referrals", icon: Plus, href: "/referrals" },
+    { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
+    { label: "My Profile", icon: User, href: "/profile" },
+  ]
+
+  // Add analytics for admin and moderator users
+  if (userRole === 'admin' || userRole === 'moderator') {
+    baseNav.splice(-1, 0, { label: "Analytics", icon: BarChart3, href: "/analytics" })
+  }
+
+  return baseNav
+}
 
 export default function SideNav() {
   const pathname = usePathname()
@@ -123,7 +133,7 @@ export default function SideNav() {
 
       <ScrollArea className="h-[48vh] rounded-md">
         <nav className="grid gap-0.5 pr-1">
-          {nav.map((item) => (
+          {getNavItems(user?.role).map((item) => (
             <Link
               key={item.label}
               href={item.href ?? "#"}
