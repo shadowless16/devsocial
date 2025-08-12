@@ -83,12 +83,12 @@ export default function ContentAnalyticsPage() {
     )
   }
 
-  const summary = contentAnalytics.summary || {}
-  const trends = contentAnalytics.trends || []
-  const topTags = contentAnalytics.topTags || []
-  const viralContent = contentAnalytics.viralContent || []
-  const engagementDistribution = contentAnalytics.engagementDistribution || defaultEngagementDistribution
-  const moderationData = contentAnalytics.moderationData || [
+  const summary = (contentAnalytics as any)?.summary || {}
+  const trends = (contentAnalytics as any)?.trends || []
+  const topTags = (contentAnalytics as any)?.topTags || []
+  const viralContent = (contentAnalytics as any)?.viralContent || []
+  const engagementDistribution = (contentAnalytics as any)?.engagementDistribution || defaultEngagementDistribution
+  const moderationData = (contentAnalytics as any)?.moderationData || [
     { category: "Spam", count: 45, resolved: 42, pending: 3 },
     { category: "Inappropriate Content", count: 23, resolved: 20, pending: 3 },
     { category: "Harassment", count: 12, resolved: 11, pending: 1 },
