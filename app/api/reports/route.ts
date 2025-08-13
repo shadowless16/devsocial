@@ -3,26 +3,52 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import Report from '@/models/Report'
-import Post from '@/models/Post'
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
+    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await connectDB()
 
-    const { postId, reason, description } = await request.json()
+    const { searchParams } = new URL(request.url)
+    const status = searchParams.get('status') || 'pending'
 
-    if (!postId || !reason) {
-      return NextResponse.json({ success: false, error: 'Post ID and reason are required' }, { status: 400 })
+    const reports = await Report.find({ status })
+      .populate('reporter', 'username displayName avatar')
+      .populate('reportedUser', 'username displayName avatar')
+      .populate('reportedPost', 'content')
+      .sort({ createdAt: -1 })
+      .lean()
+
+    return NextResponse.json({
+      success: true,
+      data: { reports }
+    })
+  } catch (error) {
+    console.error('Reports fetch error:', error)
+    return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 })
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const post = await Post.findById(postId)
-    if (!post) {
-      return NextResponse.json({ success: false, error: 'Post not found' }, { status: 404 })
+    await connectDB()
+
+    const body = await request.json()
+    const { postId, reason, description } = body
+
+    if (!postId || !reason) {
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
     // Check if user already reported this post
@@ -32,68 +58,32 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingReport) {
-      return NextResponse.json({ success: false, error: 'You have already reported this post' }, { status: 400 })
+      return NextResponse.json({ error: 'You have already reported this post' }, { status: 400 })
     }
 
-    const report = new Report({
+    // Get the post to find the reported user
+    const Post = (await import('@/models/Post')).default
+    const post = await Post.findById(postId).populate('author')
+    
+    if (!post) {
+      return NextResponse.json({ error: 'Post not found' }, { status: 404 })
+    }
+
+    const report = await Report.create({
       reporter: session.user.id,
+      reportedUser: post.author._id,
       reportedPost: postId,
-      reportedUser: post.author,
       reason,
-      description
+      description: description || '',
+      status: 'pending'
     })
-
-    await report.save()
 
     return NextResponse.json({
       success: true,
-      message: 'Report submitted successfully'
+      data: { report }
     })
   } catch (error) {
-    console.error('Error creating report:', error)
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
-  }
-}
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
-      return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Only admins can view reports
-    if (session.user.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 })
-    }
-
-    await connectDB()
-
-    const { searchParams } = new URL(request.url)
-    const status = searchParams.get('status') || 'pending'
-    const page = parseInt(searchParams.get('page') || '1')
-    const limit = parseInt(searchParams.get('limit') || '20')
-
-    const reports = await Report.find({ status })
-      .populate('reporter', 'username displayName avatar')
-      .populate('reportedUser', 'username displayName avatar')
-      .populate('reportedPost', 'content createdAt')
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip((page - 1) * limit)
-
-    const totalReports = await Report.countDocuments({ status })
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        reports,
-        totalReports,
-        hasMore: reports.length === limit
-      }
-    })
-  } catch (error) {
-    console.error('Error fetching reports:', error)
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
+    console.error('Report creation error:', error)
+    return NextResponse.json({ error: 'Failed to create report' }, { status: 500 })
   }
 }

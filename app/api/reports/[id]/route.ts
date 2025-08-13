@@ -10,32 +10,43 @@ export async function PUT(
 ) {
   try {
     const session = await getServerSession(authOptions)
-    if (!session?.user?.id || session.user.role !== 'admin') {
-      return NextResponse.json({ success: false, error: 'Admin access required' }, { status: 403 })
+    
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
     await connectDB()
 
-    const { action, status } = await request.json()
+    const body = await request.json()
+    const { action, status } = body
 
-    const report = await Report.findById(params.id)
+    const report = await Report.findByIdAndUpdate(
+      params.id,
+      { 
+        status,
+        reviewedBy: session.user.id,
+        reviewedAt: new Date(),
+        action
+      },
+      { new: true }
+    )
+
     if (!report) {
-      return NextResponse.json({ success: false, error: 'Report not found' }, { status: 404 })
+      return NextResponse.json({ error: 'Report not found' }, { status: 404 })
     }
 
-    report.status = status || 'resolved'
-    report.action = action
-    report.reviewedBy = session.user.id
-    report.reviewedAt = new Date()
-
-    await report.save()
+    // Handle post removal if action is post_removed
+    if (action === 'post_removed') {
+      const Post = (await import('@/models/Post')).default
+      await Post.findByIdAndDelete(report.reportedPost)
+    }
 
     return NextResponse.json({
       success: true,
-      message: 'Report updated successfully'
+      data: { report }
     })
   } catch (error) {
-    console.error('Error updating report:', error)
-    return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
+    console.error('Report update error:', error)
+    return NextResponse.json({ error: 'Failed to update report' }, { status: 500 })
   }
 }

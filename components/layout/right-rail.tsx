@@ -40,89 +40,75 @@ function Trends() {
     <Card className="border-0 ring-1 ring-black/5">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-orange-500">📈</span>
+          <span className="text-orange-500 text-sm">📈</span>
           <div className="text-sm font-semibold">Trending Tags</div>
         </div>
       </CardHeader>
-      <CardContent className="pb-4">
+      <CardContent className="pb-4 space-y-2">
         {loading ? (
           <div className="flex items-center justify-center py-4">
             <Loader2 className="w-4 h-4 animate-spin" />
           </div>
         ) : trendingTopics.length === 0 ? (
-          <div className="space-y-3">
-            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+          <>
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium">#react</span>
-                <span className="text-green-500">📈</span>
+                <span className="text-emerald-600 font-medium text-sm">#react</span>
+                <span className="text-green-500 text-xs">📈</span>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">1,240</div>
-              </div>
+              <div className="text-sm font-semibold text-gray-900">1,240</div>
             </div>
-            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium">#typescript</span>
-                <span className="text-green-500">📈</span>
+                <span className="text-emerald-600 font-medium text-sm">#typescript</span>
+                <span className="text-green-500 text-xs">📈</span>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">890</div>
-              </div>
+              <div className="text-sm font-semibold text-gray-900">890</div>
             </div>
-            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium">#nextjs</span>
-                <span className="text-green-500">📈</span>
+                <span className="text-emerald-600 font-medium text-sm">#nextjs</span>
+                <span className="text-green-500 text-xs">📈</span>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">670</div>
-              </div>
+              <div className="text-sm font-semibold text-gray-900">670</div>
             </div>
-            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium">#tailwind</span>
-                <span className="text-green-500">📈</span>
+                <span className="text-emerald-600 font-medium text-sm">#tailwind</span>
+                <span className="text-green-500 text-xs">📈</span>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">540</div>
-              </div>
+              <div className="text-sm font-semibold text-gray-900">540</div>
             </div>
-            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium">#javascript</span>
+                <span className="text-emerald-600 font-medium text-sm">#javascript</span>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">2,100</div>
-              </div>
+              <div className="text-sm font-semibold text-gray-900">2,100</div>
             </div>
-            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+            <div className="flex items-center justify-between py-1">
               <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium">#python</span>
-                <span className="text-red-500">📉</span>
+                <span className="text-emerald-600 font-medium text-sm">#python</span>
+                <span className="text-red-500 text-xs">📉</span>
               </div>
-              <div className="text-right">
-                <div className="font-semibold text-gray-900">1,850</div>
-              </div>
+              <div className="text-sm font-semibold text-gray-900">1,850</div>
             </div>
-          </div>
+          </>
         ) : (
-          <div className="space-y-3">
+          <>
             {trendingTopics.slice(0, 6).map((topic, index) => (
-              <div key={topic.tag} className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div key={topic.tag} className="flex items-center justify-between py-1">
                 <div className="flex items-center space-x-2">
-                  <span className="text-emerald-600 font-medium">#{topic.tag}</span>
+                  <span className="text-emerald-600 font-medium text-sm">#{topic.tag}</span>
                   {topic.trend === "up" ? (
-                    <span className="text-green-500">📈</span>
+                    <span className="text-green-500 text-xs">📈</span>
                   ) : topic.trend === "down" ? (
-                    <span className="text-red-500">📉</span>
+                    <span className="text-red-500 text-xs">📉</span>
                   ) : null}
                 </div>
-                <div className="text-right">
-                  <div className="font-semibold text-gray-900">{topic.posts.toLocaleString()}</div>
-                </div>
+                <div className="text-sm font-semibold text-gray-900">{topic.posts.toLocaleString()}</div>
               </div>
             ))}
-          </div>
+          </>
         )}
       </CardContent>
     </Card>
