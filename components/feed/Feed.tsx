@@ -15,6 +15,8 @@ interface Post {
   } | null;
   content: string;
   imageUrl?: string | null;
+  imageUrls?: string[];
+  videoUrls?: string[];
   tags: string[];
   likesCount: number;
   commentsCount: number;

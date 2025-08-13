@@ -71,6 +71,16 @@ export default function SideNav() {
   const [active, setActive] = useState("")
   
   useEffect(() => {
+    // Initialize theme from localStorage
+    const savedTheme = localStorage.getItem('theme')
+    if (savedTheme === 'dark') {
+      document.documentElement.classList.add('dark')
+    } else if (savedTheme === 'light') {
+      document.documentElement.classList.remove('dark')
+    }
+  }, [])
+  
+  useEffect(() => {
     // Update active state based on current pathname
     const currentPath = pathname === '/' || pathname === '/home' ? '/home' : pathname
     const navItems = getNavItems(user?.role)
@@ -188,7 +198,18 @@ export default function SideNav() {
         <Button 
           variant="ghost" 
           className="justify-start gap-1 text-xs h-7"
-          onClick={() => document.documentElement.classList.toggle('dark')}
+          onClick={(e) => {
+            e.preventDefault()
+            e.stopPropagation()
+            const isDark = document.documentElement.classList.contains('dark')
+            if (isDark) {
+              document.documentElement.classList.remove('dark')
+              localStorage.setItem('theme', 'light')
+            } else {
+              document.documentElement.classList.add('dark')
+              localStorage.setItem('theme', 'dark')
+            }
+          }}
         >
           <Moon className="h-3 w-3" />
           Dark Mode

@@ -1,7 +1,7 @@
 // components/PostModal.tsx
 "use client";
 
-import React, { useState, useRef, FormEvent } from "react";
+import React, { useState, useRef, FormEvent, useEffect } from "react";
 import { X, ImageIcon, Code, Hash, Eye, EyeOff, Target, Search, Video, Upload, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -209,6 +209,57 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
+  // Auto code detection
+  const detectCodeContent = (text: string): boolean => {
+    const codePatterns = [
+      /```[\s\S]*?```/g, // Triple backticks
+      /function\s+\w+\s*\(/g, // Function definitions
+      /const\s+\w+\s*=/g, // Const declarations
+      /let\s+\w+\s*=/g, // Let declarations
+      /var\s+\w+\s*=/g, // Var declarations
+      /class\s+\w+/g, // Class definitions
+      /import\s+.*from/g, // Import statements
+      /export\s+(default\s+)?/g, // Export statements
+      /\{\s*[\w\s:,'"]*\}/g, // Object literals
+      /\[\s*[\w\s,'"]*\]/g, // Array literals
+      /;\s*$/gm, // Lines ending with semicolon
+      /<\w+[^>]*>/g, // HTML tags
+      /\$\w+/g, // Variables with $
+      /@\w+/g, // Decorators
+      /\/\*[\s\S]*?\*\//g, // Block comments
+      /\/\/.*$/gm, // Line comments
+    ];
+    
+    return codePatterns.some(pattern => pattern.test(text));
+  };
+
+  // Handle content change with auto code detection
+  const handleContentChange = (newContent: string) => {
+    setContent(newContent);
+    
+    // Auto-detect code and set post type if not already set to code or challenge
+    if (postType === 'normal' && newContent.trim().length > 10) {
+      if (detectCodeContent(newContent)) {
+        setPostType('code');
+      }
+    }
+  };
+
+  // Reusable crop state reset function
+  const resetCropState = () => {
+    setOriginalImageUrl(null);
+    setOriginalFile(null);
+    setSelectedAspect(undefined);
+    setCrop({
+      unit: '%',
+      width: 90,
+      height: 90,
+      x: 5,
+      y: 5
+    });
+    setCompletedCrop(null);
+  };
+
   const onImageLoad = (e: React.SyntheticEvent<HTMLImageElement>) => {
     imgRef.current = e.currentTarget;
   };
@@ -252,7 +303,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
           resolve(file);
         },
         'image/jpeg',
-        0.95 // High quality setting
+        0.95
       );
     });
   };
@@ -305,17 +356,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
       );
       
       if (croppedFile) {
-        setOriginalImageUrl(null);
-        setCrop({
-          unit: '%',
-          width: 90,
-          height: 90,
-          x: 5,
-          y: 5
-        });
-        setCompletedCrop(null);
-        
-        // Upload the cropped image
+        resetCropState();
         await handleFilesUpload([croppedFile]);
       }
     } catch (error) {
@@ -360,16 +401,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     setLanguageFilter('');
     setUploadError(null);
     setIsUploading(false);
-    setOriginalImageUrl(null);
-    setCrop({
-      unit: '%',
-      width: 90,
-      height: 90,
-      x: 5,
-      y: 5
-    });
-    setCompletedCrop(null);
-    setOriginalFile(null);
+    resetCropState();
   };
 
   const handleUploadBegin = () => {
@@ -457,8 +489,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-0 sm:p-4">
-      <div className="bg-background rounded-t-lg sm:rounded-lg w-full max-w-2xl h-[95vh] sm:h-auto sm:max-h-[90vh] overflow-y-auto border border-border">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-2 sm:p-4">
+      <div className="bg-background rounded-t-lg sm:rounded-lg w-full max-w-2xl max-h-[85vh] sm:max-h-[90vh] overflow-y-auto border border-border mb-16 sm:mb-0">
         <div className="sticky top-0 bg-background z-10 flex items-center justify-between p-3 sm:p-4 border-b border-border">
           <h2 className="text-base sm:text-lg font-semibold text-foreground">Create Post</h2>
           <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
@@ -466,12 +498,12 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
           </Button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <form onSubmit={handleSubmit} className="p-4 sm:p-4 space-y-4 sm:space-y-4 pb-6 sm:pb-4">
           <div className="space-y-2">
             <Label htmlFor="content">What's on your mind?</Label>
             <MentionInput
               value={content}
-              onChange={setContent}
+              onChange={handleContentChange}
               placeholder="Share your thoughts, ask questions, or start a discussion..."
               className="min-h-[100px] sm:min-h-[120px] resize-none text-sm"
             />
@@ -480,6 +512,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             </p>
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{content.length}/2000 characters</span>
+              {postType === 'code' && (
+                <span className="text-blue-600">Code detected automatically</span>
+              )}
             </div>
           </div>
 
@@ -512,7 +547,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               </TabsList>
               
               <TabsContent value="images" className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <p className="text-sm text-muted-foreground">Upload up to 4 images (max 4MB each)</p>
                   <div className="relative">
                     <input
@@ -534,9 +569,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                               type="button"
                               size="sm"
                               variant={selectedAspect === ratio.value ? "default" : "outline"}
-                              onClick={() => {
-                                setSelectedAspect(ratio.value);
-                              }}
+                              onClick={() => setSelectedAspect(ratio.value)}
                               className={`text-xs ${selectedAspect === ratio.value ? 'bg-emerald-600 hover:bg-emerald-700' : ''}`}
                             >
                               {ratio.label}
@@ -573,19 +606,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                           <Button
                             type="button"
                             variant="outline"
-                            onClick={() => {
-                              setOriginalImageUrl(null);
-                              setOriginalFile(null);
-                              setSelectedAspect(undefined);
-                              setCrop({
-                                unit: '%',
-                                width: 90,
-                                height: 90,
-                                x: 5,
-                                y: 5
-                              });
-                              setCompletedCrop(null);
-                            }}
+                            onClick={resetCropState}
                           >
                             Cancel
                           </Button>
@@ -594,16 +615,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                             variant="outline"
                             onClick={async () => {
                               if (originalFile) {
-                                setOriginalImageUrl(null);
-                                setSelectedAspect(undefined);
-                                setCrop({
-                                  unit: '%',
-                                  width: 90,
-                                  height: 90,
-                                  x: 5,
-                                  y: 5
-                                });
-                                setCompletedCrop(null);
+                                resetCropState();
                                 await handleFilesUpload([originalFile]);
                               }
                             }}
@@ -619,7 +631,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                         type="button"
                         onClick={() => imageInputRef.current?.click()}
                         disabled={mediaUrls.length >= 4 || isUploading}
-                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm w-full sm:w-auto"
                       >
                         <Upload className="w-4 h-4 mr-2" />
                         {isUploading ? 'Uploading...' : 'Upload Images'}
@@ -653,7 +665,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               </TabsContent>
               
               <TabsContent value="videos" className="space-y-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <p className="text-sm text-muted-foreground">Upload 1 video (max 128MB)</p>
                   <div className="relative">
                     <input
@@ -671,7 +683,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                       type="button"
                       onClick={() => videoInputRef.current?.click()}
                       disabled={mediaUrls.filter(url => url.endsWith('.mp4') || url.endsWith('.webm')).length >= 1 || isUploading}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm w-full sm:w-auto"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       {isUploading ? 'Uploading...' : 'Upload Video'}
@@ -825,7 +837,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between pt-3 sm:pt-4 border-t border-border gap-3 sm:gap-0">
+          <div className="flex flex-col sm:flex-row justify-between pt-4 sm:pt-4 border-t border-border gap-4 sm:gap-0 sticky bottom-0 bg-background pb-4 sm:pb-0 sm:static">
             <div className="flex items-center space-x-1 sm:space-x-2 relative overflow-x-auto">
               <div className="relative">
                 <Button 

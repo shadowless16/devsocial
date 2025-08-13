@@ -128,6 +128,9 @@ export default function HomePage() {
               authorId={post.author?.id}
               likesCount={post.likesCount}
               commentsCount={post.commentsCount}
+              imageUrl={post.imageUrl}
+              imageUrls={post.imageUrls}
+              videoUrls={post.videoUrls}
               onDelete={handleDeletePost}
               onLike={handleLikePost}
               onComment={handleCommentPost}

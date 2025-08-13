@@ -38,22 +38,88 @@ function Trends() {
 
   return (
     <Card className="border-0 ring-1 ring-black/5">
-      <CardHeader className="pb-1">
-        <div className="text-xs font-semibold">Trending Tags</div>
+      <CardHeader className="pb-3">
+        <div className="flex items-center gap-2">
+          <span className="text-orange-500">📈</span>
+          <div className="text-sm font-semibold">Trending Tags</div>
+        </div>
       </CardHeader>
-      <CardContent className="pb-2">
+      <CardContent className="pb-4">
         {loading ? (
-          <div className="flex items-center justify-center py-2">
-            <Loader2 className="w-3 h-3 animate-spin" />
+          <div className="flex items-center justify-center py-4">
+            <Loader2 className="w-4 h-4 animate-spin" />
           </div>
         ) : trendingTopics.length === 0 ? (
-          <div className="text-xs text-muted-foreground">No trending topics yet</div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div className="flex items-center space-x-2">
+                <span className="text-emerald-600 font-medium">#react</span>
+                <span className="text-green-500">📈</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-gray-900">1,240</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div className="flex items-center space-x-2">
+                <span className="text-emerald-600 font-medium">#typescript</span>
+                <span className="text-green-500">📈</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-gray-900">890</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div className="flex items-center space-x-2">
+                <span className="text-emerald-600 font-medium">#nextjs</span>
+                <span className="text-green-500">📈</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-gray-900">670</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div className="flex items-center space-x-2">
+                <span className="text-emerald-600 font-medium">#tailwind</span>
+                <span className="text-green-500">📈</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-gray-900">540</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div className="flex items-center space-x-2">
+                <span className="text-emerald-600 font-medium">#javascript</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-gray-900">2,100</div>
+              </div>
+            </div>
+            <div className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+              <div className="flex items-center space-x-2">
+                <span className="text-emerald-600 font-medium">#python</span>
+                <span className="text-red-500">📉</span>
+              </div>
+              <div className="text-right">
+                <div className="font-semibold text-gray-900">1,850</div>
+              </div>
+            </div>
+          </div>
         ) : (
-          <div className="space-y-1">
-            {trendingTopics.slice(0, 3).map((topic, index) => (
-              <div key={topic.tag} className="flex items-center justify-between text-xs">
-                <span className="text-emerald-600">#{topic.tag}</span>
-                <span className="text-muted-foreground">{topic.posts}</span>
+          <div className="space-y-3">
+            {trendingTopics.slice(0, 6).map((topic, index) => (
+              <div key={topic.tag} className="flex items-center justify-between py-2 hover:bg-gray-50 rounded-lg px-2 cursor-pointer transition-colors">
+                <div className="flex items-center space-x-2">
+                  <span className="text-emerald-600 font-medium">#{topic.tag}</span>
+                  {topic.trend === "up" ? (
+                    <span className="text-green-500">📈</span>
+                  ) : topic.trend === "down" ? (
+                    <span className="text-red-500">📉</span>
+                  ) : null}
+                </div>
+                <div className="text-right">
+                  <div className="font-semibold text-gray-900">{topic.posts.toLocaleString()}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -127,7 +193,7 @@ function TopDevs() {
                     onClick={() => window.location.href = `/profile/${username}`}
                   >@{username}</div>
                 </div>
-                <div className="text-emerald-700 text-xs">{dev.totalXP || 0}</div>
+                <div className="text-emerald-700 text-xs">{dev.user?.points || dev.points || 0}</div>
                 <div className="text-[10px] text-muted-foreground">XP</div>
               </div>
             )

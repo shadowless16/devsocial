@@ -457,6 +457,10 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                   height={300}
                   className="w-full h-auto object-cover max-h-96 rounded-lg"
                   unoptimized
+                  onError={(e) => {
+                    console.error('Image failed to load:', post.imageUrls?.[0]);
+                    e.currentTarget.style.display = 'none';
+                  }}
                 />
               </div>
             ) : (
