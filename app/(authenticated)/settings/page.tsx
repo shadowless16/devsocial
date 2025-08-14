@@ -16,6 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SettingsSkeleton } from "@/components/skeletons/settings-skeleton";
+import { WalletConnect } from "@/components/wallet-connect";
 
 // Use the imported 'User' type here.
 type ProfileFormData = Pick<
@@ -196,8 +197,9 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
+          <TabsTrigger value="wallet">Wallet</TabsTrigger>
           <TabsTrigger value="notifications" disabled>Notifications</TabsTrigger>
           <TabsTrigger value="privacy" disabled>Privacy</TabsTrigger>
           <TabsTrigger value="appearance" disabled>Appearance</TabsTrigger>
@@ -286,6 +288,12 @@ export default function SettingsPage() {
               )}
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="wallet" className="space-y-6 mt-6">
+          <div className="flex justify-center">
+            <WalletConnect />
+          </div>
         </TabsContent>
       </Tabs>
 

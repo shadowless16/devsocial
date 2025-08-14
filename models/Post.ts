@@ -12,6 +12,15 @@ export interface IPost extends Document {
   commentsCount: number
   viewsCount: number
   xpAwarded: number
+  contentHash: string | null
+  imprintStatus: "none" | "pending" | "submitted" | "confirmed" | "failed"
+  onChainProof: {
+    topicId?: string
+    seq?: number
+    txId?: string
+    submittedAt?: Date
+    confirmedAt?: Date
+  } | null
   createdAt: Date
   updatedAt: Date
 }
@@ -70,6 +79,25 @@ const PostSchema = new Schema<IPost>(
     xpAwarded: {
       type: Number,
       default: 20, // Default XP for creating a post
+    },
+    contentHash: {
+      type: String,
+      default: null,
+    },
+    imprintStatus: {
+      type: String,
+      enum: ["none", "pending", "submitted", "confirmed", "failed"],
+      default: "none",
+    },
+    onChainProof: {
+      type: {
+        topicId: String,
+        seq: Number,
+        txId: String,
+        submittedAt: Date,
+        confirmedAt: Date,
+      },
+      default: null,
     },
   },
   {

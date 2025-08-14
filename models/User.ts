@@ -48,6 +48,8 @@ export interface IUser extends Document {
   referrer?: string;
   country?: string;
   isGenerated?: boolean;
+  hederaAccountId?: string;
+  walletConnected?: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -219,6 +221,16 @@ const UserSchema = new Schema<IUser>(
       type: Boolean,
       default: false,
       index: true,
+    },
+    hederaAccountId: {
+      type: String,
+      trim: true,
+      sparse: true,
+      index: true,
+    },
+    walletConnected: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }
