@@ -33,7 +33,7 @@ describe('Avatar Generator', () => {
     });
 
     it('should use different avatar styles', () => {
-      const avatar = generateAvatar({ seed: 'testuser', style: 'personas' });
+      const avatar = generateAvatar({ seed: 'testuser', style: 'casual' });
       expect(avatar).toContain('https://models.readyplayer.me');
       expect(avatar).toContain('seed=testuser');
     });

@@ -83,9 +83,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
       return;
     }
     
-    // Check if we recently fetched (within 2 minutes for better UX)
+    // Check if we recently fetched (within 5 minutes for better performance)
     const now = Date.now();
-    if (lastFetchRef.current && now - lastFetchRef.current < 2 * 60 * 1000) {
+    if (lastFetchRef.current && now - lastFetchRef.current < 5 * 60 * 1000) {
       if (userCacheRef.current) {
         console.log('Using cached user data');
         setUser(userCacheRef.current);
@@ -98,9 +98,9 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
     console.log('Starting user profile fetch...');
     
     try {
-      // Add timeout to prevent hanging requests - increased to 15 seconds
+      // Add timeout to prevent hanging requests - optimized to 8 seconds
       const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error('Request timeout after 15 seconds')), 15000)
+        setTimeout(() => reject(new Error('Request timeout after 8 seconds')), 8000)
       );
       
       console.log('Making API call to /api/users/profile...');

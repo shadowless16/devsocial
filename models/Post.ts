@@ -13,14 +13,16 @@ export interface IPost extends Document {
   viewsCount: number
   xpAwarded: number
   contentHash: string | null
-  imprintStatus: "none" | "pending" | "submitted" | "confirmed" | "failed"
+  imprintStatus: "none" | "pending" | "submitted" | "confirmed" | "failed" | "duplicate"
   onChainProof: {
     topicId?: string
     seq?: number
     txId?: string
     submittedAt?: Date
     confirmedAt?: Date
+    retryCount?: number
   } | null
+  duplicateOf?: mongoose.Types.ObjectId
   createdAt: Date
   updatedAt: Date
 }
@@ -86,7 +88,7 @@ const PostSchema = new Schema<IPost>(
     },
     imprintStatus: {
       type: String,
-      enum: ["none", "pending", "submitted", "confirmed", "failed"],
+      enum: ["none", "pending", "submitted", "confirmed", "failed", "duplicate"],
       default: "none",
     },
     onChainProof: {
@@ -96,7 +98,13 @@ const PostSchema = new Schema<IPost>(
         txId: String,
         submittedAt: Date,
         confirmedAt: Date,
+        retryCount: { type: Number, default: 0 },
       },
+      default: null,
+    },
+    duplicateOf: {
+      type: Schema.Types.ObjectId,
+      ref: "Post",
       default: null,
     },
   },
@@ -109,5 +117,7 @@ const PostSchema = new Schema<IPost>(
 PostSchema.index({ createdAt: -1 })
 PostSchema.index({ tags: 1 })
 PostSchema.index({ author: 1, createdAt: -1 })
+// Step 9: Index for duplicate detection
+PostSchema.index({ contentHash: 1 }, { sparse: true })
 
 export default mongoose.models.Post || mongoose.model<IPost>("Post", PostSchema)

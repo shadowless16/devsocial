@@ -1,4 +1,4 @@
-import { Client, AccountId, PrivateKey, TransferTransaction, Hbar } from '@hashgraph/sdk'
+import { Client, AccountId, PrivateKey, TransferTransaction, Hbar, AccountBalanceQuery } from '@hashgraph/sdk'
 
 export class HederaService {
   private client: Client
@@ -49,7 +49,9 @@ export class HederaService {
 
   async getAccountBalance(accountId: string) {
     try {
-      const balance = await this.client.getAccountBalance(AccountId.fromString(accountId))
+      const query = new AccountBalanceQuery()
+        .setAccountId(AccountId.fromString(accountId))
+      const balance = await query.execute(this.client)
       return {
         success: true,
         balance: balance.hbars.toString()

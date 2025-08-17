@@ -31,13 +31,14 @@ export function useHashPack() {
         url: "https://techdevsocial.vercel.app/"
       }
 
-      await hc.init(appMetadata)
+      await hc.init(appMetadata, 'testnet')
       setHashConnect(hc)
 
       // Check for existing connection
       const savedData = hc.hcData
-      if (savedData.topic && savedData.pairingData.length > 0) {
-        const accountId = savedData.pairingData[0].accountIds[0]
+      if (savedData?.topic && savedData?.pairingData?.length > 0) {
+        const pairingData = savedData.pairingData[0] as any
+        const accountId = pairingData?.accountIds?.[0]
         if (accountId) {
           setState(prev => ({
             ...prev,
@@ -52,14 +53,17 @@ export function useHashPack() {
   }, [])
 
   const connectWallet = useCallback(async () => {
-    if (!hashConnect) return
+    if (!hashConnect) {
+      setState(prev => ({ ...prev, error: 'HashConnect not initialized' }))
+      return
+    }
 
     setState(prev => ({ ...prev, isConnecting: true, error: null }))
 
     try {
-      const connectionData = await hashConnect.connectToLocalWallet()
+      const connectionData = await hashConnect.connectToLocalWallet() as any
       
-      if (connectionData) {
+      if (connectionData?.accountIds?.[0]) {
         const accountId = connectionData.accountIds[0]
         setState(prev => ({
           ...prev,
@@ -68,18 +72,24 @@ export function useHashPack() {
           isConnecting: false
         }))
 
-        // Save to user profile
-        await fetch('/api/users/connect-wallet', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ hederaAccountId: accountId })
-        })
+        // Save to user profile with error handling
+        try {
+          await fetch('/api/users/connect-wallet', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ hederaAccountId: accountId })
+          })
+        } catch (apiError) {
+          console.warn('Failed to save wallet connection to profile:', apiError)
+        }
+      } else {
+        throw new Error('No account ID received from wallet')
       }
-    } catch (error) {
+    } catch (error: any) {
       setState(prev => ({
         ...prev,
         isConnecting: false,
-        error: 'Failed to connect wallet. Please make sure HashPack is installed.'
+        error: error?.message || 'Failed to connect wallet. Please make sure HashPack is installed.'
       }))
     }
   }, [hashConnect])
@@ -87,7 +97,10 @@ export function useHashPack() {
   const disconnectWallet = useCallback(async () => {
     if (!hashConnect) return
 
-    hashConnect.disconnect()
+    const savedData = hashConnect.hcData
+    if (savedData?.topic) {
+      hashConnect.disconnect(savedData.topic)
+    }
     setState({
       isConnected: false,
       accountId: null,

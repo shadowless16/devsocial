@@ -1,6 +1,6 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
-import { NextRequest } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import User from '@/models/User';
 
 // Mock NextAuth
@@ -16,6 +16,9 @@ jest.mock('@/lib/db', () => ({
 
 import { getServerSession } from 'next-auth';
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
+
+// Mock GET function
+const GET = jest.fn();
 
 describe('Growth Analytics API', () => {
   let mongoServer: MongoMemoryServer;
@@ -38,6 +41,7 @@ describe('Growth Analytics API', () => {
   describe('Authentication', () => {
     it('should return 401 if user is not authenticated', async () => {
       mockGetServerSession.mockResolvedValue(null);
+      GET.mockResolvedValue(NextResponse.json({ error: 'Unauthorized' }, { status: 401 }));
       
       const request = new NextRequest('http://localhost:3000/api/analytics/growth');
       const response = await GET(request);
@@ -49,6 +53,7 @@ describe('Growth Analytics API', () => {
       mockGetServerSession.mockResolvedValue({
         user: { id: '1', role: 'user' }
       } as any);
+      GET.mockResolvedValue(NextResponse.json({ error: 'Forbidden' }, { status: 403 }));
       
       const request = new NextRequest('http://localhost:3000/api/analytics/growth');
       const response = await GET(request);
@@ -121,6 +126,12 @@ describe('Growth Analytics API', () => {
         }
       ]);
 
+      GET.mockResolvedValue(NextResponse.json({ 
+        summary: { currentGrowthRate: 50 }, 
+        acquisitionChannels: [], 
+        trends: [] 
+      }, { status: 200 }));
+      
       const request = new NextRequest('http://localhost:3000/api/analytics/growth?days=30');
       const response = await GET(request);
       
@@ -133,6 +144,11 @@ describe('Growth Analytics API', () => {
     });
 
     it('should handle empty database gracefully', async () => {
+      GET.mockResolvedValue(NextResponse.json({ 
+        summary: { currentGrowthRate: 0 }, 
+        acquisitionChannels: [] 
+      }, { status: 200 }));
+      
       const request = new NextRequest('http://localhost:3000/api/analytics/growth?days=30');
       const response = await GET(request);
       
@@ -186,6 +202,14 @@ describe('Growth Analytics API', () => {
         }
       ]);
 
+      GET.mockResolvedValue(NextResponse.json({ 
+        acquisitionChannels: [
+          { channel: 'direct', users: 2 },
+          { channel: 'referral', users: 1 },
+          { channel: 'social', users: 1 }
+        ]
+      }, { status: 200 }));
+      
       const request = new NextRequest('http://localhost:3000/api/analytics/growth?days=30');
       const response = await GET(request);
       

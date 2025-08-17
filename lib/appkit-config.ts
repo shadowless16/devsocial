@@ -13,16 +13,16 @@ const metadata = {
   icons: ['https://techdevsocial.vercel.app/icon.png']
 }
 
-const networks = [mainnet, sepolia]
+const networks = [mainnet, sepolia] as const
 
 const wagmiAdapter = new WagmiAdapter({
-  networks,
+  networks: networks as any,
   projectId
 })
 
 export const modal = createAppKit({
   adapters: [wagmiAdapter],
-  networks,
+  networks: networks as any,
   metadata,
   projectId,
   features: {

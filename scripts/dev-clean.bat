@@ -1,0 +1,6 @@
+@echo off
+echo Killing old VS Code + Node processes...
+taskkill /F /IM "Code.exe" >nul 2>&1
+taskkill /F /IM "node.exe" >nul 2>&1
+echo Starting Next.js dev server...
+npm run dev

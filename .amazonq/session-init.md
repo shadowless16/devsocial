@@ -1,3 +1,5 @@
+npx tsc --noEmit --project tsconfig.json
+
 # Amazon Q Session Initialization
 
 ## 🔧 MCP Server Status

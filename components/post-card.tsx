@@ -13,6 +13,7 @@ import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useToast } from "@/hooks/use-toast"
 import { ReportModal } from "@/components/modals/report-modal"
 import { formatTimeAgo } from "@/lib/time-utils"
+import { PostMeta } from "@/components/shared/PostMeta"
 
 interface PostCardProps {
   author?: string
@@ -32,6 +33,12 @@ interface PostCardProps {
   imageUrl?: string | null
   imageUrls?: string[]
   videoUrls?: string[]
+  imprintStatus?: "none" | "pending" | "submitted" | "confirmed" | "failed" | "duplicate"
+  onChainProof?: {
+    txId?: string
+    topicId?: string
+    seq?: number
+  } | null
   onDelete?: (postId: string) => void
   onLike?: (postId: string) => void
   onComment?: (postId: string) => void
@@ -56,6 +63,8 @@ export default function PostCard({
   imageUrl,
   imageUrls,
   videoUrls,
+  imprintStatus,
+  onChainProof,
   onDelete,
   onLike,
   onComment,
@@ -166,6 +175,12 @@ export default function PostCard({
                     <Badge className="bg-yellow-50 text-yellow-700 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">
                       +{xpDelta}
                     </Badge>
+                  )}
+                  {imprintStatus && imprintStatus !== "none" && (
+                    <PostMeta 
+                      imprintStatus={imprintStatus} 
+                      onChainProof={onChainProof}
+                    />
                   )}
                 </div>
                 

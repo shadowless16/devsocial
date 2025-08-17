@@ -1,7 +1,7 @@
 "use client"
 
 import { ThemeProvider } from '@/components/theme-provider'
-import { AppKitProvider } from '@/components/providers/appkit-provider'
+import { DynamicAppKitProvider } from '@/components/dynamic/dynamic-appkit'
 import { AuthProvider } from '@/contexts/auth-context'
 import { NotificationProvider } from '@/contexts/notification-context'
 import { DataModeProvider } from '@/contexts/data-mode-context'
@@ -24,10 +24,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
             <FollowProvider>
               <NotificationProvider>
                 <WebSocketProvider>
-                  <AppKitProvider>
+                  <DynamicAppKitProvider>
                     {children}
                     <Toaster />
-                  </AppKitProvider>
+                  </DynamicAppKitProvider>
                 </WebSocketProvider>
               </NotificationProvider>
             </FollowProvider>

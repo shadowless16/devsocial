@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { SignClient } from '@walletconnect/sign-client'
+import type { SignClient as SignClientType } from '@walletconnect/sign-client'
 import { getSdkError } from '@walletconnect/utils'
 
 interface WalletConnectState {
@@ -11,7 +12,7 @@ interface WalletConnectState {
   isConnecting: boolean
   error: string | null
   uri: string | null
-  client: SignClient | null
+  client: any | null
 }
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id'
@@ -44,7 +45,7 @@ export function useWalletConnect() {
           }
         })
 
-        setState(prev => ({ ...prev, client }))
+        setState(prev => ({ ...prev, client: client as any }))
 
         // Check for existing sessions
         const sessions = client.session.getAll()
@@ -56,7 +57,7 @@ export function useWalletConnect() {
               ...prev,
               isConnected: true,
               accountId,
-              publicKey: session.peer.metadata.publicKey || null
+              publicKey: (session.peer.metadata as any).publicKey || null
             }))
           }
         }
@@ -97,7 +98,7 @@ export function useWalletConnect() {
     setState(prev => ({ ...prev, isConnecting: true, error: null }))
 
     try {
-      const { uri, approval } = await state.client.connect({
+      const { uri, approval } = await (state.client as any).connect({
         requiredNamespaces: {
           hedera: {
             methods: ['hedera_getNodeAddresses', 'hedera_executeTransaction'],
@@ -119,7 +120,7 @@ export function useWalletConnect() {
 
       const session = await approval()
       const accountId = session.namespaces.hedera?.accounts[0]?.split(':')[2]
-      const publicKey = session.peer.metadata.publicKey
+      const publicKey = (session.peer.metadata as any).publicKey
 
       if (accountId) {
         setState(prev => ({
@@ -155,9 +156,9 @@ export function useWalletConnect() {
     if (!state.client) return
 
     try {
-      const sessions = state.client.session.getAll()
+      const sessions = (state.client as any).session.getAll()
       if (sessions.length > 0) {
-        await state.client.disconnect({
+        await (state.client as any).disconnect({
           topic: sessions[0].topic,
           reason: getSdkError('USER_DISCONNECTED')
         })

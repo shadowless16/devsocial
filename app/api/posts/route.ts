@@ -9,6 +9,8 @@ import { awardXP, checkFirstTimeAction } from "@/utils/awardXP";
 import UserStats from "@/models/UserStats";
 import { checkReferralMiddleware } from "@/utils/check-referral-middleware";
 import { processMentions } from "@/utils/mention-utils";
+import { hashPost } from "@/lib/canonicalizer";
+import { enqueueImprintJob } from "@/services/imprintQueue";
 
 // Only import mission models if needed
 let MissionProgress: any = null;
@@ -163,6 +165,19 @@ export async function POST(req: NextRequest) {
       imageUrls: imageUrls || [],
       videoUrls: videoUrls || [],
       isAnonymous: isAnonymous || false,
+    });
+
+    // Compute contentHash and set imprint status
+    const contentHash = hashPost(newPost);
+    await Post.findByIdAndUpdate(newPost._id, {
+      contentHash,
+      imprintStatus: "pending"
+    });
+
+    // Enqueue imprint job
+    await enqueueImprintJob({
+      postId: newPost._id.toString(),
+      contentHash
     });
 
     const populatedPost = await Post.findById(newPost._id)

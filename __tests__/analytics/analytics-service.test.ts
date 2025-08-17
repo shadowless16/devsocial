@@ -6,9 +6,9 @@ import {
   GamificationAnalytics, 
   GrowthAnalytics 
 } from '@/models/Analytics'
-import { User } from '@/models/User'
-import { Post } from '@/models/Post'
-import { Comment } from '@/models/Comment'
+import User, { IUser } from '@/models/User'
+import Post, { IPost } from '@/models/Post'
+import Comment, { IComment } from '@/models/Comment'
 
 // Mock the database connection
 jest.mock('@/lib/db', () => ({

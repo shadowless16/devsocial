@@ -1,7 +1,7 @@
 /** @type {import('jest').Config} */
 const config = {
   preset: 'ts-jest',
-  testEnvironment: 'node',
+  testEnvironment: 'jsdom',
   roots: ['<rootDir>/__tests__'],
   testMatch: ['**/__tests__/**/*.test.ts', '**/__tests__/**/*.test.tsx'],
   collectCoverageFrom: [
@@ -11,7 +11,7 @@ const config = {
     'components/**/*.tsx',
     '!**/*.d.ts',
   ],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/$1',
   },

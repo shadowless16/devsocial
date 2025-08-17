@@ -20,6 +20,7 @@ import { PostContent } from "@/components/shared/PostContent"
 import { MentionText } from "@/components/ui/mention-text"
 import { UserLink } from "@/components/shared/UserLink"
 import { useViewTracker } from "@/hooks/use-view-tracker"
+import { PostMeta } from "@/components/shared/PostMeta"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,6 +58,12 @@ interface Post {
   createdAt: string;
   isAnonymous: boolean;
   isLiked: boolean;
+  imprintStatus?: "none" | "pending" | "submitted" | "confirmed" | "failed" | "duplicate";
+  onChainProof?: {
+    txId?: string;
+    topicId?: string;
+    seq?: number;
+  } | null;
 }
 
 interface Comment {
@@ -382,6 +389,12 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
             )}
             <span className="text-muted-foreground">•</span>
             <time className="text-muted-foreground">{post.createdAt}</time>
+            {post.imprintStatus && post.imprintStatus !== "none" && (
+              <PostMeta 
+                imprintStatus={post.imprintStatus} 
+                onChainProof={post.onChainProof}
+              />
+            )}
           </div>
         </div>
         <div className="ml-auto flex items-center gap-2">

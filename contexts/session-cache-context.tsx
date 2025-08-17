@@ -15,7 +15,7 @@ interface SessionCacheContextType {
 
 const SessionCacheContext = createContext<SessionCacheContextType | undefined>(undefined);
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes for better UX
 
 export function SessionCacheProvider({ children }: { children: React.ReactNode }) {
   const cacheRef = useRef<SessionCache | null>(null);

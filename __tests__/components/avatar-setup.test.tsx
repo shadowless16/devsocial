@@ -1,19 +1,18 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { AvatarSetup } from '@/components/onboarding/avatar-setup';
 import { useAuth } from '@/contexts/auth-context';
 import * as avatarGenerator from '@/utils/avatar-generator';
 
 // Mock dependencies
-vi.mock('@/contexts/auth-context');
-vi.mock('@/utils/avatar-generator');
+jest.mock('@/contexts/auth-context');
+jest.mock('@/utils/avatar-generator');
 
-const mockUseAuth = useAuth as any;
-const mockGenerateRandomAvatar = avatarGenerator.generateRandomAvatar as any;
+const mockUseAuth = useAuth as jest.MockedFunction<typeof useAuth>;
+const mockGenerateRandomAvatar = avatarGenerator.generateRandomAvatar as jest.MockedFunction<typeof avatarGenerator.generateRandomAvatar>;
 
 describe('AvatarSetup Component', () => {
-  const mockOnNext = vi.fn();
-  const mockOnBack = vi.fn();
+  const mockOnNext = jest.fn();
+  const mockOnBack = jest.fn();
   
   const defaultProps = {
     data: {
@@ -28,7 +27,7 @@ describe('AvatarSetup Component', () => {
   };
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mockUseAuth.mockReturnValue({
       user: {
         id: 'user123',

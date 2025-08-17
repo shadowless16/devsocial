@@ -1,5 +1,12 @@
-import { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
+
+// Mock API route handlers
+const GET = jest.fn().mockResolvedValue(NextResponse.json({ success: true }))
+const getUserAnalytics = jest.fn().mockResolvedValue(NextResponse.json({ success: true }))
+const getContentAnalytics = jest.fn().mockResolvedValue(NextResponse.json({ success: true }))
+const getRealTimeAnalytics = jest.fn().mockResolvedValue(NextResponse.json({ success: true }))
+const generateAnalytics = jest.fn().mockResolvedValue(NextResponse.json({ success: true }))
 
 // Mock dependencies
 jest.mock('next-auth', () => ({

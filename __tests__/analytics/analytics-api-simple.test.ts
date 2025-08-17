@@ -80,7 +80,7 @@ describe('Analytics API Routes - Simple Tests', () => {
       try {
         await AnalyticsService.getAnalyticsOverview(30)
       } catch (error) {
-        expect(error.message).toBe('Service error')
+        expect((error as Error).message).toBe('Service error')
       }
     })
   })

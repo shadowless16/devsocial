@@ -56,7 +56,7 @@ describe('Signup Flow Integration', () => {
   });
 
   it('should complete successful signup flow', async () => {
-    mockSignup.mockResolvedValue(undefined);
+    (mockSignup as jest.Mock).mockResolvedValue(undefined);
 
     render(React.createElement(SignupPage));
 
@@ -135,7 +135,7 @@ describe('Signup Flow Integration', () => {
     window.location.search = '?ref=TESTREF123';
     window.location.href = '';
 
-    mockSignup.mockResolvedValue(undefined);
+    (mockSignup as jest.Mock).mockResolvedValue(undefined);
 
     render(React.createElement(SignupPage));
 
@@ -220,7 +220,7 @@ describe('Signup Flow Integration', () => {
 
   it('should handle signup API errors', async () => {
     const signupError = new Error('Email already exists');
-    mockSignup.mockRejectedValue(signupError);
+    (mockSignup as jest.Mock).mockRejectedValue(signupError);
 
     render(React.createElement(SignupPage));
 
@@ -265,7 +265,7 @@ describe('Signup Flow Integration', () => {
   });
 
   it('should show loading state during signup', async () => {
-    mockSignup.mockImplementation(() => new Promise(() => {}));
+    (mockSignup as jest.Mock).mockImplementation(() => new Promise(() => {}));
 
     render(React.createElement(SignupPage));
 
