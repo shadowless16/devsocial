@@ -1,5 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
-import jwt from 'jsonwebtoken'
+import { NextRequest } from 'next/server'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/lib/auth'
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
@@ -16,19 +17,25 @@ type AuthResult =
   | { success: false; error: string; status?: number }
 
 export async function authMiddleware(request: NextRequest): Promise<AuthResult> {
-  const authHeader = request.headers.get('authorization')
-  
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return { success: false, error: 'Unauthorized', status: 401 }
-  }
-
-  const token = authHeader.substring(7)
-  
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'test-secret') as any
-    return { success: true, user: decoded }
+    const session = await getServerSession(authOptions)
+    
+    if (!session?.user?.id) {
+      return { success: false, error: 'Unauthorized', status: 401 }
+    }
+
+    return { 
+      success: true, 
+      user: {
+        id: session.user.id,
+        email: session.user.email || '',
+        username: session.user.username,
+        role: session.user.role,
+        displayName: session.user.username
+      }
+    }
   } catch (error) {
-    return { success: false, error: 'Invalid token', status: 401 }
+    return { success: false, error: 'Authentication failed', status: 401 }
   }
 }
 

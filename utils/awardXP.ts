@@ -6,9 +6,9 @@ import { ReferralSystem } from "./referral-system"
 // XP values for different actions
 export const XP_VALUES = {
   daily_login: 10,
-  post_creation: 20,
-  comment_creation: 5,
-  like_given: 2,  // Small XP for likes to prevent spam
+  post_creation: 15,
+  comment_creation: 2.5,
+  like_given: 1.5,  // Small XP for likes to prevent spam
   like_received: 3,  // Slightly more XP when receiving likes
   first_post: 50,
   first_comment: 25,
@@ -16,7 +16,7 @@ export const XP_VALUES = {
   badge_earned: 100,
   level_up: 200,
   moderator_action_bonus: 50,
-  referral_success: 25,  // XP for successful referral (referrer)
+  referral_success: 100,  // XP for successful referral (referrer)
   referral_bonus: 15,    // XP for being referred (new user)
   email_verified: 10,
   user_followed: 5,

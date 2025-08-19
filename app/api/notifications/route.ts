@@ -28,11 +28,15 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .limit(limit)
       .skip((page - 1) * limit)
+      .select('type title message read createdAt actionUrl data sender')
+      .lean()
 
-    const unreadCount = await Notification.countDocuments({
-      recipient: session.user.id,
-      read: false
-    })
+    // Only count if needed (not for unread-only queries)
+    const unreadCount = unreadOnly ? notifications.length : 
+      await Notification.countDocuments({
+        recipient: session.user.id,
+        read: false
+      })
 
     return NextResponse.json({
       success: true,

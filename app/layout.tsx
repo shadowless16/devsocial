@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   description: 'Gamified dev-collab platform on Hedera',
 }
 
+// Disable prefetching in development
+if (process.env.NODE_ENV === 'development') {
+  const originalPrefetch = require('next/link').default.prefetch
+  require('next/link').default.prefetch = () => {}
+}
+
 export default function RootLayout({
   children,
 }: {

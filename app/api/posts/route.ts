@@ -3,7 +3,8 @@ import { type NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Post from "@/models/Post";
 import User from "@/models/User";
-import { authMiddleware, type AuthenticatedRequest } from "@/middleware/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/utils/response";
 import { awardXP, checkFirstTimeAction } from "@/utils/awardXP";
 import UserStats from "@/models/UserStats";
@@ -39,9 +40,9 @@ export async function GET(req: NextRequest) {
     // Get current user ID if authenticated
     let currentUserId = null;
     try {
-      const authResult = await authMiddleware(req);
-      if (authResult.success) {
-        currentUserId = authResult.user.id;
+      const session = await getServerSession(authOptions);
+      if (session?.user?.id) {
+        currentUserId = session.user.id;
       }
     } catch (error) {
       // Continue without authentication for public posts
@@ -59,7 +60,7 @@ export async function GET(req: NextRequest) {
     const filteredUsers = await User.find(userFilter).select('_id');
     const userIds = filteredUsers.map(u => u._id);
 
-    // Fetch posts from filtered users
+    // Fetch posts from filtered users with index hint
     const posts = await Post.find({ author: { $in: userIds } })
       .populate({
         path: "author",
@@ -68,6 +69,7 @@ export async function GET(req: NextRequest) {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
+      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded')
       .lean();
 
     // Get user likes if authenticated
@@ -124,9 +126,9 @@ export async function GET(req: NextRequest) {
 //================================================================//
 export async function POST(req: NextRequest) {
   try {
-    const authResult = await authMiddleware(req);
-    if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
     }
 
     let body;
@@ -143,7 +145,7 @@ export async function POST(req: NextRequest) {
     }
     
     const { content, tags, isAnonymous, imageUrl, imageUrls, videoUrls } = body;
-    const authorId = authResult.user.id;
+    const authorId = session.user.id;
 
     if (!content || content.trim().length === 0) {
       return errorResponse("Post content cannot be empty.", 400);

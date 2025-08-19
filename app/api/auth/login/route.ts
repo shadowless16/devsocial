@@ -107,69 +107,16 @@
 // }
 
 // app/api/auth/login/route.ts
-import { type NextRequest, NextResponse } from "next/server";
-import { serialize } from "cookie";
-import connectDB from "@/lib/db";
-import User from "@/models/User";
-import { AuthService, type TokenPayload } from "@/lib/auth";
-import { successResponse, errorResponse } from "@/utils/response";
-import bcrypt from "bcryptjs";
+// This route is now handled by NextAuth.js
+// Redirect to NextAuth signIn endpoint
+import { NextResponse } from "next/server";
 
-
-export const dynamic = 'force-dynamic'
-
-export async function POST(request: NextRequest) {
-  // This log will prove if the env var is loaded. Check your server console.
-  console.log("[Login Route] JWT_SECRET loaded:", !!process.env.JWT_SECRET);
-
-  try {
-    await connectDB();
-    const body = await request.json();
-    const { usernameOrEmail, password } = body;
-
-    if (!usernameOrEmail || !password) {
-        return errorResponse("Username/email and password are required", 400);
-    }
-
-    const user = await User.findOne({
-      $or: [{ email: usernameOrEmail.toLowerCase() }, { username: usernameOrEmail }],
-    }).select("+password");
-
-    if (!user || !(await bcrypt.compare(password, user.password))) {
-      return errorResponse("Invalid credentials", 401);
-    }
-
-    const tokenPayload: TokenPayload = {
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    };
-
-    const { accessToken, refreshToken } = AuthService.generateTokens(tokenPayload);
-
-    const refreshTokenCookie = serialize("refreshToken", refreshToken, {
-      httpOnly: true, // Prevents client-side JS from accessing the cookie
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict", // Helps prevent CSRF attacks
-      maxAge: 60 * 60 * 24 * 7, // 7 days
-      path: "/", // Make the cookie available on all pages
-    });
-
-    const response = NextResponse.json(successResponse({
-        token: accessToken,
-        user: user.toObject(),
-    }));
-
-    response.headers.set("Set-Cookie", refreshTokenCookie);
-    console.log("[Login Route] Login successful. Access token and refresh token cookie sent.");
-    return response;
-
-  } catch (error: any) {
-    console.error("[Login Route] CRITICAL ERROR:", error);
-    // Check for the specific JWT error
-    if (error.message.includes("secretOrPrivateKey")) {
-        return errorResponse("JWT Secret is not configured on the server. Please check .env.local", 500);
-    }
-    return errorResponse("Internal server error", 500);
-  }
+export async function POST() {
+  return NextResponse.json(
+    { 
+      message: "Please use NextAuth.js signIn. This endpoint is deprecated.",
+      redirect: "/api/auth/signin"
+    }, 
+    { status: 302 }
+  );
 }

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import connectDB from "@/lib/db"
 import User from "@/models/User"
-import { AuthService } from "@/lib/auth"
+
 import { successResponse, errorResponse } from "@/utils/response"
 import { z } from "zod"
 import bcrypt from "bcryptjs";

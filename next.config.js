@@ -17,6 +17,8 @@ const nextConfig = {
     // Reduce memory usage
     workerThreads: false,
     cpus: 1,
+    // Disable prefetching to reduce API calls
+    optimisticClientCache: false,
   },
 
   // Memory optimization

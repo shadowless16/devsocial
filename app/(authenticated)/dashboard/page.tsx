@@ -73,12 +73,17 @@ export default function DashboardPage() {
   const { user } = useAuth()
 
   useEffect(() => {
-    fetchDashboardData()
+    if (dashboardData) {
+      // Don't show loading skeleton when switching periods if we already have data
+      fetchDashboardData(false)
+    } else {
+      fetchDashboardData(true)
+    }
   }, [period])
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (showLoading = true) => {
     try {
-      setLoading(true)
+      if (showLoading) setLoading(true)
       console.log("Fetching dashboard data with period:", period)
       const response = await apiClient.getDashboard(period)
       console.log("Dashboard API response:", response)
@@ -96,7 +101,7 @@ export default function DashboardPage() {
         console.error("Error stack:", error.stack)
       }
     } finally {
-      setLoading(false)
+      if (showLoading) setLoading(false)
     }
   }
 
@@ -109,7 +114,7 @@ export default function DashboardPage() {
       <div className="w-full py-4 sm:py-6 px-3 sm:px-4">
         <div className="text-center">
           <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Unable to load dashboard</h2>
-          <Button onClick={fetchDashboardData}>Try Again</Button>
+          <Button onClick={() => fetchDashboardData(true)}>Try Again</Button>
         </div>
       </div>
     )
@@ -152,7 +157,7 @@ export default function DashboardPage() {
               <SelectItem value="year">This Year</SelectItem>
             </SelectContent>
           </Select>
-          <Button onClick={fetchDashboardData} variant="outline" size="sm" className="flex-shrink-0">
+          <Button onClick={() => fetchDashboardData(false)} variant="outline" size="sm" className="flex-shrink-0">
             Refresh
           </Button>
         </div>

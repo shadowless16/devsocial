@@ -31,11 +31,18 @@ export async function GET(request: NextRequest) {
 
     // Transform and add rank
     const leaderboard = users.map((user: any, index) => ({
-      ...user,
-      id: user._id.toString(),
-      displayName: user.displayName || 
-        (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username),
-      rank: index + 1
+      _id: user._id.toString(),
+      user: {
+        _id: user._id.toString(),
+        username: user.username,
+        displayName: user.displayName || 
+          (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username),
+        avatar: user.avatar,
+        level: user.level
+      },
+      totalXP: user.points,
+      rank: index + 1,
+      level: user.level
     }))
 
     const totalUsers = await User.countDocuments(timeFilter)

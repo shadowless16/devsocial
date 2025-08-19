@@ -1,7 +1,6 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
-import jwt from "jsonwebtoken"
 import connectDB from "@/lib/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
@@ -10,8 +9,6 @@ import { successResponse, errorResponse, validationErrorResponse } from "@/utils
 import { awardXP } from "@/utils/awardXP"
 import { ReferralSystemFixed } from "@/utils/referral-system-fixed"
 import { generateAvatarFromUsername } from "@/utils/avatar-generator"
-
-const JWT_SECRET = process.env.JWT_SECRET!
 
 
 export const dynamic = 'force-dynamic'
@@ -98,10 +95,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Generate JWT
-    const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: "7d" })
-
-    // Return user data (excluding password)
+    // Return user data (excluding password) - NextAuth will handle authentication
     const userData = {
       id: user._id,
       username: user.username,
@@ -122,7 +116,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(
       successResponse({
-        token,
+        message: "Account created successfully. Please sign in.",
         user: userData,
       }),
       { status: 201 }

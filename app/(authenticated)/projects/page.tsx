@@ -197,13 +197,13 @@ export default function ProjectsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Avatar className="w-6 h-6">
-                  <AvatarImage src={project.author.avatar} />
+                  <AvatarImage src={project.author?.avatar || undefined} />
                   <AvatarFallback className="text-xs">
-                    {project.author.displayName?.[0] || project.author.username[0]}
+                    {project.author?.displayName?.[0] || project.author?.username?.[0] || '?'}
                   </AvatarFallback>
                 </Avatar>
-                <span className="text-sm text-gray-600 dark:text-gray-400">{project.author.displayName || project.author.username}</span>
-                <Badge variant="outline" className="text-xs">L{project.author.level}</Badge>
+                <span className="text-sm text-gray-600 dark:text-gray-400">{project.author?.displayName || project.author?.username || 'Unknown'}</span>
+                <Badge variant="outline" className="text-xs">L{project.author?.level || 0}</Badge>
               </div>
             </CardHeader>
             
@@ -258,7 +258,7 @@ export default function ProjectsPage() {
                     </Link>
                   </Button>
                   
-                  {user?.id === project.author._id && (
+                  {user?.id === project.author?._id && (
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="sm" className="p-1 h-8 w-8">

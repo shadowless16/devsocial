@@ -51,6 +51,16 @@ export function FollowButton({
   // Disable WebSocket listeners since we're using optimistic updates
 
   const handleFollowToggle = async () => {
+    // Prevent unfollowing AkDavid
+    if (username === "AkDavid" && isFollowing) {
+      toast({
+        title: "Cannot Unfollow",
+        description: "You cannot unfollow the platform creator",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const previousState = isFollowing;
     const newState = !isFollowing;
     const delta = newState ? 1 : -1;
@@ -110,13 +120,20 @@ export function FollowButton({
     );
   }
 
+  // Special styling for AkDavid when following
+  const isAkDavidFollowing = username === "AkDavid" && isFollowing;
+  const buttonVariant = isAkDavidFollowing ? "default" : (isFollowing ? "outline" : variant);
+  const hoverClass = isAkDavidFollowing ? "" : (isFollowing ? "hover:bg-red-50 hover:border-red-200 hover:text-red-600" : "");
+  const buttonText = isAkDavidFollowing ? "Platform Creator" : getFollowActionText(isFollowing);
+  const tooltipText = isAkDavidFollowing ? "Cannot unfollow platform creator" : getFollowTooltip(isFollowing);
+
   return (
     <Button
       onClick={handleFollowToggle}
       size={size}
-      variant={isFollowing ? "outline" : variant}
-      className={`${isFollowing ? "hover:bg-red-50 hover:border-red-200 hover:text-red-600" : ""} ${className}`}
-      title={getFollowTooltip(isFollowing)}
+      variant={buttonVariant}
+      className={`${hoverClass} ${className}`}
+      title={tooltipText}
     >
       {showIcon && (
         <>
@@ -127,7 +144,7 @@ export function FollowButton({
           )}
         </>
       )}
-      {getFollowActionText(isFollowing)}
+      {buttonText}
     </Button>
   );
 }

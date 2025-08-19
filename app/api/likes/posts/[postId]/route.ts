@@ -1,6 +1,7 @@
 // app/api/likes/posts/[postId]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { authMiddleware, type AuthenticatedRequest } from "@/middleware/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import Like from "@/models/Like";
 import Post from "@/models/Post";
 import Activity from "@/models/Activity";
@@ -26,12 +27,12 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
   try {
     await connectDB();
 
-    const authResult = await authMiddleware(request);
-    if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
     }
 
-    const userId = authResult.user.id;
+    const userId = session.user.id;
     const { postId } = params;
 
     const post = await Post.findById(postId).populate("author", "username displayName");
@@ -128,7 +129,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
           recipient: post.author._id,
           sender: userId,
           type: "like",
-          title: `${authResult.user.displayName || authResult.user.username} liked your post`,
+          title: `${session.user.username} liked your post`,
           message: post.content.substring(0, 100),
           actionUrl: `/post/${postId}`,
           data: { postId },
@@ -141,7 +142,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
             type: "like",
             title: notification.title,
             message: notification.message,
-            sender: authResult.user,
+            sender: { id: session.user.id, username: session.user.username },
             createdAt: notification.createdAt,
           });
         }

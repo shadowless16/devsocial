@@ -201,7 +201,7 @@ export default function ProjectDetailPage() {
               <Badge className={getStatusColor(project.status)}>
                 {project.status.replace('-', ' ')}
               </Badge>
-              {user?.id === project.author._id && (
+              {user?.id === project.author?._id && (
                 <div className="flex items-center gap-2">
                   <Select value={project.status} onValueChange={handleStatusUpdate} disabled={updatingStatus}>
                     <SelectTrigger className="w-40 h-8">
@@ -249,16 +249,16 @@ export default function ProjectDetailPage() {
             {/* Author Info */}
             <div className="flex items-center gap-3 mb-4">
               <Avatar className="h-10 w-10">
-                <AvatarImage src={project.author.avatar} />
+                <AvatarImage src={project.author?.avatar} />
                 <AvatarFallback>
-                  {(project.author.displayName || project.author.username)[0].toUpperCase()}
+                  {(project.author?.displayName || project.author?.username || 'U')[0].toUpperCase()}
                 </AvatarFallback>
               </Avatar>
               <div>
-                <p className="font-medium">{project.author.displayName || project.author.username}</p>
+                <p className="font-medium">{project.author?.displayName || project.author?.username || 'Unknown'}</p>
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
-                    L{project.author.level}
+                    L{project.author?.level || 0}
                   </Badge>
                   <span className="text-sm text-gray-500">
                     Created {new Date(project.createdAt).toLocaleDateString()}
@@ -415,21 +415,21 @@ export default function ProjectDetailPage() {
             <CardContent>
               <div className="flex items-center gap-3 mb-4">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={project.author.avatar} />
+                  <AvatarImage src={project.author?.avatar} />
                   <AvatarFallback>
-                    {(project.author.displayName || project.author.username)[0].toUpperCase()}
+                    {(project.author?.displayName || project.author?.username || 'U')[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h4 className="font-medium">{project.author.displayName || project.author.username}</h4>
-                  <p className="text-sm text-gray-500">@{project.author.username}</p>
+                  <h4 className="font-medium">{project.author?.displayName || project.author?.username || 'Unknown'}</h4>
+                  <p className="text-sm text-gray-500">@{project.author?.username || 'unknown'}</p>
                   <Badge variant="outline" className="text-xs mt-1">
-                    Level {project.author.level}
+                    Level {project.author?.level || 0}
                   </Badge>
                 </div>
               </div>
               <Button className="w-full" asChild>
-                <Link href={`/profile/${project.author.username}`}>
+                <Link href={`/profile/${project.author?.username || 'unknown'}`}>
                   View Profile
                 </Link>
               </Button>

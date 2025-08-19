@@ -2,7 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
-import { authMiddleware } from "@/middleware/auth"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import User from "@/models/User"
 import Post from "@/models/Post"
 import Activity from "@/models/Activity"
@@ -16,12 +17,12 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB()
 
-    const authResult = await authMiddleware(request)
-    if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json(errorResponse('Unauthorized'), { status: 401 })
     }
 
-    const userId = authResult.user!.id
+    const userId = session.user.id
     console.log("[Dashboard] User ID:", userId)
     
     // Convert string ID to ObjectId
