@@ -1,6 +1,5 @@
 import type { Server as HTTPServer } from "http"
 import { Server as SocketIOServer } from "socket.io"
-import jwt from "jsonwebtoken"
 import User from "@/models/User"
 import Message from "@/models/Message"
 import Conversation from "@/models/Conversation"
@@ -25,14 +24,12 @@ export class WebSocketServer {
   private setupMiddleware() {
     this.io.use(async (socket, next) => {
       try {
-        const token = socket.handshake.auth.token
-        if (!token) {
+        const userId = socket.handshake.auth.userId
+        if (!userId) {
           return next(new Error("Authentication error"))
         }
 
-        const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any
-        const user = await User.findById(decoded.userId).select("-password")
-
+        const user = await User.findById(userId).select("-password")
         if (!user) {
           return next(new Error("User not found"))
         }
