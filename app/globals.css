@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import "../styles/uploadthing.css";
+
 @import "../styles/theme-fixes.css";
 
 @layer utilities {

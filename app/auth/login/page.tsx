@@ -54,7 +54,7 @@ export default function LoginPage() {
             Welcome back
           </CardTitle>
           <CardDescription className="text-gray-600">
-            Sign in to your TechConnect account
+            Sign in to your DevSocial account
           </CardDescription>
         </CardHeader>
         <CardContent>

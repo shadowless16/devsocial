@@ -1,0 +1,81 @@
+151527379a58546f179f9cbd30805f36
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || (function () {
+    var ownKeys = function(o) {
+        ownKeys = Object.getOwnPropertyNames || function (o) {
+            var ar = [];
+            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
+            return ar;
+        };
+        return ownKeys(o);
+    };
+    return function (mod) {
+        if (mod && mod.__esModule) return mod;
+        var result = {};
+        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
+        __setModuleDefault(result, mod);
+        return result;
+    };
+})();
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importStar(require("mongoose"));
+const XPLogSchema = new mongoose_1.Schema({
+    userId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+        ref: "User",
+        required: true,
+        index: true,
+    },
+    type: {
+        type: String,
+        enum: [
+            "daily_login",
+            "post_creation",
+            "comment_creation",
+            "like_given",
+            "like_received",
+            "first_post",
+            "first_comment",
+            "poll_interaction",
+            "badge_earned",
+            "level_up",
+            "moderator_action_bonus",
+            "referral_success",
+            "referral_bonus",
+            "email_verified",
+            "user_followed",
+            "challenge_completion",
+        ],
+        required: true,
+    },
+    xpAmount: {
+        type: Number,
+        required: true,
+    },
+    refId: {
+        type: mongoose_1.Schema.Types.ObjectId,
+    },
+}, {
+    timestamps: true,
+});
+// Index for efficient querying
+XPLogSchema.index({ userId: 1, createdAt: -1 });
+XPLogSchema.index({ type: 1, createdAt: -1 });
+exports.default = mongoose_1.default.models.XPLog || mongoose_1.default.model("XPLog", XPLogSchema);
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiQzpcXFVzZXJzXFxha2RhdlxcRG93bmxvYWRzXFxkZXZzb2NpYWxcXG1vZGVsc1xcWFBMb2cudHMiLCJtYXBwaW5ncyI6Ijs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7QUFBQSxxREFBMEQ7QUFVMUQsTUFBTSxXQUFXLEdBQUcsSUFBSSxpQkFBTSxDQUM1QjtJQUNFLE1BQU0sRUFBRTtRQUNOLElBQUksRUFBRSxpQkFBTSxDQUFDLEtBQUssQ0FBQyxRQUFRO1FBQzNCLEdBQUcsRUFBRSxNQUFNO1FBQ1gsUUFBUSxFQUFFLElBQUk7UUFDZCxLQUFLLEVBQUUsSUFBSTtLQUNaO0lBQ0QsSUFBSSxFQUFFO1FBQ0osSUFBSSxFQUFFLE1BQU07UUFDWixJQUFJLEVBQUU7WUFDSixhQUFhO1lBQ2IsZUFBZTtZQUNmLGtCQUFrQjtZQUNsQixZQUFZO1lBQ1osZUFBZTtZQUNmLFlBQVk7WUFDWixlQUFlO1lBQ2Ysa0JBQWtCO1lBQ2xCLGNBQWM7WUFDZCxVQUFVO1lBQ1Ysd0JBQXdCO1lBQ3hCLGtCQUFrQjtZQUNsQixnQkFBZ0I7WUFDaEIsZ0JBQWdCO1lBQ2hCLGVBQWU7WUFDZixzQkFBc0I7U0FDdkI7UUFDRCxRQUFRLEVBQUUsSUFBSTtLQUNmO0lBQ0QsUUFBUSxFQUFFO1FBQ1IsSUFBSSxFQUFFLE1BQU07UUFDWixRQUFRLEVBQUUsSUFBSTtLQUNmO0lBQ0QsS0FBSyxFQUFFO1FBQ0wsSUFBSSxFQUFFLGlCQUFNLENBQUMsS0FBSyxDQUFDLFFBQVE7S0FDNUI7Q0FDRixFQUNEO0lBQ0UsVUFBVSxFQUFFLElBQUk7Q0FDakIsQ0FDRixDQUFBO0FBRUQsK0JBQStCO0FBQy9CLFdBQVcsQ0FBQyxLQUFLLENBQUMsRUFBRSxNQUFNLEVBQUUsQ0FBQyxFQUFFLFNBQVMsRUFBRSxDQUFDLENBQUMsRUFBRSxDQUFDLENBQUE7QUFDL0MsV0FBVyxDQUFDLEtBQUssQ0FBQyxFQUFFLElBQUksRUFBRSxDQUFDLEVBQUUsU0FBUyxFQUFFLENBQUMsQ0FBQyxFQUFFLENBQUMsQ0FBQTtBQUU3QyxrQkFBZSxrQkFBUSxDQUFDLE1BQU0sQ0FBQyxLQUFLLElBQUksa0JBQVEsQ0FBQyxLQUFLLENBQVMsT0FBTyxFQUFFLFdBQVcsQ0FBQyxDQUFBIiwibmFtZXMiOltdLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcYWtkYXZcXERvd25sb2Fkc1xcZGV2c29jaWFsXFxtb2RlbHNcXFhQTG9nLnRzIl0sInNvdXJjZXNDb250ZW50IjpbImltcG9ydCBtb25nb29zZSwgeyBTY2hlbWEsIHR5cGUgRG9jdW1lbnQgfSBmcm9tIFwibW9uZ29vc2VcIlxuXG5leHBvcnQgaW50ZXJmYWNlIElYUExvZyBleHRlbmRzIERvY3VtZW50IHtcbiAgdXNlcklkOiBtb25nb29zZS5UeXBlcy5PYmplY3RJZFxuICB0eXBlOiBzdHJpbmdcbiAgeHBBbW91bnQ6IG51bWJlclxuICByZWZJZD86IG1vbmdvb3NlLlR5cGVzLk9iamVjdElkXG4gIGNyZWF0ZWRBdDogRGF0ZVxufVxuXG5jb25zdCBYUExvZ1NjaGVtYSA9IG5ldyBTY2hlbWE8SVhQTG9nPihcbiAge1xuICAgIHVzZXJJZDoge1xuICAgICAgdHlwZTogU2NoZW1hLlR5cGVzLk9iamVjdElkLFxuICAgICAgcmVmOiBcIlVzZXJcIixcbiAgICAgIHJlcXVpcmVkOiB0cnVlLFxuICAgICAgaW5kZXg6IHRydWUsXG4gICAgfSxcbiAgICB0eXBlOiB7XG4gICAgICB0eXBlOiBTdHJpbmcsXG4gICAgICBlbnVtOiBbXG4gICAgICAgIFwiZGFpbHlfbG9naW5cIixcbiAgICAgICAgXCJwb3N0X2NyZWF0aW9uXCIsXG4gICAgICAgIFwiY29tbWVudF9jcmVhdGlvblwiLFxuICAgICAgICBcImxpa2VfZ2l2ZW5cIixcbiAgICAgICAgXCJsaWtlX3JlY2VpdmVkXCIsXG4gICAgICAgIFwiZmlyc3RfcG9zdFwiLFxuICAgICAgICBcImZpcnN0X2NvbW1lbnRcIixcbiAgICAgICAgXCJwb2xsX2ludGVyYWN0aW9uXCIsXG4gICAgICAgIFwiYmFkZ2VfZWFybmVkXCIsXG4gICAgICAgIFwibGV2ZWxfdXBcIixcbiAgICAgICAgXCJtb2RlcmF0b3JfYWN0aW9uX2JvbnVzXCIsXG4gICAgICAgIFwicmVmZXJyYWxfc3VjY2Vzc1wiLFxuICAgICAgICBcInJlZmVycmFsX2JvbnVzXCIsXG4gICAgICAgIFwiZW1haWxfdmVyaWZpZWRcIixcbiAgICAgICAgXCJ1c2VyX2ZvbGxvd2VkXCIsXG4gICAgICAgIFwiY2hhbGxlbmdlX2NvbXBsZXRpb25cIixcbiAgICAgIF0sXG4gICAgICByZXF1aXJlZDogdHJ1ZSxcbiAgICB9LFxuICAgIHhwQW1vdW50OiB7XG4gICAgICB0eXBlOiBOdW1iZXIsXG4gICAgICByZXF1aXJlZDogdHJ1ZSxcbiAgICB9LFxuICAgIHJlZklkOiB7XG4gICAgICB0eXBlOiBTY2hlbWEuVHlwZXMuT2JqZWN0SWQsXG4gICAgfSxcbiAgfSxcbiAge1xuICAgIHRpbWVzdGFtcHM6IHRydWUsXG4gIH0sXG4pXG5cbi8vIEluZGV4IGZvciBlZmZpY2llbnQgcXVlcnlpbmdcblhQTG9nU2NoZW1hLmluZGV4KHsgdXNlcklkOiAxLCBjcmVhdGVkQXQ6IC0xIH0pXG5YUExvZ1NjaGVtYS5pbmRleCh7IHR5cGU6IDEsIGNyZWF0ZWRBdDogLTEgfSlcblxuZXhwb3J0IGRlZmF1bHQgbW9uZ29vc2UubW9kZWxzLlhQTG9nIHx8IG1vbmdvb3NlLm1vZGVsPElYUExvZz4oXCJYUExvZ1wiLCBYUExvZ1NjaGVtYSlcbiJdLCJ2ZXJzaW9uIjozfQ==

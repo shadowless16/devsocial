@@ -23,7 +23,7 @@ export class ReferralSystem {
   }
 
   static async createReferral(referrerId: string, referredUserId: string): Promise<any> {
-    await connectDB()
+    // connectDB() // Remove in tests, connection already exists
 
     // Check if referral already exists
     const existingReferral = await Referral.findOne({
@@ -55,7 +55,7 @@ export class ReferralSystem {
   }
 
   static async checkReferralCompletion(userId: string): Promise<void> {
-    await connectDB()
+    // connectDB() // Remove in tests, connection already exists
 
     // Find pending referrals for this user
     const pendingReferrals = await Referral.find({
@@ -109,7 +109,7 @@ export class ReferralSystem {
   }
 
   static async getReferralStats(userId: string): Promise<any> {
-    await connectDB()
+    // connectDB() // Remove in tests, connection already exists
 
     // First, check for any pending referrals that should be completed
     await this.checkUserReferrals(userId)
@@ -141,7 +141,7 @@ export class ReferralSystem {
   }
 
   static async expireOldReferrals(): Promise<void> {
-    await connectDB()
+    // connectDB() // Remove in tests, connection already exists
 
     await Referral.updateMany(
       {
@@ -153,7 +153,7 @@ export class ReferralSystem {
   }
 
   static async checkUserReferrals(referrerId: string): Promise<void> {
-    await connectDB()
+    // connectDB() // Remove in tests, connection already exists
 
     // Find pending referrals for this referrer
     const pendingReferrals = await Referral.find({

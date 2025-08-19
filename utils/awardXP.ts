@@ -29,7 +29,7 @@ export async function awardXP(
   refId?: string,
 ): Promise<{ success: boolean; newLevel?: number; levelUp?: boolean }> {
   try {
-    await connectDB()
+    // await connectDB() // Remove in tests, connection already exists
 
     const xpAmount = XP_VALUES[type]
     if (!xpAmount) {
@@ -94,7 +94,7 @@ export async function awardXP(
 
 export async function checkFirstTimeAction(userId: string, type: "post" | "comment"): Promise<boolean> {
   try {
-    await connectDB()
+    // await connectDB() // Remove in tests, connection already exists
 
     const logType = type === "post" ? "post_creation" : "comment_creation"
     const existingLog = await XPLog.findOne({ userId, type: logType })

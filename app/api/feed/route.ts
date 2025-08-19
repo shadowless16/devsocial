@@ -11,8 +11,8 @@ export async function GET(request: NextRequest) {
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
     const { searchParams } = new URL(request.url)
@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       (searchParams.get("algorithm") as "chronological" | "engagement" | "personalized") || "personalized"
 
     const feedData = await FeedAlgorithm.generateFeed({
-      userId: authResult.user!.id,
+      userId: authResult.user.id,
       page,
       limit,
       algorithm,
@@ -41,14 +41,14 @@ export async function POST(request: NextRequest) {
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
     const body = await request.json()
     const { type, postId, duration } = body
 
-    await FeedAlgorithm.updateUserPreferences(authResult.user!.id, {
+    await FeedAlgorithm.updateUserPreferences(authResult.user.id, {
       type,
       postId,
       duration,

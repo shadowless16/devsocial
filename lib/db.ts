@@ -1,7 +1,7 @@
 import mongoose from "mongoose"
 
 // Try to load environment variables if they're not already loaded
-if (!process.env.MONGODB_URI) {
+if (!process.env.MONGODB_URI && !process.env.MONGODB_TEST_URI) {
   try {
     const { config } = require('dotenv')
     const path = require('path')
@@ -11,10 +11,13 @@ if (!process.env.MONGODB_URI) {
   }
 }
 
-const MONGODB_URI = process.env.MONGODB_URI
+// Use test URI in test environment, otherwise use regular URI
+const MONGODB_URI = process.env.NODE_ENV === 'test' 
+  ? process.env.MONGODB_TEST_URI 
+  : process.env.MONGODB_URI
 
 if (!MONGODB_URI) {
-  throw new Error("Please define the MONGODB_URI environment variable inside .env.local")
+  throw new Error("Please define the MONGODB_URI or MONGODB_TEST_URI environment variable")
 }
 
 /**
@@ -29,6 +32,11 @@ if (!cached) {
 }
 
 async function connectDB() {
+  // In test environment, if mongoose is already connected, return existing connection
+  if (process.env.NODE_ENV === 'test' && mongoose.connection.readyState === 1) {
+    return mongoose.connection
+  }
+
   if (cached.conn) {
     return cached.conn
   }

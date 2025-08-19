@@ -1,0 +1,3 @@
+c14e211a6cdacccfd2db994e4274f488
+// Load test environment variables
+require('dotenv').config({ path: '.env.test' });

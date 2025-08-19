@@ -8,7 +8,7 @@ import Follow from "@/models/Follow"
 import { signupSchema } from "@/utils/validation"
 import { successResponse, errorResponse, validationErrorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
-import { ReferralSystem } from "@/utils/referral-system"
+import { ReferralSystemFixed } from "@/utils/referral-system-fixed"
 import { generateAvatarFromUsername } from "@/utils/avatar-generator"
 
 const JWT_SECRET = process.env.JWT_SECRET!
@@ -88,9 +88,9 @@ export async function POST(request: NextRequest) {
     // Handle referral if code was provided
     if (referralCode) {
       try {
-        const referrer = await User.findOne({ referralCode })
-        if (referrer && referrer._id.toString() !== user._id.toString()) {
-          await ReferralSystem.createReferral(referrer._id.toString(), user._id.toString())
+        const success = await ReferralSystemFixed.processReferralFromSignup(referralCode, user._id.toString())
+        if (success) {
+          console.log(`Referral processed successfully for user ${user.username} with code ${referralCode}`)
         }
       } catch (error) {
         console.error("Referral creation error:", error)

@@ -1,38 +1,90 @@
 // Jest setup file
 import 'dotenv/config'
-import '@testing-library/jest-dom'
 
-// Mock DOM environment
-const { JSDOM } = require('jsdom')
-const dom = new JSDOM('<!DOCTYPE html><html><body></body></html>', {
-  url: 'http://localhost',
-  pretendToBeVisual: true,
-  resources: 'usable'
-})
-
-global.window = dom.window
-global.document = dom.window.document
-global.navigator = dom.window.navigator
-global.self = dom.window
-global.DocumentFragment = dom.window.DocumentFragment
-global.requestIdleCallback = dom.window.requestIdleCallback || ((cb: any) => setTimeout(cb, 0))
-global.cancelIdleCallback = dom.window.cancelIdleCallback || clearTimeout
-global.IntersectionObserver = class IntersectionObserver {
-  root = null
-  rootMargin = ''
-  thresholds = []
-  constructor() {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-  takeRecords() { return [] }
-} as any
-global.ResizeObserver = class ResizeObserver {
-  constructor() {}
-  observe() {}
-  unobserve() {}
-  disconnect() {}
+// Polyfill TextEncoder/TextDecoder for Node.js environment
+if (typeof global.TextEncoder === 'undefined') {
+  const { TextEncoder, TextDecoder } = require('util')
+  global.TextEncoder = TextEncoder
+  global.TextDecoder = TextDecoder
 }
 
-// Increase timeout for database operations
+// Polyfill Web APIs for Next.js
+if (typeof global.Request === 'undefined') {
+  global.Request = class Request {
+    constructor(public url: string, public init?: any) {}
+    headers = new Map()
+    method = 'GET'
+    body = null
+    json = async () => ({})
+    text = async () => ''
+  } as any
+}
+
+if (typeof global.Response === 'undefined') {
+  global.Response = class Response {
+    constructor(public body?: any, public init?: any) {
+      this.status = init?.status || 200
+    }
+    headers = new Map()
+    status = 200
+    statusText = 'OK'
+    ok = true
+    json = async () => {
+      if (typeof this.body === 'string') {
+        return JSON.parse(this.body)
+      }
+      return this.body
+    }
+    text = async () => String(this.body || '')
+  } as any
+}
+
+if (typeof global.Headers === 'undefined') {
+  global.Headers = Map as any
+}
+
+if (typeof global.fetch === 'undefined') {
+  global.fetch = jest.fn(() => Promise.resolve(new Response('{}', { status: 200 }))) as any
+}
+
+
+
+// Mock next/server modules
+jest.mock('next/server', () => ({
+  NextRequest: class NextRequest {
+    constructor(public url: string, public init?: any) {
+      this.method = init?.method || 'GET'
+      this.body = init?.body || null
+    }
+    method = 'GET'
+    body = null
+    nextUrl = { pathname: '/', searchParams: new URLSearchParams() }
+    cookies = { get: jest.fn(), set: jest.fn() }
+    headers = new Map()
+    async json() {
+      return this.body ? JSON.parse(this.body) : {}
+    }
+  },
+  NextResponse: class NextResponse {
+    constructor(public body?: any, public init?: any) {
+      this.status = init?.status || 200
+      this._data = body
+    }
+    status = 200
+    _data: any
+    headers = new Map()
+    
+    async json() {
+      return this._data
+    }
+    
+    static json: (data: any, init?: any) => NextResponse = (data: any, init?: any) => {
+      const response = new NextResponse(data, init)
+      response.status = init?.status || 200
+      return response
+    }
+  }
+}))
+
+// Set reasonable timeout for tests
 jest.setTimeout(30000)

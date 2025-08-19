@@ -70,18 +70,26 @@ export async function POST(request: NextRequest) {
     await connectDB()
     
     const body = await request.json()
-    const { title, description, technologies, githubUrl, liveUrl, images, status } = body
+    const { title, description, technologies, githubUrl, liveUrl, images, openPositions, status } = body
     
-    const project = await Project.create({
+    // Filter out empty positions
+    const validPositions = (openPositions || []).filter((pos: any) => 
+      pos.title && pos.title.trim() && pos.description && pos.description.trim()
+    )
+    
+    const projectData = {
       title,
       description,
       technologies: technologies || [],
       githubUrl,
       liveUrl,
       images: images || [],
+      openPositions: validPositions,
       status: status || 'in-progress',
       author: session.user.id
-    })
+    }
+    
+    const project = await Project.create(projectData)
     
     const populatedProject = await Project.findById(project._id)
       .populate('author', 'username displayName avatar level')

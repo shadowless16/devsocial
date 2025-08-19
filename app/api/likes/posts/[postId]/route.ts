@@ -31,7 +31,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
       return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 });
     }
 
-    const userId = (request as AuthenticatedRequest).user.id;
+    const userId = authResult.user.id;
     const { postId } = params;
 
     const post = await Post.findById(postId).populate("author", "username displayName");
@@ -128,7 +128,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
           recipient: post.author._id,
           sender: userId,
           type: "like",
-          title: `${(request as AuthenticatedRequest).user.displayName} liked your post`,
+          title: `${authResult.user.displayName || authResult.user.username} liked your post`,
           message: post.content.substring(0, 100),
           actionUrl: `/post/${postId}`,
           data: { postId },
@@ -141,7 +141,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
             type: "like",
             title: notification.title,
             message: notification.message,
-            sender: (request as AuthenticatedRequest).user,
+            sender: authResult.user,
             createdAt: notification.createdAt,
           });
         }

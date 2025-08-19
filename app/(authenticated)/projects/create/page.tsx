@@ -9,9 +9,11 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { ArrowLeft, ArrowRight, Check, Plus, X } from "lucide-react"
+import { ArrowLeft, ArrowRight, Check, Plus, X, ChevronDown, ChevronUp, Search } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
+import { ImageUpload } from "@/components/ui/image-upload"
+import { TECH_STACK, PROJECT_ROLES, PROJECT_TYPES, EXPERIENCE_LEVELS, TIME_COMMITMENTS } from "@/lib/project-data"
 
 type ProjectFormData = {
   title: string
@@ -31,44 +33,6 @@ type ProjectFormData = {
   images: string[]
 }
 
-const TECH_OPTIONS = [
-  "React",
-  "Vue.js",
-  "Angular",
-  "Node.js",
-  "Python",
-  "TypeScript",
-  "JavaScript",
-  "PostgreSQL",
-  "MongoDB",
-  "Docker",
-  "AWS",
-  "Firebase",
-  "Next.js",
-  "Express",
-  "Solidity",
-  "Web3.js",
-  "React Native",
-  "Flutter",
-  "Swift",
-  "Kotlin",
-]
-
-const POSITION_TEMPLATES = [
-  "Frontend Developer",
-  "Backend Developer",
-  "Full Stack Developer",
-  "UI/UX Designer",
-  "DevOps Engineer",
-  "Mobile Developer",
-  "Data Scientist",
-  "Product Manager",
-  "QA Engineer",
-  "Technical Writer",
-  "Blockchain Developer",
-  "AI/ML Engineer",
-]
-
 export default function CreateProjectPage() {
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
@@ -85,6 +49,12 @@ export default function CreateProjectPage() {
     websiteUrl: "",
     images: [],
   })
+  
+  // UI state for expandable sections
+  const [showAllTech, setShowAllTech] = useState(false)
+  const [showAllRoles, setShowAllRoles] = useState(false)
+  const [techSearchTerm, setTechSearchTerm] = useState("")
+  const [roleSearchTerm, setRoleSearchTerm] = useState("")
 
   const totalSteps = 5
   const progress = (currentStep / totalSteps) * 100
@@ -158,6 +128,8 @@ export default function CreateProjectPage() {
           technologies: formData.techStack,
           githubUrl: formData.githubUrl,
           liveUrl: formData.demoUrl,
+          images: formData.images,
+          openPositions: formData.openPositions,
           status: 'in-progress'
         })
       })
@@ -240,10 +212,11 @@ export default function CreateProjectPage() {
                         <SelectValue placeholder="Select project type" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="startup">Startup</SelectItem>
-                        <SelectItem value="open-source">Open Source</SelectItem>
-                        <SelectItem value="learning">Learning Project</SelectItem>
-                        <SelectItem value="freelance">Freelance</SelectItem>
+                        {PROJECT_TYPES.map((type) => (
+                          <SelectItem key={type} value={type.toLowerCase().replace(/\s+/g, '-')}>
+                            {type}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -276,19 +249,62 @@ export default function CreateProjectPage() {
                   </div>
 
                   <div>
-                    <Label>Available Technologies</Label>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {TECH_OPTIONS.filter((tech) => !formData.techStack.includes(tech)).map((tech) => (
-                        <Badge
-                          key={tech}
-                          variant="outline"
-                          className="cursor-pointer hover:bg-emerald-50"
-                          onClick={() => addTechStack(tech)}
+                    <div className="flex items-center justify-between mb-2">
+                      <Label>Available Technologies</Label>
+                      <div className="flex items-center gap-2">
+                        <div className="relative">
+                          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                          <Input
+                            placeholder="Search technologies..."
+                            value={techSearchTerm}
+                            onChange={(e) => setTechSearchTerm(e.target.value)}
+                            className="pl-8 w-48 h-8"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowAllTech(!showAllTech)}
+                          className="text-emerald-600 hover:text-emerald-700"
                         >
-                          {tech}
-                        </Badge>
-                      ))}
+                          {showAllTech ? (
+                            <><ChevronUp className="w-4 h-4 mr-1" />Show Less</>
+                          ) : (
+                            <><ChevronDown className="w-4 h-4 mr-1" />Show All ({TECH_STACK.length})</>
+                          )}
+                        </Button>
+                      </div>
                     </div>
+                    <div className="flex flex-wrap gap-2 mt-2 max-h-32 overflow-y-auto">
+                      {TECH_STACK
+                        .filter((tech) => 
+                          !formData.techStack.includes(tech) &&
+                          tech.toLowerCase().includes(techSearchTerm.toLowerCase())
+                        )
+                        .slice(0, showAllTech ? undefined : 20)
+                        .map((tech) => (
+                          <Badge
+                            key={tech}
+                            variant="outline"
+                            className="cursor-pointer hover:bg-emerald-50 transition-colors"
+                            onClick={() => addTechStack(tech)}
+                          >
+                            {tech}
+                          </Badge>
+                        ))}
+                    </div>
+                    {!showAllTech && TECH_STACK.filter(tech => 
+                      !formData.techStack.includes(tech) &&
+                      tech.toLowerCase().includes(techSearchTerm.toLowerCase())
+                    ).length > 20 && (
+                      <p className="text-sm text-gray-500 mt-2">
+                        Showing 20 of {TECH_STACK.filter(tech => 
+                          !formData.techStack.includes(tech) &&
+                          tech.toLowerCase().includes(techSearchTerm.toLowerCase())
+                        ).length} technologies
+                      </p>
+                    )}
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
@@ -302,9 +318,11 @@ export default function CreateProjectPage() {
                           <SelectValue placeholder="Select level" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="beginner">Beginner Friendly</SelectItem>
-                          <SelectItem value="intermediate">Intermediate</SelectItem>
-                          <SelectItem value="advanced">Advanced</SelectItem>
+                          {EXPERIENCE_LEVELS.map((level) => (
+                            <SelectItem key={level} value={level.toLowerCase().replace(/\s+/g, '-')}>
+                              {level}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -319,10 +337,11 @@ export default function CreateProjectPage() {
                           <SelectValue placeholder="Select commitment" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="part-time">Part-time</SelectItem>
-                          <SelectItem value="full-time">Full-time</SelectItem>
-                          <SelectItem value="weekend">Weekend Project</SelectItem>
-                          <SelectItem value="long-term">Long-term</SelectItem>
+                          {TIME_COMMITMENTS.map((commitment) => (
+                            <SelectItem key={commitment} value={commitment.toLowerCase().replace(/\s+/g, '-')}>
+                              {commitment}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                     </div>
@@ -364,20 +383,48 @@ export default function CreateProjectPage() {
                         </div>
 
                         <div>
-                          <Label>Position Title</Label>
+                          <div className="flex items-center justify-between mb-2">
+                            <Label>Position Title</Label>
+                            <div className="relative">
+                              <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                              <Input
+                                placeholder="Search roles..."
+                                value={roleSearchTerm}
+                                onChange={(e) => setRoleSearchTerm(e.target.value)}
+                                className="pl-8 w-40 h-8"
+                              />
+                            </div>
+                          </div>
                           <Select
                             value={position.title}
                             onValueChange={(value) => updatePosition(index, "title", value)}
                           >
                             <SelectTrigger className="mt-1">
-                              <SelectValue placeholder="Select position" />
+                              <SelectValue placeholder="Select or search position" />
                             </SelectTrigger>
-                            <SelectContent>
-                              {POSITION_TEMPLATES.map((pos) => (
-                                <SelectItem key={pos} value={pos}>
-                                  {pos}
-                                </SelectItem>
-                              ))}
+                            <SelectContent className="max-h-60">
+                              <div className="p-2">
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => setShowAllRoles(!showAllRoles)}
+                                  className="w-full justify-between text-emerald-600 hover:text-emerald-700"
+                                >
+                                  {showAllRoles ? 'Show Common Roles' : `Show All Roles (${PROJECT_ROLES.length})`}
+                                  {showAllRoles ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                </Button>
+                              </div>
+                              {PROJECT_ROLES
+                                .filter(role => 
+                                  role.toLowerCase().includes(roleSearchTerm.toLowerCase())
+                                )
+                                .slice(0, showAllRoles ? undefined : 15)
+                                .map((role) => (
+                                  <SelectItem key={role} value={role}>
+                                    {role}
+                                  </SelectItem>
+                                ))}
                             </SelectContent>
                           </Select>
                         </div>
@@ -473,14 +520,19 @@ export default function CreateProjectPage() {
 
                   <div>
                     <Label>Project Images</Label>
-                    <div className="mt-2 border-2 border-dashed border-muted-foreground/25 rounded-lg p-8 text-center">
-                      <div className="text-muted-foreground">
-                        <p className="mb-2">Drag and drop images here, or click to browse</p>
-                        <p className="text-sm">PNG, JPG, GIF up to 10MB each</p>
-                      </div>
-                      <Button variant="outline" className="mt-4 bg-transparent">
-                        Choose Files
-                      </Button>
+                    <div className="mt-2">
+                      <ImageUpload
+                        maxFiles={5}
+                        maxSizeMB={10}
+                        folder="projects"
+                        onUpload={(urls) => {
+                          setFormData(prev => ({
+                            ...prev,
+                            images: urls
+                          }))
+                        }}
+                        className="border-emerald-200"
+                      />
                     </div>
                   </div>
                 </div>

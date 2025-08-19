@@ -7,8 +7,14 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Plus, Github, ExternalLink, Heart, Eye, Filter } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog'
 import Link from 'next/link'
+import { toast } from 'sonner'
+import { useAuth } from '@/contexts/auth-context'
+import { Plus, Heart, Eye, Github, ExternalLink, MoreVertical, Edit, Trash2, Filter } from 'lucide-react'
+// import { Plus } from 'lucide-react'
+
 
 interface Project {
   _id: string
@@ -34,11 +40,13 @@ interface Project {
 export default function ProjectsPage() {
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
+  const [deleting, setDeleting] = useState<string | null>(null)
   const [filter, setFilter] = useState({
     status: '',
     tech: '',
     search: ''
   })
+  const { user } = useAuth()
 
   useEffect(() => {
     fetchProjects()
@@ -70,6 +78,29 @@ export default function ProjectsPage() {
       console.error('Error fetching projects:', error)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDelete = async (projectId: string, projectTitle: string) => {
+    setDeleting(projectId)
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE'
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success('Project deleted successfully')
+        setProjects(prev => prev.filter(p => p._id !== projectId))
+      } else {
+        toast.error(data.error || 'Failed to delete project')
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error)
+      toast.error('Failed to delete project')
+    } finally {
+      setDeleting(null)
     }
   }
 
@@ -220,11 +251,57 @@ export default function ProjectsPage() {
                   )}
                 </div>
                 
-                <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-700" asChild>
-                  <Link href={`/projects/${project._id}`}>
-                    View
-                  </Link>
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button size="sm" className="bg-emerald-600 text-white hover:bg-emerald-700 dark:bg-emerald-600 dark:text-white dark:hover:bg-emerald-700" asChild>
+                    <Link href={`/projects/${project._id}`}>
+                      View
+                    </Link>
+                  </Button>
+                  
+                  {user?.id === project.author._id && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="p-1 h-8 w-8">
+                          <MoreVertical className="w-4 h-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem asChild>
+                          <Link href={`/projects/${project._id}/edit`} className="flex items-center gap-2">
+                            <Edit className="w-4 h-4" />
+                            Edit
+                          </Link>
+                        </DropdownMenuItem>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <DropdownMenuItem onSelect={(e) => e.preventDefault()} className="text-red-600 focus:text-red-600">
+                              <Trash2 className="w-4 h-4 mr-2" />
+                              Delete
+                            </DropdownMenuItem>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Delete Project</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Are you sure you want to delete "{project.title}"? This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDelete(project._id, project.title)}
+                                disabled={deleting === project._id}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                {deleting === project._id ? 'Deleting...' : 'Delete'}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
+                </div>
               </div>
             </CardContent>
           </Card>

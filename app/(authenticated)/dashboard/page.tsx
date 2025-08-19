@@ -4,7 +4,10 @@ import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 
 import { ActivityChart, XPChart } from '@/components/simple-charts'
-import { Activity, MessageSquare, Heart, Trophy, Target, Zap } from "lucide-react"
+import { Activity, MessageSquare, Heart, Trophy, Target, Zap, Wallet } from "lucide-react"
+import { TransactionHistory } from '@/components/transactions/transaction-history'
+import { WalletBalanceDisplay } from '@/components/transactions/wallet-balance-display'
+import { TransferForm } from '@/components/transactions/transfer-form'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -248,10 +251,11 @@ export default function DashboardPage() {
 
       {/* Tabs for detailed views */}
       <Tabs defaultValue="achievements" className="space-y-4 sm:space-y-6">
-        <TabsList className="grid w-full grid-cols-3 mb-4">
+        <TabsList className="grid w-full grid-cols-4 mb-4">
           <TabsTrigger value="achievements" className="text-xs sm:text-sm px-2 py-1">Achievements</TabsTrigger>
           <TabsTrigger value="activity" className="text-xs sm:text-sm px-2 py-1">Activity</TabsTrigger>
           <TabsTrigger value="goals" className="text-xs sm:text-sm px-2 py-1">Goals</TabsTrigger>
+          <TabsTrigger value="wallet" className="text-xs sm:text-sm px-2 py-1">Wallet</TabsTrigger>
         </TabsList>
 
         <TabsContent value="achievements">
@@ -354,6 +358,26 @@ export default function DashboardPage() {
               </div>
             </CardContent>
           </Card>
+        </TabsContent>
+
+        <TabsContent value="wallet">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <WalletBalanceDisplay />
+              <TransferForm />
+            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Wallet className="h-5 w-5 mr-2" />
+                  Transaction History
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <TransactionHistory />
+              </CardContent>
+            </Card>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

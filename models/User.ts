@@ -50,6 +50,7 @@ export interface IUser extends Document {
   isGenerated?: boolean;
   hederaAccountId?: string;
   walletConnected?: boolean;
+  demoWalletBalance: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -231,6 +232,12 @@ const UserSchema = new Schema<IUser>(
     walletConnected: {
       type: Boolean,
       default: false,
+    },
+    demoWalletBalance: {
+      type: Number,
+      default: 100, // Each user starts with 100 demo HBAR
+      min: 0,
+      index: true,
     },
   },
   { timestamps: true }

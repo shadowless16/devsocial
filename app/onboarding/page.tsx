@@ -83,7 +83,8 @@ export default function OnboardingPage() {
           portfolioUrl: data.portfolioUrl,
           interests: data.interests,
           starterBadge: data.starterBadge,
-          socials: data.socials
+          socials: data.socials,
+          avatar: data.avatar // Include avatar in the request
         })
       }) as any;
       

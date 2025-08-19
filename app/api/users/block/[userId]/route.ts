@@ -15,12 +15,12 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
     const { userId } = params
-    const currentUserId = authResult.user!.id
+    const currentUserId = authResult.user.id
 
     if (userId === currentUserId) {
       return NextResponse.json(errorResponse("Cannot block yourself"), { status: 400 })
@@ -73,12 +73,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
     const { userId } = params
-    const currentUserId = authResult.user!.id
+    const currentUserId = authResult.user.id
 
     // Find and delete block relationship
     const block = await Block.findOneAndDelete({

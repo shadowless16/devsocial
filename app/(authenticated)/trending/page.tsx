@@ -86,6 +86,7 @@ export default function TrendingPage() {
   })
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
+  const [initialLoad, setInitialLoad] = useState(true)
 
   useEffect(() => {
     fetchTrendingData()
@@ -106,6 +107,7 @@ export default function TrendingPage() {
       setError("Failed to load trending data")
     } finally {
       setLoading(false)
+      setInitialLoad(false)
     }
   }
 
@@ -136,7 +138,7 @@ export default function TrendingPage() {
     }
   }
 
-  if (loading) {
+  if (loading && initialLoad) {
     return <TrendingSkeleton />
   }
 

@@ -215,7 +215,7 @@ useEffect(() => {
           <div className="mx-auto w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center mb-4">
             <span className="text-white font-bold text-xl">TC</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Join TechConnect</CardTitle>
+          <CardTitle className="text-2xl font-bold text-gray-900">Join DevSocial</CardTitle>
           <CardDescription>Create your account and start connecting with fellow developers</CardDescription>
         </CardHeader>
         <CardContent>

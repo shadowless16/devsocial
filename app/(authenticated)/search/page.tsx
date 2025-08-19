@@ -78,11 +78,13 @@ export default function SearchPage() {
   const [isSearching, setIsSearching] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
+  const [initialLoad, setInitialLoad] = useState(true)
 
   const performSearch = async (query: string, type: string = "all") => {
     if (!query.trim()) {
       setSearchResults({ posts: [], users: [], tags: [] })
       setHasSearched(false)
+      setInitialLoad(false)
       return
     }
 
@@ -107,6 +109,7 @@ export default function SearchPage() {
       setSearchResults({ posts: [], users: [], tags: [] })
     } finally {
       setIsSearching(false)
+      setInitialLoad(false)
     }
   }
 
@@ -117,6 +120,7 @@ export default function SearchPage() {
       } else {
         setSearchResults({ posts: [], users: [], tags: [] })
         setHasSearched(false)
+        setInitialLoad(false)
       }
     }, 500) // Debounce search by 500ms
 
@@ -156,11 +160,12 @@ export default function SearchPage() {
     setSearchResults({ posts: [], users: [], tags: [] })
     setHasSearched(false)
     setError(null)
+    setInitialLoad(false)
   }
 
   const totalResults = searchResults.posts.length + searchResults.users.length + searchResults.tags.length
 
-  if (isSearching && !hasSearched) {
+  if (isSearching && initialLoad) {
     return <SearchSkeleton />
   }
 

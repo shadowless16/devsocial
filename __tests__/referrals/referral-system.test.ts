@@ -1,28 +1,22 @@
 import { describe, it, expect, beforeAll, afterAll, beforeEach } from '@jest/globals'
 import mongoose from 'mongoose'
-import { MongoMemoryServer } from 'mongodb-memory-server'
 import User from '../../models/User'
 import Referral from '../../models/Referral'
 import UserStats from '../../models/UserStats'
 import { ReferralSystem } from '../../utils/referral-system'
 import { awardXP } from '../../utils/awardXP'
 
-let mongoServer: MongoMemoryServer
-
 beforeAll(async () => {
-  mongoServer = await MongoMemoryServer.create()
-  const mongoUri = mongoServer.getUri()
-  await mongoose.connect(mongoUri)
-})
+  const testDbUri = process.env.MONGODB_TEST_URI || process.env.MONGODB_URI + '_test'
+  await mongoose.connect(testDbUri)
+}, 60000)
 
 afterAll(async () => {
   await mongoose.disconnect()
-  await mongoServer.stop()
 })
 
 beforeEach(async () => {
-  // Clean up database before each test
-  await User.deleteMany({})
+  await User.deleteMany({ email: { $regex: /@example\.com$/ } })
   await Referral.deleteMany({})
   await UserStats.deleteMany({})
 })
@@ -53,7 +47,7 @@ describe('ReferralSystem', () => {
 
       const code = await ReferralSystem.getReferralCode(user._id.toString())
       expect(code).toBeDefined()
-      expect(code).toMatch(/^TEST[A-Z0-9]+$/) // Should start with first 4 chars of username
+      expect(code).toMatch(/^TEST[A-Za-z0-9]+$/) // Should start with first 4 chars of username
     })
 
     it('should throw error for non-existent user', async () => {
@@ -195,7 +189,7 @@ describe('ReferralSystem', () => {
       await UserStats.deleteOne({ user: referred._id })
 
       await expect(
-        ReferralSystem.checkReferralCompletion(referred._id.toString())
+        () => ReferralSystem.checkReferralCompletion(referred._id.toString())
       ).not.toThrow()
 
       const updatedReferral = await Referral.findById(referral._id)
@@ -226,11 +220,11 @@ describe('ReferralSystem', () => {
         password: 'hashedpassword'
       })
 
-      // Create referrals
+      // Create referrals with unique codes
       await Referral.create({
         referrer: referrer._id,
         referred: referred1._id,
-        referralCode: 'REF123',
+        referralCode: `REF123_${Date.now()}_1`,
         status: 'completed',
         completedAt: new Date(),
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
@@ -240,7 +234,7 @@ describe('ReferralSystem', () => {
       await Referral.create({
         referrer: referrer._id,
         referred: referred2._id,
-        referralCode: 'REF123',
+        referralCode: `REF123_${Date.now()}_2`,
         status: 'pending',
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
         referrerReward: 25

@@ -1,5 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  images: {
+    domains: ['res.cloudinary.com', 'models.readyplayer.me'],
+  },
+  
   // Reduce compilation logs
   logging: {
     fetches: {

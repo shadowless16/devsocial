@@ -45,6 +45,7 @@ export interface User {
   loginStreak: number;
   lastStreakDate?: Date;
   onboardingCompleted: boolean;
+  demoWalletBalance?: number;
   xpToNext: number; // Calculated field for remaining XP to next level
   totalXpForLevel: number; // Calculated field for total XP required for current level
 }
@@ -164,6 +165,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
           loginStreak: userData.loginStreak || 0,
           lastStreakDate: userData.lastStreakDate,
           onboardingCompleted: userData.onboardingCompleted === true, // Default to false for new users
+          demoWalletBalance: userData.demoWalletBalance || 100,
           xpToNext: xpToNext >= 0 ? xpToNext : 0,
           totalXpForLevel,
         };
@@ -218,6 +220,7 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
           refreshTokens: [],
           loginStreak: 0,
           onboardingCompleted: false, // New users need onboarding
+          demoWalletBalance: 100,
           xpToNext: 1000,
           totalXpForLevel: 1000,
         };
@@ -262,6 +265,17 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
   const updateUser = (newUserData: Partial<User>) => {
     setUser((currentUser) => (currentUser ? { ...currentUser, ...newUserData } : null));
   };
+
+  // Listen for balance updates from tip transactions
+  useEffect(() => {
+    const handleBalanceUpdate = (event: CustomEvent) => {
+      const { newBalance } = event.detail;
+      updateUser({ demoWalletBalance: newBalance });
+    };
+
+    window.addEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+    return () => window.removeEventListener('balanceUpdate', handleBalanceUpdate as EventListener);
+  }, []);
 
   const signup = async (userData: any) => {
     try {

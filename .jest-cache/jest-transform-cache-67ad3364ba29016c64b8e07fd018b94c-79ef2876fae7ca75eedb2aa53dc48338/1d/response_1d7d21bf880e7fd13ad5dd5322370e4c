@@ -1,0 +1,77 @@
+4baca4a743b6211369a680ce761c43d8
+"use strict";
+// import { NextResponse } from "next/server"
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.successResponse = successResponse;
+exports.errorResponse = errorResponse;
+exports.validationErrorResponse = validationErrorResponse;
+// export function successResponse(data: any, status = 200) {
+//   return NextResponse.json(
+//     {
+//       success: true,
+//       data,
+//     },
+//     { status },
+//   )
+// }
+// export function errorResponse(message: string, status = 400, errors?: any) {
+//   return NextResponse.json(
+//     {
+//       success: false,
+//       message,
+//       errors,
+//     },
+//     { status },
+//   )
+// }
+// export function validationErrorResponse(errors: any) {
+//   return NextResponse.json(
+//     {
+//       success: false,
+//       message: "Validation failed",
+//       errors,
+//     },
+//     { status: 400 },
+//   )
+// }
+// utils/response.ts
+const server_1 = require("next/server");
+/**
+ * Creates a standardized success response.
+ * @param data - The payload to send.
+ * @param status - The HTTP status code (default: 200).
+ * @returns A JSON response object.
+ */
+function successResponse(data, status = 200) {
+    return server_1.NextResponse.json({
+        success: true,
+        data,
+    }, { status });
+}
+/**
+ * Creates a standardized error response.
+ * @param message - The error message.
+ * @param status - The HTTP status code (default: 500).
+ * @returns A JSON response object.
+ */
+function errorResponse(message, status = 500) {
+    return server_1.NextResponse.json({
+        success: false,
+        error: { message },
+    }, { status });
+}
+/**
+ * Creates a standardized validation error response.
+ * @param errors - The formatted Zod errors.
+ * @returns A JSON response object.
+ */
+function validationErrorResponse(errors, status = 400) {
+    return server_1.NextResponse.json({
+        success: false,
+        error: {
+            message: "Validation failed",
+            details: errors,
+        },
+    }, { status });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiQzpcXFVzZXJzXFxha2RhdlxcRG93bmxvYWRzXFxkZXZzb2NpYWxcXHV0aWxzXFxyZXNwb25zZS50cyIsIm1hcHBpbmdzIjoiO0FBQUEsNkNBQTZDOztBQStDN0MsMENBUUM7QUFRRCxzQ0FRQztBQU9ELDBEQVdDO0FBdkZELDZEQUE2RDtBQUM3RCw4QkFBOEI7QUFDOUIsUUFBUTtBQUNSLHVCQUF1QjtBQUN2QixjQUFjO0FBQ2QsU0FBUztBQUNULGtCQUFrQjtBQUNsQixNQUFNO0FBQ04sSUFBSTtBQUVKLCtFQUErRTtBQUMvRSw4QkFBOEI7QUFDOUIsUUFBUTtBQUNSLHdCQUF3QjtBQUN4QixpQkFBaUI7QUFDakIsZ0JBQWdCO0FBQ2hCLFNBQVM7QUFDVCxrQkFBa0I7QUFDbEIsTUFBTTtBQUNOLElBQUk7QUFFSix5REFBeUQ7QUFDekQsOEJBQThCO0FBQzlCLFFBQVE7QUFDUix3QkFBd0I7QUFDeEIsc0NBQXNDO0FBQ3RDLGdCQUFnQjtBQUNoQixTQUFTO0FBQ1QsdUJBQXVCO0FBQ3ZCLE1BQU07QUFDTixJQUFJO0FBRUosb0JBQW9CO0FBQ3BCLHdDQUEyQztBQU0zQzs7Ozs7R0FLRztBQUNILFNBQWdCLGVBQWUsQ0FBQyxJQUFrQixFQUFFLFNBQWlCLEdBQUc7SUFDdEUsT0FBTyxxQkFBWSxDQUFDLElBQUksQ0FDdEI7UUFDRSxPQUFPLEVBQUUsSUFBSTtRQUNiLElBQUk7S0FDTCxFQUNELEVBQUUsTUFBTSxFQUFFLENBQ1gsQ0FBQztBQUNKLENBQUM7QUFFRDs7Ozs7R0FLRztBQUNILFNBQWdCLGFBQWEsQ0FBQyxPQUFlLEVBQUUsU0FBaUIsR0FBRztJQUNqRSxPQUFPLHFCQUFZLENBQUMsSUFBSSxDQUN0QjtRQUNFLE9BQU8sRUFBRSxLQUFLO1FBQ2QsS0FBSyxFQUFFLEVBQUUsT0FBTyxFQUFFO0tBQ25CLEVBQ0QsRUFBRSxNQUFNLEVBQUUsQ0FDWCxDQUFDO0FBQ0osQ0FBQztBQUVEOzs7O0dBSUc7QUFDSCxTQUFnQix1QkFBdUIsQ0FBQyxNQUFXLEVBQUUsU0FBaUIsR0FBRztJQUN2RSxPQUFPLHFCQUFZLENBQUMsSUFBSSxDQUN0QjtRQUNFLE9BQU8sRUFBRSxLQUFLO1FBQ2QsS0FBSyxFQUFFO1lBQ0wsT0FBTyxFQUFFLG1CQUFtQjtZQUM1QixPQUFPLEVBQUUsTUFBTTtTQUNoQjtLQUNGLEVBQ0QsRUFBRSxNQUFNLEVBQUUsQ0FDWCxDQUFDO0FBQ0osQ0FBQyIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJDOlxcVXNlcnNcXGFrZGF2XFxEb3dubG9hZHNcXGRldnNvY2lhbFxcdXRpbHNcXHJlc3BvbnNlLnRzIl0sInNvdXJjZXNDb250ZW50IjpbIi8vIGltcG9ydCB7IE5leHRSZXNwb25zZSB9IGZyb20gXCJuZXh0L3NlcnZlclwiXG5cbi8vIGV4cG9ydCBmdW5jdGlvbiBzdWNjZXNzUmVzcG9uc2UoZGF0YTogYW55LCBzdGF0dXMgPSAyMDApIHtcbi8vICAgcmV0dXJuIE5leHRSZXNwb25zZS5qc29uKFxuLy8gICAgIHtcbi8vICAgICAgIHN1Y2Nlc3M6IHRydWUsXG4vLyAgICAgICBkYXRhLFxuLy8gICAgIH0sXG4vLyAgICAgeyBzdGF0dXMgfSxcbi8vICAgKVxuLy8gfVxuXG4vLyBleHBvcnQgZnVuY3Rpb24gZXJyb3JSZXNwb25zZShtZXNzYWdlOiBzdHJpbmcsIHN0YXR1cyA9IDQwMCwgZXJyb3JzPzogYW55KSB7XG4vLyAgIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbihcbi8vICAgICB7XG4vLyAgICAgICBzdWNjZXNzOiBmYWxzZSxcbi8vICAgICAgIG1lc3NhZ2UsXG4vLyAgICAgICBlcnJvcnMsXG4vLyAgICAgfSxcbi8vICAgICB7IHN0YXR1cyB9LFxuLy8gICApXG4vLyB9XG5cbi8vIGV4cG9ydCBmdW5jdGlvbiB2YWxpZGF0aW9uRXJyb3JSZXNwb25zZShlcnJvcnM6IGFueSkge1xuLy8gICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oXG4vLyAgICAge1xuLy8gICAgICAgc3VjY2VzczogZmFsc2UsXG4vLyAgICAgICBtZXNzYWdlOiBcIlZhbGlkYXRpb24gZmFpbGVkXCIsXG4vLyAgICAgICBlcnJvcnMsXG4vLyAgICAgfSxcbi8vICAgICB7IHN0YXR1czogNDAwIH0sXG4vLyAgIClcbi8vIH1cblxuLy8gdXRpbHMvcmVzcG9uc2UudHNcbmltcG9ydCB7IE5leHRSZXNwb25zZSB9IGZyb20gXCJuZXh0L3NlcnZlclwiO1xuXG5pbnRlcmZhY2UgUmVzcG9uc2VEYXRhIHtcbiAgW2tleTogc3RyaW5nXTogYW55O1xufVxuXG4vKipcbiAqIENyZWF0ZXMgYSBzdGFuZGFyZGl6ZWQgc3VjY2VzcyByZXNwb25zZS5cbiAqIEBwYXJhbSBkYXRhIC0gVGhlIHBheWxvYWQgdG8gc2VuZC5cbiAqIEBwYXJhbSBzdGF0dXMgLSBUaGUgSFRUUCBzdGF0dXMgY29kZSAoZGVmYXVsdDogMjAwKS5cbiAqIEByZXR1cm5zIEEgSlNPTiByZXNwb25zZSBvYmplY3QuXG4gKi9cbmV4cG9ydCBmdW5jdGlvbiBzdWNjZXNzUmVzcG9uc2UoZGF0YTogUmVzcG9uc2VEYXRhLCBzdGF0dXM6IG51bWJlciA9IDIwMCkge1xuICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oXG4gICAge1xuICAgICAgc3VjY2VzczogdHJ1ZSxcbiAgICAgIGRhdGEsXG4gICAgfSxcbiAgICB7IHN0YXR1cyB9XG4gICk7XG59XG5cbi8qKlxuICogQ3JlYXRlcyBhIHN0YW5kYXJkaXplZCBlcnJvciByZXNwb25zZS5cbiAqIEBwYXJhbSBtZXNzYWdlIC0gVGhlIGVycm9yIG1lc3NhZ2UuXG4gKiBAcGFyYW0gc3RhdHVzIC0gVGhlIEhUVFAgc3RhdHVzIGNvZGUgKGRlZmF1bHQ6IDUwMCkuXG4gKiBAcmV0dXJucyBBIEpTT04gcmVzcG9uc2Ugb2JqZWN0LlxuICovXG5leHBvcnQgZnVuY3Rpb24gZXJyb3JSZXNwb25zZShtZXNzYWdlOiBzdHJpbmcsIHN0YXR1czogbnVtYmVyID0gNTAwKSB7XG4gIHJldHVybiBOZXh0UmVzcG9uc2UuanNvbihcbiAgICB7XG4gICAgICBzdWNjZXNzOiBmYWxzZSxcbiAgICAgIGVycm9yOiB7IG1lc3NhZ2UgfSxcbiAgICB9LFxuICAgIHsgc3RhdHVzIH1cbiAgKTtcbn1cblxuLyoqXG4gKiBDcmVhdGVzIGEgc3RhbmRhcmRpemVkIHZhbGlkYXRpb24gZXJyb3IgcmVzcG9uc2UuXG4gKiBAcGFyYW0gZXJyb3JzIC0gVGhlIGZvcm1hdHRlZCBab2QgZXJyb3JzLlxuICogQHJldHVybnMgQSBKU09OIHJlc3BvbnNlIG9iamVjdC5cbiAqL1xuZXhwb3J0IGZ1bmN0aW9uIHZhbGlkYXRpb25FcnJvclJlc3BvbnNlKGVycm9yczogYW55LCBzdGF0dXM6IG51bWJlciA9IDQwMCkge1xuICByZXR1cm4gTmV4dFJlc3BvbnNlLmpzb24oXG4gICAge1xuICAgICAgc3VjY2VzczogZmFsc2UsXG4gICAgICBlcnJvcjoge1xuICAgICAgICBtZXNzYWdlOiBcIlZhbGlkYXRpb24gZmFpbGVkXCIsXG4gICAgICAgIGRldGFpbHM6IGVycm9ycyxcbiAgICAgIH0sXG4gICAgfSxcbiAgICB7IHN0YXR1cyB9XG4gICk7XG59XG4iXSwidmVyc2lvbiI6M30=

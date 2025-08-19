@@ -48,6 +48,20 @@ const ProjectSchema = new mongoose.Schema({
       message: 'Must be a valid image URL'
     }
   }],
+  openPositions: [{
+    title: {
+      type: String,
+      trim: true
+    },
+    description: {
+      type: String,
+      trim: true
+    },
+    requirements: [{
+      type: String,
+      trim: true
+    }]
+  }],
   status: {
     type: String,
     enum: ['planning', 'in-progress', 'completed', 'on-hold'],

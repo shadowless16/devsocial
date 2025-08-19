@@ -153,7 +153,7 @@ function HeaderBar({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <div className="flex items-center justify-between gap-3 mb-4">
       <div className="grid gap-1">
-        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">TechConnect</h1>
+        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">DevSocial</h1>
         <p className="text-xs text-muted-foreground md:text-sm">{"What's happening in tech today?"}</p>
       </div>
       <div className="flex items-center gap-2 md:hidden">

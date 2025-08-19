@@ -91,7 +91,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
       return NextResponse.json(errorResponse(authResult.error || 'Authentication failed'), { status: 401 })
     }
 
-    const userId = (request as AuthenticatedRequest).user.id
+    const userId = authResult.user.id
     const postId = params.id
 
     // Find the post
@@ -101,7 +101,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     // Check if user is the author or has admin/moderator role
-    const userRole = (request as AuthenticatedRequest).user.role
+    const userRole = authResult.user.role
     if (post.author.toString() !== userId && userRole !== "admin" && userRole !== "moderator") {
       return NextResponse.json(errorResponse("You don't have permission to delete this post"), { status: 403 })
     }

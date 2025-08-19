@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
-import { ReferralSystem } from "@/utils/referral-system"
+import { ReferralSystemFixed } from "@/utils/referral-system-fixed"
 
 
 
@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: "Cannot refer yourself" }, { status: 400 })
     }
 
-    const referral = await ReferralSystem.createReferral(userId, referredUserId)
+    const referral = await ReferralSystemFixed.createReferral(userId, referredUserId)
 
     return NextResponse.json({ success: true, data: { referral } }, { status: 201 })
   } catch (error: any) {
@@ -41,7 +41,7 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = authResult.user!.id
-    const referralCode = await ReferralSystem.getReferralCode(userId)
+    const referralCode = await ReferralSystemFixed.getReferralCode(userId)
 
     return NextResponse.json({ success: true, data: { referralCode } })
   } catch (error) {

@@ -72,7 +72,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
               <div className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-600 text-white shadow-sm text-sm">
                 {"</>"}
               </div>
-              <span className="font-semibold">TechConnect</span>
+              <span className="font-semibold">DevSocial</span>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose} className="h-8 w-8 p-0">
               <X className="h-4 w-4" />

@@ -49,7 +49,7 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const { postId, content } = body;
-    const authorId = (req as AuthenticatedRequest).user.id;
+    const authorId = authResult.user.id;
 
     if (!postId || !content || content.trim().length === 0) {
       return errorResponse("Post ID and comment content are required.", 400);
@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
         recipient: post.author,
         sender: authorId,
         type: "comment",
-        title: `${(req as AuthenticatedRequest).user.displayName} commented on your post`,
+        title: `${authResult.user.displayName || authResult.user.username} commented on your post`,
         message: content.substring(0, 100),
         actionUrl: `/post/${postId}`,
         data: { postId, commentId: newComment._id },
@@ -94,7 +94,7 @@ export async function POST(req: NextRequest) {
           type: "comment",
           title: notification.title,
           message: notification.message,
-          sender: (req as AuthenticatedRequest).user,
+          sender: authResult.user,
           createdAt: notification.createdAt,
         });
       }

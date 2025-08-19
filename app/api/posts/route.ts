@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
     try {
       const authResult = await authMiddleware(req);
       if (authResult.success) {
-        currentUserId = (req as AuthenticatedRequest).user.id;
+        currentUserId = authResult.user.id;
       }
     } catch (error) {
       // Continue without authentication for public posts
@@ -143,7 +143,7 @@ export async function POST(req: NextRequest) {
     }
     
     const { content, tags, isAnonymous, imageUrl, imageUrls, videoUrls } = body;
-    const authorId = (req as AuthenticatedRequest).user.id;
+    const authorId = authResult.user.id;
 
     if (!content || content.trim().length === 0) {
       return errorResponse("Post content cannot be empty.", 400);

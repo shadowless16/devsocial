@@ -1,41 +1,38 @@
-// middleware/auth.ts
-import { type NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/lib/auth";
+import { NextRequest, NextResponse } from 'next/server'
+import jwt from 'jsonwebtoken'
 
 export interface AuthenticatedRequest extends NextRequest {
-  user: {
-    id: string;
-    displayName: string;
-    role: string;
-  };
+  user?: {
+    id: string
+    email: string
+    username: string
+    role?: string
+    displayName?: string
+  }
 }
 
-export async function authMiddleware(req: NextRequest) {
-  console.log("[Middleware] Protecting route:", req.nextUrl.pathname);
+type AuthResult = 
+  | { success: true; user: { id: string; email: string; username: string; role?: string; displayName?: string } }
+  | { success: false; error: string; status?: number }
 
-  const session = await getServerSession(authOptions);
-  if (!session || !session.user || !session.user.id) {
-    console.log("[Middleware] Error: No valid session found.");
-    return { success: false, error: "Unauthorized: Please log in.", status: 401, user: null };
+export async function authMiddleware(request: NextRequest): Promise<AuthResult> {
+  const authHeader = request.headers.get('authorization')
+  
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    return { success: false, error: 'Unauthorized', status: 401 }
   }
 
-  console.log("[Middleware] Success: User", session.user.username, "authenticated.");
-  const user = {
-    id: session.user.id,
-    displayName: session.user.username || session.user.email || "User",
-    role: session.user.role,
-  };
+  const token = authHeader.substring(7)
   
-  // Attach user to the request for subsequent handlers
-  (req as AuthenticatedRequest).user = user;
-
-  return { success: true, user: user, error: null, status: 200 };
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'test-secret') as any
+    return { success: true, user: decoded }
+  } catch (error) {
+    return { success: false, error: 'Invalid token', status: 401 }
+  }
 }
 
-// Role authorization helper
+// Helper function for role-based authorization
 export function authorizeRoles(allowedRoles: string[]) {
-  return (userRole: string) => {
-    return allowedRoles.includes(userRole);
-  };
+  return (userRole: string) => allowedRoles.includes(userRole)
 }

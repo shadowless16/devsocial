@@ -1,7 +1,9 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { User, Activity, TrendingUp, Shield } from 'lucide-react'
+import { User, Activity, TrendingUp, Shield, Wallet } from 'lucide-react'
+import { TransactionHistory } from '@/components/transactions/transaction-history'
+import { WalletBalanceDisplay } from '@/components/transactions/wallet-balance-display'
 import { useAuth } from '@/contexts/auth-context'
 import ProfileHeader from '@/components/profile/ProfileHeader'
 import ProfileStats from '@/components/profile/ProfileStats'
@@ -169,6 +171,7 @@ export default function MyProfile() {
     { id: 'overview', label: 'Overview', icon: User },
     { id: 'activity', label: 'Activity', icon: Activity },
     { id: 'skills', label: 'Skills', icon: TrendingUp },
+    { id: 'wallet', label: 'Wallet', icon: Wallet },
     { id: 'privacy', label: 'Privacy', icon: Shield }
   ]
 
@@ -235,6 +238,19 @@ export default function MyProfile() {
             </div>
             <div className="lg:col-span-4 w-full max-w-full overflow-hidden">
               <AchievementShowcase achievements={achievementsData} />
+            </div>
+          </div>
+        )}
+
+        {activeTab === 'wallet' && (
+          <div className="space-y-6 w-full max-w-full overflow-hidden">
+            <WalletBalanceDisplay />
+            <div className="bg-white rounded-lg shadow-sm border p-6">
+              <h3 className="text-lg font-semibold mb-4 flex items-center">
+                <Wallet className="h-5 w-5 mr-2" />
+                Transaction History
+              </h3>
+              <TransactionHistory />
             </div>
           </div>
         )}

@@ -18,12 +18,12 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
     const { userId } = params
-    const currentUserId = authResult.user!.id
+    const currentUserId = authResult.user.id
 
     if (userId === currentUserId) {
       return NextResponse.json(errorResponse("Cannot follow yourself"), { status: 400 })
@@ -57,7 +57,7 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
       sender: currentUserId,
       type: "follow",
       title: "New Follower",
-      message: `${authResult.user!.displayName} started following you`,
+      message: `${authResult.user.displayName || authResult.user.username} started following you`,
     })
 
     // Create an activity record for the user who followed
@@ -181,12 +181,12 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
     await connectDB()
 
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
+    if (!authResult.success) {
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
     const { userId } = params
-    const currentUserId = authResult.user!.id
+    const currentUserId = authResult.user.id
 
     // Prevent unfollowing AkDavid
     const userToUnfollow = await User.findById(userId)

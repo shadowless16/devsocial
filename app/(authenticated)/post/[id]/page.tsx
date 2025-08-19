@@ -5,7 +5,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Zap, Send, Trash } from "lucide-react"
+import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Zap, Send, Trash, Coins } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import dynamic from 'next/dynamic'
+import { TipModal } from "@/components/modals/tip-modal"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -153,6 +154,7 @@ export default function PostPage() {
   const [loadingComments, setLoadingComments] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState("")
+  const [showTipModal, setShowTipModal] = useState(false)
 
   // Fetch post data
   useEffect(() => {
@@ -162,6 +164,8 @@ export default function PostPage() {
         const response = await apiClient.getPost<{ post: any }>(postId)
         if (response.success && response.data) {
           const postData = response.data.post || response.data
+          console.log('Raw post data from API:', postData)
+          console.log('Post author from API:', postData.author)
           setPost({
             id: postData._id || postData.id,
             author: postData.author,
@@ -496,7 +500,7 @@ export default function PostPage() {
                 <AvatarFallback>
                   {post.isAnonymous
                     ? "?"
-                    : ((author.displayName || author.username || "A") || "")
+                    : (author.displayName || author.username || "A")
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
@@ -670,6 +674,18 @@ export default function PostPage() {
                 <Share className="w-4 h-4" />
                 <span>Share</span>
               </Button>
+
+              {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="flex items-center space-x-2 text-gray-500 hover:text-yellow-600"
+                  onClick={() => setShowTipModal(true)}
+                >
+                  <Coins className="w-4 h-4" />
+                  <span>Tip</span>
+                </Button>
+              )}
             </div>
           </div>
         </CardContent>
@@ -692,7 +708,7 @@ export default function PostPage() {
                     <Avatar className="w-10 h-10 flex-shrink-0">
                       <AvatarImage src={comment.author.avatar || '/placeholder.svg'} />
                       <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                        {(comment.author.displayName || "U")
+                        {(comment.author.displayName || comment.author.username || "U")
                           .split(' ')
                           .map((n) => n[0])
                           .join('')}
@@ -792,7 +808,7 @@ export default function PostPage() {
                                 <Avatar className="w-8 h-8 flex-shrink-0">
                                   <AvatarImage src={reply.author.avatar || '/placeholder.svg'} />
                                   <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
-                                    {(reply.author.displayName || "U")
+                                    {(reply.author.displayName || reply.author.username || "U")
                                       .split(' ')
                                       .map((n) => n[0])
                                       .join('')}
@@ -945,6 +961,25 @@ export default function PostPage() {
           </CardContent>
         </Card>
       </div>
+
+      {!post.isAnonymous && post.author && user && (
+        <TipModal
+          isOpen={showTipModal}
+          onClose={() => setShowTipModal(false)}
+          recipientId={post.author.username}
+          recipientName={post.author.displayName || post.author.username}
+          recipientAvatar={post.author.avatar}
+          currentUserId={user.username}
+          currentUserBalance={user.demoWalletBalance || 0}
+          onTipSent={() => {
+            console.log('Post author data for tip:', post.author);
+            toast({
+              title: "Tip sent!",
+              description: `Successfully tipped ${post.author?.displayName || post.author?.username}`,
+            });
+          }}
+        />
+      )}
     </div>
   )
 }

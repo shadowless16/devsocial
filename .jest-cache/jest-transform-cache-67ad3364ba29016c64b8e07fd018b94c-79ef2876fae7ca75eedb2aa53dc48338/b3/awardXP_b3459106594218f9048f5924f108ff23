@@ -1,0 +1,113 @@
+7ecb0a48fe1db9065734c6f5af71f34a
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.XP_VALUES = void 0;
+exports.awardXP = awardXP;
+exports.checkFirstTimeAction = checkFirstTimeAction;
+const User_1 = __importDefault(require("@/models/User"));
+const XPLog_1 = __importDefault(require("@/models/XPLog"));
+const referral_system_1 = require("./referral-system");
+// XP values for different actions
+exports.XP_VALUES = {
+    daily_login: 10,
+    post_creation: 20,
+    comment_creation: 5,
+    like_given: 2, // Small XP for likes to prevent spam
+    like_received: 3, // Slightly more XP when receiving likes
+    first_post: 50,
+    first_comment: 25,
+    poll_interaction: 5,
+    badge_earned: 100,
+    level_up: 200,
+    moderator_action_bonus: 50,
+    referral_success: 25, // XP for successful referral (referrer)
+    referral_bonus: 15, // XP for being referred (new user)
+    email_verified: 10,
+    user_followed: 5,
+    challenge_completion: 75,
+};
+function awardXP(userId, type, refId) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // await connectDB() // Remove in tests, connection already exists
+            const xpAmount = exports.XP_VALUES[type];
+            if (!xpAmount) {
+                throw new Error(`Invalid XP type: ${type}`);
+            }
+            // Create XP log entry
+            yield XPLog_1.default.create({
+                userId,
+                type,
+                xpAmount,
+                refId: refId || undefined,
+            });
+            // Update user points
+            const user = yield User_1.default.findById(userId);
+            if (!user) {
+                throw new Error("User not found");
+            }
+            const oldLevel = user.level;
+            user.points += xpAmount;
+            // Level will be automatically calculated in the pre-save hook
+            yield user.save();
+            const levelUp = user.level > oldLevel;
+            // Award additional XP for leveling up
+            if (levelUp) {
+                yield XPLog_1.default.create({
+                    userId,
+                    type: "level_up",
+                    xpAmount: exports.XP_VALUES.level_up,
+                });
+                user.points += exports.XP_VALUES.level_up;
+                yield user.save();
+            }
+            // Check if this XP gain completes any pending referrals
+            // Don't check for referral-related XP types to avoid infinite loops
+            if (type !== "referral_success" && type !== "referral_bonus") {
+                try {
+                    yield referral_system_1.ReferralSystem.checkReferralCompletion(userId);
+                }
+                catch (error) {
+                    console.error("Error checking referral completion:", error);
+                    // Don't fail the XP award if referral check fails
+                }
+            }
+            return {
+                success: true,
+                newLevel: user.level,
+                levelUp,
+            };
+        }
+        catch (error) {
+            console.error("Error awarding XP:", error);
+            return { success: false };
+        }
+    });
+}
+function checkFirstTimeAction(userId, type) {
+    return __awaiter(this, void 0, void 0, function* () {
+        try {
+            // await connectDB() // Remove in tests, connection already exists
+            const logType = type === "post" ? "post_creation" : "comment_creation";
+            const existingLog = yield XPLog_1.default.findOne({ userId, type: logType });
+            return !existingLog;
+        }
+        catch (error) {
+            console.error("Error checking first time action:", error);
+            return false;
+        }
+    });
+}
+//# sourceMappingURL=data:application/json;charset=utf-8;base64,eyJmaWxlIjoiQzpcXFVzZXJzXFxha2RhdlxcRG93bmxvYWRzXFxkZXZzb2NpYWxcXHV0aWxzXFxhd2FyZFhQLnRzIiwibWFwcGluZ3MiOiI7Ozs7Ozs7Ozs7Ozs7OztBQXlCQSwwQkFtRUM7QUFFRCxvREFZQztBQTFHRCx5REFBZ0M7QUFDaEMsMkRBQWtDO0FBRWxDLHVEQUFrRDtBQUVsRCxrQ0FBa0M7QUFDckIsUUFBQSxTQUFTLEdBQUc7SUFDdkIsV0FBVyxFQUFFLEVBQUU7SUFDZixhQUFhLEVBQUUsRUFBRTtJQUNqQixnQkFBZ0IsRUFBRSxDQUFDO0lBQ25CLFVBQVUsRUFBRSxDQUFDLEVBQUcscUNBQXFDO0lBQ3JELGFBQWEsRUFBRSxDQUFDLEVBQUcsd0NBQXdDO0lBQzNELFVBQVUsRUFBRSxFQUFFO0lBQ2QsYUFBYSxFQUFFLEVBQUU7SUFDakIsZ0JBQWdCLEVBQUUsQ0FBQztJQUNuQixZQUFZLEVBQUUsR0FBRztJQUNqQixRQUFRLEVBQUUsR0FBRztJQUNiLHNCQUFzQixFQUFFLEVBQUU7SUFDMUIsZ0JBQWdCLEVBQUUsRUFBRSxFQUFHLHdDQUF3QztJQUMvRCxjQUFjLEVBQUUsRUFBRSxFQUFLLG1DQUFtQztJQUMxRCxjQUFjLEVBQUUsRUFBRTtJQUNsQixhQUFhLEVBQUUsQ0FBQztJQUNoQixvQkFBb0IsRUFBRSxFQUFFO0NBQ3pCLENBQUE7QUFFRCxTQUFzQixPQUFPLENBQzNCLE1BQWMsRUFDZCxJQUE0QixFQUM1QixLQUFjOztRQUVkLElBQUksQ0FBQztZQUNILGtFQUFrRTtZQUVsRSxNQUFNLFFBQVEsR0FBRyxpQkFBUyxDQUFDLElBQUksQ0FBQyxDQUFBO1lBQ2hDLElBQUksQ0FBQyxRQUFRLEVBQUUsQ0FBQztnQkFDZCxNQUFNLElBQUksS0FBSyxDQUFDLG9CQUFvQixJQUFJLEVBQUUsQ0FBQyxDQUFBO1lBQzdDLENBQUM7WUFFRCxzQkFBc0I7WUFDdEIsTUFBTSxlQUFLLENBQUMsTUFBTSxDQUFDO2dCQUNqQixNQUFNO2dCQUNOLElBQUk7Z0JBQ0osUUFBUTtnQkFDUixLQUFLLEVBQUUsS0FBSyxJQUFJLFNBQVM7YUFDMUIsQ0FBQyxDQUFBO1lBRUYscUJBQXFCO1lBQ3JCLE1BQU0sSUFBSSxHQUFHLE1BQU0sY0FBSSxDQUFDLFFBQVEsQ0FBQyxNQUFNLENBQUMsQ0FBQTtZQUN4QyxJQUFJLENBQUMsSUFBSSxFQUFFLENBQUM7Z0JBQ1YsTUFBTSxJQUFJLEtBQUssQ0FBQyxnQkFBZ0IsQ0FBQyxDQUFBO1lBQ25DLENBQUM7WUFFRCxNQUFNLFFBQVEsR0FBRyxJQUFJLENBQUMsS0FBSyxDQUFBO1lBQzNCLElBQUksQ0FBQyxNQUFNLElBQUksUUFBUSxDQUFBO1lBRXZCLDhEQUE4RDtZQUM5RCxNQUFNLElBQUksQ0FBQyxJQUFJLEVBQUUsQ0FBQTtZQUVqQixNQUFNLE9BQU8sR0FBRyxJQUFJLENBQUMsS0FBSyxHQUFHLFFBQVEsQ0FBQTtZQUVyQyxzQ0FBc0M7WUFDdEMsSUFBSSxPQUFPLEVBQUUsQ0FBQztnQkFDWixNQUFNLGVBQUssQ0FBQyxNQUFNLENBQUM7b0JBQ2pCLE1BQU07b0JBQ04sSUFBSSxFQUFFLFVBQVU7b0JBQ2hCLFFBQVEsRUFBRSxpQkFBUyxDQUFDLFFBQVE7aUJBQzdCLENBQUMsQ0FBQTtnQkFFRixJQUFJLENBQUMsTUFBTSxJQUFJLGlCQUFTLENBQUMsUUFBUSxDQUFBO2dCQUNqQyxNQUFNLElBQUksQ0FBQyxJQUFJLEVBQUUsQ0FBQTtZQUNuQixDQUFDO1lBRUQsd0RBQXdEO1lBQ3hELG9FQUFvRTtZQUNwRSxJQUFJLElBQUksS0FBSyxrQkFBa0IsSUFBSSxJQUFJLEtBQUssZ0JBQWdCLEVBQUUsQ0FBQztnQkFDN0QsSUFBSSxDQUFDO29CQUNILE1BQU0sZ0NBQWMsQ0FBQyx1QkFBdUIsQ0FBQyxNQUFNLENBQUMsQ0FBQTtnQkFDdEQsQ0FBQztnQkFBQyxPQUFPLEtBQUssRUFBRSxDQUFDO29CQUNmLE9BQU8sQ0FBQyxLQUFLLENBQUMscUNBQXFDLEVBQUUsS0FBSyxDQUFDLENBQUE7b0JBQzNELGtEQUFrRDtnQkFDcEQsQ0FBQztZQUNILENBQUM7WUFFRCxPQUFPO2dCQUNMLE9BQU8sRUFBRSxJQUFJO2dCQUNiLFFBQVEsRUFBRSxJQUFJLENBQUMsS0FBSztnQkFDcEIsT0FBTzthQUNSLENBQUE7UUFDSCxDQUFDO1FBQUMsT0FBTyxLQUFLLEVBQUUsQ0FBQztZQUNmLE9BQU8sQ0FBQyxLQUFLLENBQUMsb0JBQW9CLEVBQUUsS0FBSyxDQUFDLENBQUE7WUFDMUMsT0FBTyxFQUFFLE9BQU8sRUFBRSxLQUFLLEVBQUUsQ0FBQTtRQUMzQixDQUFDO0lBQ0gsQ0FBQztDQUFBO0FBRUQsU0FBc0Isb0JBQW9CLENBQUMsTUFBYyxFQUFFLElBQXdCOztRQUNqRixJQUFJLENBQUM7WUFDSCxrRUFBa0U7WUFFbEUsTUFBTSxPQUFPLEdBQUcsSUFBSSxLQUFLLE1BQU0sQ0FBQyxDQUFDLENBQUMsZUFBZSxDQUFDLENBQUMsQ0FBQyxrQkFBa0IsQ0FBQTtZQUN0RSxNQUFNLFdBQVcsR0FBRyxNQUFNLGVBQUssQ0FBQyxPQUFPLENBQUMsRUFBRSxNQUFNLEVBQUUsSUFBSSxFQUFFLE9BQU8sRUFBRSxDQUFDLENBQUE7WUFFbEUsT0FBTyxDQUFDLFdBQVcsQ0FBQTtRQUNyQixDQUFDO1FBQUMsT0FBTyxLQUFLLEVBQUUsQ0FBQztZQUNmLE9BQU8sQ0FBQyxLQUFLLENBQUMsbUNBQW1DLEVBQUUsS0FBSyxDQUFDLENBQUE7WUFDekQsT0FBTyxLQUFLLENBQUE7UUFDZCxDQUFDO0lBQ0gsQ0FBQztDQUFBIiwibmFtZXMiOltdLCJzb3VyY2VzIjpbIkM6XFxVc2Vyc1xcYWtkYXZcXERvd25sb2Fkc1xcZGV2c29jaWFsXFx1dGlsc1xcYXdhcmRYUC50cyJdLCJzb3VyY2VzQ29udGVudCI6WyJpbXBvcnQgVXNlciBmcm9tIFwiQC9tb2RlbHMvVXNlclwiXG5pbXBvcnQgWFBMb2cgZnJvbSBcIkAvbW9kZWxzL1hQTG9nXCJcbmltcG9ydCBjb25uZWN0REIgZnJvbSBcIkAvbGliL2RiXCJcbmltcG9ydCB7IFJlZmVycmFsU3lzdGVtIH0gZnJvbSBcIi4vcmVmZXJyYWwtc3lzdGVtXCJcblxuLy8gWFAgdmFsdWVzIGZvciBkaWZmZXJlbnQgYWN0aW9uc1xuZXhwb3J0IGNvbnN0IFhQX1ZBTFVFUyA9IHtcbiAgZGFpbHlfbG9naW46IDEwLFxuICBwb3N0X2NyZWF0aW9uOiAyMCxcbiAgY29tbWVudF9jcmVhdGlvbjogNSxcbiAgbGlrZV9naXZlbjogMiwgIC8vIFNtYWxsIFhQIGZvciBsaWtlcyB0byBwcmV2ZW50IHNwYW1cbiAgbGlrZV9yZWNlaXZlZDogMywgIC8vIFNsaWdodGx5IG1vcmUgWFAgd2hlbiByZWNlaXZpbmcgbGlrZXNcbiAgZmlyc3RfcG9zdDogNTAsXG4gIGZpcnN0X2NvbW1lbnQ6IDI1LFxuICBwb2xsX2ludGVyYWN0aW9uOiA1LFxuICBiYWRnZV9lYXJuZWQ6IDEwMCxcbiAgbGV2ZWxfdXA6IDIwMCxcbiAgbW9kZXJhdG9yX2FjdGlvbl9ib251czogNTAsXG4gIHJlZmVycmFsX3N1Y2Nlc3M6IDI1LCAgLy8gWFAgZm9yIHN1Y2Nlc3NmdWwgcmVmZXJyYWwgKHJlZmVycmVyKVxuICByZWZlcnJhbF9ib251czogMTUsICAgIC8vIFhQIGZvciBiZWluZyByZWZlcnJlZCAobmV3IHVzZXIpXG4gIGVtYWlsX3ZlcmlmaWVkOiAxMCxcbiAgdXNlcl9mb2xsb3dlZDogNSxcbiAgY2hhbGxlbmdlX2NvbXBsZXRpb246IDc1LFxufVxuXG5leHBvcnQgYXN5bmMgZnVuY3Rpb24gYXdhcmRYUChcbiAgdXNlcklkOiBzdHJpbmcsXG4gIHR5cGU6IGtleW9mIHR5cGVvZiBYUF9WQUxVRVMsXG4gIHJlZklkPzogc3RyaW5nLFxuKTogUHJvbWlzZTx7IHN1Y2Nlc3M6IGJvb2xlYW47IG5ld0xldmVsPzogbnVtYmVyOyBsZXZlbFVwPzogYm9vbGVhbiB9PiB7XG4gIHRyeSB7XG4gICAgLy8gYXdhaXQgY29ubmVjdERCKCkgLy8gUmVtb3ZlIGluIHRlc3RzLCBjb25uZWN0aW9uIGFscmVhZHkgZXhpc3RzXG5cbiAgICBjb25zdCB4cEFtb3VudCA9IFhQX1ZBTFVFU1t0eXBlXVxuICAgIGlmICgheHBBbW91bnQpIHtcbiAgICAgIHRocm93IG5ldyBFcnJvcihgSW52YWxpZCBYUCB0eXBlOiAke3R5cGV9YClcbiAgICB9XG5cbiAgICAvLyBDcmVhdGUgWFAgbG9nIGVudHJ5XG4gICAgYXdhaXQgWFBMb2cuY3JlYXRlKHtcbiAgICAgIHVzZXJJZCxcbiAgICAgIHR5cGUsXG4gICAgICB4cEFtb3VudCxcbiAgICAgIHJlZklkOiByZWZJZCB8fCB1bmRlZmluZWQsXG4gICAgfSlcblxuICAgIC8vIFVwZGF0ZSB1c2VyIHBvaW50c1xuICAgIGNvbnN0IHVzZXIgPSBhd2FpdCBVc2VyLmZpbmRCeUlkKHVzZXJJZClcbiAgICBpZiAoIXVzZXIpIHtcbiAgICAgIHRocm93IG5ldyBFcnJvcihcIlVzZXIgbm90IGZvdW5kXCIpXG4gICAgfVxuXG4gICAgY29uc3Qgb2xkTGV2ZWwgPSB1c2VyLmxldmVsXG4gICAgdXNlci5wb2ludHMgKz0geHBBbW91bnRcblxuICAgIC8vIExldmVsIHdpbGwgYmUgYXV0b21hdGljYWxseSBjYWxjdWxhdGVkIGluIHRoZSBwcmUtc2F2ZSBob29rXG4gICAgYXdhaXQgdXNlci5zYXZlKClcblxuICAgIGNvbnN0IGxldmVsVXAgPSB1c2VyLmxldmVsID4gb2xkTGV2ZWxcblxuICAgIC8vIEF3YXJkIGFkZGl0aW9uYWwgWFAgZm9yIGxldmVsaW5nIHVwXG4gICAgaWYgKGxldmVsVXApIHtcbiAgICAgIGF3YWl0IFhQTG9nLmNyZWF0ZSh7XG4gICAgICAgIHVzZXJJZCxcbiAgICAgICAgdHlwZTogXCJsZXZlbF91cFwiLFxuICAgICAgICB4cEFtb3VudDogWFBfVkFMVUVTLmxldmVsX3VwLFxuICAgICAgfSlcblxuICAgICAgdXNlci5wb2ludHMgKz0gWFBfVkFMVUVTLmxldmVsX3VwXG4gICAgICBhd2FpdCB1c2VyLnNhdmUoKVxuICAgIH1cblxuICAgIC8vIENoZWNrIGlmIHRoaXMgWFAgZ2FpbiBjb21wbGV0ZXMgYW55IHBlbmRpbmcgcmVmZXJyYWxzXG4gICAgLy8gRG9uJ3QgY2hlY2sgZm9yIHJlZmVycmFsLXJlbGF0ZWQgWFAgdHlwZXMgdG8gYXZvaWQgaW5maW5pdGUgbG9vcHNcbiAgICBpZiAodHlwZSAhPT0gXCJyZWZlcnJhbF9zdWNjZXNzXCIgJiYgdHlwZSAhPT0gXCJyZWZlcnJhbF9ib251c1wiKSB7XG4gICAgICB0cnkge1xuICAgICAgICBhd2FpdCBSZWZlcnJhbFN5c3RlbS5jaGVja1JlZmVycmFsQ29tcGxldGlvbih1c2VySWQpXG4gICAgICB9IGNhdGNoIChlcnJvcikge1xuICAgICAgICBjb25zb2xlLmVycm9yKFwiRXJyb3IgY2hlY2tpbmcgcmVmZXJyYWwgY29tcGxldGlvbjpcIiwgZXJyb3IpXG4gICAgICAgIC8vIERvbid0IGZhaWwgdGhlIFhQIGF3YXJkIGlmIHJlZmVycmFsIGNoZWNrIGZhaWxzXG4gICAgICB9XG4gICAgfVxuXG4gICAgcmV0dXJuIHtcbiAgICAgIHN1Y2Nlc3M6IHRydWUsXG4gICAgICBuZXdMZXZlbDogdXNlci5sZXZlbCxcbiAgICAgIGxldmVsVXAsXG4gICAgfVxuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBhd2FyZGluZyBYUDpcIiwgZXJyb3IpXG4gICAgcmV0dXJuIHsgc3VjY2VzczogZmFsc2UgfVxuICB9XG59XG5cbmV4cG9ydCBhc3luYyBmdW5jdGlvbiBjaGVja0ZpcnN0VGltZUFjdGlvbih1c2VySWQ6IHN0cmluZywgdHlwZTogXCJwb3N0XCIgfCBcImNvbW1lbnRcIik6IFByb21pc2U8Ym9vbGVhbj4ge1xuICB0cnkge1xuICAgIC8vIGF3YWl0IGNvbm5lY3REQigpIC8vIFJlbW92ZSBpbiB0ZXN0cywgY29ubmVjdGlvbiBhbHJlYWR5IGV4aXN0c1xuXG4gICAgY29uc3QgbG9nVHlwZSA9IHR5cGUgPT09IFwicG9zdFwiID8gXCJwb3N0X2NyZWF0aW9uXCIgOiBcImNvbW1lbnRfY3JlYXRpb25cIlxuICAgIGNvbnN0IGV4aXN0aW5nTG9nID0gYXdhaXQgWFBMb2cuZmluZE9uZSh7IHVzZXJJZCwgdHlwZTogbG9nVHlwZSB9KVxuXG4gICAgcmV0dXJuICFleGlzdGluZ0xvZ1xuICB9IGNhdGNoIChlcnJvcikge1xuICAgIGNvbnNvbGUuZXJyb3IoXCJFcnJvciBjaGVja2luZyBmaXJzdCB0aW1lIGFjdGlvbjpcIiwgZXJyb3IpXG4gICAgcmV0dXJuIGZhbHNlXG4gIH1cbn1cbiJdLCJ2ZXJzaW9uIjozfQ==

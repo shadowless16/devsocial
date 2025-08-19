@@ -1,19 +1,14 @@
-import { MongoMemoryServer } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import User from '@/models/User';
 
 describe('Growth Analytics - Simple Tests', () => {
-  let mongoServer: MongoMemoryServer;
-
   beforeAll(async () => {
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    await mongoose.connect(mongoUri);
+    const testDbUri = process.env.MONGODB_TEST_URI || process.env.MONGODB_URI + '_test';
+    await mongoose.connect(testDbUri);
   });
 
   afterAll(async () => {
     await mongoose.disconnect();
-    await mongoServer.stop();
   });
 
   beforeEach(async () => {

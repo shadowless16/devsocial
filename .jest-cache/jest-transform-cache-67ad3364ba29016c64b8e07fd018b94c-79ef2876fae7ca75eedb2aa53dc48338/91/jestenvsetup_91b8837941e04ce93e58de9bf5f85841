@@ -1,0 +1,4 @@
+981c0a7105dcba3f1245dc0765078a25
+// Load test environment variables
+process.env.NODE_ENV = 'test';
+require('dotenv').config({ path: '.env.test' });

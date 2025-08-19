@@ -6,14 +6,16 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Copy, Flag } from "lucide-react"
+import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Copy, Flag, Coins } from "lucide-react"
 import ReactMarkdown from "react-markdown"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { useToast } from "@/hooks/use-toast"
 import { ReportModal } from "@/components/modals/report-modal"
+import { TipModal } from "@/components/modals/tip-modal"
 import { formatTimeAgo } from "@/lib/time-utils"
 import { PostMeta } from "@/components/shared/PostMeta"
+import { useAuth } from "@/contexts/auth-context"
 
 interface PostCardProps {
   author?: string
@@ -71,9 +73,11 @@ export default function PostCard({
   onClick
 }: PostCardProps) {
   const { toast } = useToast()
+  const { user } = useAuth()
   const [isLiked, setIsLiked] = useState(liked)
   const [currentLikesCount, setCurrentLikesCount] = useState(likesCount)
   const [showReportModal, setShowReportModal] = useState(false)
+  const [showTipModal, setShowTipModal] = useState(false)
   
   useEffect(() => {
     setIsLiked(liked)
@@ -361,6 +365,18 @@ export default function PostCard({
                     <Share className="h-4 w-4" />
                     <span className="text-xs">Share</span>
                   </Button>
+
+                  {user && authorId && user.id !== authorId && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600"
+                      onClick={() => setShowTipModal(true)}
+                    >
+                      <Coins className="h-4 w-4" />
+                      <span className="text-xs">Tip</span>
+                    </Button>
+                  )}
                 </div>
 
                 <div className="text-xs text-muted-foreground">
@@ -377,6 +393,24 @@ export default function PostCard({
         onClose={() => setShowReportModal(false)}
         postId={postId || ""}
       />
+
+      {user && authorId && user.id !== authorId && (
+        <TipModal
+          isOpen={showTipModal}
+          onClose={() => setShowTipModal(false)}
+          recipientId={authorId}
+          recipientName={author}
+          recipientAvatar={avatar}
+          currentUserId={user.id}
+          currentUserBalance={user.demoWalletBalance || 0}
+          onTipSent={() => {
+            toast({
+              title: "Tip sent!",
+              description: `Successfully tipped ${author}`,
+            });
+          }}
+        />
+      )}
     </>
   )
 }

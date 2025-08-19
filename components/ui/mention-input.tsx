@@ -87,13 +87,16 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
     onChange(newValue)
     setShowSuggestions(false)
     setSuggestions([])
+    setMentionStart(-1)
     
-    // Focus back to textarea
+    // Focus back to textarea and set cursor position
     setTimeout(() => {
-      textareaRef.current?.focus()
-      const newCursorPos = mentionStart + user.username.length + 2
-      textareaRef.current?.setSelectionRange(newCursorPos, newCursorPos)
-    }, 0)
+      if (textareaRef.current) {
+        textareaRef.current.focus()
+        const newCursorPos = mentionStart + user.username.length + 2
+        textareaRef.current.setSelectionRange(newCursorPos, newCursorPos)
+      }
+    }, 10)
   }
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -138,12 +141,20 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
               className={`px-3 py-2 cursor-pointer flex items-center gap-2 ${
                 index === selectedIndex ? "bg-blue-50 border-l-2 border-blue-500" : "hover:bg-gray-50"
               }`}
-              onClick={() => insertMention(user)}
+              onMouseDown={(e) => {
+                e.preventDefault()
+                insertMention(user)
+              }}
             >
               <img
-                src={user.avatar}
+                src={user.avatar?.includes('models.readyplayer.me') && user.avatar.endsWith('.glb') 
+                  ? user.avatar.replace('.glb', '.png') 
+                  : user.avatar || "/placeholder.svg"}
                 alt={user.username}
-                className="w-8 h-8 rounded-full"
+                className="w-8 h-8 rounded-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = "/placeholder.svg"
+                }}
               />
               <div className="flex-1">
                 <div className="font-medium text-sm">@{user.username}</div>

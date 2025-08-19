@@ -114,7 +114,7 @@ export default function SideNav() {
       <div className="flex items-center gap-1">
         <div className="grid h-6 w-6 place-items-center rounded-md bg-emerald-600 text-white shadow-sm text-xs">{"</>"}</div>
         <div className="grid">
-          <span className="text-sm font-semibold leading-none">TechConnect</span>
+          <span className="text-sm font-semibold leading-none">DevSocial</span>
           <span className="text-[10px] text-muted-foreground">Connect • Learn</span>
         </div>
       </div>

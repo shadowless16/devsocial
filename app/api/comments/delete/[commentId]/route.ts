@@ -17,7 +17,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { comme
       return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
     }
 
-    const userId = authResult.user!.id
+    const userId = authResult.user.id
     const { commentId } = params
 
     const comment = await Comment.findById(commentId)
@@ -26,7 +26,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { comme
     }
 
     // Check if user owns the comment or is admin/moderator
-    if (comment.author.toString() !== userId && !["admin", "moderator"].includes(authResult.user!.role)) {
+    if (comment.author.toString() !== userId && !["admin", "moderator"].includes(authResult.user.role || '')) {
       return NextResponse.json(errorResponse("Unauthorized"), { status: 403 })
     }
 

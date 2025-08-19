@@ -4,7 +4,7 @@
 import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, Share, MoreHorizontal, Zap, Copy, Trash, Eye } from "lucide-react";
+import { Heart, MessageCircle, Share, MoreHorizontal, Zap, Copy, Trash, Eye, Coins } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +28,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import dynamic from 'next/dynamic'
+import { TipModal } from "@/components/modals/tip-modal"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -109,6 +110,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
+  const [showTipModal, setShowTipModal] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -592,6 +594,48 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           <TooltipContent>Share</TooltipContent>
         </Tooltip>
 
+        {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTipModal(true);
+                }}
+              >
+                <Coins className="h-4 w-4" />
+                <span className="text-xs">Tip</span>
+                <span className="sr-only">Send Tip</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Send Tip</TooltipContent>
+          </Tooltip>
+        )}
+
+        {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowTipModal(true);
+                }}
+              >
+                <Coins className="h-4 w-4" />
+                <span className="text-xs">Tip</span>
+                <span className="sr-only">Send Tip</span>
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Send Tip</TooltipContent>
+          </Tooltip>
+        )}
+
         <div className="ml-auto inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1 text-[11px] text-muted-foreground">
           <Eye className="h-3.5 w-3.5" />
           <span>{post.viewsCount || 0}</span>
@@ -728,6 +772,24 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           </div>
         )}
       </Card>
+
+      {!post.isAnonymous && post.author && user && (
+        <TipModal
+          isOpen={showTipModal}
+          onClose={() => setShowTipModal(false)}
+          recipientId={post.author.username}
+          recipientName={post.author.displayName || post.author.username}
+          recipientAvatar={post.author.avatar}
+          currentUserId={user.username}
+          currentUserBalance={user.demoWalletBalance || 0}
+          onTipSent={() => {
+            toast({
+              title: "Tip sent!",
+              description: `Successfully tipped ${post.author?.displayName || post.author?.username}`,
+            });
+          }}
+        />
+      )}
     </TooltipProvider>
   );
 }

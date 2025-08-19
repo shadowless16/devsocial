@@ -15,13 +15,13 @@ export async function GET(request: NextRequest) {
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: authResult.status })
+      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: authResult.status || 401 })
     }
 
     const { searchParams } = new URL(request.url)
     const period = searchParams.get("period") || "week"
     const userId = searchParams.get("userId") // For user-specific analytics
-    const isAdmin = authorizeRoles(["admin", "moderator"])(authResult.user!.role)
+    const isAdmin = authorizeRoles(["admin", "moderator"])(authResult.user.role || '')
 
     // Calculate date range
     const now = new Date()
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
     const dateFilter = { createdAt: { $gte: startDate } }
 
     // Base filter - if not admin, only show own analytics
-    const userFilter = isAdmin && userId ? { author: userId } : !isAdmin ? { author: authResult.user!.id } : {}
+    const userFilter = isAdmin && userId ? { author: userId } : !isAdmin ? { author: authResult.user.id } : {}
 
     // User Analytics
     const userStats = await User.aggregate([

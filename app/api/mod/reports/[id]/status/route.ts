@@ -14,12 +14,12 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
 
     // Authenticate user
     const authResult = await authMiddleware(request)
-    if (authResult.error) {
-      return errorResponse(authResult.error, authResult.status)
+    if (!authResult.success) {
+      return errorResponse(authResult.error, authResult.status || 401)
     }
 
     // Check if user has moderator/admin role
-    if (!authorizeRoles(["admin", "moderator"])(authResult.user!.role)) {
+    if (!authorizeRoles(["admin", "moderator"])(authResult.user.role || '')) {
       return errorResponse("Not authorized", 403)
     }
 
