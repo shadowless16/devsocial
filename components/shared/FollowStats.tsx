@@ -30,6 +30,8 @@ export function FollowStats({
   const { socket } = useWebSocket();
   const { getFollowState, updateFollowState } = useFollow();
 
+
+
   // Update counts from props when they change
   useEffect(() => {
     setFollowersCount(initialFollowersCount);

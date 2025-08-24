@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -34,6 +35,7 @@ export function ReferralDashboard() {
   const [stats, setStats] = useState<ReferralStats | null>(null)
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
+  const router = useRouter()
 
   useEffect(() => {
     fetchReferralData()
@@ -213,8 +215,11 @@ export function ReferralDashboard() {
               {stats?.recentReferrals.map((referral) => (
                 <div key={referral._id} className="flex items-center justify-between p-4 border rounded-lg">
                   <div className="flex items-center space-x-3">
-                    <Avatar className="w-10 h-10">
-                      <AvatarImage src={referral.referred.avatar || "/placeholder.svg"} />
+                    <Avatar className="w-10 h-10 cursor-pointer" onClick={() => router.push(`/profile/${referral.referred.username}`)}>
+                      <AvatarImage 
+                        src={referral.referred.avatar || "/placeholder-user.jpg"} 
+                        alt={referral.referred.displayName || referral.referred.username}
+                      />
                       <AvatarFallback>
                         {(referral.referred.displayName || referral.referred.username || "U")
                           .split(" ")
@@ -223,8 +228,18 @@ export function ReferralDashboard() {
                       </AvatarFallback>
                     </Avatar>
                     <div>
-                      <p className="font-medium">{referral.referred.displayName}</p>
-                      <p className="text-sm text-gray-500">@{referral.referred.username}</p>
+                      <p 
+                        className="font-medium cursor-pointer hover:text-blue-600 transition-colors"
+                        onClick={() => router.push(`/profile/${referral.referred.username}`)}
+                      >
+                        {referral.referred.displayName || referral.referred.username}
+                      </p>
+                      <p 
+                        className="text-sm text-gray-500 cursor-pointer hover:text-blue-500 transition-colors"
+                        onClick={() => router.push(`/profile/${referral.referred.username}`)}
+                      >
+                        @{referral.referred.username}
+                      </p>
                     </div>
                   </div>
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
@@ -42,6 +42,7 @@ const menuItems = [
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
+  const [localUser, setLocalUser] = useState(user)
 
   const handleThemeToggle = () => {
     const html = document.documentElement
@@ -58,6 +59,18 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     logout()
     onClose()
   }
+
+  useEffect(() => {
+    setLocalUser(user)
+  }, [user])
+
+  useEffect(() => {
+    const handleUserUpdated = (e: any) => {
+      if (e?.detail) setLocalUser(e.detail)
+    }
+    window.addEventListener('user:updated', handleUserUpdated as EventListener)
+    return () => window.removeEventListener('user:updated', handleUserUpdated as EventListener)
+  }, [])
 
   if (!isOpen) return null
 
@@ -80,18 +93,18 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           </div>
 
           {/* User Profile */}
-          {user && (
+          {localUser && (
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-3">
                 <Avatar className="h-12 w-12 ring-2 ring-emerald-100">
-                  <AvatarImage src={user.avatar || "/generic-user-avatar.png"} alt={user.displayName || user.username} />
-                  <AvatarFallback>{(user.displayName || user.username || "U").charAt(0).toUpperCase()}</AvatarFallback>
+                  <AvatarImage src={localUser.avatar || "/generic-user-avatar.png"} alt={localUser.displayName || localUser.username} />
+                  <AvatarFallback>{(localUser.displayName || localUser.username || "U").charAt(0).toUpperCase()}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <div className="font-medium text-sm truncate">{user.displayName || user.username}</div>
+                  <div className="font-medium text-sm truncate">{localUser.displayName || localUser.username}</div>
                   <div className="flex items-center gap-2 mt-1">
-                    <Badge className="bg-emerald-50 text-emerald-700 text-xs">L{user.level || 1}</Badge>
-                    <span className="text-xs text-muted-foreground">{(user.points || 0).toLocaleString()} XP</span>
+                    <Badge className="bg-emerald-50 text-emerald-700 text-xs">L{localUser.level || 1}</Badge>
+                    <span className="text-xs text-muted-foreground">{(localUser.points || 0).toLocaleString()} XP</span>
                   </div>
                 </div>
               </div>

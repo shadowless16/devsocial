@@ -59,47 +59,48 @@ export function EnhancedLeaderboard() {
   const fetchLeaderboard = async (type: string) => {
     setLoading(true)
     try {
-      // Use MCP for faster direct database access
-      const response = await fetch('/api/mcp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          tool: 'get_leaderboard',
-          args: { limit: 50 }
+      const useMCP = process.env.NEXT_PUBLIC_USE_MCP === "true"
+
+      if (useMCP) {
+        const response = await fetch("/api/mcp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            tool: "get_leaderboard",
+            args: { limit: 50 },
+          }),
         })
-      })
-      
-      const data = await response.json()
-      
-      if (response.ok && data) {
-        // Transform MCP data to match expected format
-        const transformedData = data.map((user: any, index: number) => ({
-          _id: user._id,
-          user: {
+
+        const data = await response.json()
+
+        if (response.ok && data) {
+          // Transform MCP data to match expected format
+          const transformedData = data.map((user: any, index: number) => ({
             _id: user._id,
-            username: user.username,
-            displayName: user.displayName,
-            avatar: user.avatar,
-            level: user.level
-          },
-          totalXP: user.points,
-          rank: index + 1,
-          level: user.level
-        }))
-        setLeaderboard(transformedData)
-      }
-    } catch (error) {
-      console.error("Error fetching leaderboard:", error)
-      // Fallback to original API
-      try {
+            user: {
+              _id: user._id,
+              username: user.username,
+              displayName: user.displayName,
+              avatar: user.avatar && user.avatar.includes('models.readyplayer.me') && user.avatar.endsWith('.glb')
+                ? user.avatar.replace('.glb', '.png')
+                : user.avatar || '/placeholder.svg',
+              level: user.level || 1,
+            },
+            totalXP: user.points || 0,
+            rank: index + 1,
+            level: user.level || 1,
+          }))
+          setLeaderboard(transformedData)
+        }
+      } else {
         const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
         const data = await response.json()
         if (data.success) {
           setLeaderboard(data.data.leaderboard)
         }
-      } catch (fallbackError) {
-        console.error("Fallback API also failed:", fallbackError)
       }
+    } catch (error) {
+      console.error("Error fetching leaderboard:", error)
     } finally {
       setLoading(false)
     }

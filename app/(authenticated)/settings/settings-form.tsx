@@ -1,11 +1,11 @@
-// app/(authenticated)/settings/page.tsx
+// app/(authenticated)/settings/settings-form.tsx
 "use client";
 
 import { useState, useEffect } from "react";
-// FIX 1: Import the 'User' type directly from the context file.
+import dynamic from 'next/dynamic';
 import { useAuth, User } from "@/contexts/auth-context";
 import { apiClient } from "@/lib/api-client";
-import { Settings, Save, Upload, User as UserIcon } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
+import { Save, Upload, User as UserIcon } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -15,15 +15,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { SettingsSkeleton } from "@/components/skeletons/settings-skeleton";
-import dynamic from 'next/dynamic';
 
 const WalletConnect = dynamic(() => import('@/components/wallet-connect').then(mod => mod.WalletConnect), {
   loading: () => <p>Loading WalletConnect...</p>,
   ssr: false
 });
 
-// Use the imported 'User' type here.
 type ProfileFormData = Pick<
   User,
   | "displayName"
@@ -36,54 +33,34 @@ type ProfileFormData = Pick<
   | "avatar"
 >;
 
-interface AffiliationsData {
-  affiliations: {
-    techBootcamps?: string[];
-    federal?: string[];
-    state?: string[];
-    privateUniversities?: string[];
-    affiliatedInstitutions?: string[];
-    distanceLearning?: string[];
-  };
+interface SettingsFormProps {
+  initialUser: User;
+  affiliations: string[];
 }
 
 interface UpdateProfileResponse {
     user: User;
 }
 
-export default function SettingsPage() {
-  const { user, loading: authLoading, updateUser } = useAuth();
-
+export function SettingsForm({ initialUser, affiliations }: SettingsFormProps) {
+  const { user, updateUser } = useAuth();
   const [activeTab, setActiveTab] = useState("profile");
-  const [formData, setFormData] = useState<ProfileFormData | null>(null);
+  const [formData, setFormData] = useState<ProfileFormData>({
+    displayName: initialUser.displayName || initialUser.username,
+    username: initialUser.username,
+    email: initialUser.email,
+    bio: initialUser.bio || "",
+    affiliation: initialUser.affiliation || "Other",
+    location: initialUser.location || "",
+    website: initialUser.website || "",
+    avatar: initialUser.avatar || "",
+  });
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const [affiliations, setAffiliations] = useState<string[]>([]);
-  const [loadingAffiliations, setLoadingAffiliations] = useState(true);
-  const [loadingTimeout, setLoadingTimeout] = useState(false);
-
-  // Debug logging
-  console.log('[Settings Debug]', {
-    authLoading,
-    user: user ? { username: user.username, email: user.email } : null,
-    formData: formData ? 'has data' : 'null'
-  });
-
-  // Timeout fallback to prevent infinite loading
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      console.log('[Settings] Loading timeout - forcing render');
-      setLoadingTimeout(true);
-    }, 10000); // 10 second timeout
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   useEffect(() => {
-    console.log('[Settings] User effect triggered:', { user, authLoading });
     if (user) {
-      console.log('[Settings] Setting form data with user:', user);
       setFormData({
         displayName: user.displayName || user.username,
         username: user.username,
@@ -97,41 +74,11 @@ export default function SettingsPage() {
     }
   }, [user]);
 
-  useEffect(() => {
-    const fetchAffiliations = async () => {
-      try {
-        const response = await apiClient.request<AffiliationsData>("/affiliations");
-        if (response.success && response.data?.affiliations) {
-          // Combine all affiliations from different categories
-          const allAffiliations = [
-            ...(response.data.affiliations.techBootcamps || []),
-            ...(response.data.affiliations.federal || []),
-            ...(response.data.affiliations.state || []),
-            ...(response.data.affiliations.privateUniversities || []),
-            ...(response.data.affiliations.affiliatedInstitutions || []),
-            ...(response.data.affiliations.distanceLearning || [])
-          ];
-          // Remove duplicates and sort
-          const uniqueAffiliations = [...new Set(allAffiliations)].sort();
-          setAffiliations(uniqueAffiliations);
-        }
-      } catch (error) {
-        console.error("Failed to fetch affiliations:", error);
-        // Fallback to default affiliations
-        setAffiliations(["NIIT Lagos", "NIIT Yaba", "NIIT Abuja", "NIIT Port Harcourt", "NIIT Kano", "Other"]);
-      } finally {
-        setLoadingAffiliations(false);
-      }
-    };
-    fetchAffiliations();
-  }, []);
-
   const handleInputChange = (field: keyof ProfileFormData, value: string) => {
-    setFormData((prev) => (prev ? { ...prev, [field]: value } : null));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-   const handleSave = async () => {
-    // This guard clause is essential. It stops if formData is null.
+  const handleSave = async () => {
     if (!formData) {
       setError("Form data is not available. Please refresh the page.");
       return;
@@ -142,9 +89,6 @@ export default function SettingsPage() {
     setSuccess(null);
 
     try {
-      // THE CRITICAL PART:
-      // We are creating a new object called 'payload' directly from the 'formData' state.
-      // There is NO variable named 'data' being used here.
       const payload = {
         displayName: formData.displayName,
         bio: formData.bio,
@@ -153,7 +97,6 @@ export default function SettingsPage() {
         website: formData.website,
       };
 
-      // We pass the 'payload' object to the API client.
       const response = await apiClient.updateProfile<UpdateProfileResponse>(payload);
 
       if (response.success && response.data?.user) {
@@ -169,38 +112,8 @@ export default function SettingsPage() {
     }
   };
 
-
-  // Show loading only if still loading and timeout hasn't been reached
-  if ((authLoading || !formData) && !loadingTimeout) {
-    return <SettingsSkeleton />
-  }
-
-  // If timeout reached but still no data, show error
-  if (loadingTimeout && (!user || !formData)) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-center">
-          <p className="text-lg text-red-600">Unable to load settings</p>
-          <p className="text-sm text-gray-500 mt-2">There seems to be an authentication issue.</p>
-          <Button onClick={() => window.location.reload()} className="mt-4">
-            Reload Page
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
   return (
-    <div className="max-w-4xl mx-auto py-4 lg:py-6 px-4">
-      {/* ... The rest of your JSX code for the form remains the same ... */}
-       <div className="text-center mb-8">
-        <div className="inline-block bg-gray-200 p-3 rounded-full">
-            <Settings className="w-8 h-8 text-gray-700" />
-        </div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-gray-900 mt-2">Settings</h1>
-        <p className="text-gray-600">Manage your account preferences and privacy settings</p>
-      </div>
-
+    <>
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
@@ -219,8 +132,6 @@ export default function SettingsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-6">
-              {formData && (
-              <>
               <div className="flex items-center space-x-6">
                 <Avatar className="w-24 h-24">
                   <AvatarImage src={formData.avatar} />
@@ -260,10 +171,9 @@ export default function SettingsPage() {
                   <Select 
                     value={formData.affiliation} 
                     onValueChange={(value) => handleInputChange("affiliation", value)}
-                    disabled={loadingAffiliations}
                   >
                     <SelectTrigger>
-                      <SelectValue placeholder={loadingAffiliations ? "Loading..." : "Select affiliation"} />
+                      <SelectValue placeholder="Select affiliation" />
                     </SelectTrigger>
                     <SelectContent className="max-h-[300px] overflow-y-auto">
                       {affiliations.map((affiliation) => (
@@ -287,10 +197,8 @@ export default function SettingsPage() {
               <div className="space-y-2">
                 <Label htmlFor="bio">Bio</Label>
                 <Textarea id="bio" value={formData.bio} onChange={(e) => handleInputChange("bio", e.target.value)} className="min-h-[100px]" maxLength={250} />
-                <p className="text-xs text-gray-500 text-right">{formData.bio.length}/250 characters</p>
+                <p className="text-xs text-gray-500 text-right">{formData.bio?.length || 0}/250 characters</p>
               </div>
-              </>
-              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -310,6 +218,6 @@ export default function SettingsPage() {
           {isSaving ? "Saving..." : "Save Changes"}
         </Button>
       </div>
-    </div>
+    </>
   );
 }

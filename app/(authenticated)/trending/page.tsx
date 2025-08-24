@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FeedItem } from "@/components/feed/FeedItem"
 import { UserLink } from "@/components/shared/UserLink"
 import { apiClient } from "@/lib/api-client"
@@ -349,11 +350,15 @@ export default function TrendingPage() {
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center space-x-3">
                           <div className="relative">
-                            <img
-                              src={user.avatar || "/placeholder.svg"}
-                              alt={user.displayName}
-                              className="w-12 h-12 rounded-full"
-                            />
+                            <Avatar className="w-12 h-12">
+                              <AvatarImage src={user.avatar || "/placeholder.svg"} />
+                              <AvatarFallback>
+                                {(user.displayName || user.username || 'U')
+                                  .split(" ")
+                                  .map((n) => n[0])
+                                  .join("")}
+                              </AvatarFallback>
+                            </Avatar>
                             <div className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
                               {index + 1}
                             </div>

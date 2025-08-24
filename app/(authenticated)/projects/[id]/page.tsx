@@ -48,6 +48,7 @@ export default function ProjectDetailPage() {
   const [isLiked, setIsLiked] = useState(false)
   const [updatingStatus, setUpdatingStatus] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [joiningPosition, setJoiningPosition] = useState<number | null>(null)
   const { user } = useAuth()
 
   useEffect(() => {
@@ -147,6 +148,32 @@ export default function ProjectDetailPage() {
       toast.error('Failed to delete project')
     } finally {
       setDeleting(false)
+    }
+  }
+
+  const handleJoinPosition = async (positionIndex: number) => {
+    if (!project || !user) return
+    
+    setJoiningPosition(positionIndex)
+    try {
+      const response = await fetch(`/api/projects/${project._id}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ positionIndex })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success) {
+        toast.success('Successfully applied to position!')
+      } else {
+        toast.error(data.error || 'Failed to join position')
+      }
+    } catch (error) {
+      console.error('Error joining position:', error)
+      toast.error('Failed to join position')
+    } finally {
+      setJoiningPosition(null)
     }
   }
 
@@ -365,7 +392,7 @@ export default function ProjectDetailPage() {
                     <h4 className="font-semibold mb-2">{position.title}</h4>
                     <p className="text-sm text-gray-600 mb-3">{position.description}</p>
                     {position.requirements.length > 0 && (
-                      <div>
+                      <div className="mb-3">
                         <p className="text-xs font-medium text-gray-500 mb-2">Required Skills:</p>
                         <div className="flex flex-wrap gap-1">
                           {position.requirements.map((req, reqIndex) => (
@@ -375,6 +402,16 @@ export default function ProjectDetailPage() {
                           ))}
                         </div>
                       </div>
+                    )}
+                    {user && user.id !== project.author?._id && (
+                      <Button 
+                        size="sm" 
+                        className="w-full bg-emerald-600 hover:bg-emerald-700"
+                        onClick={() => handleJoinPosition(index)}
+                        disabled={joiningPosition === index}
+                      >
+                        {joiningPosition === index ? 'Joining...' : 'Join Position'}
+                      </Button>
                     )}
                   </div>
                 ))}

@@ -69,6 +69,8 @@ export default function SideNav() {
   const pathname = usePathname()
   const { user } = useAuth()
   const [active, setActive] = useState("")
+  const [points, setPoints] = useState<number>(user?.points || 0)
+  const [level, setLevel] = useState<number>(user?.level || 1)
   
   useEffect(() => {
     // Initialize theme from localStorage
@@ -92,6 +94,55 @@ export default function SideNav() {
       setActive(activeItem.label)
     }
   }, [pathname, user?.role])
+
+  useEffect(() => {
+    // Fetch latest profile info (points/level) for display in the side nav.
+    // Use apiClient.getCurrentUserProfile which returns the current user's profile.
+    if (!user) return;
+
+    const fetchUserPoints = async () => {
+      try {
+        const response = await apiClient.getCurrentUserProfile<any>();
+        console.log('[SideNav] getCurrentUserProfile response:', response);
+        if (response && response.success && response.data) {
+          // response.data may be { user } or { points }
+          const profileUser = (response.data as any).user ?? response.data;
+          console.log('[SideNav] profileUser resolved:', profileUser);
+          if (profileUser) {
+            const newPoints = profileUser.points ?? profileUser.totalXP ?? profileUser.xp ?? user?.points ?? 0;
+            const newLevel = profileUser.level ?? user?.level ?? 1;
+            setPoints(newPoints);
+            setLevel(newLevel);
+          }
+        } else {
+          console.warn('[SideNav] getCurrentUserProfile did not return data or success=false');
+        }
+      } catch (error) {
+        console.error("Failed to fetch user points:", error);
+      }
+    };
+
+    fetchUserPoints();
+
+    // Also listen for explicit user updates dispatched from AuthProvider
+    const handleUserUpdated = (e: any) => {
+      try {
+        const updatedUser = e?.detail;
+        if (!updatedUser) return;
+        const newPoints = updatedUser.points ?? points;
+        const newLevel = updatedUser.level ?? level;
+        setPoints(newPoints);
+        setLevel(newLevel);
+      } catch (err) {
+        console.debug('Error handling user:updated in SideNav', err);
+      }
+    };
+    window.addEventListener('user:updated', handleUserUpdated as EventListener);
+
+    return () => {
+      window.removeEventListener('user:updated', handleUserUpdated as EventListener);
+    };
+  }, [user?.id, user?.username]);
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()
@@ -131,16 +182,16 @@ export default function SideNav() {
             <AvatarFallback className="text-xs">{getInitials(user?.displayName || user?.username || 'User')}</AvatarFallback>
           </Avatar>
           <div className="min-w-0">
-            <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1">
               <div className="truncate text-xs font-medium">{user?.displayName || user?.username || 'User'}</div>
-              <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-[10px] px-1">L{user?.level || 1}</Badge>
+              <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-[10px] px-1">L{level || 1}</Badge>
             </div>
-            <div className="text-[10px] text-muted-foreground">{user?.points || 0} XP</div>
+            <div className="text-[10px] text-muted-foreground">{points || 0} XP</div>
           </div>
         </div>
         <div className="mt-2">
-          <Progress value={calculateProgress(user?.points || 0, user?.level || 1)} className="[&>div]:bg-emerald-600 h-1" />
-          <div className="mt-1 text-[9px] text-muted-foreground">{getXPToNext(user?.points || 0, user?.level || 1)} XP to next</div>
+          <Progress value={calculateProgress(points || 0, level || 1)} className="[&>div]:bg-emerald-600 h-1" />
+          <div className="mt-1 text-[9px] text-muted-foreground">{getXPToNext(points || 0, level || 1)} XP to next</div>
         </div>
       </Card>
 

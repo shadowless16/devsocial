@@ -49,7 +49,7 @@ const NotificationSchema = new mongoose.Schema({
   timestamps: true
 })
 
-NotificationSchema.index({ recipient: 1, createdAt: -1 })
-NotificationSchema.index({ read: 1 })
+NotificationSchema.index({ recipient: 1, createdAt: -1 });
+NotificationSchema.index({ recipient: 1, read: 1 });
 
 export default mongoose.models.Notification || mongoose.model('Notification', NotificationSchema)

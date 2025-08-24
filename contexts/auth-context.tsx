@@ -174,6 +174,14 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         console.log('Raw userData.avatar:', userData.avatar);
         setUser(newUser);
         userCacheRef.current = newUser;
+        // Notify any non-React listeners (legacy code or third-party widgets)
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new CustomEvent('user:updated', { detail: newUser }));
+          } catch (e) {
+            console.debug('Could not dispatch user:updated event', e);
+          }
+        }
         lastFetchRef.current = Date.now();
         setLoading(false);
         
@@ -228,6 +236,13 @@ function AuthProviderInner({ children }: { children: React.ReactNode }) {
         console.log('Using fallback user:', { id: basicUser.id, username: basicUser.username, role: basicUser.role });
         setUser(basicUser);
         userCacheRef.current = basicUser;
+        if (typeof window !== 'undefined') {
+          try {
+            window.dispatchEvent(new CustomEvent('user:updated', { detail: basicUser }));
+          } catch (e) {
+            console.debug('Could not dispatch user:updated event', e);
+          }
+        }
         setLoading(false);
       });
     } else if (status === "unauthenticated") {

@@ -1,6 +1,8 @@
 "use client"
 
 import React, { useState } from 'react'
+import * as AuthContext from '@/contexts/auth-context'
+import FollowModal from '@/components/modals/follow-modal'
 import { MapPin, Calendar, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -8,7 +10,6 @@ import { Badge } from '@/components/ui/badge'
 import { FollowStats } from '@/components/shared/FollowStats'
 import { FollowButton } from '@/components/shared/FollowButton'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { useAuth } from '@/contexts/auth-context'
 import dynamic from 'next/dynamic'
 
 const SmartAvatar = dynamic(() => import('@/components/ui/smart-avatar').then(mod => ({ default: mod.SmartAvatar })), {
@@ -28,48 +29,57 @@ const RPMAvatarModal = dynamic(() => import('@/components/modals/rpm-avatar-moda
   ssr: false
 })
 
-interface SocialLink {
-  platform: string
-  icon: string
-  url: string
-}
+type ProfileHeaderProps = {
+  profile: {
+    name: string;
+    title: string;
+    location: string;
+    joinDate: string;
+    bio: string;
+    avatar: string;
+    techStack: string[];
+    socialLinks: { platform: string; icon: string; url: string }[];
+    userId: string;
+    username: string;
+    followersCount: number;
+    followingCount: number;
+    isFollowing: boolean;
+  };
+  onEdit: () => void;
+  isOwnProfile: boolean;
+  setProfileData: React.Dispatch<React.SetStateAction<any>>;
+};
 
-interface ProfileData {
-  name: string
-  title: string
-  location: string
-  joinDate: string
-  bio: string
-  avatar: string
-  techStack: string[]
-  socialLinks: SocialLink[]
-  userId?: string
-  username?: string
-  followersCount?: number
-  followingCount?: number
-  isFollowing?: boolean
-}
-
-interface ProfileHeaderProps {
-  profile: ProfileData
-  onEdit: () => void
-  isOwnProfile?: boolean
-  setProfileData?: React.Dispatch<React.SetStateAction<ProfileData>>
-}
-
-export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, setProfileData }: ProfileHeaderProps) {
+export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfileData }: ProfileHeaderProps) {
   const [isEditing, setIsEditing] = useState(false)
   const [showRPMModal, setShowRPMModal] = useState(false)
   const [showViewerModal, setShowViewerModal] = useState(false)
-  const { user: currentUser } = useAuth()
+  const { user: currentUser } = AuthContext.useAuth();
+  const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
+  const [followersCount, setFollowersCount] = useState(profile.followersCount);
+  const [followingCount, setFollowingCount] = useState(profile.followingCount);
+  const [isFollowModalOpen, setFollowModalOpen] = useState(false);
+  const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers');
 
   const handleEditToggle = () => {
     setIsEditing(!isEditing)
     onEdit()
   }
 
+  const openFollowModal = (type: 'followers' | 'following') => {
+    setFollowModalType(type);
+    setFollowModalOpen(true);
+  };
+
+  // Keep counts in sync when profile prop updates
+  React.useEffect(() => {
+    setFollowersCount(profile.followersCount || 0);
+    setFollowingCount(profile.followingCount || 0);
+    setIsFollowing(profile.isFollowing || false);
+  }, [profile.followersCount, profile.followingCount, profile.isFollowing]);
+
   return (
-    <Card className="mb-3">
+    <Card className="w-full mb-3">
       <CardContent className="p-4">
         <div className="flex items-start gap-4">
           {/* Profile Photo */}
@@ -116,10 +126,10 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
                       size="sm"
                       onFollowChange={(isFollowing, delta) => {
                         if (setProfileData) {
-                          setProfileData(prev => ({
+                          setProfileData((prev: any) => ({
                             ...prev,
                             isFollowing,
-                            followersCount: Math.max(0, (prev.followersCount || 0) + delta)
+                            followersCount: Math.max(0, (prev?.followersCount || 0) + delta)
                           }));
                         }
                       }}
@@ -145,9 +155,9 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
               <p className="text-xs sm:text-sm text-foreground leading-relaxed mb-3 overflow-hidden" style={{display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical'}}>{profile.bio}</p>
             )}
 
-            {/* Follow Stats */}
-            {profile.userId && profile.username && (
-              <div className="mb-3">
+            {/* Follow Stats - Always show for own profile */}
+            <div className="mb-3">
+              {profile.userId && profile.username ? (
                 <FollowStats
                   key={profile.userId}
                   userId={profile.userId}
@@ -156,8 +166,23 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
                   initialFollowingCount={profile.followingCount || 0}
                   className="text-xs"
                 />
-              </div>
-            )}
+              ) : isOwnProfile ? (
+                <div className="flex items-center space-x-6">
+                  <button onClick={() => openFollowModal('followers')} className="text-center">
+                    <p className="font-bold text-lg">{followersCount}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Connections</p>
+                  </button>
+                  <button onClick={() => openFollowModal('following')} className="text-center">
+                    <p className="font-bold text-lg">{followingCount}</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Connected</p>
+                  </button>
+                </div>
+              ) : (
+                <div className="text-xs text-gray-500">
+                  Debug: userId={profile.userId}, username={profile.username}
+                </div>
+              )}
+            </div>
 
             {/* Tech Stack */}
             {profile.techStack && profile.techStack.length > 0 && (
@@ -202,7 +227,7 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
                 console.log('Avatar saved successfully')
                 // Update profile data
                 if (setProfileData) {
-                  setProfileData(prev => ({ ...prev, avatar: avatarUrl }))
+                  setProfileData((prev: any) => ({ ...prev, avatar: avatarUrl }))
                 }
               }
             } catch (error) {
@@ -210,6 +235,15 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile = false, s
             }
             setShowRPMModal(false)
           }}
+        />
+      )}
+
+      {isFollowModalOpen && (
+        <FollowModal
+          isOpen={isFollowModalOpen}
+          onClose={() => setFollowModalOpen(false)}
+          username={profile.username}
+          type={followModalType}
         />
       )}
     </Card>

@@ -31,7 +31,7 @@ export async function GET(request: NextRequest) {
 
     // Transform activities to match frontend format
     const transformedActivities = activities.map(activity => ({
-      type: activity.type,
+      type: activity.type === 'post_creation' ? 'post' : activity.type,
       title: getActivityTitle(activity.type),
       description: activity.description || getActivityDescription(activity.type),
       content: activity.metadata?.content,

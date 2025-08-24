@@ -370,17 +370,15 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
 
   if (!isOpen) return null;
 
-  const handleSubmit = (e: FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: FormEvent) => {
+    event.preventDefault(); // Prevent page refresh
     const postData = {
       content,
       tags,
+      mediaUrls,
       isAnonymous,
-      imageUrl: imageUrl || null,
-      imageUrls: mediaUrls.filter(url => !url.endsWith('.mp4') && !url.endsWith('.webm')),
-      videoUrls: mediaUrls.filter(url => url.endsWith('.mp4') || url.endsWith('.webm')),
       postType,
-      challenge: selectedChallenge
+      selectedChallenge,
     };
     console.log('[PostModal] Submitting post data:', postData);
     onSubmit(postData);

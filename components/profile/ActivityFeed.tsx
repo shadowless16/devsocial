@@ -30,37 +30,50 @@ export default function ActivityFeed({ activities }: ActivityFeedProps) {
   const [filter, setFilter] = useState('all')
 
   const filterOptions = [
-    { value: 'all', label: 'All Activity', icon: Activity },
-    { value: 'posts', label: 'Posts', icon: FileText },
-    { value: 'challenges', label: 'Challenges', icon: Target },
-    { value: 'comments', label: 'Comments', icon: MessageCircle }
+  { value: 'all', label: 'All Activity', icon: Activity },
+  { value: 'post', label: 'Posts', icon: FileText },
+  { value: 'challenge', label: 'Challenges', icon: Target },
+  { value: 'comment', label: 'Comments', icon: MessageCircle }
   ]
 
   const getActivityIcon = (type: string) => {
-    switch (type) {
-      case 'post': return FileText
-      case 'challenge': return Target
-      case 'comment': return MessageCircle
-      case 'like': return Heart
-      case 'share': return Share2
-      default: return Activity
-    }
+    const t = (type || '').toLowerCase()
+    if (t.includes('post')) return FileText
+    if (t.includes('challenge')) return Target
+    if (t.includes('comment')) return MessageCircle
+    if (t.includes('like')) return Heart
+    if (t.includes('share')) return Share2
+    return Activity
   }
 
   const getActivityColor = (type: string) => {
-    switch (type) {
-      case 'post': return 'text-blue-600'
-      case 'challenge': return 'text-green-600'
-      case 'comment': return 'text-purple-600'
-      case 'like': return 'text-red-600'
-      case 'share': return 'text-orange-600'
-      default: return 'text-muted-foreground'
+    const t = (type || '').toLowerCase()
+    if (t.includes('post')) return 'text-blue-600'
+    if (t.includes('challenge')) return 'text-green-600'
+    if (t.includes('comment')) return 'text-purple-600'
+    if (t.includes('like')) return 'text-red-600'
+    if (t.includes('share')) return 'text-orange-600'
+    return 'text-muted-foreground'
+  }
+
+  const activityMatchesFilter = (activityType: string, f: string) => {
+    if (!f || f === 'all') return true
+    const t = (activityType || '').toLowerCase()
+    switch (f) {
+      case 'post':
+        return t.includes('post')
+      case 'challenge':
+        return t.includes('challenge')
+      case 'comment':
+        return t.includes('comment')
+      default:
+        return t === f
     }
   }
 
-  const filteredActivities = filter === 'all' 
-    ? activities 
-    : activities.filter(activity => activity.type === filter.slice(0, -1))
+  const filteredActivities = filter === 'all'
+    ? activities
+    : activities.filter(activity => activityMatchesFilter(activity.type, filter))
 
   return (
     <Card className="w-full max-w-full overflow-hidden">

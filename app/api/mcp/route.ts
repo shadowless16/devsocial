@@ -5,6 +5,44 @@ import User from '@/models/User'
 export async function POST(request: NextRequest) {
   try {
     const { tool, args } = await request.json()
+
+    if (tool === 'get_leaderboard') {
+      await connectDB()
+      const limit = args?.limit || 10
+      const timeframe = args?.timeframe || 'all-time'
+
+      let timeFilter = {}
+      if (timeframe === 'weekly') {
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+        timeFilter = { lastActive: { $gte: weekAgo } }
+      } else if (timeframe === 'monthly') {
+        const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+        timeFilter = { lastActive: { $gte: monthAgo } }
+      }
+
+      const users = await User.find(timeFilter)
+        .select('username displayName firstName lastName avatar points level badges followersCount followingCount')
+        .sort({ points: -1 })
+        .limit(limit)
+        .lean()
+
+      const leaderboard = users.map((user: any, index) => ({
+        _id: user._id.toString(),
+        user: {
+          _id: user._id.toString(),
+          username: user.username,
+          displayName: user.displayName ||
+            (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username),
+          avatar: user.avatar,
+          level: user.level
+        },
+        totalXP: user.points,
+        rank: index + 1,
+        level: user.level
+      }))
+
+      return NextResponse.json(leaderboard)
+    }
     
     if (tool === 'get_growth_metrics') {
       await connectDB()

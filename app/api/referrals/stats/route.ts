@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server"
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 import { authMiddleware } from "@/middleware/auth"
-import { ReferralSystem } from "@/utils/referral-system"
+import { ReferralSystemFixed } from "@/utils/referral-system-fixed"
 
 
 export async function GET(request: NextRequest) {
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     }
 
     const userId = authResult.user!.id
-    const stats = await ReferralSystem.getReferralStats(userId)
+    const stats = await ReferralSystemFixed.getReferralStats(userId)
 
     return NextResponse.json({
       success: true,

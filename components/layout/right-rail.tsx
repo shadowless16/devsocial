@@ -99,13 +99,46 @@ function Trends() {
               <div key={topic.tag} className="flex items-center justify-between py-1">
                 <div className="flex items-center space-x-2">
                   <span className="text-emerald-600 font-medium text-sm">#{topic.tag}</span>
+
+                  {/* nicer React-friendly SVG icons instead of emojis */}
                   {topic.trend === "up" ? (
-                    <span className="text-green-500 text-xs">📈</span>
+                    <svg
+                      className="w-3 h-3 text-green-500"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      role="img"
+                    >
+                      <title>Trending up</title>
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
                   ) : topic.trend === "down" ? (
-                    <span className="text-red-500 text-xs">📉</span>
+                    <svg
+                      className="w-3 h-3 text-red-500 transform rotate-180"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      aria-hidden="true"
+                      role="img"
+                    >
+                      <title>Trending down</title>
+                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+                      <polyline points="17 6 23 6 23 12" />
+                    </svg>
                   ) : null}
                 </div>
-                <div className="text-sm font-semibold text-gray-900">{topic.posts.toLocaleString()}</div>
+
+                <div className="text-sm font-semibold text-gray-900">
+                  {topic.posts.toLocaleString()}
+                </div>
               </div>
             ))}
           </>
@@ -124,7 +157,9 @@ function TopDevs() {
       try {
         const response = await apiClient.getLeaderboard({ limit: "3", type: "all-time" })
         if (response.success && response.data) {
-          setTopDevelopers((response.data as any).leaderboard || [])
+          const lb = (response.data as any).leaderboard || []
+          console.debug("[RightRail] leaderboard response:", lb)
+          setTopDevelopers(lb)
         }
       } catch (error) {
         console.error("Failed to fetch leaderboard:", error)
@@ -148,9 +183,14 @@ function TopDevs() {
         ) : topDevelopers.length === 0 ? (
           <div className="text-xs text-muted-foreground">No developers yet</div>
         ) : (
-          topDevelopers.map((dev, i) => {
+          <>
+            {topDevelopers.map((dev, i) => {
             const username = dev.user?.username || dev.username
             const displayName = dev.user?.displayName || dev.displayName || username
+            // Resolve XP from multiple possible shapes returned by different leaderboard APIs
+            const rawXp = dev.user?.points ?? dev.points ?? dev.totalXP ?? dev.xp ?? dev.totalXp ?? 0
+            const xp = typeof rawXp === 'number' ? rawXp : parseInt(rawXp || '0', 10) || 0
+            const formattedXp = xp > 999 ? `${(xp / 1000).toFixed(1)}k` : xp.toLocaleString()
             return (
               <div key={username} className="flex items-center gap-2">
                 <div className="text-[10px] w-3 text-muted-foreground">{i + 1}</div>
@@ -179,11 +219,12 @@ function TopDevs() {
                     onClick={() => window.location.href = `/profile/${username}`}
                   >@{username}</div>
                 </div>
-                <div className="text-emerald-700 text-xs">{dev.user?.points || dev.points || 0}</div>
+                <div className="text-emerald-700 text-xs">{formattedXp}</div>
                 <div className="text-[10px] text-muted-foreground">XP</div>
               </div>
             )
-          })
+            })}
+          </>
         )}
       </CardContent>
     </Card>

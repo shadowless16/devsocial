@@ -7,7 +7,7 @@ import { MongoClient } from "mongodb";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
-import { NextResponse, type NextRequest } from "next/server";
+
 import { SessionCacheService } from "@/lib/session-cache";
  
 declare module "next-auth" {
@@ -113,7 +113,7 @@ export const authOptions: AuthOptions = {
   debug: process.env.NODE_ENV === 'development',
 };
 
-export interface AuthenticatedRequest extends NextRequest {
+export interface AuthenticatedRequest extends Request {
   user: {
     id: string;
     username: string;
@@ -122,27 +122,7 @@ export interface AuthenticatedRequest extends NextRequest {
   };
 }
 
-export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
-  return async (req: NextRequest) => {
-    console.log(`[Middleware] Protecting route: ${req.nextUrl.pathname}`);
-    const session = await getServerSession(authOptions);
-    if (!session || !session.user) {
-      console.log("[Middleware] Failed: No session found.");
-      return NextResponse.json({ success: false, message: "Authentication required." }, { status: 401 });
-    }
-
-    const authenticatedReq = req as AuthenticatedRequest;
-    authenticatedReq.user = {
-      id: session.user.id,
-      username: session.user.username,
-      email: session.user.email || "",
-      role: session.user.role,
-    };
-
-    console.log(`[Middleware] Success: User ${session.user.username} authenticated.`);
-    return handler(authenticatedReq);
-  };
-}
+export const auth = NextAuth(authOptions);
 
 // Utility functions for auth
 export class AuthService {

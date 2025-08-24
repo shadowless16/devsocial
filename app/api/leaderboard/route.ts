@@ -37,13 +37,13 @@ export async function GET(request: NextRequest) {
         username: user.username,
         displayName: user.displayName || 
           (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username),
-        avatar: user.avatar,
-        level: user.level
+        avatar: user.avatar || "/placeholder.svg", // Use placeholder image if avatar is missing
+        level: user.level || 1, // Default to level 1 if not present
       },
-      totalXP: user.points,
+      totalXP: user.points || 0, // Default to 0 XP if not present
       rank: index + 1,
-      level: user.level
-    }))
+      level: user.level || 1, // Also ensure this is defaulted
+    }));
 
     const totalUsers = await User.countDocuments(timeFilter)
 

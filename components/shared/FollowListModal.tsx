@@ -318,12 +318,13 @@ export function FollowListModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-lg max-h-[700px] flex flex-col">
+      {/* Use viewport-based max height so the modal never exceeds the screen, and keep it responsive */}
+  <DialogContent className="max-w-lg w-full max-h-[90vh] sm:max-h-[80vh] flex flex-col overflow-hidden">
         <DialogHeader className="flex-shrink-0">
           <DialogTitle>@{username}</DialogTitle>
         </DialogHeader>
         
-        <div className="flex-1 flex flex-col min-h-0">
+  <div className="flex-1 flex flex-col min-h-0">
           <Tabs value={activeTab} onValueChange={handleTabChange} className="flex-1 flex flex-col">
             <TabsList className="grid w-full grid-cols-2 flex-shrink-0">
               <TabsTrigger value="followers">
@@ -355,7 +356,8 @@ export function FollowListModal({
             </div>
           
             <TabsContent value="followers" className="flex-1 flex flex-col mt-4">
-              <div className="flex-1 overflow-y-auto">
+              {/* Scrollable pane with padding so items never overflow the viewport */}
+              <div className="flex-1 overflow-y-auto py-2 px-2 min-h-0">
                 {searchQuery ? (
                   renderUserList(filteredFollowers, false, false, () => {})
                 ) : (
@@ -365,7 +367,7 @@ export function FollowListModal({
             </TabsContent>
             
             <TabsContent value="following" className="flex-1 flex flex-col mt-4">
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto py-2 px-2 min-h-0">
                 {searchQuery ? (
                   renderUserList(filteredFollowing, false, false, () => {})
                 ) : (

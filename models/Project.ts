@@ -60,6 +60,21 @@ const ProjectSchema = new mongoose.Schema({
     requirements: [{
       type: String,
       trim: true
+    }],
+    applicants: [{
+      user: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      appliedAt: {
+        type: Date,
+        default: Date.now
+      },
+      status: {
+        type: String,
+        enum: ['pending', 'accepted', 'rejected'],
+        default: 'pending'
+      }
     }]
   }],
   status: {
