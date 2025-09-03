@@ -265,7 +265,6 @@ export default function PostCard({
               {/* Image Display */}
               {imageUrl && (
                 <div className="mb-2 md:mb-3 rounded-lg overflow-hidden">
-                  {console.log('[PostCard] Rendering single image:', { imageUrl, postId })}
                   <img
                     src={imageUrl}
                     alt="Post image"
@@ -297,7 +296,6 @@ export default function PostCard({
               {/* Multiple Images */}
               {imageUrls && imageUrls.length > 0 && (
                 <div className="mb-2 md:mb-3">
-                  {console.log('[PostCard] Rendering images:', { imageUrls, postId })}
                   {imageUrls.length === 1 ? (
                     <div className="rounded-lg overflow-hidden">
                       <img
