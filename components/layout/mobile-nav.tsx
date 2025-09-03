@@ -132,9 +132,10 @@ export function MobileNav({ className }: MobileNavProps) {
               })
               
               if (response.ok) {
+                const json = await response.json();
+                const createdPost = json?.data?.post || json?.post || json?.data || {}
+                try { window.dispatchEvent(new CustomEvent('post:created', { detail: createdPost })) } catch (e) { console.debug('Failed to dispatch post:created', e) }
                 setShowCreatePost(false)
-                // Refresh the page to show new post
-                window.location.reload()
               } else {
                 console.error('Failed to create post')
               }

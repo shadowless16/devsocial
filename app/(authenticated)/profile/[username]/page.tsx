@@ -48,7 +48,22 @@ export default function UserProfile() {
         console.log('User data:', user); // Debug log
         
         // Get recent posts from user data
-        const activitiesData = user.recentPosts || []
+        const recentPosts = user.recentPosts || []
+        
+        // Normalize recent posts to the ActivityFeed shape
+        const activitiesData = recentPosts.map((post: any) => ({
+          type: 'post',
+          title: post.title || 'New post',
+          description: post.excerpt || post.summary || '',
+          content: post.content || post.body || post.text || '',
+          timestamp: post.createdAt ? new Date(post.createdAt).toLocaleString() : 'Unknown',
+          xpEarned: post.xpAwarded || post.xp || undefined,
+          engagement: {
+            likes: post.likesCount || post.likes || 0,
+            comments: post.commentsCount || post.comments || 0,
+            shares: post.shares || 0
+          }
+        }))
 
         const profileData = {
           name: user.displayName || user.username,

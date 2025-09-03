@@ -42,23 +42,55 @@ export const authOptions: AuthOptions = {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        await connectDB();
-        const user = await UserModel.findOne({
-          $or: [{ email: credentials?.usernameOrEmail }, { username: credentials?.usernameOrEmail }],
-        });
-        if (!user || !credentials?.password) {
-          throw new Error("Invalid credentials");
+        try {
+          if (!credentials?.usernameOrEmail || !credentials?.password) {
+            console.log("[Auth] Missing credentials");
+            return null;
+          }
+
+          // Retry connection up to 3 times
+          let retries = 3;
+          let user = null;
+          
+          while (retries > 0 && !user) {
+            try {
+              await connectDB();
+              
+              user = await UserModel.findOne({
+                $or: [{ email: credentials.usernameOrEmail }, { username: credentials.usernameOrEmail }],
+              }).maxTimeMS(5000);
+              
+              break;
+            } catch (dbError) {
+              retries--;
+              console.log(`[Auth] DB connection attempt failed, retries left: ${retries}`);
+              if (retries === 0) throw dbError;
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+          
+          if (!user) {
+            console.log("[Auth] User not found:", credentials.usernameOrEmail);
+            return null;
+          }
+
+          const isValid = await bcrypt.compare(credentials.password, user.password);
+          if (!isValid) {
+            console.log("[Auth] Invalid password for user:", credentials.usernameOrEmail);
+            return null;
+          }
+
+          console.log("[Auth] Login successful for user:", user.username);
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            username: user.username,
+            role: user.role,
+          };
+        } catch (error) {
+          console.error("[Auth] Authorization error:", error.message);
+          return null;
         }
-        const isValid = await bcrypt.compare(credentials.password, user.password);
-        if (!isValid) {
-          throw new Error("Invalid credentials");
-        }
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          username: user.username,
-          role: user.role,
-        };
       },
     }),
   ],

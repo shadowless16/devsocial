@@ -288,10 +288,18 @@ function CreateButton() {
   const handleCreatePost = async (postData: any) => {
     try {
       const response = await apiClient.createPost(postData)
-      if (response.success) {
+      if (response.success && response.data) {
+        const createdPost = (response.data as any).post || response.data
+        // Dispatch optimistic update event for feeds to consume
+        try {
+          window.dispatchEvent(new CustomEvent('post:created', { detail: createdPost }))
+        } catch (e) {
+          console.debug('Failed to dispatch post:created event', e)
+        }
+
         toast({ title: "Success", description: "Post created successfully!" })
         setShowPostModal(false)
-        window.location.reload()
+        // No full reload - optimistic UI will update feed
       }
     } catch (error: any) {
       toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
@@ -324,11 +332,17 @@ function NotificationButton() {
   return (
     <Button 
       variant="secondary" 
-      className="flex-1 gap-1 text-xs h-7"
+      className="flex-1 gap-1 text-xs h-7 relative"
       onClick={() => router.push('/notifications')}
     >
       <Bell className="h-3 w-3" />
-      <span>{unreadCount > 0 ? unreadCount : '0'}</span>
+      {/* Show badge only when there are unread notifications. This avoids a constant "1" being shown
+          when the API returned a limited result previously. */}
+      {unreadCount > 0 ? (
+        <span className="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-medium leading-none rounded-full bg-red-600 text-white">
+          {unreadCount > 99 ? '99+' : unreadCount}
+        </span>
+      ) : null}
     </Button>
   )
 }

@@ -18,6 +18,7 @@ import { Loader2, Users, Search, X } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/contexts/auth-context";
 import { GAMIFIED_TERMS } from "@/lib/gamified-terms";
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface User {
   _id: string;
@@ -357,22 +358,30 @@ export function FollowListModal({
           
             <TabsContent value="followers" className="flex-1 flex flex-col mt-4">
               {/* Scrollable pane with padding so items never overflow the viewport */}
-              <div className="flex-1 overflow-y-auto py-2 px-2 min-h-0">
-                {searchQuery ? (
-                  renderUserList(filteredFollowers, false, false, () => {})
-                ) : (
-                  renderUserList(followers, loadingFollowers, hasMoreFollowers, loadMoreFollowers)
-                )}
+              <div className="flex-1 py-2 px-2 min-h-0">
+                <ScrollArea className="h-full">
+                  <div className="p-1">
+                    {searchQuery ? (
+                      renderUserList(filteredFollowers, false, false, () => {})
+                    ) : (
+                      renderUserList(followers, loadingFollowers, hasMoreFollowers, loadMoreFollowers)
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
             </TabsContent>
             
             <TabsContent value="following" className="flex-1 flex flex-col mt-4">
-              <div className="flex-1 overflow-y-auto py-2 px-2 min-h-0">
-                {searchQuery ? (
-                  renderUserList(filteredFollowing, false, false, () => {})
-                ) : (
-                  renderUserList(following, loadingFollowing, hasMoreFollowing, loadMoreFollowing)
-                )}
+              <div className="flex-1 py-2 px-2 min-h-0">
+                <ScrollArea className="h-full">
+                  <div className="p-1">
+                    {searchQuery ? (
+                      renderUserList(filteredFollowing, false, false, () => {})
+                    ) : (
+                      renderUserList(following, loadingFollowing, hasMoreFollowing, loadMoreFollowing)
+                    )}
+                  </div>
+                </ScrollArea>
               </div>
             </TabsContent>
           </Tabs>

@@ -31,12 +31,13 @@ export async function GET(request: NextRequest) {
       .select('type title message read createdAt actionUrl data sender')
       .lean()
 
-    // Only count if needed (not for unread-only queries)
-    const unreadCount = unreadOnly ? notifications.length : 
-      await Notification.countDocuments({
-        recipient: session.user.id,
-        read: false
-      })
+    // Always compute the true unread count from the DB.
+    // Previously, when `unread=true` we returned notifications.length which was
+    // limited by the `limit` param (often 1) and made the unread badge stuck at 1.
+    const unreadCount = await Notification.countDocuments({
+      recipient: session.user.id,
+      read: false
+    })
 
     return NextResponse.json({
       success: true,

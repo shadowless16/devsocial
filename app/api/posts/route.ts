@@ -12,6 +12,9 @@ import { checkReferralMiddleware } from "@/utils/check-referral-middleware";
 import { processMentions } from "@/utils/mention-utils";
 import { hashPost } from "@/lib/canonicalizer";
 import { enqueueImprintJob } from "@/services/imprintQueue";
+import Activity from '@/models/Activity'
+import Notification from '@/models/Notification'
+import { getWebSocketServer } from '@/lib/websocket'
 
 // Only import mission models if needed
 let MissionProgress: any = null;
@@ -214,6 +217,20 @@ export async function POST(req: NextRequest) {
     // Process mentions in the post content
     await processMentions(content, newPost._id.toString(), authorId);
 
+    // Create an Activity record so the user's profile activity shows this post
+    try {
+      await Activity.create({
+        user: authorId,
+        type: 'post_created',
+        description: 'Created a new post',
+        metadata: { postId: newPost._id.toString(), content },
+        xpEarned: 0,
+      })
+    } catch (actErr) {
+      console.warn('Failed to create activity for new post:', actErr)
+      // Do not fail post creation if activity logging fails
+    }
+
     // Award XP for post creation
     const isFirstPost = await checkFirstTimeAction(authorId, "post");
     if (isFirstPost) {
@@ -283,6 +300,20 @@ export async function POST(req: NextRequest) {
         console.warn('Mission progress tracking failed, continuing with post creation:', missionError);
         // Don't fail the post creation if mission tracking fails
       }
+    }
+
+    // Send a lightweight notification to followers/author's sockets if available
+    try {
+      const wsServer = getWebSocketServer()
+      if (wsServer) {
+        wsServer.broadcast('post_created', {
+          postId: newPost._id.toString(),
+          authorId,
+          content: content.substring(0, 200),
+        })
+      }
+    } catch (wsErr) {
+      console.warn('Failed to emit websocket post_created event:', wsErr)
     }
 
     const responseData = {

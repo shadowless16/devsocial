@@ -65,6 +65,30 @@ export function Feed() {
       }
     };
     fetchPosts();
+
+    // Optimistic post created listener
+    const handlePostCreated = (e: any) => {
+      try {
+        const p = e?.detail;
+        if (!p) return;
+        const normalized = {
+          ...p,
+          id: p.id || p._id || p._id?.toString(),
+          isLiked: p.isLiked || false,
+          viewsCount: p.viewsCount || p.viewsCount || 0,
+          createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
+        } as Post;
+        setPosts(prev => [normalized, ...prev]);
+      } catch (err) {
+        console.debug('Failed to handle post:created', err);
+      }
+    };
+
+    window.addEventListener('post:created', handlePostCreated as EventListener);
+
+    return () => {
+      window.removeEventListener('post:created', handlePostCreated as EventListener);
+    };
   }, []);
 
   const fetchComments = async (postId: string) => {

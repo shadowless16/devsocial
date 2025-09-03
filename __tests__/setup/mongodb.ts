@@ -1,18 +1,31 @@
-import { MongoMemoryServer } from 'mongodb-memory-server'
 import mongoose from 'mongoose'
 import path from 'path'
 import os from 'os'
+let mongoServer: any = null
 
-let mongoServer: MongoMemoryServer | null = null
-
-// Configure global settings to cache MongoDB binary
-process.env.MONGOMS_DOWNLOAD_DIR = path.join(os.homedir(), '.cache', 'mongodb-binaries')
-process.env.MONGOMS_VERSION = '6.0.4'
-process.env.MONGOMS_DISABLE_POSTINSTALL = 'true'
+// If the user provides a MONGODB_TEST_URI or MONGODB_URI, prefer that
+// This avoids downloading MongoMemoryServer binaries in CI or local where a DB is available.
+const getEnvUri = () => process.env.MONGODB_TEST_URI || process.env.MONGODB_URI
 
 export const setupMongoDB = async () => {
+  const envUri = getEnvUri()
+  if (envUri) {
+    if (mongoose.connection.readyState === 0) {
+      await mongoose.connect(envUri)
+    }
+    return envUri
+  }
+
+  // Fallback to MongoMemoryServer only when no URI is provided
+  // Lazy import to avoid requiring the binary if unnecessary
+  const { MongoMemoryServer } = await import('mongodb-memory-server')
   if (mongoServer) return mongoServer.getUri()
-  
+
+  // Configure global settings to cache MongoDB binary
+  process.env.MONGOMS_DOWNLOAD_DIR = path.join(os.homedir(), '.cache', 'mongodb-binaries')
+  process.env.MONGOMS_VERSION = '6.0.4'
+  process.env.MONGOMS_DISABLE_POSTINSTALL = 'true'
+
   mongoServer = await MongoMemoryServer.create({
     binary: {
       version: '6.0.4',
@@ -23,7 +36,7 @@ export const setupMongoDB = async () => {
       dbName: 'test',
     },
   })
-  
+
   const uri = mongoServer.getUri()
   await mongoose.connect(uri)
   return uri
@@ -34,16 +47,16 @@ export const teardownMongoDB = async () => {
     await mongoose.disconnect()
   }
   if (mongoServer) {
-    await mongoServer.stop()
+    try { await mongoServer.stop() } catch (e) { /* ignore */ }
     mongoServer = null
   }
 }
 
 export const clearDatabase = async () => {
   if (mongoose.connection.readyState === 0) return
-  
+
   const collections = mongoose.connection.collections
   for (const key in collections) {
-    await collections[key].deleteMany({})
+    try { await collections[key].deleteMany({}) } catch (e) { /* ignore */ }
   }
 }

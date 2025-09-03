@@ -265,18 +265,39 @@ export default function PostCard({
               {/* Image Display */}
               {imageUrl && (
                 <div className="mb-2 md:mb-3 rounded-lg overflow-hidden">
+                  {console.log('[PostCard] Rendering single image:', { imageUrl, postId })}
                   <img
                     src={imageUrl}
                     alt="Post image"
                     className="w-full h-auto object-cover max-h-96 rounded-lg cursor-pointer"
                     onClick={() => postId && onClick?.(postId)}
+                    onError={(e) => {
+                      console.error('[PostCard] Single image failed to load:', imageUrl);
+                      console.error('[PostCard] Error event:', e);
+                    }}
+                    onLoad={() => {
+                      console.log('[PostCard] Single image loaded successfully:', imageUrl);
+                    }}
                   />
+                </div>
+              )}
+
+              {/* Debug info for images */}
+              {(imageUrl || (imageUrls && imageUrls.length > 0)) && (
+                <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                  <strong>DEBUG:</strong> Image data detected - imageUrl: {imageUrl || 'none'}, imageUrls: {imageUrls ? `[${imageUrls.length} items]` : 'none'}
+                  {imageUrls && imageUrls.length > 0 && (
+                    <div className="mt-1">
+                      URLs: {imageUrls.map((url, i) => `${i + 1}: ${url.substring(0, 50)}...`).join(', ')}
+                    </div>
+                  )}
                 </div>
               )}
 
               {/* Multiple Images */}
               {imageUrls && imageUrls.length > 0 && (
                 <div className="mb-2 md:mb-3">
+                  {console.log('[PostCard] Rendering images:', { imageUrls, postId })}
                   {imageUrls.length === 1 ? (
                     <div className="rounded-lg overflow-hidden">
                       <img
@@ -284,6 +305,13 @@ export default function PostCard({
                         alt="Post image"
                         className="w-full h-auto object-cover max-h-96 rounded-lg cursor-pointer"
                         onClick={() => postId && onClick?.(postId)}
+                        onError={(e) => {
+                          console.error('[PostCard] Image failed to load:', imageUrls[0]);
+                          console.error('[PostCard] Error event:', e);
+                        }}
+                        onLoad={() => {
+                          console.log('[PostCard] Image loaded successfully:', imageUrls[0]);
+                        }}
                       />
                     </div>
                   ) : (
@@ -304,6 +332,13 @@ export default function PostCard({
                             src={imageUrl}
                             alt={`Post image ${index + 1}`}
                             className="w-full h-full object-cover rounded-md"
+                            onError={(e) => {
+                              console.error(`[PostCard] Image ${index + 1} failed to load:`, imageUrl);
+                              console.error('[PostCard] Error event:', e);
+                            }}
+                            onLoad={() => {
+                              console.log(`[PostCard] Image ${index + 1} loaded successfully:`, imageUrl);
+                            }}
                           />
                         </div>
                       ))}

@@ -32,9 +32,16 @@ export default function LoginPage() {
       })
 
       if (result?.error) {
-        setError("Invalid credentials. Please try again.")
+        console.log("Login error:", result.error);
+        if (result.error === "CredentialsSignin") {
+          setError("Invalid username/email or password. Please try again.");
+        } else {
+          setError(`Login failed: ${result.error}`);
+        }
+      } else if (result?.ok) {
+        router.push("/home");
       } else {
-        router.push("/home")
+        setError("Login failed. Please try again.");
       }
     } catch (err: any) {
       setError(err.message || "Login failed")

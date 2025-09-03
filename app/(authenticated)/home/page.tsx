@@ -41,13 +41,29 @@ export default function HomePage() {
 
   const handleCreatePost = async (postData: any) => {
     try {
+      console.log('[HomePage] Creating post with data:', postData);
       const response = await apiClient.createPost(postData)
-      if (response.success) {
+      console.log('[HomePage] Create post response:', response);
+      if (response.success && response.data) {
+        const createdPost = (response.data as any).post || response.data
+        console.log('[HomePage] Created post data:', createdPost);
+        // Normalize createdPost to feed shape when possible
+        const normalized = {
+          ...createdPost,
+          id: createdPost.id || createdPost._id || createdPost.id,
+          author: createdPost.author || null,
+          isLiked: createdPost.isLiked || false,
+          viewsCount: createdPost.viewsCount || 0,
+          createdAt: createdPost.createdAt || new Date().toISOString()
+        }
+        console.log('[HomePage] Normalized post:', normalized);
+        // Optimistically insert at top
+        setPosts(prev => [normalized, ...prev])
         toast({ title: "Success", description: "Post created successfully!" })
         setShowPostModal(false)
-        fetchPosts()
       }
     } catch (error: any) {
+      console.error('[HomePage] Create post error:', error);
       toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
     }
   }
@@ -111,32 +127,41 @@ export default function HomePage() {
             </Button>
           </div>
         ) : (
-          posts.map((post) => (
-            <PostCard
-              key={post.id}
-              postId={post.id}
-              author={post.author?.displayName || post.author?.username}
-              handle={`@${post.author?.username}`}
-              level={`L${post.author?.level || 1}`}
-              xpDelta={post.xpAwarded}
-              content={post.content}
-              views={post.viewsCount}
-              liked={post.isLiked}
-              timestamp={post.createdAt}
-              avatar={post.author?.avatar}
-              currentUserId={user?.id}
-              authorId={post.author?.id}
-              likesCount={post.likesCount}
-              commentsCount={post.commentsCount}
-              imageUrl={post.imageUrl}
-              imageUrls={post.imageUrls}
-              videoUrls={post.videoUrls}
-              onDelete={handleDeletePost}
-              onLike={handleLikePost}
-              onComment={handleCommentPost}
-              onClick={handlePostClick}
-            />
-          ))
+          posts.map((post) => {
+            console.log('[HomePage] Rendering post:', {
+              id: post.id,
+              imageUrl: post.imageUrl,
+              imageUrls: post.imageUrls,
+              videoUrls: post.videoUrls,
+              hasImages: !!(post.imageUrl || (post.imageUrls && post.imageUrls.length > 0))
+            });
+            return (
+              <PostCard
+                key={post.id}
+                postId={post.id}
+                author={post.author?.displayName || post.author?.username}
+                handle={`@${post.author?.username}`}
+                level={`L${post.author?.level || 1}`}
+                xpDelta={post.xpAwarded}
+                content={post.content}
+                views={post.viewsCount}
+                liked={post.isLiked}
+                timestamp={post.createdAt}
+                avatar={post.author?.avatar}
+                currentUserId={user?.id}
+                authorId={post.author?.id}
+                likesCount={post.likesCount}
+                commentsCount={post.commentsCount}
+                imageUrl={post.imageUrl}
+                imageUrls={post.imageUrls}
+                videoUrls={post.videoUrls}
+                onDelete={handleDeletePost}
+                onLike={handleLikePost}
+                onComment={handleCommentPost}
+                onClick={handlePostClick}
+              />
+            );
+          })
         )}
       </div>
       

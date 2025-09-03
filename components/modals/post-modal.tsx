@@ -372,10 +372,25 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault(); // Prevent page refresh
+    
+    // Separate images and videos from mediaUrls
+    const imageUrls = mediaUrls.filter(url => !url.endsWith('.mp4') && !url.endsWith('.webm') && !url.endsWith('.mov') && !url.endsWith('.avi'));
+    const videoUrls = mediaUrls.filter(url => url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov') || url.endsWith('.avi'));
+    
+    console.log('[PostModal] Processing submission:', {
+      mediaUrls,
+      imageUrls,
+      videoUrls,
+      imageUrl,
+      content: content.substring(0, 100) + '...'
+    });
+    
     const postData = {
       content,
       tags,
-      mediaUrls,
+      imageUrl: imageUrl || null, // Include the manual image URL if provided
+      imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
+      videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
       isAnonymous,
       postType,
       selectedChallenge,
@@ -420,7 +435,12 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   };
 
   const handleMediaUploadComplete = (newUrls: string[]) => {
-    setMediaUrls(prev => [...prev, ...newUrls]);
+    console.log('[PostModal] Upload complete, adding URLs:', newUrls);
+    setMediaUrls(prev => {
+      const updated = [...prev, ...newUrls];
+      console.log('[PostModal] Updated mediaUrls:', updated);
+      return updated;
+    });
     setIsUploading(false);
   };
 
