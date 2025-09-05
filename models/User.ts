@@ -244,6 +244,17 @@ const UserSchema = new Schema<IUser>(
 );
 
 // --- START: COMBINED MIDDLEWARE ---
+// Small helper to normalize ReadyPlayerMe urls to png
+function normalizeReadyPlayerMe(avatar?: string) {
+  if (!avatar) return avatar || '';
+  let url = avatar.trim();
+  url = url.replace(/^['"]+|['"]+$/g, '');
+  if (url.includes('models.readyplayer.me')) {
+    const baseUrl = url.split('?')[0];
+    return baseUrl.replace(/\.glb$/i, '.png');
+  }
+  return url;
+}
 
 UserSchema.pre("save", function (next) {
   // 1. Level calculation logic
@@ -254,13 +265,22 @@ UserSchema.pre("save", function (next) {
   // 2. Generate avatar for new users (will be overridden during onboarding)
   if (this.isNew && !this.avatar) {
     const seed = this.username;
+    let generated = '';
     if (this.gender === "male") {
-      this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&gender=male&seed=${seed}`;
+      generated = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
     } else if (this.gender === "female") {
-      this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&gender=female&seed=${seed}`;
+      generated = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
     } else {
-      this.avatar = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&seed=${seed}`;
+      generated = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
     }
+    // mark as generated and store normalized png
+    this.avatar = normalizeReadyPlayerMe(generated);
+    this.isGenerated = true;
+  }
+
+  // Normalize avatar if changed or present
+  if (this.isModified('avatar') && this.avatar) {
+    this.avatar = normalizeReadyPlayerMe(this.avatar);
   }
 
   // 3. Generate referral code for new users

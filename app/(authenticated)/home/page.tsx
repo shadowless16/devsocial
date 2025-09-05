@@ -13,6 +13,7 @@ import StatPills from "@/components/stat-pills"
 import { PostModal } from "@/components/modals/post-modal"
 import { PostSkeleton } from "@/components/skeletons/post-skeleton"
 import { useToast } from "@/hooks/use-toast"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -41,12 +42,9 @@ export default function HomePage() {
 
   const handleCreatePost = async (postData: any) => {
     try {
-      console.log('[HomePage] Creating post with data:', postData);
       const response = await apiClient.createPost(postData)
-      console.log('[HomePage] Create post response:', response);
       if (response.success && response.data) {
         const createdPost = (response.data as any).post || response.data
-        console.log('[HomePage] Created post data:', createdPost);
         // Normalize createdPost to feed shape when possible
         const normalized = {
           ...createdPost,
@@ -56,14 +54,12 @@ export default function HomePage() {
           viewsCount: createdPost.viewsCount || 0,
           createdAt: createdPost.createdAt || new Date().toISOString()
         }
-        console.log('[HomePage] Normalized post:', normalized);
         // Optimistically insert at top
         setPosts(prev => [normalized, ...prev])
         toast({ title: "Success", description: "Post created successfully!" })
         setShowPostModal(false)
       }
     } catch (error: any) {
-      console.error('[HomePage] Create post error:', error);
       toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
     }
   }
@@ -127,41 +123,32 @@ export default function HomePage() {
             </Button>
           </div>
         ) : (
-          posts.map((post) => {
-            console.log('[HomePage] Rendering post:', {
-              id: post.id,
-              imageUrl: post.imageUrl,
-              imageUrls: post.imageUrls,
-              videoUrls: post.videoUrls,
-              hasImages: !!(post.imageUrl || (post.imageUrls && post.imageUrls.length > 0))
-            });
-            return (
-              <PostCard
-                key={post.id}
-                postId={post.id}
-                author={post.author?.displayName || post.author?.username}
-                handle={`@${post.author?.username}`}
-                level={`L${post.author?.level || 1}`}
-                xpDelta={post.xpAwarded}
-                content={post.content}
-                views={post.viewsCount}
-                liked={post.isLiked}
-                timestamp={post.createdAt}
-                avatar={post.author?.avatar}
-                currentUserId={user?.id}
-                authorId={post.author?.id}
-                likesCount={post.likesCount}
-                commentsCount={post.commentsCount}
-                imageUrl={post.imageUrl}
-                imageUrls={post.imageUrls}
-                videoUrls={post.videoUrls}
-                onDelete={handleDeletePost}
-                onLike={handleLikePost}
-                onComment={handleCommentPost}
-                onClick={handlePostClick}
-              />
-            );
-          })
+          posts.map((post) => (
+            <PostCard
+              key={post.id}
+              postId={post.id}
+              author={post.author?.displayName || post.author?.username}
+              handle={`@${post.author?.username}`}
+              level={`L${post.author?.level || 1}`}
+              xpDelta={post.xpAwarded}
+              content={post.content}
+              views={post.viewsCount}
+              liked={post.isLiked}
+              timestamp={post.createdAt}
+              avatar={post.author?.avatar}
+              currentUserId={user?.id}
+              authorId={post.author?.id}
+              likesCount={post.likesCount}
+              commentsCount={post.commentsCount}
+              imageUrl={post.imageUrl}
+              imageUrls={post.imageUrls}
+              videoUrls={post.videoUrls}
+              onDelete={handleDeletePost}
+              onLike={handleLikePost}
+              onComment={handleCommentPost}
+              onClick={handlePostClick}
+            />
+          ))
         )}
       </div>
       
@@ -208,9 +195,7 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
       <CardContent className="flex items-start gap-3 p-3 md:p-4">
         <Avatar className="h-8 w-8 md:h-9 md:w-9 ring-1 ring-emerald-100 flex-shrink-0">
           <AvatarImage 
-            src={user?.avatar?.includes('models.readyplayer.me') && user.avatar.endsWith('.glb') 
-              ? user.avatar.replace('.glb', '.png') 
-              : user?.avatar || "/placeholder.svg"} 
+            src={getAvatarUrl(user?.avatar)} 
             alt="Your avatar"
           />
           <AvatarFallback>

@@ -13,7 +13,10 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
   try {
     await connectDB()
 
-    const post = await Post.findById(params.id).populate("author", "username avatar level role").lean()
+    const post = await Post.findById(params.id)
+      .populate("author", "username avatar level role")
+      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded imprintStatus onChainProof')
+      .lean()
 
     if (!post) {
       return NextResponse.json(errorResponse("Post not found"), { status: 404 })

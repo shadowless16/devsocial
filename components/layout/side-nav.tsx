@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -174,9 +175,7 @@ export default function SideNav() {
         <div className="flex items-center gap-2">
           <Avatar className="h-6 w-6 ring-1 ring-emerald-100">
             <AvatarImage 
-              src={user?.avatar?.includes('models.readyplayer.me') && user.avatar.endsWith('.glb') 
-                ? user.avatar.replace('.glb', '.png') 
-                : user?.avatar || "/placeholder.svg"} 
+              src={getAvatarUrl(user?.avatar)}
               alt={user?.displayName || user?.username}
             />
             <AvatarFallback className="text-xs">{getInitials(user?.displayName || user?.username || 'User')}</AvatarFallback>

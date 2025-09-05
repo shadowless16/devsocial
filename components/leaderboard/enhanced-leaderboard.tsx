@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 import { Badge } from "@/components/ui/badge"
 import { Trophy, Medal, Award, Users, Zap, Target, TrendingUp, Crown } from "lucide-react"
 import { useRealtimeLeaderboard } from "@/hooks/use-realtime-leaderboard"
@@ -81,9 +82,7 @@ export function EnhancedLeaderboard() {
               _id: user._id,
               username: user.username,
               displayName: user.displayName,
-              avatar: user.avatar && user.avatar.includes('models.readyplayer.me') && user.avatar.endsWith('.glb')
-                ? user.avatar.replace('.glb', '.png')
-                : user.avatar || '/placeholder.svg',
+              avatar: getAvatarUrl(user.avatar) || '/placeholder.svg',
               level: user.level || 1,
             },
             totalXP: user.points || 0,
@@ -232,7 +231,7 @@ export function EnhancedLeaderboard() {
                         {/* Avatar */}
                         <UserLink username={entry.user.username}>
                           <Avatar className="w-8 h-8">
-                            <AvatarImage src={entry.user.avatar || "/placeholder.svg"} />
+                            <AvatarImage src={getAvatarUrl(entry.user.avatar) || "/placeholder.svg"} />
                             <AvatarFallback className="text-xs">
                               {(entry.user.displayName || entry.user.username || 'U')
                                 .split(" ")

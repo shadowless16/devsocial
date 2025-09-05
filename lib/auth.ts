@@ -88,7 +88,7 @@ export const authOptions: AuthOptions = {
             role: user.role,
           };
         } catch (error) {
-          console.error("[Auth] Authorization error:", error.message);
+          console.error("[Auth] Authorization error:", error instanceof Error ? error.message : String(error));
           return null;
         }
       },

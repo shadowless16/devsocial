@@ -377,14 +377,6 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     const imageUrls = mediaUrls.filter(url => !url.endsWith('.mp4') && !url.endsWith('.webm') && !url.endsWith('.mov') && !url.endsWith('.avi'));
     const videoUrls = mediaUrls.filter(url => url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.mov') || url.endsWith('.avi'));
     
-    console.log('[PostModal] Processing submission:', {
-      mediaUrls,
-      imageUrls,
-      videoUrls,
-      imageUrl,
-      content: content.substring(0, 100) + '...'
-    });
-    
     const postData = {
       content,
       tags,
@@ -395,7 +387,6 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
       postType,
       selectedChallenge,
     };
-    console.log('[PostModal] Submitting post data:', postData);
     onSubmit(postData);
     resetForm();
   };
@@ -435,12 +426,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   };
 
   const handleMediaUploadComplete = (newUrls: string[]) => {
-    console.log('[PostModal] Upload complete, adding URLs:', newUrls);
-    setMediaUrls(prev => {
-      const updated = [...prev, ...newUrls];
-      console.log('[PostModal] Updated mediaUrls:', updated);
-      return updated;
-    });
+    setMediaUrls(prev => [...prev, ...newUrls]);
     setIsUploading(false);
   };
 

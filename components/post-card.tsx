@@ -16,6 +16,7 @@ import { TipModal } from "@/components/modals/tip-modal"
 import { formatTimeAgo } from "@/lib/time-utils"
 import { PostMeta } from "@/components/shared/PostMeta"
 import { useAuth } from "@/contexts/auth-context"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 
 interface PostCardProps {
   author?: string
@@ -150,9 +151,7 @@ export default function PostCard({
             >
               <Avatar className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-emerald-100">
                 <AvatarImage 
-                  src={avatar?.includes('models.readyplayer.me') && avatar.endsWith('.glb') 
-                    ? avatar.replace('.glb', '.png') 
-                    : avatar || "/placeholder.svg"} 
+                  src={getAvatarUrl(avatar)} 
                   alt={author}
                 />
                 <AvatarFallback>
@@ -270,26 +269,7 @@ export default function PostCard({
                     alt="Post image"
                     className="w-full h-auto object-cover max-h-96 rounded-lg cursor-pointer"
                     onClick={() => postId && onClick?.(postId)}
-                    onError={(e) => {
-                      console.error('[PostCard] Single image failed to load:', imageUrl);
-                      console.error('[PostCard] Error event:', e);
-                    }}
-                    onLoad={() => {
-                      console.log('[PostCard] Single image loaded successfully:', imageUrl);
-                    }}
                   />
-                </div>
-              )}
-
-              {/* Debug info for images */}
-              {(imageUrl || (imageUrls && imageUrls.length > 0)) && (
-                <div className="mb-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
-                  <strong>DEBUG:</strong> Image data detected - imageUrl: {imageUrl || 'none'}, imageUrls: {imageUrls ? `[${imageUrls.length} items]` : 'none'}
-                  {imageUrls && imageUrls.length > 0 && (
-                    <div className="mt-1">
-                      URLs: {imageUrls.map((url, i) => `${i + 1}: ${url.substring(0, 50)}...`).join(', ')}
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -303,13 +283,6 @@ export default function PostCard({
                         alt="Post image"
                         className="w-full h-auto object-cover max-h-96 rounded-lg cursor-pointer"
                         onClick={() => postId && onClick?.(postId)}
-                        onError={(e) => {
-                          console.error('[PostCard] Image failed to load:', imageUrls[0]);
-                          console.error('[PostCard] Error event:', e);
-                        }}
-                        onLoad={() => {
-                          console.log('[PostCard] Image loaded successfully:', imageUrls[0]);
-                        }}
                       />
                     </div>
                   ) : (
@@ -330,13 +303,6 @@ export default function PostCard({
                             src={imageUrl}
                             alt={`Post image ${index + 1}`}
                             className="w-full h-full object-cover rounded-md"
-                            onError={(e) => {
-                              console.error(`[PostCard] Image ${index + 1} failed to load:`, imageUrl);
-                              console.error('[PostCard] Error event:', e);
-                            }}
-                            onLoad={() => {
-                              console.log(`[PostCard] Image ${index + 1} loaded successfully:`, imageUrl);
-                            }}
                           />
                         </div>
                       ))}

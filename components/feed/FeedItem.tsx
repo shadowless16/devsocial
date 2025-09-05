@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import dynamic from 'next/dynamic'
 import { TipModal } from "@/components/modals/tip-modal"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -348,13 +349,19 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         <div className="flex flex-row items-start gap-3 space-y-0 p-4 md:p-6">
         {post.isAnonymous ? (
           <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
-            <AvatarImage src={author.avatar || "/placeholder.svg"} alt={`${author.displayName} avatar`} />
+            <AvatarImage 
+              src={getAvatarUrl(author.avatar)} 
+              alt={`${author.displayName} avatar`} 
+            />
             <AvatarFallback>?</AvatarFallback>
           </Avatar>
         ) : (
           <UserLink username={author.username}>
             <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
-              <AvatarImage src={author.avatar || "/placeholder.svg"} alt={`${author.displayName} avatar`} />
+              <AvatarImage 
+                src={getAvatarUrl(author.avatar)} 
+                alt={`${author.displayName} avatar`} 
+              />
               <AvatarFallback>
                 {(author.displayName || author.username || "A")
                     .split(" ")
@@ -735,7 +742,9 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 <div className="bg-white border rounded-lg p-4">
                   <div className="flex items-start space-x-3">
                     <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarImage src={user?.avatar || '/placeholder.svg'} />
+                      <AvatarImage 
+                        src={getAvatarUrl(user?.avatar)} 
+                      />
                       <AvatarFallback>
                         {(user?.displayName || user?.username || 'U')
                           .split(' ')

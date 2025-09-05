@@ -98,13 +98,25 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json(errorResponse("User not found"), { status: 404 });
     }
 
+    // Normalize avatar helper (same logic as lib/avatar-utils but local to avoid import)
+    const normalizeAvatar = (a?: string | null): string | undefined => {
+      if (!a) return undefined;
+      let url = String(a).trim();
+      url = url.replace(/^['"]+|['"]+$/g, '');
+      if (url.includes('models.readyplayer.me')) {
+        const baseUrl = url.split('?')[0];
+        return baseUrl.replace(/\.glb$/i, '.png');
+      }
+      return url;
+    };
+
     const updateData: Partial<IUser> = {};
     if (displayName !== undefined) updateData.displayName = displayName;
     if (bio !== undefined) updateData.bio = bio;
     if (affiliation !== undefined) updateData.affiliation = affiliation;
     if (location !== undefined) updateData.location = location;
     if (website !== undefined) updateData.website = website;
-    if (avatar !== undefined) updateData.avatar = avatar;
+    if (avatar !== undefined) updateData.avatar = normalizeAvatar(avatar as string);
     if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
 
     if (currentPassword && newPassword) {

@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import dynamic from 'next/dynamic'
 import { TipModal } from "@/components/modals/tip-modal"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -496,7 +497,9 @@ export default function PostPage() {
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center space-x-3">
               <Avatar className="w-10 h-10 lg:w-12 lg:h-12">
-                <AvatarImage src={author.avatar || "/placeholder.svg"} />
+                <AvatarImage 
+                  src={getAvatarUrl(author.avatar)} 
+                />
                 <AvatarFallback>
                   {post.isAnonymous
                     ? "?"
@@ -706,7 +709,9 @@ export default function PostPage() {
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
                     <Avatar className="w-10 h-10 flex-shrink-0">
-                      <AvatarImage src={comment.author.avatar || '/placeholder.svg'} />
+                      <AvatarImage 
+                        src={getAvatarUrl(comment.author.avatar)} 
+                      />
                       <AvatarFallback className="bg-emerald-100 text-emerald-700">
                         {(comment.author.displayName || comment.author.username || "U")
                           .split(' ')
@@ -806,7 +811,9 @@ export default function PostPage() {
                             <div key={reply.id} className="pl-12 border-l-2 border-gray-100">
                               <div className="flex items-start space-x-3">
                                 <Avatar className="w-8 h-8 flex-shrink-0">
-                                  <AvatarImage src={reply.author.avatar || '/placeholder.svg'} />
+                                  <AvatarImage 
+                                    src={getAvatarUrl(reply.author.avatar)} 
+                                  />
                                   <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
                                     {(reply.author.displayName || reply.author.username || "U")
                                       .split(' ')
@@ -919,7 +926,9 @@ export default function PostPage() {
           <CardContent className="p-4">
             <div className="flex items-start space-x-3">
               <Avatar className="w-10 h-10 flex-shrink-0">
-                <AvatarImage src={user?.avatar || '/placeholder.svg'} />
+                <AvatarImage 
+                  src={getAvatarUrl(user?.avatar)} 
+                />
                 <AvatarFallback className="bg-emerald-100 text-emerald-700">
                   {(user?.displayName || "U")
                     .split(' ')

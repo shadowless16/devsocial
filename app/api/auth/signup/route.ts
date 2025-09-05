@@ -51,7 +51,20 @@ export async function POST(request: NextRequest) {
     // Generate initial avatar (will be updated during onboarding)
     const initialAvatar = generateAvatarFromUsername(username);
 
-    // Create user
+    // Validate referral code if provided
+    let referrerInfo = null
+    if (referralCode) {
+      try {
+        const validation = await ReferralSystemFixed.validateReferralCode(referralCode)
+        if (validation.valid && validation.referrer) {
+          referrerInfo = validation.referrer
+        }
+      } catch (error) {
+        console.error("Referral validation error:", error)
+      }
+    }
+
+    // Create user with proper referral fields
     const user = await User.create({
       username,
       email,
@@ -64,6 +77,8 @@ export async function POST(request: NextRequest) {
       avatar: initialAvatar,
       points: 10, // Starting XP
       badges: ["newcomer"], // Starting badge
+      registrationSource: referrerInfo ? "referral" : "direct",
+      referrer: referrerInfo ? referrerInfo.username : "",
     })
 
     // Award signup XP
@@ -82,8 +97,8 @@ export async function POST(request: NextRequest) {
       console.error("Auto-follow AkDavid error:", error)
     }
 
-    // Handle referral if code was provided
-    if (referralCode) {
+    // Handle referral if code was provided and validated
+    if (referralCode && referrerInfo) {
       try {
         const success = await ReferralSystemFixed.processReferralFromSignup(referralCode, user._id.toString())
         if (success) {

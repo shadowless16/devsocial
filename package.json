@@ -33,7 +33,8 @@
     "test:growth": "jest __tests__/analytics/growth-simple.test.ts",
     "test:mcp": "jest __tests__/analytics/mcp-growth.test.ts",
     "generate:test-data": "node scripts/generate-test-growth-data.js",
-    "dev:with-mcp": "concurrently \"npm run mcp:dev\" \"npm run dev\""
+  "dev:with-mcp": "concurrently \"npm run mcp:dev\" \"npm run dev\"",
+  "ts-node:run": "ts-node -r tsconfig-paths/register --files --transpile-only"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
@@ -145,6 +146,8 @@
     "postcss": "^8.5",
     "tailwindcss": "^3.4.17",
     "ts-jest": "^29.1.2",
+  "ts-node": "^10.9.2",
+  "tsconfig-paths": "^4.2.0",
     "typescript": "^5",
     "vitest": "^3.2.4"
   }

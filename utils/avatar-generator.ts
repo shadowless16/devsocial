@@ -22,7 +22,9 @@ export function generateReadyPlayerMeAvatar(options: AvatarOptions = {}): string
   const skin = skinTones[Math.floor(seedNum % skinTones.length)];
   const outfit = style || outfits[Math.floor(seedNum % outfits.length)];
   
-  return `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.glb?morphTargets=ARKit&textureAtlas=1024&lod=1&gender=${selectedGender}&hair=${hair}&skin=${skin}&outfit=${outfit}&seed=${seed || Date.now()}`;
+  // Return a normalized PNG avatar URL (ReadyPlayerMe supports .png thumbnails)
+  // We keep the seed/hints out of the URL to ensure consistent, cacheable PNG links
+  return `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
 }
 
 // Main avatar generation function

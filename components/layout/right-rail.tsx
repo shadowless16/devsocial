@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { apiClient } from "@/lib/api-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
 
@@ -199,12 +200,7 @@ function TopDevs() {
                   onClick={() => window.location.href = `/profile/${username}`}
                 >
                   <AvatarImage 
-                    src={(() => {
-                      const avatar = dev.user?.avatar || dev.avatar
-                      return avatar?.includes('models.readyplayer.me') && avatar.endsWith('.glb') 
-                        ? avatar.replace('.glb', '.png') 
-                        : avatar || "/placeholder.svg"
-                    })()} 
+                    src={getAvatarUrl(dev.user?.avatar || dev.avatar)} 
                     alt={displayName}
                   />
                   <AvatarFallback className="text-[10px]">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>

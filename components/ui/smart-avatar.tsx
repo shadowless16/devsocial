@@ -1,6 +1,7 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 import { User } from "lucide-react"
 
 interface SmartAvatarProps {
@@ -18,21 +19,13 @@ export function SmartAvatar({
   fallback,
   size 
 }: SmartAvatarProps) {
-  // Convert Ready Player Me .glb URLs to proper image URLs
-  let displaySrc = src
-  
-  if (src?.includes('models.readyplayer.me') && src.endsWith('.glb')) {
-    // Extract avatar ID from GLB URL and create proper image URL
-    const avatarId = src.split('/').pop()?.replace('.glb', '')
-    displaySrc = `https://models.readyplayer.me/${avatarId}.png`
-  }
+  // Normalize Ready Player Me URLs (handles query params and .glb -> .png)
+  let displaySrc = getAvatarUrl(src)
   
   // Fallback to placeholder if no src
   if (!displaySrc || displaySrc === '/placeholder.svg') {
     displaySrc = '/placeholder-user.jpg'
   }
-  
-  console.log('SmartAvatar render:', { src, displaySrc, className })
   
   return (
     <Avatar className={className}>
@@ -40,7 +33,6 @@ export function SmartAvatar({
         src={displaySrc} 
         alt={alt}
         onError={(e) => {
-          console.log('Avatar image failed to load:', displaySrc)
           // Try fallback image
           const target = e.target as HTMLImageElement
           if (target.src !== '/placeholder-user.jpg') {
