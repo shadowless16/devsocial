@@ -12,6 +12,7 @@ import {
   Settings,
   LogOut,
   Moon,
+  Compass,
   Search,
   MessageCircle,
   Shield,
@@ -30,6 +31,7 @@ interface MobileMenuProps {
 
 const menuItems = [
   { icon: Grid2X2, href: "/dashboard", label: "Dashboard" },
+  { icon: Compass, href: "/trending", label: "Trending" },
   { icon: Search, href: "/search", label: "Search" },
   { icon: ListOrdered, href: "/leaderboard", label: "Leaderboard" },    
   { icon: FolderOpen, href: "/projects", label: "Projects" },

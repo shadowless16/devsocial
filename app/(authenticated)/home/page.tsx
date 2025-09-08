@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { useAuth } from "@/contexts/auth-context"
 import { apiClient } from "@/lib/api-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -20,32 +20,59 @@ export default function HomePage() {
   const { toast } = useToast()
   const [posts, setPosts] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [page, setPage] = useState(1)
   const [showPostModal, setShowPostModal] = useState(false)
+  const observer = useRef<IntersectionObserver>()
 
   useEffect(() => {
-    fetchPosts()
+    fetchPosts(1, true)
   }, [])
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (pageNum: number, reset = false) => {
     try {
-      setLoading(true)
-      const response = await apiClient.getPosts()
+      if (reset) {
+        setLoading(true)
+      } else {
+        setLoadingMore(true)
+      }
+      
+      const response = await apiClient.getPosts({ 
+        page: pageNum.toString(), 
+        limit: "10" 
+      })
+      
       if (response.success && response.data) {
-        setPosts((response.data as any).posts || [])
+        const newPosts = (response.data as any).posts || []
+        setPosts(prev => reset ? newPosts : [...prev, ...newPosts])
+        setHasMore(newPosts.length === 10)
+        setPage(pageNum)
       }
     } catch (error) {
       console.error("Failed to fetch posts:", error)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
+
+  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
+    if (loading || loadingMore) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchPosts(page + 1)
+      }
+    })
+    if (node) observer.current.observe(node)
+  }, [loading, loadingMore, hasMore, page])
 
   const handleCreatePost = async (postData: any) => {
     try {
       const response = await apiClient.createPost(postData)
       if (response.success && response.data) {
         const createdPost = (response.data as any).post || response.data
-        // Normalize createdPost to feed shape when possible
         const normalized = {
           ...createdPost,
           id: createdPost.id || createdPost._id || createdPost.id,
@@ -54,7 +81,6 @@ export default function HomePage() {
           viewsCount: createdPost.viewsCount || 0,
           createdAt: createdPost.createdAt || new Date().toISOString()
         }
-        // Optimistically insert at top
         setPosts(prev => [normalized, ...prev])
         toast({ title: "Success", description: "Post created successfully!" })
         setShowPostModal(false)
@@ -68,7 +94,7 @@ export default function HomePage() {
     try {
       const response = await apiClient.deletePost(postId)
       if (response.success) {
-        setPosts(posts.filter(post => post.id !== postId))
+        setPosts(prev => prev.filter(post => post.id !== postId))
         toast({ title: "Success", description: "Post deleted successfully!" })
       }
     } catch (error: any) {
@@ -81,7 +107,7 @@ export default function HomePage() {
       const response = await apiClient.togglePostLike(postId)
       if (response.success && response.data) {
         const data = response.data as { liked: boolean; likesCount: number }
-        setPosts(posts.map(post => {
+        setPosts(prev => prev.map(post => {
           if (post.id === postId) {
             return {
               ...post,
@@ -123,32 +149,48 @@ export default function HomePage() {
             </Button>
           </div>
         ) : (
-          posts.map((post) => (
-            <PostCard
-              key={post.id}
-              postId={post.id}
-              author={post.author?.displayName || post.author?.username}
-              handle={`@${post.author?.username}`}
-              level={`L${post.author?.level || 1}`}
-              xpDelta={post.xpAwarded}
-              content={post.content}
-              views={post.viewsCount}
-              liked={post.isLiked}
-              timestamp={post.createdAt}
-              avatar={post.author?.avatar}
-              currentUserId={user?.id}
-              authorId={post.author?.id}
-              likesCount={post.likesCount}
-              commentsCount={post.commentsCount}
-              imageUrl={post.imageUrl}
-              imageUrls={post.imageUrls}
-              videoUrls={post.videoUrls}
-              onDelete={handleDeletePost}
-              onLike={handleLikePost}
-              onComment={handleCommentPost}
-              onClick={handlePostClick}
-            />
-          ))
+          posts.map((post, index) => {
+            const isLast = index === posts.length - 1
+            return (
+              <div key={post.id} ref={isLast ? lastPostElementRef : null}>
+                <PostCard
+                  postId={post.id}
+                  author={post.author?.displayName || post.author?.username}
+                  handle={`@${post.author?.username}`}
+                  level={`L${post.author?.level || 1}`}
+                  xpDelta={post.xpAwarded}
+                  content={post.content}
+                  views={post.viewsCount}
+                  liked={post.isLiked}
+                  timestamp={post.createdAt}
+                  avatar={post.author?.avatar}
+                  currentUserId={user?.id}
+                  authorId={post.author?.id}
+                  likesCount={post.likesCount}
+                  commentsCount={post.commentsCount}
+                  imageUrl={post.imageUrl}
+                  imageUrls={post.imageUrls}
+                  videoUrls={post.videoUrls}
+                  onDelete={handleDeletePost}
+                  onLike={handleLikePost}
+                  onComment={handleCommentPost}
+                  onClick={handlePostClick}
+                />
+              </div>
+            )
+          })
+        )}
+        
+        {loadingMore && (
+          <div className="flex justify-center py-4">
+            <Loader2 className="h-6 w-6 animate-spin" />
+          </div>
+        )}
+        
+        {!hasMore && posts.length > 0 && (
+          <div className="text-center py-4 text-muted-foreground">
+            You've reached the end of the feed!
+          </div>
         )}
       </div>
       

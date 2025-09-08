@@ -209,40 +209,100 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const [originalFile, setOriginalFile] = useState<File | null>(null);
   const imgRef = useRef<HTMLImageElement | null>(null);
 
-  // Auto code detection
-  const detectCodeContent = (text: string): boolean => {
+  // Auto code detection with language detection
+  const detectCodeContent = (text: string): { isCode: boolean; language?: string } => {
     const codePatterns = [
-      /```[\s\S]*?```/g, // Triple backticks
-      /function\s+\w+\s*\(/g, // Function definitions
-      /const\s+\w+\s*=/g, // Const declarations
-      /let\s+\w+\s*=/g, // Let declarations
-      /var\s+\w+\s*=/g, // Var declarations
-      /class\s+\w+/g, // Class definitions
-      /import\s+.*from/g, // Import statements
-      /export\s+(default\s+)?/g, // Export statements
-      /\{\s*[\w\s:,'"]*\}/g, // Object literals
-      /\[\s*[\w\s,'"]*\]/g, // Array literals
-      /;\s*$/gm, // Lines ending with semicolon
-      /<\w+[^>]*>/g, // HTML tags
-      /\$\w+/g, // Variables with $
-      /@\w+/g, // Decorators
-      /\/\*[\s\S]*?\*\//g, // Block comments
-      /\/\/.*$/gm, // Line comments
+      { pattern: /```[\s\S]*?```/g, language: null }, // Already formatted
+      { pattern: /function\s+\w+\s*\(/g, language: 'javascript' },
+      { pattern: /const\s+\w+\s*=/g, language: 'javascript' },
+      { pattern: /let\s+\w+\s*=/g, language: 'javascript' },
+      { pattern: /var\s+\w+\s*=/g, language: 'javascript' },
+      { pattern: /class\s+\w+/g, language: 'javascript' },
+      { pattern: /import\s+.*from/g, language: 'javascript' },
+      { pattern: /export\s+(default\s+)?/g, language: 'javascript' },
+      { pattern: /def\s+\w+\s*\(/g, language: 'python' },
+      { pattern: /print\s*\(/g, language: 'python' },
+      { pattern: /if\s+__name__\s*==\s*['"]__main__['"]/g, language: 'python' },
+      { pattern: /public\s+class\s+\w+/g, language: 'java' },
+      { pattern: /System\.out\.println/g, language: 'java' },
+      { pattern: /#include\s*<[^>]+>/g, language: 'cpp' },
+      { pattern: /std::/g, language: 'cpp' },
+      { pattern: /cout\s*<</g, language: 'cpp' },
+      { pattern: /package\s+main/g, language: 'go' },
+      { pattern: /fmt\./g, language: 'go' },
+      { pattern: /fn\s+main\s*\(/g, language: 'rust' },
+      { pattern: /println!/g, language: 'rust' },
+      { pattern: /<\?php/g, language: 'php' },
+      { pattern: /echo\s+/g, language: 'php' },
+      { pattern: /<\w+[^>]*>/g, language: 'html' },
+      { pattern: /\{\s*[\w-]+\s*:\s*[^}]+\}/g, language: 'css' },
+      { pattern: /SELECT\s+.*FROM/gi, language: 'sql' },
+      { pattern: /INSERT\s+INTO/gi, language: 'sql' },
+      { pattern: /;\s*$/gm, language: 'javascript' }, // Generic semicolon
+      { pattern: /\/\*[\s\S]*?\*\//g, language: null }, // Block comments
+      { pattern: /\/\/.*$/gm, language: null }, // Line comments
     ];
     
-    return codePatterns.some(pattern => pattern.test(text));
-  };
-
-  // Handle content change with auto code detection
-  const handleContentChange = (newContent: string) => {
-    setContent(newContent);
-    
-    // Auto-detect code and set post type if not already set to code or challenge
-    if (postType === 'normal' && newContent.trim().length > 10) {
-      if (detectCodeContent(newContent)) {
-        setPostType('code');
+    for (const { pattern, language } of codePatterns) {
+      if (pattern.test(text)) {
+        return { isCode: true, language };
       }
     }
+    
+    return { isCode: false };
+  };
+
+  // Auto-format code with detected language
+  const autoFormatCode = (text: string, detectedLanguage: string | null): string => {
+    // Don't format if already has code blocks
+    if (text.includes('```')) return text;
+    
+    // Check if the entire content looks like code
+    const lines = text.split('\n');
+    const codeLines = lines.filter(line => {
+      const trimmed = line.trim();
+      return trimmed.length > 0 && (
+        /^[\s]*[{}();]/.test(trimmed) ||
+        /[{}();]$/.test(trimmed) ||
+        /^[\s]*(const|let|var|function|class|def|public|private|if|for|while|return)\s/.test(trimmed)
+      );
+    });
+    
+    // If more than 30% of non-empty lines look like code, format the whole thing
+    const nonEmptyLines = lines.filter(line => line.trim().length > 0);
+    if (nonEmptyLines.length > 2 && codeLines.length / nonEmptyLines.length > 0.3) {
+      const language = detectedLanguage || 'javascript';
+      return `\`\`\`${language}\n${text}\n\`\`\``;
+    }
+    
+    return text;
+  };
+
+  // Handle content change with auto code detection and formatting
+  const handleContentChange = (newContent: string) => {
+    // Auto-detect code and format if needed
+    if (postType === 'normal' && newContent.trim().length > 20) {
+      const detection = detectCodeContent(newContent);
+      if (detection.isCode) {
+        const formattedContent = autoFormatCode(newContent, detection.language);
+        if (formattedContent !== newContent) {
+          setContent(formattedContent);
+          setPostType('code');
+          // Add language tag if detected
+          if (detection.language) {
+            const languageTag = `#${detection.language}`;
+            if (!tags.includes(languageTag) && tags.length < 5) {
+              setTags(prev => [...prev, languageTag]);
+            }
+          }
+          return;
+        } else {
+          setPostType('code');
+        }
+      }
+    }
+    
+    setContent(newContent);
   };
 
   // Reusable crop state reset function
@@ -517,7 +577,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <div className="flex justify-between text-xs text-muted-foreground">
               <span>{content.length}/2000 characters</span>
               {postType === 'code' && (
-                <span className="text-blue-600">Code detected automatically</span>
+                <span className="text-blue-600 flex items-center gap-1">
+                  ✨ Code detected & formatted automatically
+                </span>
               )}
             </div>
           </div>

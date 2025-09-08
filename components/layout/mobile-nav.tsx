@@ -12,7 +12,6 @@ import {
   User,
   Trophy,
   Grid2X2,
-  Compass,
   MessageCircle,
   Menu
 } from "lucide-react"
@@ -25,7 +24,6 @@ interface MobileNavProps {
 
 const navItems = [
   { icon: Home, href: "/home", label: "Home" },
-  { icon: Compass, href: "/trending", label: "Trending" },
   { icon: MessageCircle, href: "/feedback", label: "Feedback" },
   { icon: Plus, href: "#", label: "Create", isAction: true },
   { icon: User, href: "/profile", label: "Profile" },
