@@ -245,15 +245,17 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     
     for (const { pattern, language } of codePatterns) {
       if (pattern.test(text)) {
-        return { isCode: true, language };
+        // Only include language when it's a non-null string
+        if (language) return { isCode: true, language };
+        return { isCode: true };
       }
     }
-    
+
     return { isCode: false };
   };
 
   // Auto-format code with detected language
-  const autoFormatCode = (text: string, detectedLanguage: string | null): string => {
+  const autoFormatCode = (text: string, detectedLanguage?: string | null): string => {
     // Don't format if already has code blocks
     if (text.includes('```')) return text;
     
