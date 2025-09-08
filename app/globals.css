@@ -130,8 +130,9 @@
     ring-offset: 2px;
     ring-offset-color: hsl(var(--background));
   }
-  
+   
   /* Ensure text is visible in dark mode */
+  /*done */
   .dark input,
   .dark textarea,
   .dark select {
@@ -269,3 +270,13 @@
     }
   }
 }
+
+/* feat: add feedback submission and management system
+
+- Implemented feedback submission page with form validation and submission handling.
+- Created API routes for feedback management including GET, POST, and PATCH methods.
+- Added feedback comments functionality with associated API routes.
+- Developed admin feedback management capabilities with status updates and user permissions.
+- Enhanced UI components for feedback display and interaction.
+- Introduced new models for Feedback and FeedbackComment with necessary schema definitions.
+- Improved dark mode styles across various components for better accessibility and user experience. */
