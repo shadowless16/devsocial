@@ -16,6 +16,8 @@ interface MentionInputProps {
   className?: string
 }
 
+import { getAvatarUrl } from "@/lib/avatar-utils"
+
 export function MentionInput({ value, onChange, placeholder, className }: MentionInputProps) {
   const [suggestions, setSuggestions] = useState<User[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -147,9 +149,7 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
               }}
             >
               <img
-                src={user.avatar?.includes('models.readyplayer.me') && user.avatar.endsWith('.glb') 
-                  ? user.avatar.replace('.glb', '.png') 
-                  : user.avatar || "/placeholder.svg"}
+                src={getAvatarUrl(user.avatar) || "/placeholder.svg"}
                 alt={user.username}
                 className="w-8 h-8 rounded-full object-cover"
                 onError={(e) => {

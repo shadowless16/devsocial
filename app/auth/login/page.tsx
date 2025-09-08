@@ -51,16 +51,16 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-xl border-0">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center p-4">
+      <Card className="w-full max-w-md shadow-xl border">
         <CardHeader className="space-y-1 text-center">
-          <div className="mx-auto w-12 h-12 bg-emerald-100 rounded-full flex items-center justify-center mb-4">
-            <span className="text-emerald-600 font-bold text-xl">T</span>
+          <div className="mx-auto w-12 h-12 bg-emerald-100 dark:bg-emerald-900 rounded-full flex items-center justify-center mb-4">
+            <span className="text-emerald-600 dark:text-emerald-400 font-bold text-xl">T</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">
+          <CardTitle className="text-2xl font-bold text-foreground">
             Welcome back
           </CardTitle>
-          <CardDescription className="text-gray-600">
+          <CardDescription className="text-muted-foreground">
             Sign in to your DevSocial account
           </CardDescription>
         </CardHeader>
@@ -73,7 +73,7 @@ export default function LoginPage() {
             )}
             
             <div className="space-y-2">
-              <Label htmlFor="usernameOrEmail" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="usernameOrEmail" className="text-sm font-medium text-foreground">
                 Username or Email
               </Label>
               <Input
@@ -84,12 +84,12 @@ export default function LoginPage() {
                 onChange={(e) => setUsernameOrEmail(e.target.value)}
                 required
                 disabled={loading}
-                className="transition-colors focus:border-emerald-500 focus:ring-emerald-500"
+                className="transition-colors"
               />
             </div>
             
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <Label htmlFor="password" className="text-sm font-medium text-foreground">
                 Password
               </Label>
               <div className="relative">
@@ -101,7 +101,7 @@ export default function LoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
-                  className="pr-10 transition-colors focus:border-emerald-500 focus:ring-emerald-500"
+                  className="pr-10 transition-colors"
                 />
                 <Button
                   type="button"
@@ -112,9 +112,9 @@ export default function LoginPage() {
                   disabled={loading}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
@@ -137,16 +137,16 @@ export default function LoginPage() {
           </form>
           
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Don't have an account?{" "}
-              <Link href="/auth/signup" className="font-medium text-emerald-600 hover:text-emerald-500 transition-colors">
+              <Link href="/auth/signup" className="font-medium text-primary hover:text-primary/80 transition-colors">
                 Sign up
               </Link>
             </p>
           </div>
           
           <div className="mt-4 text-center">
-            <Link href="/auth/forgot-password" className="text-sm text-emerald-600 hover:text-emerald-500 transition-colors">
+            <Link href="/auth/forgot-password" className="text-sm text-primary hover:text-primary/80 transition-colors">
               Forgot your password?
             </Link>
           </div>

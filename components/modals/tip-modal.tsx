@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 import { useToast } from "@/hooks/use-toast"
 import { Coins, Send } from "lucide-react"
 
@@ -123,11 +124,9 @@ export function TipModal({
         <div className="space-y-4">
           {/* Recipient Info */}
           <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-            <Avatar className="h-10 w-10">
+              <Avatar className="h-10 w-10">
               <AvatarImage 
-                src={recipientAvatar?.includes('models.readyplayer.me') && recipientAvatar.endsWith('.glb') 
-                  ? recipientAvatar.replace('.glb', '.png') 
-                  : recipientAvatar || "/placeholder.svg"} 
+                src={getAvatarUrl(recipientAvatar) || "/placeholder.svg"} 
                 alt={recipientName}
               />
               <AvatarFallback>

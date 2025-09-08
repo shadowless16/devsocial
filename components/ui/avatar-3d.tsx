@@ -2,6 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { User } from 'lucide-react'
+import { getAvatarUrl } from '@/lib/avatar-utils'
 
 const AvatarModelViewer = dynamic(() => import('./avatar-model-viewer.client'), { ssr: false })
 
@@ -19,7 +20,7 @@ export function Avatar3D({ src, modelUrl, className = "", size = 100 }: Avatar3D
   
   // Always show 2D version (.png) for profile avatars too
   // 3D will only be shown in the modal when clicked
-  const displayUrl = avatarUrl.replace('.glb', '.png')
+  const displayUrl = getAvatarUrl(avatarUrl)
   
   return (
     <div className={`relative ${className}`} style={{ width: size, height: size }}>

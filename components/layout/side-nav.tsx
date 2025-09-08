@@ -30,6 +30,7 @@ import {
   Settings2,
   BarChart3,
   Shield,
+  MessageSquare,
 } from "lucide-react"
 import { PostModal } from "@/components/modals/post-modal"
 import { useNotifications } from "@/contexts/notification-context"
@@ -54,7 +55,8 @@ const getNavItems = (userRole?: string): NavItem[] => {
     { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
     { label: "referrals", icon: Plus, href: "/referrals" },
     { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
-    { label: "My Profile", icon: User, href: "/profile" },
+  { label: "Feedback", icon: MessageSquare, href: "/feedback" },
+  { label: "My Profile", icon: User, href: "/profile" },
   ]
 
   // Add admin/moderator specific items
@@ -164,7 +166,7 @@ export default function SideNav() {
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-1">
-        <div className="grid h-6 w-6 place-items-center rounded-md bg-emerald-600 text-white shadow-sm text-xs">{"</>"}</div>
+        <div className="grid h-6 w-6 place-items-center rounded-md bg-primary text-primary-foreground shadow-sm text-xs">{"</>"}</div>
         <div className="grid">
           <span className="text-sm font-semibold leading-none">DevSocial</span>
           <span className="text-[10px] text-muted-foreground">Connect • Learn</span>
@@ -173,7 +175,7 @@ export default function SideNav() {
 
       <Card className="border-0 p-2 ring-1 ring-black/5">
         <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6 ring-1 ring-emerald-100">
+          <Avatar className="h-6 w-6 ring-1 ring-primary/20">
             <AvatarImage 
               src={getAvatarUrl(user?.avatar)}
               alt={user?.displayName || user?.username}
@@ -183,13 +185,13 @@ export default function SideNav() {
           <div className="min-w-0">
               <div className="flex items-center gap-1">
               <div className="truncate text-xs font-medium">{user?.displayName || user?.username || 'User'}</div>
-              <Badge className="bg-emerald-50 text-emerald-700 hover:bg-emerald-50 text-[10px] px-1">L{level || 1}</Badge>
+              <Badge className="bg-primary/10 text-primary hover:bg-primary/10 text-[10px] px-1">L{level || 1}</Badge>
             </div>
             <div className="text-[10px] text-muted-foreground">{points || 0} XP</div>
           </div>
         </div>
         <div className="mt-2">
-          <Progress value={calculateProgress(points || 0, level || 1)} className="[&>div]:bg-emerald-600 h-1" />
+          <Progress value={calculateProgress(points || 0, level || 1)} className="[&>div]:bg-primary h-1" />
           <div className="mt-1 text-[9px] text-muted-foreground">{getXPToNext(points || 0, level || 1)} XP to next</div>
         </div>
       </Card>
@@ -203,7 +205,7 @@ export default function SideNav() {
               className={cn(
                 "group relative flex items-center gap-2 rounded-md px-2 py-1.5 text-xs transition-all",
                 active === item.label
-                  ? "bg-emerald-600/10 text-emerald-700 ring-1 ring-emerald-600/20"
+                  ? "bg-primary/10 text-primary ring-1 ring-primary/20"
                   : "hover:bg-muted",
               )}
               aria-current={active === item.label ? "page" : undefined}
@@ -212,7 +214,7 @@ export default function SideNav() {
               <item.icon
                 className={cn(
                   "h-3 w-3 transition-colors",
-                  active === item.label ? "text-emerald-700" : "text-muted-foreground group-hover:text-foreground",
+                  active === item.label ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
                 )}
               />
               <span className="flex-1 truncate">{item.label}</span>
@@ -308,7 +310,7 @@ function CreateButton() {
   return (
     <>
       <Button 
-        className="flex-1 bg-emerald-600 hover:bg-emerald-600/90 text-xs h-7"
+        className="flex-1 text-xs h-7"
         onClick={() => setShowPostModal(true)}
       >
         <Plus className="mr-1 h-3 w-3" />

@@ -9,10 +9,11 @@ import { Trophy, Star, Users, Target } from "lucide-react"
 interface WelcomeGamificationProps {
   data: any
   onNext: (data: any) => void
+  onChange?: (data: any) => void
   onBack?: () => void
 }
 
-export function WelcomeGamification({ data, onNext, onBack }: WelcomeGamificationProps) {
+export function WelcomeGamification({ data, onNext, onChange, onBack }: WelcomeGamificationProps) {
   const [showConfetti, setShowConfetti] = useState(false)
   const [xpAnimation, setXpAnimation] = useState(0)
 
@@ -31,6 +32,7 @@ export function WelcomeGamification({ data, onNext, onBack }: WelcomeGamificatio
   }, [])
 
   const handleComplete = () => {
+    onChange?.({ xp: (data?.xp || 0) + 10 })
     onNext({ completed: true })
   }
 

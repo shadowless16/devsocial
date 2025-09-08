@@ -26,6 +26,7 @@ interface MobileNavProps {
 const navItems = [
   { icon: Home, href: "/home", label: "Home" },
   { icon: Compass, href: "/trending", label: "Trending" },
+  { icon: MessageCircle, href: "/feedback", label: "Feedback" },
   { icon: Plus, href: "#", label: "Create", isAction: true },
   { icon: User, href: "/profile", label: "Profile" },
   { icon: Menu, href: "#", label: "Menu", isMenu: true },

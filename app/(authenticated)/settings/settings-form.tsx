@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 import dynamic from 'next/dynamic';
 import { useAuth, User } from "@/contexts/auth-context";
 import { apiClient } from "@/lib/api-client";
-import { Save, Upload, User as UserIcon } from "lucide-react";
+import { Save, Upload, User as UserIcon, Camera } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -56,6 +56,7 @@ export function SettingsForm({ initialUser, affiliations }: SettingsFormProps) {
     avatar: initialUser.avatar || "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -76,6 +77,47 @@ export function SettingsForm({ initialUser, affiliations }: SettingsFormProps) {
 
   const handleInputChange = (field: keyof ProfileFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    setError(null);
+    
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+      
+      const result = await response.json();
+      setFormData(prev => ({ ...prev, avatar: result.secure_url }));
+      setSuccess('Profile picture uploaded successfully!');
+    } catch (error: any) {
+      setError(error.message || 'Failed to upload image');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleSave = async () => {
@@ -140,12 +182,27 @@ export function SettingsForm({ initialUser, affiliations }: SettingsFormProps) {
                 <div className="space-y-2">
                     <h3 className="font-semibold text-gray-900">Profile Picture</h3>
                     <p className="text-sm text-gray-600">
-                        Avatar upload will be enabled soon.
+                        Upload a new profile picture or create an avatar.
                     </p>
-                    <Button variant="outline" size="sm" disabled>
+                    <div className="flex gap-2">
+                      <input
+                        type="file"
+                        id="avatar-upload"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                        disabled={isUploading}
+                      />
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => document.getElementById('avatar-upload')?.click()}
+                        disabled={isUploading}
+                      >
                         <Upload className="w-4 h-4 mr-2" />
-                        Upload New
-                    </Button>
+                        {isUploading ? 'Uploading...' : 'Upload New'}
+                      </Button>
+                    </div>
                 </div>
               </div>
 

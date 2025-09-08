@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -12,6 +12,7 @@ import { Code2, Briefcase, Github, Linkedin, Globe } from "lucide-react"
 interface TechProfileProps {
   data: any
   onNext: (data: any) => void
+  onChange?: (data: any) => void
   onBack?: () => void
 }
 
@@ -46,7 +47,7 @@ const techStackOptions = [
   "GraphQL", "REST API", "Microservices", "Machine Learning", "AI", "Blockchain"
 ]
 
-export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
+export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps) {
   const [techData, setTechData] = useState({
     techCareerPath: data.techCareerPath || "",
     experienceLevel: data.experienceLevel || "beginner",
@@ -56,22 +57,38 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
     portfolioUrl: data.portfolioUrl || ""
   })
 
+  // Update state when data prop changes
+  useEffect(() => {
+    setTechData({
+      techCareerPath: data.techCareerPath || "",
+      experienceLevel: data.experienceLevel || "beginner",
+      techStack: data.techStack || [],
+      githubUsername: data.githubUsername || "",
+      linkedinUrl: data.linkedinUrl || "",
+      portfolioUrl: data.portfolioUrl || ""
+    })
+  }, [data])
+
   const [techStackInput, setTechStackInput] = useState("")
 
   const handleAddTech = (tech: string) => {
     if (!techData.techStack.includes(tech) && techData.techStack.length < 10) {
-      setTechData({
+      const next = {
         ...techData,
         techStack: [...techData.techStack, tech]
-      })
+      }
+      setTechData(next)
+      onChange?.(next)
     }
   }
 
   const handleRemoveTech = (tech: string) => {
-    setTechData({
+    const next = {
       ...techData,
       techStack: techData.techStack.filter((t: string) => t !== tech)
-    })
+    }
+    setTechData(next)
+    onChange?.(next)
   }
 
   const handleNext = () => {
@@ -99,7 +116,11 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
               </Label>
               <Select
                 value={techData.techCareerPath}
-                onValueChange={(value) => setTechData({ ...techData, techCareerPath: value })}
+                onValueChange={(value) => {
+                  const next = { ...techData, techCareerPath: value }
+                  setTechData(next)
+                  onChange?.(next)
+                }}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select your path" />
@@ -118,7 +139,11 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
               <Label htmlFor="experience">Experience Level</Label>
               <Select
                 value={techData.experienceLevel}
-                onValueChange={(value) => setTechData({ ...techData, experienceLevel: value })}
+                onValueChange={(value) => {
+                  const next = { ...techData, experienceLevel: value }
+                  setTechData(next)
+                  onChange?.(next)
+                }}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -175,7 +200,11 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
                 id="github"
                 placeholder="johndoe"
                 value={techData.githubUsername}
-                onChange={(e) => setTechData({ ...techData, githubUsername: e.target.value })}
+                onChange={(e) => {
+                  const next = { ...techData, githubUsername: e.target.value }
+                  setTechData(next)
+                  onChange?.(next)
+                }}
               />
             </div>
 
@@ -188,7 +217,11 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
                 id="linkedin"
                 placeholder="https://linkedin.com/in/johndoe"
                 value={techData.linkedinUrl}
-                onChange={(e) => setTechData({ ...techData, linkedinUrl: e.target.value })}
+                onChange={(e) => {
+                  const next = { ...techData, linkedinUrl: e.target.value }
+                  setTechData(next)
+                  onChange?.(next)
+                }}
               />
             </div>
 
@@ -201,7 +234,11 @@ export function TechProfile({ data, onNext, onBack }: TechProfileProps) {
                 id="portfolio"
                 placeholder="https://johndoe.dev"
                 value={techData.portfolioUrl}
-                onChange={(e) => setTechData({ ...techData, portfolioUrl: e.target.value })}
+                onChange={(e) => {
+                  const next = { ...techData, portfolioUrl: e.target.value }
+                  setTechData(next)
+                  onChange?.(next)
+                }}
               />
             </div>
           </div>

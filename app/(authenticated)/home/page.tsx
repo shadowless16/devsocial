@@ -117,7 +117,7 @@ export default function HomePage() {
         ) : posts.length === 0 ? (
           <div className="text-center py-8">
             <p className="text-muted-foreground mb-4">No posts yet. Be the first to share something!</p>
-            <Button onClick={() => setShowPostModal(true)} className="bg-emerald-600 hover:bg-emerald-700">
+            <Button onClick={() => setShowPostModal(true)}>
               <Plus className="w-4 h-4 mr-2" />
               Create Your First Post
             </Button>
@@ -178,7 +178,7 @@ function HeaderBar({ onCreateClick }: { onCreateClick: () => void }) {
           <Search className="h-4 w-4" />
           <span>Search</span>
         </Button>
-        <Button onClick={onCreateClick} className="gap-2 bg-emerald-600 hover:bg-emerald-600/90">
+        <Button onClick={onCreateClick} className="gap-2">
           <Plus className="h-4 w-4" />
           <span>Create</span>
         </Button>
@@ -193,7 +193,7 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
   return (
     <Card className="group border-0 shadow-none ring-1 ring-black/5 transition-colors hover:bg-background mb-4">
       <CardContent className="flex items-start gap-3 p-3 md:p-4">
-        <Avatar className="h-8 w-8 md:h-9 md:w-9 ring-1 ring-emerald-100 flex-shrink-0">
+        <Avatar className="h-8 w-8 md:h-9 md:w-9 ring-1 ring-primary/20 flex-shrink-0">
           <AvatarImage 
             src={getAvatarUrl(user?.avatar)} 
             alt="Your avatar"
@@ -208,7 +208,7 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
             readOnly
             aria-label="Compose a post"
             placeholder={"What's on your mind?"}
-            className="h-10 md:h-11 w-full rounded-xl border-muted-foreground/20 bg-muted/40 px-3 md:px-4 text-sm shadow-none transition focus-visible:ring-emerald-500 cursor-pointer"
+            className="h-10 md:h-11 w-full rounded-xl border-muted-foreground/20 bg-muted/40 px-3 md:px-4 text-sm shadow-none transition focus-visible:ring-primary cursor-pointer"
           />
           <div className="mt-2 md:mt-3 flex items-center justify-between">
             <div className="flex items-center gap-1 md:gap-2">
@@ -221,7 +221,7 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
                 <span className="sr-only">Upload file</span>
               </Button>
             </div>
-            <Button onClick={onCreateClick} className="h-8 md:h-9 rounded-lg bg-emerald-600 px-3 md:px-4 text-sm hover:bg-emerald-600/90">Post</Button>
+            <Button onClick={onCreateClick} className="h-8 md:h-9 rounded-lg px-3 md:px-4 text-sm">Post</Button>
           </div>
         </div>
       </CardContent>

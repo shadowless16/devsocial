@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Code, Smile, Lightbulb, Moon, Coffee, Zap } from "lucide-react"
@@ -19,11 +19,19 @@ const starterBadges = [
 interface StarterBadgeProps {
   data: any
   onNext: (data: any) => void
+  onChange?: (data: any) => void
   onBack?: () => void
 }
 
-export function StarterBadge({ data, onNext, onBack }: StarterBadgeProps) {
+export function StarterBadge({ data, onNext, onChange, onBack }: StarterBadgeProps) {
   const [selectedBadge, setSelectedBadge] = useState(data.starterBadge || "")
+
+  // Update state when data prop changes
+  useEffect(() => {
+    if (data.starterBadge) {
+      setSelectedBadge(data.starterBadge)
+    }
+  }, [data.starterBadge])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -46,7 +54,10 @@ export function StarterBadge({ data, onNext, onBack }: StarterBadgeProps) {
               className={`cursor-pointer transition-all hover:shadow-md ${
                 selectedBadge === badge.id ? "ring-2 ring-emerald-500 bg-emerald-50" : "hover:bg-gray-50"
               }`}
-              onClick={() => setSelectedBadge(badge.id)}
+              onClick={() => {
+                setSelectedBadge(badge.id)
+                onChange?.({ starterBadge: badge.id })
+              }}
             >
               <CardContent className="p-4 text-center">
                 <div className="flex flex-col items-center space-y-2">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
@@ -41,6 +41,54 @@ export default function OnboardingPage() {
     xp: 10,
   })
 
+  // Load saved data on component mount
+  useEffect(() => {
+    const loadOnboardingData = async () => {
+      try {
+        // Try to load from database first
+        const response = await apiClient.request('/users/onboarding', { method: 'GET' })
+        const res = response as any
+        if (res && typeof res === 'object') {
+          const dbData = {
+            avatar: res.avatar || "",
+            bio: res.bio || "",
+            gender: res.gender || "",
+            userType: res.userType || "",
+            socials: res.socials || { twitter: "", linkedin: "" },
+            techCareerPath: res.techCareerPath || "",
+            experienceLevel: res.experienceLevel || "beginner",
+            techStack: res.techStack || [],
+            githubUsername: res.githubUsername || "",
+            linkedinUrl: res.linkedinUrl || "",
+            portfolioUrl: res.portfolioUrl || "",
+            interests: res.interests || [],
+            starterBadge: res.starterBadge || "",
+            xp: res.xp || 10,
+          }
+          setOnboardingData(dbData)
+          // Save to localStorage as backup
+          localStorage.setItem('onboarding-data', JSON.stringify(dbData))
+          return
+        }
+      } catch (error) {
+        console.log('No database data found, checking localStorage')
+      }
+      
+      // Fallback to localStorage
+      const savedData = localStorage.getItem('onboarding-data')
+      const savedStep = localStorage.getItem('onboarding-step')
+      
+      if (savedData) {
+        setOnboardingData(JSON.parse(savedData))
+      }
+      if (savedStep) {
+        setCurrentStep(parseInt(savedStep))
+      }
+    }
+    
+    loadOnboardingData()
+  }, [])
+
   const progress = (currentStep / steps.length) * 100
   const CurrentStepComponent = steps.find((step) => step.id === currentStep)?.component
 
@@ -54,13 +102,33 @@ export default function OnboardingPage() {
       handleComplete(updatedData)
     } else {
       // Move to next step
-      setCurrentStep((prev) => prev + 1)
+      const nextStep = currentStep + 1
+      setCurrentStep(nextStep)
+      localStorage.setItem('onboarding-step', nextStep.toString())
     }
+  }
+
+  const handleChange = (partialData: any) => {
+    setOnboardingData((prev) => {
+      const updated = { ...prev, ...partialData }
+      // Save to localStorage immediately
+      localStorage.setItem('onboarding-data', JSON.stringify(updated))
+      
+      // Save to database (async, non-blocking)
+      apiClient.request('/users/onboarding', {
+        method: 'PUT',
+        body: JSON.stringify(updated)
+      }).catch(err => console.log('Failed to save to database:', err))
+      
+      return updated
+    })
   }
 
   const handleBack = () => {
     if (currentStep > 1) {
-      setCurrentStep((prev) => prev - 1)
+      const prevStep = currentStep - 1
+      setCurrentStep(prevStep)
+      localStorage.setItem('onboarding-step', prevStep.toString())
     }
   }
 
@@ -99,6 +167,9 @@ export default function OnboardingPage() {
       
       if (isSuccess) {
         console.log('Onboarding data saved successfully');
+        // Clear saved data after successful completion
+        localStorage.removeItem('onboarding-data')
+        localStorage.removeItem('onboarding-step')
         updateUser({ onboardingCompleted: true });
         router.push('/');
       } else {
@@ -111,6 +182,9 @@ export default function OnboardingPage() {
         alert(`There was an issue: ${error.message}. Please update your profile later.`);
       } else {
         console.log('Onboarding likely succeeded, proceeding...');
+        // Clear saved data even on error to prevent loops
+        localStorage.removeItem('onboarding-data')
+        localStorage.removeItem('onboarding-step')
         updateUser({ onboardingCompleted: true });
       }
       router.push('/');
@@ -134,6 +208,7 @@ export default function OnboardingPage() {
             <CurrentStepComponent
               data={onboardingData}
               onNext={handleNext}
+              onChange={handleChange}
               onBack={currentStep > 1 ? handleBack : undefined}
             />
           )}

@@ -21,9 +21,12 @@ declare global {
   }
 }
 
+import { getAvatarUrl } from '@/lib/avatar-utils'
+
 export function AvatarViewer3D({ isOpen, onClose, avatarUrl, username }: AvatarViewer3DProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
-  const is3D = avatarUrl?.endsWith('.glb')
+  const base = avatarUrl ? String(avatarUrl).split('?')[0] : ''
+  const is3D = base.endsWith('.glb')
 
   if (!is3D) {
     return (
@@ -34,7 +37,7 @@ export function AvatarViewer3D({ isOpen, onClose, avatarUrl, username }: AvatarV
           </DialogHeader>
           <div className="flex justify-center p-4">
             <img 
-              src={avatarUrl} 
+              src={getAvatarUrl(avatarUrl)} 
               alt={`${username}'s avatar`}
               className="w-80 h-80 rounded-full object-cover"
             />

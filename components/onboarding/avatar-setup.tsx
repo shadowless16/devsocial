@@ -3,23 +3,28 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { User } from "lucide-react"
+import { User, Upload, Camera } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ReadyPlayerMeAvatar } from "./ready-player-me-avatar"
+import { getAvatarUrl } from "@/lib/avatar-utils"
 import { useAuth } from "@/contexts/auth-context"
+
+import { toast } from "sonner"
 
 interface AvatarSetupProps {
   data: any
   onNext: (data: any) => void
+  onChange?: (data: any) => void
   onBack?: () => void
 }
 
-export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
+export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps) {
   const { user } = useAuth();
   const [formData, setFormData] = useState({
     avatar: data.avatar || user?.avatar || "",
@@ -28,13 +33,21 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
     userType: data.userType || "",
     socials: data.socials || { twitter: "", linkedin: "" },
   });
+  const [isUploading, setIsUploading] = useState(false);
+  const [avatarType, setAvatarType] = useState<'upload' | 'avatar'>('avatar');
 
-  // Set initial avatar from user context if available
+  // Update state when data prop changes (only on mount or when localStorage loads)
   useEffect(() => {
-    if (user?.avatar && !formData.avatar) {
-      setFormData(prev => ({ ...prev, avatar: user.avatar }));
+    if (data.avatar || data.bio || data.gender || data.userType || data.socials?.twitter || data.socials?.linkedin) {
+      setFormData({
+        avatar: data.avatar || user?.avatar || "",
+        bio: data.bio || "",
+        gender: data.gender || "",
+        userType: data.userType || "",
+        socials: data.socials || { twitter: "", linkedin: "" },
+      })
     }
-  }, [user?.avatar, formData.avatar]);
+  }, [data.avatar, data.bio, data.gender, data.userType, data.socials?.twitter, data.socials?.linkedin, user?.avatar])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,12 +55,63 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
   }
 
   const handleAvatarSelect = (avatarUrl: string) => {
-    setFormData(prev => ({ ...prev, avatar: avatarUrl }))
+    const next = { ...formData, avatar: avatarUrl }
+    setFormData(next)
+    onChange?.(next)
   }
 
+  const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('Image must be less than 5MB');
+      return;
+    }
+
+    setIsUploading(true);
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('file', file);
+      
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Upload failed');
+      }
+      
+      const result = await response.json();
+      const next = { ...formData, avatar: result.secure_url }
+      setFormData(next);
+      onChange?.(next)
+      toast.success('Profile picture uploaded successfully!');
+    } catch (error) {
+      console.error('Upload failed:', error);
+      toast.error(error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const handleGenderChange = (gender: string) => {
-    setFormData(prev => ({ ...prev, gender }))
+    const next = { ...formData, gender }
+    setFormData(next)
+    onChange?.(next)
   }
+
+  // propagate social/bio/usertype changes
+  // update handlers inline where they change state below
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -56,28 +120,73 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
         <p className="text-gray-600">Upload an avatar and tell us about yourself</p>
       </div>
 
-      {/* Ready Player Me Avatar */}
+      {/* Avatar Selection */}
       <div className="space-y-4">
-        <ReadyPlayerMeAvatar 
-          onAvatarSelect={handleAvatarSelect}
-          currentAvatar={formData.avatar}
-        />
+        <Tabs value={avatarType} onValueChange={(value) => setAvatarType(value as 'upload' | 'avatar')} className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="upload" className="flex items-center gap-2">
+              <Upload className="w-4 h-4" />
+              Upload Photo
+            </TabsTrigger>
+            <TabsTrigger value="avatar" className="flex items-center gap-2">
+              <Camera className="w-4 h-4" />
+              Create Avatar
+            </TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="upload" className="space-y-4">
+            <div className="text-center">
+              <p className="text-sm text-gray-600 mb-4">Upload your own profile picture</p>
+              
+              <div className="flex flex-col items-center space-y-4">
+                <input
+                  type="file"
+                  id="avatar-upload"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  disabled={isUploading}
+                />
+                
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById('avatar-upload')?.click()}
+                  disabled={isUploading}
+                  className="flex items-center gap-2"
+                >
+                  <Upload className="w-4 h-4" />
+                  {isUploading ? 'Uploading...' : 'Choose Image'}
+                </Button>
+                
+                <p className="text-xs text-gray-500">
+                  PNG, JPG, GIF up to 5MB
+                </p>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="avatar" className="space-y-4">
+            <ReadyPlayerMeAvatar 
+              onAvatarSelect={handleAvatarSelect}
+              currentAvatar={formData.avatar}
+            />
+          </TabsContent>
+        </Tabs>
         
         {formData.avatar && (
           <div className="flex justify-center">
             <div className="text-center">
               <Avatar className="w-24 h-24 mx-auto mb-2">
                 <AvatarImage 
-                  src={formData.avatar?.includes('models.readyplayer.me') && formData.avatar.endsWith('.glb') 
-                    ? formData.avatar.replace('.glb', '.png') 
-                    : formData.avatar || "/placeholder.svg"} 
+                  src={avatarType === 'upload' ? formData.avatar : (getAvatarUrl(formData.avatar) || "/placeholder.svg")} 
                   alt="Avatar preview"
                 />
                 <AvatarFallback>
                   <User className="w-12 h-12" />
                 </AvatarFallback>
               </Avatar>
-              <p className="text-sm text-emerald-600 font-medium">✓ Avatar Selected</p>
+              <p className="text-sm text-emerald-600 font-medium">✓ {avatarType === 'upload' ? 'Photo' : 'Avatar'} Selected</p>
             </div>
           </div>
         )}
@@ -104,7 +213,11 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
       {/* User Type Selection */}
       <div className="space-y-2">
         <Label htmlFor="userType">I am a...</Label>
-        <Select value={formData.userType} onValueChange={(value) => setFormData((prev) => ({ ...prev, userType: value }))}>
+        <Select value={formData.userType} onValueChange={(value) => {
+          const next = { ...formData, userType: value }
+          setFormData(next)
+          onChange?.(next)
+        }}>
           <SelectTrigger>
             <SelectValue placeholder="Select your role" />
           </SelectTrigger>
@@ -125,7 +238,11 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
           id="bio"
           placeholder="Tell us something cool about yourself! What are you passionate about?"
           value={formData.bio}
-          onChange={(e) => setFormData((prev) => ({ ...prev, bio: e.target.value }))}
+          onChange={(e) => {
+            const next = { ...formData, bio: e.target.value }
+            setFormData(next)
+            onChange?.(next)
+          }}
           className="min-h-[100px]"
           maxLength={250}
         />
@@ -144,12 +261,11 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
               id="twitter"
               placeholder="@yourusername"
               value={formData.socials.twitter}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  socials: { ...prev.socials, twitter: e.target.value },
-                }))
-              }
+              onChange={(e) => {
+                const next = { ...formData, socials: { ...formData.socials, twitter: e.target.value } }
+                setFormData(next)
+                onChange?.(next)
+              }}
             />
           </div>
           <div>
@@ -160,12 +276,11 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
               id="linkedin"
               placeholder="linkedin.com/in/yourprofile"
               value={formData.socials.linkedin}
-              onChange={(e) =>
-                setFormData((prev) => ({
-                  ...prev,
-                  socials: { ...prev.socials, linkedin: e.target.value },
-                }))
-              }
+              onChange={(e) => {
+                const next = { ...formData, socials: { ...formData.socials, linkedin: e.target.value } }
+                setFormData(next)
+                onChange?.(next)
+              }}
             />
           </div>
         </div>
@@ -177,8 +292,12 @@ export function AvatarSetup({ data, onNext, onBack }: AvatarSetupProps) {
             Back
           </Button>
         )}
-        <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700 ml-auto">
-          Continue
+        <Button 
+          type="submit" 
+          className="bg-emerald-600 hover:bg-emerald-700 ml-auto"
+          disabled={isUploading}
+        >
+          {isUploading ? 'Uploading...' : 'Continue'}
         </Button>
       </div>
     </form>

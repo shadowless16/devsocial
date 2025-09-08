@@ -4,6 +4,7 @@ import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
 import { Avatar3D } from '@/components/ui/avatar-3d'
+import { getAvatarUrl } from '@/lib/avatar-utils'
 
 interface SimpleAvatarModalProps {
   isOpen: boolean
@@ -13,7 +14,8 @@ interface SimpleAvatarModalProps {
 }
 
 export function SimpleAvatarModal({ isOpen, onClose, avatarUrl, username }: SimpleAvatarModalProps) {
-  const is3D = avatarUrl?.endsWith('.glb')
+  const base = avatarUrl ? String(avatarUrl).split('?')[0] : ''
+  const is3D = base.endsWith('.glb')
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -29,7 +31,7 @@ export function SimpleAvatarModal({ isOpen, onClose, avatarUrl, username }: Simp
             </div>
           ) : (
             <Avatar className="w-80 h-80">
-              <AvatarImage src={avatarUrl} alt={`${username}'s avatar`} />
+              <AvatarImage src={getAvatarUrl(avatarUrl)} alt={`${username}'s avatar`} />
               <AvatarFallback className="text-6xl">
                 {username.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>

@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
@@ -30,18 +30,30 @@ const availableTags = [
 interface InterestTagsProps {
   data: any
   onNext: (data: any) => void
+  onChange?: (data: any) => void
   onBack?: () => void
 }
 
-export function InterestTags({ data, onNext, onBack }: InterestTagsProps) {
+export function InterestTags({ data, onNext, onChange, onBack }: InterestTagsProps) {
   const [selectedTags, setSelectedTags] = useState<string[]>(data.interests || [])
+
+  // Update state when data prop changes
+  useEffect(() => {
+    if (data.interests && Array.isArray(data.interests)) {
+      setSelectedTags(data.interests)
+    }
+  }, [data.interests])
 
   const toggleTag = (tag: string) => {
     setSelectedTags((prev) => {
       if (prev.includes(tag)) {
-        return prev.filter((t) => t !== tag)
+        const next = prev.filter((t) => t !== tag)
+        onChange?.({ interests: next })
+        return next
       } else if (prev.length < 5) {
-        return [...prev, tag]
+        const next = [...prev, tag]
+        onChange?.({ interests: next })
+        return next
       }
       return prev
     })

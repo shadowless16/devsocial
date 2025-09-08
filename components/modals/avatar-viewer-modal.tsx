@@ -3,6 +3,7 @@
 import React, { Suspense, useEffect, useState } from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
+import { getAvatarUrl } from '@/lib/avatar-utils'
 import dynamic from 'next/dynamic'
 
 // Dynamically import Three.js components with no SSR
@@ -27,7 +28,8 @@ function AvatarModel({ url }: { url: string }) {
 
 export function AvatarViewerModal({ isOpen, onClose, avatarUrl, username }: AvatarViewerModalProps) {
   const [mounted, setMounted] = useState(false)
-  const is3D = avatarUrl?.endsWith('.glb')
+  const base = avatarUrl ? String(avatarUrl).split('?')[0] : ''
+  const is3D = base.endsWith('.glb')
 
   useEffect(() => {
     setMounted(true)
@@ -61,7 +63,7 @@ export function AvatarViewerModal({ isOpen, onClose, avatarUrl, username }: Avat
             </div>
           ) : (
             <Avatar className="w-80 h-80">
-              <AvatarImage src={avatarUrl} alt={`${username}'s avatar`} />
+              <AvatarImage src={getAvatarUrl(avatarUrl)} alt={`${username}'s avatar`} />
               <AvatarFallback className="text-6xl">
                 {username.split(' ').map(n => n[0]).join('')}
               </AvatarFallback>

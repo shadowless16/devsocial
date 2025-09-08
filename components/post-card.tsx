@@ -146,10 +146,10 @@ export default function PostCard({
         <CardContent className="p-3 md:p-4 w-full">
           <div className="flex items-start gap-2 md:gap-3 w-full">
             <div 
-              className="cursor-pointer hover:ring-emerald-200 transition-all flex-shrink-0"
+              className="cursor-pointer hover:ring-primary/20 transition-all flex-shrink-0"
               onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
             >
-              <Avatar className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-emerald-100">
+              <Avatar className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-primary/20">
                 <AvatarImage 
                   src={getAvatarUrl(avatar)} 
                   alt={author}
@@ -164,18 +164,18 @@ export default function PostCard({
               <div className="flex items-center justify-between mb-1 w-full">
                 <div className="flex items-center gap-1 md:gap-2 flex-wrap min-w-0 flex-1 mr-2">
                   <span 
-                    className="font-medium text-xs md:text-sm cursor-pointer hover:text-emerald-500 transition-colors truncate"
+                    className="font-medium text-xs md:text-sm cursor-pointer hover:text-primary transition-colors truncate"
                     onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
                   >{author}</span>
-                  <Badge className="bg-emerald-50 text-emerald-700 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">{level}</Badge>
+                  <Badge className="bg-primary/10 text-primary text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">{level}</Badge>
                   <span 
-                    className="text-[10px] md:text-xs text-muted-foreground cursor-pointer hover:text-emerald-500 transition-colors hidden sm:inline truncate"
+                    className="text-[10px] md:text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors hidden sm:inline truncate"
                     onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
                   >{handle}</span>
                   <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline flex-shrink-0">•</span>
                   <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline flex-shrink-0">{formatTimeAgo(timestamp)}</span>
                   {xpDelta > 0 && (
-                    <Badge className="bg-yellow-50 text-yellow-700 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">
+                    <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">
                       +{xpDelta}
                     </Badge>
                   )}
@@ -216,7 +216,7 @@ export default function PostCard({
               </div>
               
               <div 
-                className="text-xs md:text-sm mb-2 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-gray-50/50 rounded-md p-1 md:p-2 -m-1 md:-m-2 transition-colors w-full overflow-hidden break-words"
+                className="text-xs md:text-sm mb-2 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-muted/50 rounded-md p-1 md:p-2 -m-1 md:-m-2 transition-colors w-full overflow-hidden break-words"
                 onClick={() => postId && onClick?.(postId)}
               >
                 <ReactMarkdown
@@ -240,7 +240,7 @@ export default function PostCard({
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-800 hover:bg-gray-700 text-white"
+                            className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background border border-border text-foreground"
                             onClick={(e) => {
                               e.stopPropagation()
                               copyToClipboard(codeString)
@@ -250,7 +250,7 @@ export default function PostCard({
                           </Button>
                         </div>
                       ) : (
-                        <code className="bg-gray-100 px-1 py-0.5 rounded text-xs" {...props}>
+                        <code className="bg-muted px-1 py-0.5 rounded text-xs" {...props}>
                           {children}
                         </code>
                       )
@@ -331,7 +331,7 @@ export default function PostCard({
                 </div>
               )}
 
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+              <div className="flex items-center justify-between pt-2 border-t border-border">
                 <div className="flex items-center gap-4">
                   <Button
                     variant="ghost"

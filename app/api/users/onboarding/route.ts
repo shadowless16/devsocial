@@ -7,6 +7,43 @@ import { generateGenderAvatar } from "@/utils/avatar-generator"
 
 export const dynamic = 'force-dynamic'
 
+export async function GET(req: NextRequest) {
+  try {
+    await connectDB()
+    
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const user = await User.findById(session.user.id)
+    if (!user) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 })
+    }
+
+    // Return existing onboarding data
+    return NextResponse.json({
+      avatar: user.avatar || "",
+      bio: user.bio || "",
+      gender: user.gender || "",
+      userType: user.userType || "",
+      socials: user.socials || { twitter: "", linkedin: "" },
+      techCareerPath: user.techCareerPath || "",
+      experienceLevel: user.experienceLevel || "beginner",
+      techStack: user.techStack || [],
+      githubUsername: user.githubUsername || "",
+      linkedinUrl: user.linkedinUrl || "",
+      portfolioUrl: user.portfolioUrl || "",
+      interests: user.interests || [],
+      starterBadge: user.starterBadge || "",
+      xp: user.xp || 10,
+    })
+  } catch (error) {
+    console.error("Get onboarding error:", error)
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+  }
+}
+
 export async function PUT(req: NextRequest) {
   try {
     await connectDB()
@@ -17,7 +54,7 @@ export async function PUT(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { gender, userType, bio, techStack, experienceLevel, githubUsername, linkedinUrl, portfolioUrl, avatar } = body
+    const { gender, userType, bio, techStack, experienceLevel, githubUsername, linkedinUrl, portfolioUrl, avatar, interests, starterBadge, techCareerPath, socials } = body
 
     const user = await User.findById(session.user.id)
     if (!user) {
@@ -33,6 +70,10 @@ export async function PUT(req: NextRequest) {
     if (githubUsername) user.githubUsername = githubUsername
     if (linkedinUrl) user.linkedinUrl = linkedinUrl
     if (portfolioUrl) user.portfolioUrl = portfolioUrl
+    if (interests) user.interests = interests
+    if (starterBadge) user.starterBadge = starterBadge
+    if (techCareerPath) user.techCareerPath = techCareerPath
+    if (socials) user.socials = socials
 
     // Update avatar if provided (from RPM), otherwise generate gender-specific avatar
     if (avatar) {

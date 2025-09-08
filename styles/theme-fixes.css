@@ -116,3 +116,353 @@ button:focus {
 .dark .shadow-xl {
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -2px rgba(0, 0, 0, 0.1) !important;
 }
+
+/* Fix gradient backgrounds in dark mode */
+.dark .bg-gradient-to-br {
+  background: linear-gradient(to bottom right, hsl(var(--background)), hsl(var(--muted))) !important;
+}
+
+/* Ensure proper contrast for all text elements */
+.dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark p, .dark span, .dark div:not([class*="bg-"]) {
+  color: hsl(var(--foreground));
+}
+
+/* Fix select and combobox styling */
+.dark [role="combobox"],
+.dark [role="listbox"],
+.dark [role="option"] {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Fix dropdown menu items */
+.dark [role="menuitem"]:hover,
+.dark [role="option"]:hover {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
+}
+
+/* Fix alert styling */
+.dark .border-emerald-200 {
+  border-color: hsl(160 84% 39% / 0.2) !important;
+}
+
+.dark .bg-emerald-50 {
+  background-color: hsl(160 84% 39% / 0.1) !important;
+}
+
+.dark .text-emerald-600 {
+  color: hsl(160 84% 50%) !important;
+}
+
+/* Fix card and popover backgrounds */
+.dark [data-radix-popper-content-wrapper] {
+  background-color: hsl(var(--popover)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Ensure proper focus visibility */
+.dark *:focus-visible {
+  outline: 2px solid hsl(var(--primary)) !important;
+  outline-offset: 2px !important;
+}
+
+/* Fix any remaining hardcoded whites and blacks */
+.dark .text-white {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .bg-black {
+  background-color: hsl(var(--background)) !important;
+}
+
+/* Improve readability for muted text */
+.dark .text-muted-foreground {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+/* Fix any remaining form elements */
+.dark input[type="date"],
+.dark input[type="time"],
+.dark input[type="datetime-local"],
+.dark input[type="month"],
+.dark input[type="week"] {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Fix loading states and disabled elements */
+.dark .opacity-50 {
+  opacity: 0.6 !important;
+}
+
+/* Ensure proper contrast for icons */
+.dark svg {
+  color: inherit;
+}
+
+/* Fix any remaining blue accents to use primary */
+.dark .text-blue-500,
+.dark .text-blue-600,
+.dark .text-blue-700 {
+  color: hsl(var(--primary)) !important;
+}
+
+.dark .border-blue-500,
+.dark .border-blue-600 {
+  border-color: hsl(var(--primary)) !important;
+}
+
+/* Fix hover states for interactive elements */
+.dark .hover\:text-gray-900:hover {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .hover\:bg-gray-100:hover {
+  background-color: hsl(var(--accent)) !important;
+}
+
+/* Fix specific component colors */
+.dark .ring-emerald-100 {
+  --tw-ring-color: hsl(var(--primary) / 0.2) !important;
+}
+
+.dark .ring-emerald-200 {
+  --tw-ring-color: hsl(var(--primary) / 0.3) !important;
+}
+
+.dark .bg-emerald-50 {
+  background-color: hsl(var(--primary) / 0.1) !important;
+}
+
+.dark .bg-emerald-100 {
+  background-color: hsl(var(--primary) / 0.15) !important;
+}
+
+.dark .text-emerald-600 {
+  color: hsl(var(--primary)) !important;
+}
+
+.dark .text-emerald-700 {
+  color: hsl(var(--primary)) !important;
+}
+
+.dark .bg-emerald-600 {
+  background-color: hsl(var(--primary)) !important;
+}
+
+.dark .hover\:bg-emerald-600\/90:hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+
+.dark .hover\:bg-emerald-700:hover {
+  background-color: hsl(var(--primary) / 0.9) !important;
+}
+
+.dark .hover\:text-emerald-500:hover {
+  color: hsl(var(--primary) / 0.8) !important;
+}
+
+/* Fix syntax highlighter in dark mode */
+.dark .hljs {
+  background: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Fix progress bars */
+.dark .bg-emerald-600 {
+  background-color: hsl(var(--primary)) !important;
+}
+
+/* Fix badge colors */
+.dark .bg-orange-100 {
+  background-color: hsl(30 100% 95% / 0.1) !important;
+}
+
+.dark .text-orange-700 {
+  color: hsl(30 100% 60%) !important;
+}
+
+/* Fix card rings and borders */
+.dark .ring-black\/5 {
+  --tw-ring-color: hsl(var(--border)) !important;
+}
+
+/* Fix prose styling in dark mode */
+.dark .prose {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.dark .prose h5,
+.dark .prose h6 {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .prose p {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .prose code {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--muted)) !important;
+}
+
+.dark .prose pre {
+  background-color: hsl(var(--muted)) !important;
+  color: hsl(var(--foreground)) !important;
+}
+
+/* Fix any remaining hardcoded grays */
+.dark .text-gray-50 {
+  color: hsl(var(--muted-foreground)) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Ensure proper contrast for all interactive elements */
+.dark button:not([class*="bg-"]) {
+  color: hsl(var(--foreground));
+}
+
+.dark a:not([class*="text-"]) {
+  color: hsl(var(--primary));
+}
+
+/* Fix any remaining focus rings */
+.dark *:focus-visible:not([class*="ring-"]) {
+  --tw-ring-color: hsl(var(--primary)) !important;
+}
+
+/* Comprehensive color fixes for common patterns */
+.dark .text-blue-600,
+.dark .text-blue-700,
+.dark .text-blue-800 {
+  color: hsl(var(--primary)) !important;
+}
+
+.dark .text-green-600,
+.dark .text-green-700 {
+  color: hsl(160 84% 50%) !important;
+}
+
+.dark .text-red-600,
+.dark .text-red-700 {
+  color: hsl(0 84% 60%) !important;
+}
+
+.dark .text-purple-600,
+.dark .text-purple-700 {
+  color: hsl(270 84% 60%) !important;
+}
+
+.dark .text-yellow-600,
+.dark .text-yellow-700 {
+  color: hsl(45 84% 60%) !important;
+}
+
+/* Fix background colors for stats and cards */
+.dark .bg-blue-600 {
+  background-color: hsl(var(--primary)) !important;
+}
+
+.dark .bg-green-600 {
+  background-color: hsl(160 84% 39%) !important;
+}
+
+.dark .bg-red-600 {
+  background-color: hsl(0 84% 39%) !important;
+}
+
+.dark .bg-purple-600 {
+  background-color: hsl(270 84% 39%) !important;
+}
+
+.dark .bg-yellow-600 {
+  background-color: hsl(45 84% 39%) !important;
+}
+
+/* Fix icon colors */
+.dark .text-yellow-600 {
+  color: hsl(45 84% 60%) !important;
+}
+
+.dark .text-blue-600 {
+  color: hsl(220 84% 60%) !important;
+}
+
+.dark .text-red-600 {
+  color: hsl(0 84% 60%) !important;
+}
+
+/* Ensure proper contrast for all text elements */
+.dark * {
+  border-color: hsl(var(--border));
+}
+
+/* Fix any remaining hardcoded backgrounds */
+.dark .bg-white {
+  background-color: hsl(var(--background)) !important;
+}
+
+.dark .bg-gray-50,
+.dark .bg-gray-100,
+.dark .bg-gray-200 {
+  background-color: hsl(var(--muted)) !important;
+}
+
+/* Fix gradient backgrounds */
+.dark .from-emerald-50 {
+  --tw-gradient-from: hsl(var(--background)) !important;
+}
+
+.dark .to-blue-50 {
+  --tw-gradient-to: hsl(var(--muted)) !important;
+}
+
+.dark .from-gray-900 {
+  --tw-gradient-from: hsl(var(--background)) !important;
+}
+
+.dark .to-gray-800 {
+  --tw-gradient-to: hsl(var(--muted)) !important;
+}
+
+/* Ensure proper visibility for all interactive elements */
+.dark button,
+.dark a,
+.dark [role="button"] {
+  color: inherit;
+}
+
+/* Fix any remaining border colors */
+.dark .border-gray-100,
+.dark .border-gray-200,
+.dark .border-gray-300 {
+  border-color: hsl(var(--border)) !important;
+}
+
+/* Final catch-all for any missed text colors */
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-black {
+  color: hsl(var(--foreground)) !important;
+}
+
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: hsl(var(--muted-foreground)) !important;
+}

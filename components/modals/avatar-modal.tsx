@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Avatar3D } from '@/components/ui/avatar-3d'
 import { Avatar } from '@/components/ui/avatar'
 import { AvatarImage } from '@/components/ui/avatar'
+import { getAvatarUrl } from '@/lib/avatar-utils'
 
 interface AvatarModalProps {
   isOpen: boolean
@@ -14,7 +15,8 @@ interface AvatarModalProps {
 }
 
 export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModalProps) {
-  const is3D = avatarUrl?.endsWith('.glb')
+  const base = avatarUrl ? String(avatarUrl).split('?')[0] : ''
+  const is3D = base.endsWith('.glb')
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -30,7 +32,7 @@ export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModa
             </div>
           ) : (
             <Avatar className="w-80 h-80">
-              <AvatarImage src={avatarUrl} alt={`${username}'s avatar`} />
+              <AvatarImage src={getAvatarUrl(avatarUrl)} alt={`${username}'s avatar`} />
             </Avatar>
           )}
         </div>

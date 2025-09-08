@@ -113,7 +113,7 @@ export default function DashboardPage() {
     return (
       <div className="w-full py-4 sm:py-6 px-3 sm:px-4">
         <div className="text-center">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 mb-4">Unable to load dashboard</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-foreground mb-4">Unable to load dashboard</h2>
           <Button onClick={() => fetchDashboardData(true)}>Try Again</Button>
         </div>
       </div>
@@ -143,8 +143,8 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8">
         <div className="mb-4 sm:mb-0">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
-          <p className="text-sm sm:text-base text-gray-600">Welcome back, {user?.displayName}! Here's your activity overview.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground mb-2">Dashboard</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Welcome back, {user?.displayName}! Here's your activity overview.</p>
         </div>
         <div className="flex items-center space-x-2 sm:space-x-4 w-full sm:w-auto">
           <Select value={period} onValueChange={setPeriod}>
@@ -272,14 +272,14 @@ export default function DashboardPage() {
               {dashboardData.achievements.length > 0 ? (
                 <div className="space-y-3 sm:space-y-4">
                   {dashboardData.achievements.map((achievement, index) => (
-                    <div key={index} className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
-                      <div className="bg-yellow-100 p-2 rounded-full flex-shrink-0">
-                        <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600" />
+                    <div key={index} className="flex items-start space-x-3 sm:space-x-4 p-3 sm:p-4 bg-muted/50 rounded-lg">
+                      <div className="bg-yellow-100 dark:bg-yellow-900/20 p-2 rounded-full flex-shrink-0">
+                        <Trophy className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-600 dark:text-yellow-400" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <h4 className="font-semibold text-sm sm:text-base truncate">{achievement.type.replace("_", " ").toUpperCase()}</h4>
-                        <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{achievement.description}</p>
-                        <p className="text-[10px] sm:text-xs text-gray-500">{new Date(achievement.createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{achievement.description}</p>
+                        <p className="text-[10px] sm:text-xs text-muted-foreground">{new Date(achievement.createdAt).toLocaleDateString()}</p>
                       </div>
                       <Badge variant="secondary" className="text-xs flex-shrink-0">+{achievement.metadata?.xpEarned || 0} XP</Badge>
                     </div>
@@ -287,9 +287,9 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 <div className="text-center py-8">
-                  <Trophy className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">No recent achievements</h3>
-                  <p className="text-gray-600">Keep posting and engaging to unlock new badges!</p>
+                  <Trophy className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">No recent achievements</h3>
+                  <p className="text-muted-foreground">Keep posting and engaging to unlock new badges!</p>
                 </div>
               )}
             </CardContent>
@@ -305,17 +305,17 @@ export default function DashboardPage() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
                   <div className="text-3xl font-bold text-blue-600 mb-2">{dashboardData.stats.posts.totalPosts}</div>
-                  <div className="text-sm text-gray-600">Posts Created</div>
+                  <div className="text-sm text-muted-foreground">Posts Created</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-green-600 mb-2">{dashboardData.stats.posts.totalLikes}</div>
-                  <div className="text-sm text-gray-600">Likes Received</div>
+                  <div className="text-sm text-muted-foreground">Likes Received</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 mb-2">
                     {dashboardData.stats.posts.totalComments}
                   </div>
-                  <div className="text-sm text-gray-600">Comments Received</div>
+                  <div className="text-sm text-muted-foreground">Comments Received</div>
                 </div>
               </div>
             </CardContent>
@@ -334,15 +334,15 @@ export default function DashboardPage() {
                     <h4 className="font-semibold">Weekly Post Goal</h4>
                     <Badge variant="outline">{dashboardData.stats.posts.totalPosts}/5 posts</Badge>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className="bg-blue-600 h-2 rounded-full"
+                      className="bg-primary h-2 rounded-full"
                       style={{
                         width: `${Math.min((dashboardData.stats.posts.totalPosts / 5) * 100, 100)}%`,
                       }}
                     ></div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">Create 5 posts this week to earn bonus XP</p>
+                  <p className="text-sm text-muted-foreground mt-2">Create 5 posts this week to earn bonus XP</p>
                 </div>
 
                 <div className="p-4 border rounded-lg">
@@ -350,15 +350,15 @@ export default function DashboardPage() {
                     <h4 className="font-semibold">Engagement Master</h4>
                     <Badge variant="outline">{dashboardData.stats.posts.totalLikes}/50 likes</Badge>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-muted rounded-full h-2">
                     <div
-                      className="bg-green-600 h-2 rounded-full"
+                      className="bg-primary h-2 rounded-full"
                       style={{
                         width: `${Math.min((dashboardData.stats.posts.totalLikes / 50) * 100, 100)}%`,
                       }}
                     ></div>
                   </div>
-                  <p className="text-sm text-gray-600 mt-2">Receive 50 likes to unlock the Engagement Master badge</p>
+                  <p className="text-sm text-muted-foreground mt-2">Receive 50 likes to unlock the Engagement Master badge</p>
                 </div>
               </div>
             </CardContent>

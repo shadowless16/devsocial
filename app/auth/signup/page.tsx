@@ -209,14 +209,14 @@ useEffect(() => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-emerald-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md shadow-xl border">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center mb-4">
+          <div className="mx-auto w-12 h-12 bg-gradient-to-br from-emerald-400 to-emerald-600 dark:from-emerald-500 dark:to-emerald-700 rounded-lg flex items-center justify-center mb-4">
             <span className="text-white font-bold text-xl">TC</span>
           </div>
-          <CardTitle className="text-2xl font-bold text-gray-900">Join DevSocial</CardTitle>
-          <CardDescription>Create your account and start connecting with fellow developers</CardDescription>
+          <CardTitle className="text-2xl font-bold text-foreground">Join DevSocial</CardTitle>
+          <CardDescription className="text-muted-foreground">Create your account and start connecting with fellow developers</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -227,8 +227,8 @@ useEffect(() => {
             )}
 
             {referralCode && (
-              <Alert>
-                <AlertDescription className="text-emerald-600">
+              <Alert className="border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950">
+                <AlertDescription className="text-emerald-600 dark:text-emerald-400">
                   🎉 You're joining with a referral code: <strong>{referralCode}</strong>
                 </AlertDescription>
               </Alert>
@@ -418,9 +418,9 @@ useEffect(() => {
                   disabled={loading}
                 >
                   {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
@@ -451,9 +451,9 @@ useEffect(() => {
                   disabled={loading}
                 >
                   {showConfirmPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
+                    <EyeOff className="h-4 w-4 text-muted-foreground" />
                   ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
+                    <Eye className="h-4 w-4 text-muted-foreground" />
                   )}
                 </Button>
               </div>
@@ -465,9 +465,9 @@ useEffect(() => {
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/auth/login" className="text-emerald-600 hover:text-emerald-500 font-medium">
+              <Link href="/auth/login" className="text-primary hover:text-primary/80 font-medium transition-colors">
                 Sign in
               </Link>
             </p>
