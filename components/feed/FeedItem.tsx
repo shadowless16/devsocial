@@ -21,6 +21,7 @@ import { MentionText } from "@/components/ui/mention-text"
 import { UserLink } from "@/components/shared/UserLink"
 import { useViewTracker } from "@/hooks/use-view-tracker"
 import { PostMeta } from "@/components/shared/PostMeta"
+import { PostAIActions } from "@/components/shared/PostAIActions"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -647,6 +648,14 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           <Eye className="h-3.5 w-3.5" />
           <span>{post.viewsCount || 0}</span>
         </div>
+        </div>
+
+        {/* AI Actions */}
+        <div className="px-4 pb-3 md:px-6">
+          <PostAIActions 
+            postContent={post.content} 
+            postId={post.id}
+          />
         </div>
 
         {showComments && (

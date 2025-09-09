@@ -13,6 +13,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { CommentItem } from "@/components/feed/comment-item"
 import { PostContent } from "@/components/shared/PostContent"
+import { PostAIActions } from "@/components/shared/PostAIActions"
 import Image from "next/image"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/contexts/auth-context"
@@ -648,6 +649,14 @@ export default function PostPage() {
               ))}
             </div>
           )}
+
+          {/* AI Actions */}
+          <div className="mb-4">
+            <PostAIActions 
+              postContent={post.content} 
+              postId={post.id}
+            />
+          </div>
 
           {/* Actions */}
           <div className="flex items-center justify-between pt-4 border-t border-gray-100">

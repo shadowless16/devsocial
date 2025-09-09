@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, FormEvent, useEffect } from "react";
-import { X, ImageIcon, Code, Hash, Eye, EyeOff, Target, Search, Video, Upload, Trash2 } from "lucide-react";
+import { X, ImageIcon, Code, Hash, Eye, EyeOff, Target, Search, Video, Upload, Trash2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MentionInput } from "@/components/ui/mention-input";
@@ -194,6 +194,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const [languageFilter, setLanguageFilter] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [isAiSummarizing, setIsAiSummarizing] = useState(false);
+
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
   const [selectedAspect, setSelectedAspect] = useState<number | undefined>(undefined);
@@ -392,6 +394,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     { label: '3:4', value: 3/4 },
   ];
 
+
+
   const handleFilesUpload = async (files: FileList | File[]) => {
     const fileArray = Array.isArray(files) ? files : Array.from(files);
     if (fileArray.length > 0) {
@@ -467,6 +471,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     setLanguageFilter('');
     setUploadError(null);
     setIsUploading(false);
+    setIsAiSummarizing(false);
     resetCropState();
   };
 
@@ -552,6 +557,46 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const removeChallenge = () => {
     setSelectedChallenge(null);
     setPostType('normal');
+  };
+
+  const handleAiSummarize = async () => {
+    if (!content.trim()) return;
+    
+    setIsAiSummarizing(true);
+    try {
+      const response = await fetch('/api/posts/summarize', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ content }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to summarize content');
+      }
+      
+      if (data.success && data.data?.summary) {
+        setContent(data.data.summary);
+        toast({
+          title: "Content summarized",
+          description: "Your post has been condensed using AI.",
+        });
+      } else {
+        throw new Error('Invalid response format');
+      }
+    } catch (error) {
+      console.error('Summarization error:', error);
+      toast({
+        title: "Summarization failed",
+        description: error instanceof Error ? error.message : "Unable to summarize content. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsAiSummarizing(false);
+    }
   };
 
   return (
@@ -907,6 +952,19 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
 
           <div className="flex flex-col sm:flex-row justify-between pt-4 sm:pt-4 border-t border-border gap-4 sm:gap-0 sticky bottom-0 bg-background pb-4 sm:pb-0 sm:static">
             <div className="flex items-center space-x-1 sm:space-x-2 relative overflow-x-auto">
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm" 
+                onClick={handleAiSummarize}
+                disabled={!content.trim() || isAiSummarizing}
+                className="text-xs sm:text-sm h-8 px-2 sm:px-3"
+              >
+                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">{isAiSummarizing ? 'Summarizing...' : 'AI Summarize'}</span>
+                <span className="sm:hidden">{isAiSummarizing ? '...' : 'AI'}</span>
+              </Button>
+              
               <div className="relative">
                 <Button 
                   type="button" 

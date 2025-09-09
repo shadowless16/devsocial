@@ -51,6 +51,11 @@ export interface IUser extends Document {
   hederaAccountId?: string;
   walletConnected?: boolean;
   demoWalletBalance: number;
+  summaryUsage?: { [key: string]: number }; // Track monthly summary usage
+  aiUsage?: {
+    explain?: Array<{ date: Date; contentLength: number }>;
+  }; // Track AI feature usage
+  isPremium?: boolean; // Premium subscription status
   createdAt: Date;
   updatedAt: Date;
 }
@@ -238,6 +243,21 @@ const UserSchema = new Schema<IUser>(
       default: 100, // Each user starts with 100 demo HBAR
       min: 0,
       index: true,
+    },
+    summaryUsage: {
+      type: Map,
+      of: Number,
+      default: {},
+    },
+    aiUsage: {
+      explain: [{
+        date: { type: Date, required: true },
+        contentLength: { type: Number, required: true }
+      }]
+    },
+    isPremium: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

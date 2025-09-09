@@ -123,6 +123,16 @@ export function CommentItem({ comment, onLike, onReply, isReply = false, depth =
                   placeholder="Write a reply..."
                   value={replyContent}
                   onChange={(e) => setReplyContent(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      if (onReply && replyContent.trim()) {
+                        onReply(comment.id, replyContent.trim());
+                        setReplyContent("");
+                        setShowReplyInput(false);
+                      }
+                    }
+                  }}
                   rows={2}
                 />
                 <Button

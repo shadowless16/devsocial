@@ -15,6 +15,7 @@ import { ReportModal } from "@/components/modals/report-modal"
 import { TipModal } from "@/components/modals/tip-modal"
 import { formatTimeAgo } from "@/lib/time-utils"
 import { PostMeta } from "@/components/shared/PostMeta"
+import { PostAIActions } from "@/components/shared/PostAIActions"
 import { useAuth } from "@/contexts/auth-context"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 
@@ -330,6 +331,14 @@ export default function PostCard({
                   ))}
                 </div>
               )}
+
+              {/* AI Actions */}
+              <div className="mb-3">
+                <PostAIActions 
+                  postContent={content || ""} 
+                  postId={postId || ""}
+                />
+              </div>
 
               <div className="flex items-center justify-between pt-2 border-t border-border">
                 <div className="flex items-center gap-4">
