@@ -8,7 +8,7 @@ import { successResponse, errorResponse } from "@/utils/response"
 
 export const dynamic = 'force-dynamic'
 
-export async function PATCH(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
 
@@ -30,8 +30,9 @@ export async function PATCH(request: NextRequest, { params }: { params: { id: st
       return errorResponse("Invalid status", 400)
     }
 
+    const { id } = await params
     // Update report status
-    const updatedReport = await Report.findByIdAndUpdate(params.id, { status }, { new: true, runValidators: true })
+    const updatedReport = await Report.findByIdAndUpdate(id, { status }, { new: true, runValidators: true })
 
     if (!updatedReport) {
       return errorResponse("Report not found", 404)

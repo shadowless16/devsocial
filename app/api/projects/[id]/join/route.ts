@@ -7,7 +7,7 @@ import { authOptions } from "@/lib/auth";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -23,7 +23,8 @@ export async function POST(
       return NextResponse.json({ success: false, error: "Invalid position index" }, { status: 400 })
     }
 
-    const project = await Project.findById(params.id).populate('author', 'username displayName avatar level')
+    const { id } = await params
+    const project = await Project.findById(id).populate('author', 'username displayName avatar level')
     if (!project) {
       return NextResponse.json({ success: false, error: "Project not found" }, { status: 404 })
     }

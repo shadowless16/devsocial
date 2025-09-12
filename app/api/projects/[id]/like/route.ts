@@ -8,7 +8,7 @@ import Notification from '@/models/Notification'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -21,7 +21,8 @@ export async function POST(
     
     await connectDB()
     
-    const project = await Project.findById(params.id)
+    const { id } = await params
+    const project = await Project.findById(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -34,12 +35,12 @@ export async function POST(
     
     if (isLiked) {
       // Unlike
-      await Project.findByIdAndUpdate(params.id, {
+      await Project.findByIdAndUpdate(id, {
         $pull: { likes: userId }
       })
     } else {
       // Like
-      await Project.findByIdAndUpdate(params.id, {
+      await Project.findByIdAndUpdate(id, {
         $addToSet: { likes: userId }
       })
       
@@ -62,7 +63,7 @@ export async function POST(
       }
     }
     
-    const updatedProject = await Project.findById(params.id)
+    const updatedProject = await Project.findById(id)
       .populate('author', 'username displayName avatar level')
       .lean() as any
     

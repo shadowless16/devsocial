@@ -6,7 +6,7 @@ import Project from '@/models/Project'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -22,7 +22,8 @@ export async function PUT(
       return NextResponse.json({ success: false, error: 'Invalid status' }, { status: 400 })
     }
 
-    const project = await Project.findById(params.id)
+    const { id } = await params
+    const project = await Project.findById(id)
     if (!project) {
       return NextResponse.json({ success: false, error: 'Project not found' }, { status: 404 })
     }
