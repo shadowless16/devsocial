@@ -8,7 +8,7 @@ import mongoose from "mongoose"
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest, { params }: { params: { messageId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: { conversationId: string; messageId: string } }) {
   try {
     await connectDB()
 
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: { message
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { messageId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: { conversationId: string; messageId: string } }) {
   try {
     await connectDB()
 
