@@ -31,7 +31,10 @@ export async function POST(request: NextRequest) {
     })
 
     if (existingProgress) {
-      return NextResponse.json({ error: "Already joined this mission" }, { status: 400 })
+      return NextResponse.json({ 
+        missionProgress: existingProgress,
+        message: "Already joined this mission" 
+      }, { status: 200 })
     }
 
     // Initialize progress for each step

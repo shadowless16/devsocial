@@ -170,29 +170,29 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-6xl mx-auto px-3 md:px-6">
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="bg-gradient-to-r from-blue-400 to-purple-500 p-3 rounded-full">
-            <Search className="w-8 h-8 text-white" />
+      <div className="text-center mb-6 md:mb-8">
+        <div className="flex items-center justify-center mb-3 md:mb-4">
+          <div className="bg-gradient-to-r from-blue-400 to-purple-500 p-2 md:p-3 rounded-full">
+            <Search className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
         </div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-navy-900 mb-2">Search</h1>
-        <p className="text-gray-600">Find posts, users, and topics across the community</p>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-navy-900 mb-1 md:mb-2">Search</h1>
+        <p className="text-sm md:text-base text-gray-600 px-4">Find posts, users, and topics across the community</p>
       </div>
 
       {/* Search Bar */}
-      <Card className="mb-6">
-        <CardContent className="p-4">
+      <Card className="mb-4 md:mb-6">
+        <CardContent className="p-3 md:p-4">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5" />
             <Input
               type="text"
               placeholder="Search for posts, users, or tags..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-10 h-12 text-base"
+              className="pl-9 md:pl-10 pr-9 md:pr-10 h-11 md:h-12 text-sm md:text-base"
             />
             {searchQuery && (
               <button
@@ -205,11 +205,11 @@ export default function SearchPage() {
           </div>
 
           {/* Search Filters */}
-          <div className="flex items-center justify-between mt-4">
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" className="text-xs bg-transparent">
+          <div className="flex items-center justify-between mt-3 md:mt-4 gap-2">
+            <div className="flex items-center space-x-1 md:space-x-2">
+              <Button variant="outline" size="sm" className="text-xs bg-transparent h-8">
                 <Filter className="w-3 h-3 mr-1" />
-                Filters
+                <span className="hidden sm:inline">Filters</span>
               </Button>
               <Badge variant="outline" className="text-xs">
                 Recent
@@ -217,16 +217,16 @@ export default function SearchPage() {
             </div>
 
             {searchQuery && (
-              <div className="text-sm text-gray-600">
+              <div className="text-xs md:text-sm text-gray-600 flex-shrink-0">
                 {isSearching ? (
                   <div className="flex items-center">
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600 mr-2"></div>
-                    Searching...
+                    <div className="animate-spin rounded-full h-3 w-3 md:h-4 md:w-4 border-b-2 border-emerald-600 mr-1 md:mr-2"></div>
+                    <span className="hidden sm:inline">Searching...</span>
                   </div>
                 ) : error ? (
-                  <span className="text-red-500">Error: {error}</span>
+                  <span className="text-red-500 truncate">Error</span>
                 ) : hasSearched ? (
-                  `${totalResults} results found`
+                  <span className="truncate">{totalResults} results</span>
                 ) : null}
               </div>
             )}
@@ -237,23 +237,23 @@ export default function SearchPage() {
       {/* Search Results */}
       {hasSearched && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="all">All ({totalResults})</TabsTrigger>
-            <TabsTrigger value="posts">Posts ({searchResults.posts.length})</TabsTrigger>
-            <TabsTrigger value="users">Users ({searchResults.users.length})</TabsTrigger>
-            <TabsTrigger value="tags">Tags ({searchResults.tags.length})</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsTrigger value="all" className="text-xs md:text-sm px-1 md:px-3 py-2">All ({totalResults})</TabsTrigger>
+            <TabsTrigger value="posts" className="text-xs md:text-sm px-1 md:px-3 py-2">Posts ({searchResults.posts.length})</TabsTrigger>
+            <TabsTrigger value="users" className="text-xs md:text-sm px-1 md:px-3 py-2">Users ({searchResults.users.length})</TabsTrigger>
+            <TabsTrigger value="tags" className="text-xs md:text-sm px-1 md:px-3 py-2">Tags ({searchResults.tags.length})</TabsTrigger>
           </TabsList>
 
           {/* All Results */}
-          <TabsContent value="all" className="space-y-6 mt-6">
+          <TabsContent value="all" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
             {/* Posts Section */}
             {searchResults.posts.length > 0 && (
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <FileText className="w-5 h-5 mr-2" />
+                <h3 className="text-base md:text-lg font-semibold text-gray-900 mb-3 md:mb-4 flex items-center">
+                  <FileText className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                   Posts
                 </h3>
-                <div className="space-y-4">
+                <div className="space-y-3 md:space-y-4">
                   {searchResults.posts.slice(0, 3).map((post) => (
                     <FeedItem 
                       key={post._id || post.id} 

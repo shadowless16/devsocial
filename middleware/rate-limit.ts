@@ -19,7 +19,9 @@ export function createRateLimiter(config: RateLimitConfig) {
     }
 
     // Get client identifier (IP or session)
-    const clientId = req.ip || req.headers.get("x-forwarded-for") || "anonymous";
+  // NextRequest doesn't expose `ip` on the server runtime; prefer x-forwarded-for or x-real-ip
+  const ipHeader = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip");
+  const clientId = ipHeader ? ipHeader.split(',')[0].trim() : "anonymous";
     const key = `${clientId}:${path}`;
     
     const now = Date.now();

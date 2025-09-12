@@ -23,6 +23,7 @@ declare module "next-auth" {
       username: string;
       email: string;
       role: string;
+      isAdmin: boolean;
     };
   }
   interface AdapterUser {
@@ -130,6 +131,7 @@ export const authOptions: AuthOptions = {
         session.user.id = token.id as string;
         session.user.role = token.role as string;
         session.user.username = token.username as string;
+        session.user.isAdmin = token.role === 'admin';
         
         // Cache session for faster lookups
         const sessionId = `session_${token.id}`;

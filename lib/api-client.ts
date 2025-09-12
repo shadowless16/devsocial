@@ -191,10 +191,17 @@ class ApiClient {
       const headers = new Headers(options.headers);
       if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
       
+      // Handle body serialization
+      let body = options.body;
+      if (body && typeof body === 'object' && !(body instanceof FormData) && !(body instanceof URLSearchParams)) {
+        body = JSON.stringify(body);
+      }
+      
       const config: RequestInit = { 
         ...options, 
         headers,
-        credentials: 'include'
+        credentials: 'include',
+        body
       };
       
       const fullUrl = `${this.baseUrl}${endpoint}`;
@@ -367,6 +374,27 @@ class ApiClient {
     return this.request<T>(`/missions/${missionId}/progress`, {
       method: "POST",
       body: JSON.stringify({ stepId })
+    });
+  }
+
+  public joinMission<T>(missionId: string): Promise<ApiResponse<T>> {
+    return this.request<T>(`/missions/join`, {
+      method: "POST",
+      body: JSON.stringify({ missionId })
+    });
+  }
+
+  public trackMissionProgress<T>(metric: string, increment?: number, metadata?: any): Promise<ApiResponse<T>> {
+    return this.request<T>(`/missions/track`, {
+      method: "POST",
+      body: JSON.stringify({ metric, increment, metadata })
+    });
+  }
+
+  public generateMissions<T>(count?: number): Promise<ApiResponse<T>> {
+    return this.request<T>(`/missions/generate`, {
+      method: "POST",
+      body: JSON.stringify({ count })
     });
   }
 }

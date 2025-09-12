@@ -1,9 +1,8 @@
+@import "../styles/theme-fixes.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-
-@import "../styles/theme-fixes.css";
 
 @layer utilities {
   .text-balance {
@@ -90,6 +89,37 @@
     --sidebar-border: 0 0% 14.9%;
     --sidebar-ring: 160 84% 39%;
   }
+  
+  /* Color Scheme Variants */
+  .theme-blue {
+    --primary: 221 83% 53%;
+    --ring: 221 83% 53%;
+    --sidebar-ring: 221 83% 53%;
+  }
+  
+  .theme-green {
+    --primary: 142 76% 36%;
+    --ring: 142 76% 36%;
+    --sidebar-ring: 142 76% 36%;
+  }
+  
+  .theme-purple {
+    --primary: 262 83% 58%;
+    --ring: 262 83% 58%;
+    --sidebar-ring: 262 83% 58%;
+  }
+  
+  .theme-orange {
+    --primary: 25 95% 53%;
+    --ring: 25 95% 53%;
+    --sidebar-ring: 25 95% 53%;
+  }
+  
+  .theme-default {
+    --primary: 160 84% 39%;
+    --ring: 160 84% 39%;
+    --sidebar-ring: 160 84% 39%;
+  }
 }
 
 @layer base {
@@ -101,6 +131,23 @@
     @apply overflow-x-hidden;
     width: 100%;
     max-width: 100%;
+  }
+  
+  /* Safe area support for devices with notches */
+  .safe-area-inset-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  
+  .safe-area-inset-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .safe-area-inset-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  
+  .safe-area-inset-right {
+    padding-right: env(safe-area-inset-right);
   }
   
   body {
@@ -267,6 +314,49 @@
     
     .mobile-text-sm {
       @apply text-sm leading-relaxed;
+    }
+    
+    /* Prevent horizontal scroll */
+    .container {
+      @apply px-3;
+    }
+    
+    /* Better card spacing */
+    .card {
+      @apply mx-0;
+    }
+    
+    /* Improved grid layouts */
+    .grid-cols-2 {
+      gap: 0.5rem;
+    }
+    
+    .grid-cols-3 {
+      gap: 0.25rem;
+    }
+    
+    .grid-cols-4 {
+      gap: 0.25rem;
+    }
+    
+    /* Better button spacing in mobile nav */
+    .mobile-nav button {
+      @apply min-h-[44px] min-w-[44px];
+    }
+    
+    /* Improved text truncation */
+    .truncate-mobile {
+      @apply truncate max-w-[120px];
+    }
+    
+    /* Better modal sizing */
+    .modal-content {
+      @apply mx-3 max-w-none;
+    }
+    
+    /* Improved tab sizing */
+    .tabs-trigger {
+      @apply text-xs px-2 py-2;
     }
   }
 }

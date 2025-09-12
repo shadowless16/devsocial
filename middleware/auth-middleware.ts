@@ -70,6 +70,7 @@ declare module "next-auth" {
       username: string;
       email: string;
       role: string;
+      isAdmin: boolean;
     };
   }
 }

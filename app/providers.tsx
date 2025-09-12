@@ -4,6 +4,7 @@ import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider } from '@/components/theme-provider'
 import { DynamicAppKitProvider } from '@/components/dynamic/dynamic-appkit'
 import { AuthProvider } from '@/contexts/auth-context'
+import { AppearanceProvider } from '@/contexts/appearance-context'
 import { NotificationProvider } from '@/contexts/notification-context'
 import { DataModeProvider } from '@/contexts/data-mode-context'
 import { FollowProvider } from '@/contexts/follow-context'
@@ -23,18 +24,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
       >
         <SessionCacheProvider>
           <AuthProvider>
-            <DataModeProvider>
-              <FollowProvider>
-                <NotificationProvider>
-                  <WebSocketProvider>
-                    <DynamicAppKitProvider>
-                      {children}
-                      <Toaster />
-                    </DynamicAppKitProvider>
-                  </WebSocketProvider>
-                </NotificationProvider>
-              </FollowProvider>
-            </DataModeProvider>
+            <AppearanceProvider>
+              <DataModeProvider>
+                <FollowProvider>
+                  <NotificationProvider>
+                    <WebSocketProvider>
+                      <DynamicAppKitProvider>
+                        {children}
+                        <Toaster />
+                      </DynamicAppKitProvider>
+                    </WebSocketProvider>
+                  </NotificationProvider>
+                </FollowProvider>
+              </DataModeProvider>
+            </AppearanceProvider>
           </AuthProvider>
         </SessionCacheProvider>
       </ThemeProvider>

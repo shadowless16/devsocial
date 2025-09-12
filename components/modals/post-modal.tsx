@@ -17,6 +17,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useToast } from "@/hooks/use-toast";
+import { useMissionTracker } from "@/hooks/use-mission-tracker";
 
 interface PostModalProps {
   isOpen: boolean;
@@ -181,6 +182,7 @@ const sampleChallenges = [
 
 export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const { toast } = useToast();
+  const { trackPost, trackCodePost, trackHashtagUsage } = useMissionTracker();
   const [content, setContent] = useState("");
   const [tags, setTags] = useState<string[]>([]);
   const [newTag, setNewTag] = useState("");
@@ -453,6 +455,21 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
       postType,
       selectedChallenge,
     };
+    
+    // Track mission progress
+    if (postType === 'code') {
+      trackCodePost();
+    } else {
+      trackPost();
+    }
+    
+    // Track hashtag usage
+    tags.forEach(tag => {
+      if (tag.startsWith('#')) {
+        trackHashtagUsage(tag.substring(1));
+      }
+    });
+    
     onSubmit(postData);
     resetForm();
   };

@@ -22,6 +22,13 @@ interface PostScore {
     relevance: number
     diversity: number
   }
+  authorId?: string
+  tags?: string[]
+}
+
+interface PostMeta {
+  authorId?: string
+  tags?: string[]
 }
 
 export class FeedAlgorithm {
@@ -176,20 +183,31 @@ export class FeedAlgorithm {
       diversity: 1.0, // Will be adjusted in diversity filter
     }
 
-    // Calculate weighted score
-    const score =
+    // Dynamic weighting: favor recency for very new posts, engagement for older posts
+    // recency in (0..1) where 1 is newest. We'll shift a small amount of weight from RECENCY -> ENGAGEMENT
+    // as recency declines so high-engagement older posts can surface.
+    const recencyFactor = factors.recency
+
+    // allow up to 0.12 weight shift depending on age
+    const shift = (1 - recencyFactor) * 0.12
+    const dynamicRecencyWeight = Math.max(this.WEIGHTS.RECENCY - shift, 0)
+    const dynamicEngagementWeight = Math.min(this.WEIGHTS.ENGAGEMENT + shift, this.WEIGHTS.ENGAGEMENT + 0.12)
+
+    const baseScore =
       algorithm === "engagement"
         ? factors.engagement
-        : factors.recency * this.WEIGHTS.RECENCY +
-          factors.engagement * this.WEIGHTS.ENGAGEMENT +
+        : factors.recency * dynamicRecencyWeight +
+          factors.engagement * dynamicEngagementWeight +
           factors.author * this.WEIGHTS.AUTHOR +
           factors.relevance * this.WEIGHTS.RELEVANCE +
           factors.diversity * this.WEIGHTS.DIVERSITY
 
     return {
       postId: (post._id as any).toString(),
-      score: Math.max(score, this.MIN_SCORE),
+      score: Math.max(baseScore, this.MIN_SCORE),
       factors,
+      authorId: post.author?._id ? (post.author._id as any).toString() : undefined,
+      tags: Array.isArray(post.tags) ? post.tags : [],
     }
   }
 
@@ -204,10 +222,12 @@ export class FeedAlgorithm {
     const { likesCount = 0, commentsCount = 0, xpAwarded = 0 } = post
 
     // Weighted engagement score
-    const engagementPoints = likesCount * 1 + commentsCount * 2 + xpAwarded * 0.1
+  const engagementPoints = likesCount * 1 + commentsCount * 2 + xpAwarded * 0.2
 
-    // Normalize using log scale to prevent viral posts from dominating
-    return Math.log(engagementPoints + 1) / Math.log(100) // Scale to 0-1
+  // Normalize using log scale to prevent viral posts from dominating. Use a larger base so
+  // stronger posts still scale without fully dominating.
+  const normalized = Math.log(engagementPoints + 1) / Math.log(1000)
+  return Math.min(Math.max(normalized, 0), 1)
   }
 
   private static calculateAuthorScore(author: any, followedUserIds: string[]): number {
@@ -253,21 +273,33 @@ export class FeedAlgorithm {
     const seenAuthors = new Set<string>()
     const seenTags = new Set<string>()
 
-    return scoredPosts.map((scoredPost, index) => {
-      const post = scoredPosts.find((p) => p.postId === scoredPost.postId)
-      if (!post) return scoredPost
+    return scoredPosts.map((scoredPost) => {
+      const authorId = scoredPost.authorId
+      const tags = scoredPost.tags || []
 
       let diversityPenalty = 0
 
-      // Penalize repeated authors (but less for high-quality content)
-      const authorId = post.postId // This would need the actual post data
-      if (seenAuthors.has(authorId)) {
-        diversityPenalty += 0.2
-      } else {
-        seenAuthors.add(authorId)
+      // Penalize repeated authors (but cap penalty so good posts still show)
+      if (authorId) {
+        if (seenAuthors.has(authorId)) {
+          diversityPenalty += 0.18
+        } else {
+          seenAuthors.add(authorId)
+        }
       }
 
-      // Apply diversity penalty
+      // Penalize if many posts share the same dominant tag
+      for (const t of tags) {
+        if (seenTags.has(t)) {
+          diversityPenalty += 0.05
+        } else {
+          seenTags.add(t)
+        }
+      }
+
+      // Cap penalty to avoid removing good content entirely
+      diversityPenalty = Math.min(diversityPenalty, 0.5)
+
       const adjustedScore = scoredPost.score * (1 - diversityPenalty)
 
       return {

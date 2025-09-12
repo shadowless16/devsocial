@@ -48,7 +48,7 @@ export function Feed() {
   const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
-  const observer = useRef<IntersectionObserver>();
+  const observer = useRef<IntersectionObserver | null>(null);
 
   const fetchPosts = useCallback(async (pageNum: number, reset = false) => {
     if (loading) return;
@@ -107,8 +107,8 @@ export function Feed() {
   // Infinite scroll logic
   const lastPostElementRef = useCallback((node: HTMLDivElement) => {
     if (loading) return;
-    if (observer.current) observer.current.disconnect();
-    observer.current = new IntersectionObserver(entries => {
+  if (observer.current) observer.current.disconnect();
+  observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
         setPage(prevPage => {
           const nextPage = prevPage + 1;
@@ -117,7 +117,7 @@ export function Feed() {
         });
       }
     });
-    if (node) observer.current.observe(node);
+  if (node) observer.current?.observe(node);
   }, [loading, hasMore, fetchPosts]);
 
   const fetchComments = async (postId: string) => {

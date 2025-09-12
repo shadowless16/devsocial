@@ -17,7 +17,9 @@ export async function POST(
     
     const { id } = params;
     const session = await getServerSession(authOptions);
-    const ipAddress = request.ip || request.headers.get('x-forwarded-for') || 'unknown';
+  // NextRequest doesn't expose `ip`; use x-forwarded-for header or fallback
+  const ipHeader = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+  const ipAddress = ipHeader ? ipHeader.split(',')[0].trim() : 'unknown';
     const userAgent = request.headers.get('user-agent') || '';
 
     // Check if post exists

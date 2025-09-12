@@ -56,6 +56,27 @@ export interface IUser extends Document {
     explain?: Array<{ date: Date; contentLength: number }>;
   }; // Track AI feature usage
   isPremium?: boolean; // Premium subscription status
+  appearanceSettings?: {
+    theme?: "light" | "dark" | "system";
+    fontSize?: "small" | "medium" | "large";
+    compactMode?: boolean;
+    highContrast?: boolean;
+    reducedMotion?: boolean;
+    colorScheme?: "default" | "blue" | "green" | "purple" | "orange";
+    sidebarCollapsed?: boolean;
+    showAvatars?: boolean;
+  };
+  privacySettings?: {
+    profileVisibility?: "public" | "followers" | "private";
+    showEmail?: boolean;
+    showLocation?: boolean;
+    showActivity?: boolean;
+    showStats?: boolean;
+    allowMessages?: "everyone" | "followers" | "none";
+    allowMentions?: "everyone" | "followers" | "none";
+    showOnlineStatus?: boolean;
+    indexProfile?: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -258,6 +279,84 @@ const UserSchema = new Schema<IUser>(
     isPremium: {
       type: Boolean,
       default: false,
+    },
+    appearanceSettings: {
+      theme: {
+        type: String,
+        enum: ["light", "dark", "system"],
+        default: "system",
+      },
+      fontSize: {
+        type: String,
+        enum: ["small", "medium", "large"],
+        default: "medium",
+      },
+      compactMode: {
+        type: Boolean,
+        default: false,
+      },
+      highContrast: {
+        type: Boolean,
+        default: false,
+      },
+      reducedMotion: {
+        type: Boolean,
+        default: false,
+      },
+      colorScheme: {
+        type: String,
+        enum: ["default", "blue", "green", "purple", "orange"],
+        default: "default",
+      },
+      sidebarCollapsed: {
+        type: Boolean,
+        default: false,
+      },
+      showAvatars: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    privacySettings: {
+      profileVisibility: {
+        type: String,
+        enum: ["public", "followers", "private"],
+        default: "public",
+      },
+      showEmail: {
+        type: Boolean,
+        default: false,
+      },
+      showLocation: {
+        type: Boolean,
+        default: true,
+      },
+      showActivity: {
+        type: Boolean,
+        default: true,
+      },
+      showStats: {
+        type: Boolean,
+        default: true,
+      },
+      allowMessages: {
+        type: String,
+        enum: ["everyone", "followers", "none"],
+        default: "followers",
+      },
+      allowMentions: {
+        type: String,
+        enum: ["everyone", "followers", "none"],
+        default: "everyone",
+      },
+      showOnlineStatus: {
+        type: Boolean,
+        default: true,
+      },
+      indexProfile: {
+        type: Boolean,
+        default: true,
+      },
     },
   },
   { timestamps: true }

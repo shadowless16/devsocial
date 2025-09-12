@@ -150,7 +150,7 @@ export default function PostCard({
               className="cursor-pointer hover:ring-primary/20 transition-all flex-shrink-0"
               onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
             >
-              <Avatar className="h-8 w-8 md:h-10 md:w-10 ring-1 ring-primary/20">
+              <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-1 ring-primary/20">
                 <AvatarImage 
                   src={getAvatarUrl(avatar)} 
                   alt={author}
@@ -162,30 +162,34 @@ export default function PostCard({
             </div>
             
             <div className="flex-1 min-w-0 w-full overflow-hidden">
-              <div className="flex items-center justify-between mb-1 w-full">
-                <div className="flex items-center gap-1 md:gap-2 flex-wrap min-w-0 flex-1 mr-2">
-                  <span 
-                    className="font-medium text-xs md:text-sm cursor-pointer hover:text-primary transition-colors truncate"
-                    onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
-                  >{author}</span>
-                  <Badge className="bg-primary/10 text-primary text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">{level}</Badge>
-                  <span 
-                    className="text-[10px] md:text-xs text-muted-foreground cursor-pointer hover:text-primary transition-colors hidden sm:inline truncate"
-                    onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
-                  >{handle}</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline flex-shrink-0">•</span>
-                  <span className="text-[10px] md:text-xs text-muted-foreground hidden sm:inline flex-shrink-0">{formatTimeAgo(timestamp)}</span>
-                  {xpDelta > 0 && (
-                    <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-[10px] md:text-xs px-1 md:px-2 flex-shrink-0">
-                      +{xpDelta}
-                    </Badge>
-                  )}
-                  {imprintStatus && imprintStatus !== "none" && (
-                    <PostMeta 
-                      imprintStatus={imprintStatus} 
-                      onChainProof={onChainProof}
-                    />
-                  )}
+              <div className="flex items-start justify-between mb-1 w-full">
+                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1 mr-2">
+                  <div className="flex items-center gap-1 md:gap-2 min-w-0">
+                    <span 
+                      className="font-medium text-sm md:text-sm cursor-pointer hover:text-primary transition-colors truncate"
+                      onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
+                    >{author}</span>
+                    <Badge className="bg-primary/10 text-primary text-xs px-2 py-0.5 flex-shrink-0">{level}</Badge>
+                  </div>
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                    <span 
+                      className="cursor-pointer hover:text-primary transition-colors truncate"
+                      onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
+                    >{handle}</span>
+                    <span className="flex-shrink-0">•</span>
+                    <span className="flex-shrink-0">{formatTimeAgo(timestamp)}</span>
+                    {xpDelta > 0 && (
+                      <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-2 py-0.5 flex-shrink-0">
+                        +{xpDelta}
+                      </Badge>
+                    )}
+                    {imprintStatus && imprintStatus !== "none" && (
+                      <PostMeta 
+                        imprintStatus={imprintStatus} 
+                        onChainProof={onChainProof}
+                      />
+                    )}
+                  </div>
                 </div>
                 
                 <DropdownMenu>
@@ -217,7 +221,7 @@ export default function PostCard({
               </div>
               
               <div 
-                className="text-xs md:text-sm mb-2 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-muted/50 rounded-md p-1 md:p-2 -m-1 md:-m-2 transition-colors w-full overflow-hidden break-words"
+                className="text-sm md:text-sm mb-3 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors w-full overflow-hidden break-words"
                 onClick={() => postId && onClick?.(postId)}
               >
                 <ReactMarkdown
@@ -340,12 +344,12 @@ export default function PostCard({
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-2 border-t border-border">
-                <div className="flex items-center gap-4">
+              <div className="flex items-center justify-between pt-3 border-t border-border">
+                <div className="flex items-center gap-1 md:gap-4">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={`h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
+                    className={`h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-red-500 ${
                       isLiked ? "text-red-500" : ""
                     }`}
                     onClick={handleLike}
@@ -357,7 +361,7 @@ export default function PostCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-blue-500"
+                    className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-blue-500"
                     onClick={() => postId && onComment?.(postId)}
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -367,27 +371,27 @@ export default function PostCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-green-500"
+                    className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-green-500"
                     onClick={handleShare}
                   >
                     <Share className="h-4 w-4" />
-                    <span className="text-xs">Share</span>
+                    <span className="text-xs hidden sm:inline">Share</span>
                   </Button>
 
                   {user && authorId && user.id !== authorId && (
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600"
+                      className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-yellow-600"
                       onClick={() => setShowTipModal(true)}
                     >
                       <Coins className="h-4 w-4" />
-                      <span className="text-xs">Tip</span>
+                      <span className="text-xs hidden sm:inline">Tip</span>
                     </Button>
                   )}
                 </div>
 
-                <div className="text-xs text-muted-foreground">
+                <div className="text-xs text-muted-foreground flex-shrink-0">
                   {views} views
                 </div>
               </div>

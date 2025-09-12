@@ -2,13 +2,15 @@
 
 import { useMemo, useState, useEffect } from "react"
 import { Card } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import MissionsFilters, { type MissionFiltersState } from "@/components/missions-filters"
 import MissionCard, { type Mission } from "@/components/mission-card"
 import DensityToggle, { type Density } from "@/components/density-toggle"
 import { apiClient } from "@/lib/api-client"
-import { Loader2 } from "lucide-react"
+import { Loader2, Sparkles, Trash2 } from "lucide-react"
 import { MissionsSkeleton } from "@/components/skeletons/missions-skeleton"
+import { useSession } from "next-auth/react"
 
 export default function MissionsPage() {
   const [tab, setTab] = useState<"available" | "active" | "completed">("available")
@@ -22,6 +24,8 @@ export default function MissionsPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [generating, setGenerating] = useState(false)
+  const { data: session } = useSession()
 
   useEffect(() => {
     fetchMissions()
@@ -40,6 +44,30 @@ export default function MissionsPage() {
       setError("Error loading missions")
     } finally {
       setLoading(false)
+    }
+  }
+
+  const generateMissions = async () => {
+    try {
+      setGenerating(true)
+      const response = await apiClient.generateMissions(5)
+      if (response.success) {
+        setRefreshKey(prev => prev + 1)
+      }
+    } catch (err) {
+      console.error('Failed to generate missions:', err)
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  const deleteMission = async (missionId: string) => {
+    if (!confirm('Are you sure you want to delete this mission?')) return
+    try {
+      await fetch(`/api/missions/${missionId}`, { method: 'DELETE' })
+      setRefreshKey(prev => prev + 1)
+    } catch (err) {
+      console.error('Failed to delete mission:', err)
     }
   }
 
@@ -96,7 +124,19 @@ export default function MissionsPage() {
               Complete missions to earn XP, badges, and unlock special rewards.
             </p>
           </div>
-          <DensityToggle value={density} onChange={setDensity} />
+          <div className="flex items-center gap-2">
+            {((session?.user as any)?.isAdmin || (session?.user as any)?.role === 'admin') && (
+              <Button 
+                onClick={generateMissions} 
+                disabled={generating}
+                className="bg-emerald-600 hover:bg-emerald-700"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                {generating ? 'Generating...' : 'Generate Missions'}
+              </Button>
+            )}
+            <DensityToggle value={density} onChange={setDensity} />
+          </div>
         </header>
 
         <div className="sticky top-0 z-10 mb-5 grid gap-3 bg-muted/30 pb-3 pt-2 md:grid-cols-[1fr_auto]">
@@ -112,12 +152,23 @@ export default function MissionsPage() {
 
         <section aria-label="Missions" className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
           {missions.map((m) => (
-            <MissionCard 
-              key={m.id} 
-              mission={m} 
-              density={density} 
-              onProgressUpdate={() => setRefreshKey(prev => prev + 1)}
-            />
+            <div key={m.id} className="relative">
+              <MissionCard 
+                mission={m} 
+                density={density} 
+                onProgressUpdate={() => setRefreshKey(prev => prev + 1)}
+              />
+              {((session?.user as any)?.isAdmin || (session?.user as any)?.role === 'admin') && (
+                <Button
+                  onClick={() => deleteMission(m.id)}
+                  size="sm"
+                  variant="destructive"
+                  className="absolute top-2 right-2 h-8 w-8 p-0"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
           ))}
           {missions.length === 0 ? (
             <Card className="col-span-full grid place-items-center rounded-2xl border-0 p-8 text-sm text-muted-foreground ring-1 ring-black/5">

@@ -5,6 +5,7 @@ import { User, Activity, TrendingUp, Shield, Wallet } from 'lucide-react'
 import { TransactionHistory } from '@/components/transactions/transaction-history'
 import { WalletBalanceDisplay } from '@/components/transactions/wallet-balance-display'
 import { useAuth } from '@/contexts/auth-context'
+import { useWebSocket } from '@/contexts/websocket-context'
 import ProfileHeader from '@/components/profile/ProfileHeader'
 import ProfileStats from '@/components/profile/ProfileStats'
 import ActivityFeed from '@/components/profile/ActivityFeed'
@@ -15,6 +16,7 @@ import { Button } from '@/components/ui/button'
 
 export default function MyProfile() {
   const { user, loading: authLoading } = useAuth()
+  const { socket } = useWebSocket()
   const [activeTab, setActiveTab] = useState('overview')
   const [profileData, setProfileData] = useState<any>(null)
   const [statsData, setStatsData] = useState<any>(null)
@@ -82,7 +84,10 @@ export default function MyProfile() {
           // Use authoritative followers count when available to avoid stale DB field
           followersCount: authoritativeFollowers || 0,
           followingCount: (userForProfile as any)?.followingCount || 0,
-          isFollowing: false
+          isFollowing: false,
+          xp: (userForProfile as any)?.points || 0,
+          level: (userForProfile as any)?.level || 1,
+          badges: (userForProfile as any)?.badges || []
         };
         setProfileData(formattedProfileData);
 
@@ -109,6 +114,28 @@ export default function MyProfile() {
 
     fetchPageData()
   }, [user, authLoading])
+
+  // Listen for real-time updates
+  useEffect(() => {
+    if (!socket || !user) return
+
+    const handleNewActivity = (activity: any) => {
+      setActivitiesData(prev => [activity, ...prev.slice(0, 19)])
+    }
+
+    const handleXPUpdate = (data: any) => {
+      setProfileData((prev: any) => prev ? { ...prev, xp: data.newXP } : prev)
+      setStatsData((prev: any) => prev ? { ...prev, totalXP: data.newXP } : prev)
+    }
+
+    socket.on('activity:new', handleNewActivity)
+    socket.on('xp:updated', handleXPUpdate)
+
+    return () => {
+      socket.off('activity:new', handleNewActivity)
+      socket.off('xp:updated', handleXPUpdate)
+    }
+  }, [socket, user])
 
   const handlePrivacySettingsChange = (newSettings: any) => {
     console.log('Privacy settings updated:', newSettings)

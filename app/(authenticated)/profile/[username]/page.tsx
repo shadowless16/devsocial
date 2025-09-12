@@ -78,7 +78,10 @@ export default function UserProfile() {
           username: user.username,
           followersCount: user.followersCount || 0,
           followingCount: user.followingCount || 0,
-          isFollowing: user.isFollowing || false
+          isFollowing: user.isFollowing || false,
+          xp: user.points || 0,
+          level: user.level || 1,
+          badges: user.badges || []
         }
         
         console.log('Profile data with follow state:', profileData); // Debug log

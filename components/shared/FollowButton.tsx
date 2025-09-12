@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/websocket-context";
 import { useFollow } from "@/contexts/follow-context";
 import { useAuth } from "@/contexts/auth-context";
+import { useMissionTracker } from "@/hooks/use-mission-tracker";
 import { getFollowActionText, getFollowingActionText, getFollowTooltip } from "@/lib/gamified-terms";
 
 interface FollowButtonProps {
@@ -37,6 +38,7 @@ export function FollowButton({
   const { socket } = useWebSocket();
   const { updateFollowState, getFollowState } = useFollow();
   const { user } = useAuth();
+  const { trackFollow } = useMissionTracker();
 
   // Update local state when prop changes or from context
   useEffect(() => {
@@ -84,6 +86,8 @@ export function FollowButton({
       } else {
         // Follow
         await apiClient.followUser(userId);
+        // Track mission progress for following
+        trackFollow();
         toast({
           title: "Connected",
           description: `You are now connected with @${username}`,

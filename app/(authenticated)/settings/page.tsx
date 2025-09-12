@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 // FIX 1: Import the 'User' type directly from the context file.
 import { useAuth, User } from "@/contexts/auth-context";
 import { apiClient } from "@/lib/api-client";
-import { Settings, Save, Upload, User as UserIcon } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
+import { Settings, Save, Upload, User as UserIcon, Bell, Shield, Palette } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { SettingsSkeleton } from "@/components/skeletons/settings-skeleton";
 import dynamic from 'next/dynamic';
+import { NotificationSettings } from "./notification-settings";
+import { PrivacySettings } from "./privacy-settings";
+import { AppearanceSettings } from "./appearance-settings";
 
 const WalletConnect = dynamic(() => import('@/components/wallet-connect').then(mod => mod.WalletConnect), {
   loading: () => <p>Loading WalletConnect...</p>,
@@ -205,9 +208,9 @@ export default function SettingsPage() {
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="wallet">Wallet</TabsTrigger>
-          <TabsTrigger value="notifications" disabled>Notifications</TabsTrigger>
-          <TabsTrigger value="privacy" disabled>Privacy</TabsTrigger>
-          <TabsTrigger value="appearance" disabled>Appearance</TabsTrigger>
+          <TabsTrigger value="notifications">Notifications</TabsTrigger>
+          <TabsTrigger value="privacy">Privacy</TabsTrigger>
+          <TabsTrigger value="appearance">Appearance</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6 mt-6">
@@ -299,6 +302,48 @@ export default function SettingsPage() {
           <div className="flex justify-center">
             <WalletConnect />
           </div>
+        </TabsContent>
+
+        <TabsContent value="notifications" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Bell className="w-5 h-5 mr-2" />
+                Notification Preferences
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <NotificationSettings />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="privacy" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Shield className="w-5 h-5 mr-2" />
+                Privacy & Security
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <PrivacySettings />
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="appearance" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Palette className="w-5 h-5 mr-2" />
+                Appearance & Display
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AppearanceSettings />
+            </CardContent>
+          </Card>
         </TabsContent>
       </Tabs>
 

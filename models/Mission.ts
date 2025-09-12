@@ -25,6 +25,7 @@ export interface IMission extends Document {
   participantCount: number
   completionCount: number
   createdBy: mongoose.Types.ObjectId
+  aiGenerated?: boolean
   createdAt: Date
   updatedAt: Date
 }
@@ -91,6 +92,10 @@ const MissionSchema = new Schema<IMission>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+    },
+    aiGenerated: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

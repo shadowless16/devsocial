@@ -24,7 +24,7 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)
   const [showPostModal, setShowPostModal] = useState(false)
-  const observer = useRef<IntersectionObserver>()
+  const observer = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
     fetchPosts(1, true)
@@ -59,13 +59,13 @@ export default function HomePage() {
 
   const lastPostElementRef = useCallback((node: HTMLDivElement) => {
     if (loading || loadingMore) return
-    if (observer.current) observer.current.disconnect()
-    observer.current = new IntersectionObserver(entries => {
+  if (observer.current) observer.current.disconnect()
+  observer.current = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && hasMore) {
         fetchPosts(page + 1)
       }
     })
-    if (node) observer.current.observe(node)
+  if (node) observer.current?.observe(node)
   }, [loading, loadingMore, hasMore, page])
 
   const handleCreatePost = async (postData: any) => {
@@ -133,11 +133,11 @@ export default function HomePage() {
   }
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-4 max-w-4xl">
+    <div className="w-full max-w-4xl mx-auto px-3 md:px-6 py-3 md:py-4">
       <HeaderBar onCreateClick={() => setShowPostModal(true)} />
       <StatPills />
       <Compose onCreateClick={() => setShowPostModal(true)} />
-      <div className="grid gap-3 md:gap-4">
+      <div className="grid gap-2 md:gap-4">
         {loading ? (
           <PostSkeleton />
         ) : posts.length === 0 ? (
@@ -205,17 +205,17 @@ export default function HomePage() {
 
 function HeaderBar({ onCreateClick }: { onCreateClick: () => void }) {
   return (
-    <div className="flex items-center justify-between gap-3 mb-4">
-      <div className="grid gap-1">
-        <h1 className="text-xl font-semibold tracking-tight md:text-2xl">DevSocial</h1>
-        <p className="text-xs text-muted-foreground md:text-sm">{"What's happening in tech today?"}</p>
+    <div className="flex items-center justify-between gap-2 mb-3 md:mb-4">
+      <div className="grid gap-0.5 md:gap-1 flex-1 min-w-0">
+        <h1 className="text-lg font-semibold tracking-tight md:text-2xl truncate">DevSocial</h1>
+        <p className="text-xs text-muted-foreground md:text-sm truncate">{"What's happening in tech today?"}</p>
       </div>
-      <div className="flex items-center gap-2 md:hidden">
-        <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+      <div className="flex items-center gap-1 md:hidden flex-shrink-0">
+        <Button variant="outline" size="sm" className="h-9 w-9 p-0">
           <Search className="h-4 w-4" />
         </Button>
       </div>
-      <div className="hidden md:flex items-center gap-2">
+      <div className="hidden md:flex items-center gap-2 flex-shrink-0">
         <Button variant="outline" className="gap-2 bg-transparent">
           <Search className="h-4 w-4" />
           <span>Search</span>
@@ -233,8 +233,8 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
   const { user } = useAuth()
   
   return (
-    <Card className="group border-0 shadow-none ring-1 ring-black/5 transition-colors hover:bg-background mb-4">
-      <CardContent className="flex items-start gap-3 p-3 md:p-4">
+    <Card className="group border-0 shadow-none ring-1 ring-black/5 transition-colors hover:bg-background mb-3 md:mb-4">
+      <CardContent className="flex items-start gap-2 md:gap-3 p-3 md:p-4">
         <Avatar className="h-8 w-8 md:h-9 md:w-9 ring-1 ring-primary/20 flex-shrink-0">
           <AvatarImage 
             src={getAvatarUrl(user?.avatar)} 
@@ -250,20 +250,20 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
             readOnly
             aria-label="Compose a post"
             placeholder={"What's on your mind?"}
-            className="h-10 md:h-11 w-full rounded-xl border-muted-foreground/20 bg-muted/40 px-3 md:px-4 text-sm shadow-none transition focus-visible:ring-primary cursor-pointer"
+            className="h-11 md:h-11 w-full rounded-xl border-muted-foreground/20 bg-muted/40 px-3 md:px-4 text-sm shadow-none transition focus-visible:ring-primary cursor-pointer"
           />
           <div className="mt-2 md:mt-3 flex items-center justify-between">
             <div className="flex items-center gap-1 md:gap-2">
-              <Button size="icon" variant="ghost" className="h-8 w-8 md:h-9 md:w-9 text-muted-foreground hover:text-foreground">
+              <Button size="icon" variant="ghost" className="h-9 w-9 md:h-9 md:w-9 text-muted-foreground hover:text-foreground">
                 <ImageIcon className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="sr-only">Add image</span>
               </Button>
-              <Button size="icon" variant="ghost" className="h-8 w-8 md:h-9 md:w-9 text-muted-foreground hover:text-foreground">
+              <Button size="icon" variant="ghost" className="h-9 w-9 md:h-9 md:w-9 text-muted-foreground hover:text-foreground">
                 <Upload className="h-4 w-4 md:h-5 md:w-5" />
                 <span className="sr-only">Upload file</span>
               </Button>
             </div>
-            <Button onClick={onCreateClick} className="h-8 md:h-9 rounded-lg px-3 md:px-4 text-sm">Post</Button>
+            <Button onClick={onCreateClick} className="h-9 md:h-9 rounded-lg px-4 md:px-4 text-sm">Post</Button>
           </div>
         </div>
       </CardContent>

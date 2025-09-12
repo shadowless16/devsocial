@@ -21,7 +21,7 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
   const [actionType, setActionType] = useState<'summarize' | 'explain' | null>(null);
   const [summarizeUsage, setSummarizeUsage] = useState(0);
   const [explainUsage, setExplainUsage] = useState(0);
-  const [summarizeLimit] = useState(50); // Monthly limit
+  const [summarizeLimit, setSummarizeLimit] = useState(5); // Monthly limit
   const [explainLimit] = useState(5); // Daily limit
   const { toast } = useToast();
 
@@ -34,6 +34,7 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
           const data = await response.json();
           if (data.success) {
             setSummarizeUsage(data.data.used);
+            setSummarizeLimit(data.data.limit);
           }
         }
       } catch (error) {
@@ -93,7 +94,9 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
         // Update usage count
         if (type === 'summarize') {
           const remainingUsage = data.data.remainingUsage || 0;
-          setSummarizeUsage(summarizeLimit - remainingUsage);
+          const currentLimit = data.data.monthlyLimit || summarizeLimit;
+          setSummarizeUsage(currentLimit - remainingUsage);
+          setSummarizeLimit(currentLimit);
         } else {
           const remainingUsage = data.data.remainingUsage || 0;
           setExplainUsage(explainLimit - remainingUsage);

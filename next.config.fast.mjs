@@ -6,10 +6,33 @@ const nextConfig = {
     removeConsole: false,
   },
   
-  // Reduce bundle analysis
-  webpack: (config, { dev, isServer }) => {
+  // Webpack customizations are attached only when Turbopack is not active.
+  
+  // Faster page loads
+  experimental: {
+    optimizeCss: false,
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  
+  // Image optimization
+  images: {
+    domains: ['images.unsplash.com', 'res.cloudinary.com'],
+    unoptimized: true, // Faster dev builds
+  },
+}
+
+const isTurbopack = !!(
+  process.env.__NEXT_PRIVATE_TURBOPACK === '1' ||
+  process.env.NEXT_TURBOPACK === '1' ||
+  process.env.__NEXT_PRIVATE_TURBOPACK
+)
+
+if (!isTurbopack) {
+  // Attach webpack customizations only for webpack runs
+  nextConfig.webpack = (config, { dev, isServer }) => {
     if (dev) {
       // Faster development builds
+      config.optimization = config.optimization || {}
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {
@@ -20,7 +43,7 @@ const nextConfig = {
           },
         },
       }
-      
+
       // Reduce file watching
       config.watchOptions = {
         poll: 1000,
@@ -34,21 +57,19 @@ const nextConfig = {
         ],
       }
     }
-    
+
+    if (!isServer) {
+      config.resolve = config.resolve || {}
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        net: false,
+        tls: false,
+      }
+    }
+
     return config
-  },
-  
-  // Faster page loads
-  experimental: {
-    optimizeCss: false,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
-  },
-  
-  // Image optimization
-  images: {
-    domains: ['images.unsplash.com', 'res.cloudinary.com'],
-    unoptimized: true, // Faster dev builds
-  },
+  }
 }
 
 export default nextConfig

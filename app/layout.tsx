@@ -3,6 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 import { Providers } from './providers'
 import '@/lib/appkit-config'
+import DisablePrefetch from '@/components/client/disable-prefetch'
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -11,11 +12,7 @@ export const metadata: Metadata = {
   description: 'Gamified dev-collab platform on Hedera',
 }
 
-// Disable prefetching in development
-if (process.env.NODE_ENV === 'development') {
-  const originalPrefetch = require('next/link').default.prefetch
-  require('next/link').default.prefetch = () => {}
-}
+// Prefetch disabling runs on the client via a small client component
 
 export default function RootLayout({
   children,
@@ -26,6 +23,10 @@ export default function RootLayout({
     <html lang="en">
       <body className=''>
         <Providers>
+          {/* Client-only: disable next/link prefetch in development */}
+          {process.env.NODE_ENV === 'development' ? (
+            <DisablePrefetch />
+          ) : null}
           {children}
         </Providers>
       </body>

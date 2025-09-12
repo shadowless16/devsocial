@@ -144,28 +144,28 @@ export default function TrendingPage() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-6xl mx-auto px-3 md:px-6">
       {/* Header */}
-      <div className="text-center mb-8">
-        <div className="flex items-center justify-center mb-4">
-          <div className="bg-gradient-to-r from-orange-400 to-red-500 p-3 rounded-full">
-            <TrendingUp className="w-8 h-8 text-white" />
+      <div className="text-center mb-6 md:mb-8">
+        <div className="flex items-center justify-center mb-3 md:mb-4">
+          <div className="bg-gradient-to-r from-orange-400 to-red-500 p-2 md:p-3 rounded-full">
+            <TrendingUp className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
         </div>
-        <h1 className="text-2xl lg:text-3xl font-bold text-navy-900 mb-2">Trending</h1>
-        <p className="text-gray-600">Discover what's hot in the developer community</p>
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-navy-900 mb-1 md:mb-2">Trending</h1>
+        <p className="text-sm md:text-base text-gray-600 px-4">Discover what's hot in the developer community</p>
       </div>
 
       {/* Time Filter */}
-      <div className="flex justify-center mb-6">
-        <div className="bg-gray-100 p-1 rounded-lg">
+      <div className="flex justify-center mb-4 md:mb-6">
+        <div className="bg-gray-100 p-1 rounded-lg w-full max-w-sm md:w-auto">
           {["today", "week", "month"].map((filter) => (
             <Button
               key={filter}
               variant={timeFilter === filter ? "default" : "ghost"}
               size="sm"
               onClick={() => setTimeFilter(filter)}
-              className={`capitalize ${
+              className={`capitalize flex-1 md:flex-none text-xs md:text-sm ${
                 timeFilter === filter ? "bg-white shadow-sm text-navy-900" : "text-gray-600 hover:text-gray-900"
               }`}
             >
@@ -176,55 +176,55 @@ export default function TrendingPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 mb-6 md:mb-8">
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Fire className="w-5 h-5 text-orange-500 mr-2" />
-              <span className="text-lg font-bold text-gray-900">{stats.hotPosts}</span>
+          <CardContent className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center mb-1 md:mb-2">
+              <Fire className="w-4 h-4 md:w-5 md:h-5 text-orange-500 mr-1 md:mr-2" />
+              <span className="text-sm md:text-lg font-bold text-gray-900">{stats.hotPosts}</span>
             </div>
-            <div className="text-sm text-gray-600">Hot Posts</div>
+            <div className="text-xs md:text-sm text-gray-600">Hot Posts</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <TrendingUp className="w-5 h-5 text-green-500 mr-2" />
-              <span className="text-lg font-bold text-gray-900">{stats.growth}</span>
+          <CardContent className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center mb-1 md:mb-2">
+              <TrendingUp className="w-4 h-4 md:w-5 md:h-5 text-green-500 mr-1 md:mr-2" />
+              <span className="text-sm md:text-lg font-bold text-gray-900">{stats.growth}</span>
             </div>
-            <div className="text-sm text-gray-600">Growth</div>
+            <div className="text-xs md:text-sm text-gray-600">Growth</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Eye className="w-5 h-5 text-blue-500 mr-2" />
-              <span className="text-lg font-bold text-gray-900">{stats.totalViews}</span>
+          <CardContent className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center mb-1 md:mb-2">
+              <Eye className="w-4 h-4 md:w-5 md:h-5 text-blue-500 mr-1 md:mr-2" />
+              <span className="text-sm md:text-lg font-bold text-gray-900">{stats.totalViews}</span>
             </div>
-            <div className="text-sm text-gray-600">Total Views</div>
+            <div className="text-xs md:text-sm text-gray-600">Total Views</div>
           </CardContent>
         </Card>
         <Card>
-          <CardContent className="p-4 text-center">
-            <div className="flex items-center justify-center mb-2">
-              <Heart className="w-5 h-5 text-red-500 mr-2" />
-              <span className="text-lg font-bold text-gray-900">{stats.engagements}</span>
+          <CardContent className="p-3 md:p-4 text-center">
+            <div className="flex items-center justify-center mb-1 md:mb-2">
+              <Heart className="w-4 h-4 md:w-5 md:h-5 text-red-500 mr-1 md:mr-2" />
+              <span className="text-sm md:text-lg font-bold text-gray-900">{stats.engagements}</span>
             </div>
-            <div className="text-sm text-gray-600">Engagements</div>
+            <div className="text-xs md:text-sm text-gray-600">Engagements</div>
           </CardContent>
         </Card>
       </div>
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3">
-          <TabsTrigger value="posts">Trending Posts</TabsTrigger>
-          <TabsTrigger value="topics">Hot Topics</TabsTrigger>
-          <TabsTrigger value="users">Rising Stars</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 h-auto">
+          <TabsTrigger value="posts" className="text-xs md:text-sm px-2 py-2">Trending Posts</TabsTrigger>
+          <TabsTrigger value="topics" className="text-xs md:text-sm px-2 py-2">Hot Topics</TabsTrigger>
+          <TabsTrigger value="users" className="text-xs md:text-sm px-2 py-2">Rising Stars</TabsTrigger>
         </TabsList>
 
         {/* Trending Posts */}
-        <TabsContent value="posts" className="space-y-6 mt-6">
+        <TabsContent value="posts" className="space-y-3 md:space-y-6 mt-4 md:mt-6">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin" />

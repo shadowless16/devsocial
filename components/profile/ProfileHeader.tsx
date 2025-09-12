@@ -29,6 +29,10 @@ const RPMAvatarModal = dynamic(() => import('@/components/modals/rpm-avatar-moda
   ssr: false
 })
 
+const EditProfileModal = dynamic(() => import('@/components/modals/edit-profile-modal'), {
+  ssr: false
+})
+
 type ProfileHeaderProps = {
   profile: {
     name: string;
@@ -44,6 +48,9 @@ type ProfileHeaderProps = {
     followersCount: number;
     followingCount: number;
     isFollowing: boolean;
+    xp?: number;
+    level?: number;
+    badges?: string[];
   };
   onEdit: () => void;
   isOwnProfile: boolean;
@@ -54,6 +61,7 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
   const [isEditing, setIsEditing] = useState(false)
   const [showRPMModal, setShowRPMModal] = useState(false)
   const [showViewerModal, setShowViewerModal] = useState(false)
+  const [showEditModal, setShowEditModal] = useState(false)
   const { user: currentUser } = AuthContext.useAuth();
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
   const [followersCount, setFollowersCount] = useState(profile.followersCount);
@@ -62,8 +70,13 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
   const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers');
 
   const handleEditToggle = () => {
-    setIsEditing(!isEditing)
-    onEdit()
+    setShowEditModal(true)
+  }
+
+  const handleProfileSave = (data: any) => {
+    if (setProfileData) {
+      setProfileData((prev: any) => ({ ...prev, ...data }))
+    }
   }
 
   const openFollowModal = (type: 'followers' | 'following') => {
@@ -184,6 +197,25 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
               )}
             </div>
 
+            {/* XP and Badges */}
+            <div className="flex items-center gap-2 mb-2">
+              {profile.xp && (
+                <Badge variant="default" className="text-xs bg-yellow-500 text-white">
+                  {profile.xp} XP
+                </Badge>
+              )}
+              {profile.level && (
+                <Badge variant="outline" className="text-xs">
+                  Level {profile.level}
+                </Badge>
+              )}
+              {profile.badges && profile.badges.slice(0, 2).map((badge, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {badge}
+                </Badge>
+              ))}
+            </div>
+
             {/* Tech Stack */}
             {profile.techStack && profile.techStack.length > 0 && (
               <div className="flex flex-wrap gap-1">
@@ -244,6 +276,15 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
           onClose={() => setFollowModalOpen(false)}
           username={profile.username}
           type={followModalType}
+        />
+      )}
+
+      {showEditModal && (
+        <EditProfileModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          profile={profile}
+          onSave={handleProfileSave}
         />
       )}
     </Card>

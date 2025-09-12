@@ -16,7 +16,8 @@ export async function GET(
   try {
     await connectDB();
     
-    const { username } = params;
+  // `params` can be a Promise in Next.js route handlers — await it before using.
+  const { username } = await params;
     const url = new URL(req.url);
     const page = parseInt(url.searchParams.get("page") || "1");
     const limit = parseInt(url.searchParams.get("limit") || "20");

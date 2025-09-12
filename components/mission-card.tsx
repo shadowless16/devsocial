@@ -7,6 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { BookOpen, Star, Trophy } from "lucide-react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { apiClient } from "@/lib/api-client"
 import type { Density } from "./density-toggle"
 
 export type Mission = {
@@ -224,11 +225,8 @@ export default function MissionCard({
               if (!isJoined) {
                 setJoining(true)
                 try {
-                  const response = await fetch(`/api/missions/${(mission as any)._id || mission.id}/join`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' }
-                  })
-                  if (response.ok) {
+                  const response = await apiClient.joinMission((mission as any)._id || mission.id)
+                  if (response.success) {
                     setUserProgress({ status: 'active', stepsCompleted: [] })
                     onProgressUpdate?.()
                   }

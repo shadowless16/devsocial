@@ -44,30 +44,46 @@ export async function GET(request: NextRequest) {
 
     const progressMap = new Map(userProgress.map(p => [p.mission.toString(), p]))
 
-    const missionsWithProgress = await Promise.all(missions.map(async mission => {
+    // Batch all user stats queries to avoid N+1 problem
+    const [followingCount, postsCount, likesCount, commentsCount, followersCount] = await Promise.all([
+      Follow.countDocuments({ follower: session.user.id }),
+      Post.countDocuments({ author: session.user.id }),
+      Like.countDocuments({ user: session.user.id }),
+      Comment.countDocuments({ author: session.user.id }),
+      Follow.countDocuments({ following: session.user.id })
+    ])
+
+    const userStats = {
+      following: followingCount,
+      posts: postsCount,
+      likes: likesCount,
+      comments: commentsCount,
+      followers: followersCount
+    }
+
+    const missionsWithProgress = missions.map(mission => {
       const userProgressData = progressMap.get(mission._id.toString())
       
-      // Calculate current progress for each step
+      // Calculate current progress for each step using cached stats
       const progressWithCounts = userProgressData ? {
         ...userProgressData.toObject(),
-        progress: await Promise.all(mission.steps.map(async (step: any) => {
+        progress: mission.steps.map((step: any) => {
           const stepId = step.id || step._id?.toString()
           let current = 0
           
-          // Calculate current progress based on step type
+          // Calculate current progress based on step type using cached stats
           const stepText = ((step.title || '') + ' ' + (step.description || '')).toLowerCase()
           
           if (stepText.includes('follow') && (stepText.includes('user') || stepText.includes('developer'))) {
-            current = await Follow.countDocuments({ follower: session.user.id })
+            current = userStats.following
           } else if (stepText.includes('post') && (stepText.includes('create') || stepText.includes('share'))) {
-            current = await Post.countDocuments({ author: session.user.id })
+            current = userStats.posts
           } else if (stepText.includes('like')) {
-            current = await Like.countDocuments({ user: session.user.id })
+            current = userStats.likes
           } else if (stepText.includes('comment')) {
-            current = await Comment.countDocuments({ author: session.user.id })
+            current = userStats.comments
           } else if (stepText.includes('follower') || stepText.includes('gain')) {
-            // For "Gain X Followers" steps - count actual followers
-            current = await Follow.countDocuments({ following: session.user.id })
+            current = userStats.followers
           }
           
           return {
@@ -76,7 +92,7 @@ export async function GET(request: NextRequest) {
             target: step.target || 1,
             completed: userProgressData.stepsCompleted.includes(stepId)
           }
-        }))
+        })
       } : null
       
       return {
@@ -84,7 +100,7 @@ export async function GET(request: NextRequest) {
         id: mission._id.toString(),
         userProgress: progressWithCounts
       }
-    }))
+    })
 
     return NextResponse.json({ 
       success: true,

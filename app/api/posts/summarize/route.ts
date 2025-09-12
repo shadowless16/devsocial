@@ -11,24 +11,24 @@ export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
-      return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
+      return NextResponse.json({ success: false, message: 'Authentication required' }, { status: 401 });
     }
 
     const { content } = await req.json();
     
     if (!content || typeof content !== 'string' || content.trim().length === 0) {
-      return NextResponse.json(errorResponse('Content is required'), { status: 400 });
+      return NextResponse.json({ success: false, message: 'Content is required' }, { status: 400 });
     }
 
     if (content.length > 5000) {
-      return NextResponse.json(errorResponse('Content too long for summarization'), { status: 400 });
+      return NextResponse.json({ success: false, message: 'Content too long for summarization' }, { status: 400 });
     }
 
     // Connect to database and check usage
     await connectDB();
     const user = await User.findById(session.user.id);
     if (!user) {
-      return NextResponse.json(errorResponse('User not found'), { status: 404 });
+      return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
 
     // Check monthly usage limit (5 per month for free users, unlimited for AkDavid)
@@ -42,10 +42,10 @@ export async function POST(req: NextRequest) {
     
     // Give AkDavid unlimited access
     if (user.username !== 'AkDavid' && monthlyUsage >= monthlyLimit) {
-      return NextResponse.json(
-        errorResponse(`Monthly limit of ${monthlyLimit} summaries reached. ${user.isPremium ? '' : 'Upgrade to premium for unlimited access.'}`), 
-        { status: 429 }
-      );
+      return NextResponse.json({
+        success: false,
+        message: `Monthly limit of ${monthlyLimit} summaries reached. ${user.isPremium ? '' : 'Upgrade to premium for unlimited access.'}`
+      }, { status: 429 });
     }
 
     const summary = await aiService.summarizePost(content);
@@ -59,12 +59,19 @@ export async function POST(req: NextRequest) {
       });
     }
     
-    return NextResponse.json(successResponse({ 
-      summary,
-      remainingUsage: monthlyLimit - monthlyUsage - 1
-    }));
+    return NextResponse.json({
+      success: true,
+      data: {
+        summary,
+        remainingUsage: user.username === 'AkDavid' ? 999999 : monthlyLimit - monthlyUsage - 1,
+        monthlyLimit
+      }
+    });
   } catch (error) {
     console.error('Summarization error:', error);
-    return NextResponse.json(errorResponse('Failed to generate summary'), { status: 500 });
+    return NextResponse.json({
+      success: false,
+      message: 'Failed to generate summary'
+    }, { status: 500 });
   }
 }
