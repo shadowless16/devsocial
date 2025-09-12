@@ -19,11 +19,11 @@ try {
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest, { params }: { params: { postId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
   try {
     await connectDB()
 
-    const { postId } = params
+    const { postId } = await params
     const { searchParams } = new URL(request.url)
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "20")
@@ -77,7 +77,7 @@ export async function GET(request: NextRequest, { params }: { params: { postId: 
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { postId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
   try {
     await connectDB()
 
@@ -87,7 +87,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
     }
 
     const userId = authResult.user!.id
-    const { postId } = params
+    const { postId } = await params
     const { content, parentCommentId } = await request.json()
 
     if (!content || content.trim().length === 0) {
