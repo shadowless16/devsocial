@@ -13,7 +13,7 @@ import MissionProgress from "@/models/MissionProgress"
 // POST /api/user/follow/[userId] - Follow a user
 
 export const dynamic = 'force-dynamic'
-export async function POST(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
     await connectDB()
 
@@ -22,7 +22,7 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
       return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
-    const { userId } = params
+    const { userId } = await params
     const currentUserId = authResult.user.id
 
     if (userId === currentUserId) {
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest, { params }: { params: { userId:
 }
 
 // DELETE /api/user/follow/[userId] - Unfollow a user
-export async function DELETE(request: NextRequest, { params }: { params: { userId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ userId: string }> }) {
   try {
     await connectDB()
 
@@ -185,7 +185,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { userI
       return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
     }
 
-    const { userId } = params
+    const { userId } = await params
     const currentUserId = authResult.user.id
 
     // Prevent unfollowing AkDavid

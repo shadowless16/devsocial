@@ -23,7 +23,7 @@ try {
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest, { params }: { params: { postId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ postId: string }> }) {
   try {
     await connectDB();
 
@@ -33,7 +33,7 @@ export async function POST(request: NextRequest, { params }: { params: { postId:
     }
 
     const userId = session.user.id;
-    const { postId } = params;
+    const { postId } = await params;
 
     const post = await Post.findById(postId).populate("author", "username displayName");
     if (!post) {

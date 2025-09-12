@@ -9,7 +9,7 @@ import mongoose from "mongoose"
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest, { params }: { params: { conversationId: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ conversationId: string }> }) {
   try {
     await connectDB()
 
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
     }
 
     const userId = authResult.user!.id
-    const { conversationId } = params
+    const { conversationId } = await params
     const { searchParams } = new URL(request.url)
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Number.parseInt(searchParams.get("limit") || "50")
@@ -98,7 +98,7 @@ export async function GET(request: NextRequest, { params }: { params: { conversa
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { conversationId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ conversationId: string }> }) {
   try {
     await connectDB()
 
@@ -108,7 +108,7 @@ export async function POST(request: NextRequest, { params }: { params: { convers
     }
 
     const userId = authResult.user!.id
-    const { conversationId } = params
+    const { conversationId } = await params
     const body = await request.json()
     const { content, messageType = "text", fileUrl, fileName, fileSize, replyTo } = body
 
