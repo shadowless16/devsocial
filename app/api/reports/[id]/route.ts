@@ -6,7 +6,7 @@ import Report from '@/models/Report'
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -16,12 +16,13 @@ export async function PUT(
     }
 
     await connectDB()
+    const { id } = await params
 
     const body = await request.json()
     const { action, status } = body
 
     const report = await Report.findByIdAndUpdate(
-      params.id,
+      id,
       { 
         status,
         reviewedBy: session.user.id,

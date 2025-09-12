@@ -10,12 +10,11 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     await connectDB();
-    
-    const { id } = params;
+    const { id } = await params;
     const session = await getServerSession(authOptions);
   // NextRequest doesn't expose `ip`; use x-forwarded-for header or fallback
   const ipHeader = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');

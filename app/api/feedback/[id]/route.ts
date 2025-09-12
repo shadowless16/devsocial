@@ -8,7 +8,7 @@ import User from '@/models/User'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -17,8 +17,9 @@ export async function GET(
     }
 
     await connectDB()
+    const { id } = await params
     
-    const feedback = await Feedback.findById(params.id)
+    const feedback = await Feedback.findById(id)
       .populate('userId', 'username avatar role')
       .populate('solvedBy', 'username')
 
@@ -27,7 +28,7 @@ export async function GET(
     }
 
     // Get comments
-    const comments = await FeedbackComment.find({ feedbackId: params.id })
+    const comments = await FeedbackComment.find({ feedbackId: id })
       .populate('userId', 'username avatar role')
       .sort({ createdAt: 1 })
 
@@ -40,7 +41,7 @@ export async function GET(
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -49,6 +50,7 @@ export async function PATCH(
     }
 
     await connectDB()
+    const { id } = await params
     
     const user = await User.findById(session.user.id)
     if (!user || (user.role !== 'admin' && user.role !== 'moderator')) {
@@ -68,7 +70,7 @@ export async function PATCH(
     }
 
     const feedback = await Feedback.findByIdAndUpdate(
-      params.id,
+      id,
       updateData,
       { new: true }
     ).populate('userId', 'username avatar role')
