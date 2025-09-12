@@ -8,7 +8,7 @@ import { successResponse, errorResponse } from "@/utils/response"
 
 export const dynamic = 'force-dynamic'
 
-export async function DELETE(request: NextRequest, { params }: { params: { commentId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ commentId: string }> }) {
   try {
     await connectDB()
 
@@ -18,7 +18,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { comme
     }
 
     const userId = authResult.user.id
-    const { commentId } = params
+    const { commentId } = await params
 
     const comment = await Comment.findById(commentId)
     if (!comment) {
