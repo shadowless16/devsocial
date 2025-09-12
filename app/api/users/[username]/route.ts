@@ -12,12 +12,12 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { username: string } }
+  { params }: { params: Promise<{ username: string }> }
 ) {
   try {
     await connectDB();
     
-    const { username } = params;
+    const { username } = await params;
     const { searchParams } = new URL(req.url);
     const type = searchParams.get('type') || 'profile';
     

@@ -6,7 +6,7 @@ import { successResponse, errorResponse } from "@/utils/response"
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest, { params }: { params: { challengeId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ challengeId: string }> }) {
   try {
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest, { params }: { params: { challen
     }
 
     const userId = authResult.user!.id
-    const { challengeId } = params
+    const { challengeId } = await params
     const progressData = await request.json()
 
     await ChallengeSystem.updateProgress(userId, challengeId, progressData)

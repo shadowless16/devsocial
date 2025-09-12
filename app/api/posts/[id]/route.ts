@@ -9,11 +9,12 @@ import { errorResponse } from "@/utils/response"
 export const dynamic = 'force-dynamic'
 
 // GET /api/posts/[id] - Get single post
-export async function GET(request: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
+    const { id } = await params
 
-    const post = await Post.findById(params.id)
+    const post = await Post.findById(id)
       .populate("author", "username avatar level role")
       .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded imprintStatus onChainProof')
       .lean()
@@ -23,7 +24,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
     }
 
     // Get recent comments
-    const comments = await Comment.find({ post: params.id })
+    const comments = await Comment.find({ post: id })
       .populate("author", "username avatar level")
       .sort({ createdAt: -1 })
       .limit(10)
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest, { params }: { params: { id: stri
 }
 
 // DELETE /api/posts/[id] - Delete a post
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
 
@@ -95,7 +96,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { id: s
     }
 
     const userId = authResult.user.id
-    const postId = params.id
+    const { id: postId } = await params
 
     // Find the post
     const post = await Post.findById(postId)

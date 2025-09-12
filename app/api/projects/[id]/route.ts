@@ -6,13 +6,14 @@ import Project from '@/models/Project'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
     await connectDB()
+    const { id } = await params
     
-    const project = await Project.findById(params.id)
+    const project = await Project.findById(id)
       .populate('author', 'username displayName avatar level')
       .lean() as any
     
@@ -27,7 +28,7 @@ export async function GET(
     if (session?.user?.id) {
       const hasViewed = project.viewedBy?.some((id: any) => id.toString() === session.user.id)
       if (!hasViewed) {
-        await Project.findByIdAndUpdate(params.id, {
+        await Project.findByIdAndUpdate(id, {
           $inc: { views: 1 },
           $addToSet: { viewedBy: session.user.id }
         })
@@ -49,7 +50,7 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -61,8 +62,9 @@ export async function PUT(
     }
     
     await connectDB()
+    const { id } = await params
     
-    const project = await Project.findById(params.id)
+    const project = await Project.findById(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -79,7 +81,7 @@ export async function PUT(
     
     const body = await request.json()
     const updatedProject = await Project.findByIdAndUpdate(
-      params.id,
+      id,
       body,
       { new: true, runValidators: true }
     ).populate('author', 'username displayName avatar level')
@@ -98,7 +100,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -110,8 +112,9 @@ export async function DELETE(
     }
     
     await connectDB()
+    const { id } = await params
     
-    const project = await Project.findById(params.id)
+    const project = await Project.findById(id)
     if (!project) {
       return NextResponse.json(
         { success: false, error: 'Project not found' },
@@ -126,7 +129,7 @@ export async function DELETE(
       )
     }
     
-    await Project.findByIdAndDelete(params.id)
+    await Project.findByIdAndDelete(id)
     
     return NextResponse.json({
       success: true,
