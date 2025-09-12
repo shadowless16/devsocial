@@ -8,7 +8,7 @@ import mongoose from "mongoose"
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest, { params }: { params: { conversationId: string; messageId: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ conversationId: string; messageId: string }> }) {
   try {
     await connectDB()
 
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: { convers
     }
 
     const userId = authResult.user!.id
-    const { messageId } = params
+    const { messageId } = await params
     const { emoji } = await request.json()
 
     const message = await Message.findById(messageId)
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest, { params }: { params: { convers
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { conversationId: string; messageId: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ conversationId: string; messageId: string }> }) {
   try {
     await connectDB()
 
@@ -66,7 +66,7 @@ export async function DELETE(request: NextRequest, { params }: { params: { conve
     }
 
     const userId = authResult.user!.id
-    const { messageId } = params
+    const { messageId } = await params
     const { searchParams } = new URL(request.url)
     const emoji = searchParams.get("emoji")
 
