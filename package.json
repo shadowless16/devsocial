@@ -12,7 +12,6 @@
     "start": "next start -p 3000",
     "lint": "next lint",
     "check": "pnpm run lint && pnpm run build",
-    "pre-push": "pnpm run check",
     "check-routes": "node scripts/find-route-errors.js",
     "test": "jest",
     "test:fast": "jest __tests__/referrals/referral-system.test.ts __tests__/referrals/referral-api-fixed.test.ts __tests__/analytics/growth-simple.test.ts --runInBand --forceExit",
