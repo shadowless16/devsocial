@@ -8,7 +8,7 @@ import User from '@/models/User'
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions)
@@ -19,13 +19,14 @@ export async function POST(
     await connectDB()
     
     const { content } = await request.json()
+    const { id } = await params
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json({ error: 'Comment content is required' }, { status: 400 })
     }
 
     // Check if feedback exists
-    const feedback = await Feedback.findById(params.id)
+    const feedback = await Feedback.findById(id)
     if (!feedback) {
       return NextResponse.json({ error: 'Feedback not found' }, { status: 404 })
     }
@@ -41,7 +42,7 @@ export async function POST(
     }
 
     const comment = new FeedbackComment({
-      feedbackId: params.id,
+      feedbackId: id,
       userId: session.user.id,
       content: content.trim(),
       isAdminComment: user?.role === 'admin' || user?.role === 'moderator'
@@ -50,7 +51,7 @@ export async function POST(
     await comment.save()
 
     // Update comments count
-    await Feedback.findByIdAndUpdate(params.id, {
+    await Feedback.findByIdAndUpdate(id, {
       $inc: { commentsCount: 1 }
     })
 

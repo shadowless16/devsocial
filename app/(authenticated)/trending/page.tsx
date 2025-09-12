@@ -254,9 +254,9 @@ export default function TrendingPage() {
                       <div className="flex items-center justify-between text-sm">
                         <div className="flex items-center space-x-4">
                           {post.trendingScore && (
-                            <div className="flex items-center space-x-1 text-gray-600">
+                            <div className="flex items-center space-x-1 text-gray-600 max-w-xs truncate">
                               <TrendingUp className="w-4 h-4" />
-                              <span>Score: {post.trendingScore}</span>
+                              <span className="truncate">Score: {typeof post.trendingScore === 'number' ? post.trendingScore.toFixed(2) : String(post.trendingScore)}</span>
                             </div>
                           )}
                           <div className="flex items-center space-x-1 text-gray-600">

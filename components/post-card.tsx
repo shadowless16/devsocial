@@ -143,8 +143,8 @@ export default function PostCard({
 
   return (
     <>
-      <Card className="border-0 ring-1 ring-black/5 w-full overflow-hidden">
-        <CardContent className="p-3 md:p-4 w-full">
+        <Card className="border-0 ring-1 ring-black/5 w-full max-w-full overflow-hidden">
+          <CardContent className="p-3 md:p-4 w-full max-w-full">
           <div className="flex items-start gap-2 md:gap-3 w-full">
             <div 
               className="cursor-pointer hover:ring-primary/20 transition-all flex-shrink-0"
@@ -221,7 +221,7 @@ export default function PostCard({
               </div>
               
               <div 
-                className="text-sm md:text-sm mb-3 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors w-full overflow-hidden break-words"
+                  className="text-sm md:text-sm mb-3 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors w-full max-w-full overflow-hidden break-words break-all"
                 onClick={() => postId && onClick?.(postId)}
               >
                 <ReactMarkdown
