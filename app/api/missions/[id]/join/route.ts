@@ -7,7 +7,7 @@ import MissionProgress from '@/models/MissionProgress'
 
 export const dynamic = 'force-dynamic'
 
-export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     await connectDB()
 
@@ -17,7 +17,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     }
 
     const userId = authResult.user!.id
-    const { id: missionId } = params
+    const { id: missionId } = await params
 
     const mission = await Mission.findById(missionId)
     if (!mission) {

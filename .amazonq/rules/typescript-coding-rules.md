@@ -173,6 +173,9 @@ const handleApiCall = async () => {
 }
 ```
 
+Alwyas make sure to use params type to match Next.js 15 requirements by making it a Promise
+
+
 ## 🎯 Remember
 
 - **Type everything explicitly**

@@ -49,3 +49,5 @@ Ensure imports match file casing exactly (case-sensitive paths).
 Use relative imports for local files, absolute imports only for node_modules.
 
 Don’t enforce rules that are not listed here.
+
+Alwyas make sure to use params type to match Next.js 15 requirements by making it a Promise
