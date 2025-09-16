@@ -106,8 +106,8 @@ export default function TagPage() {
               commentsCount={post.commentsCount}
               views={post.viewsCount}
               imageUrl={post.imageUrl}
-              imageUrls={post.imageUrls}
-              videoUrls={post.videoUrls}
+              imageUrls={[]}
+              videoUrls={[]}
               authorId={post.author.username}
             />
           ))
