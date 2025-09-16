@@ -7,8 +7,9 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { tagName: string } }
+  context: { params: Promise<{ tagName: string }> }
 ) {
+  const params = await context.params
   try {
     await connectDB()
     

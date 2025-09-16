@@ -52,8 +52,8 @@ async function connectDB() {
       maxIdleTimeMS: 15000,
       retryWrites: true,
       retryReads: false,
-      readPreference: 'primary' as const,
-      writeConcern: { w: 1, j: false }
+      readPreference: 'primary' as const
+      // writeConcern: { w: 1, j: false }
     }
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts) as any

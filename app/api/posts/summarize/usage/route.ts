@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
 
     await connectDB();
     const user = await User.findById(userId).select('summaryUsage isPremium username').lean();
-    if (!user || Array.isArray(user)) {
+    if (!user) {
       return NextResponse.json(errorResponse('User not found'), { status: 404 });
     }
 
