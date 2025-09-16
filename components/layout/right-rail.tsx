@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import Link from "next/link"
 import { apiClient } from "@/lib/api-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAvatarUrl } from "@/lib/avatar-utils"
@@ -52,52 +53,52 @@ function Trends() {
           </div>
         ) : trendingTopics.length === 0 ? (
           <>
-            <div className="flex items-center justify-between py-1">
+            <Link href="/tag/react" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span className="text-emerald-600 font-medium text-sm">#react</span>
                 <span className="text-green-500 text-xs">📈</span>
               </div>
               <div className="text-sm font-semibold text-gray-900">1,240</div>
-            </div>
-            <div className="flex items-center justify-between py-1">
+            </Link>
+            <Link href="/tag/typescript" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span className="text-emerald-600 font-medium text-sm">#typescript</span>
                 <span className="text-green-500 text-xs">📈</span>
               </div>
               <div className="text-sm font-semibold text-gray-900">890</div>
-            </div>
-            <div className="flex items-center justify-between py-1">
+            </Link>
+            <Link href="/tag/nextjs" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span className="text-emerald-600 font-medium text-sm">#nextjs</span>
                 <span className="text-green-500 text-xs">📈</span>
               </div>
               <div className="text-sm font-semibold text-gray-900">670</div>
-            </div>
-            <div className="flex items-center justify-between py-1">
+            </Link>
+            <Link href="/tag/tailwind" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span className="text-emerald-600 font-medium text-sm">#tailwind</span>
                 <span className="text-green-500 text-xs">📈</span>
               </div>
               <div className="text-sm font-semibold text-gray-900">540</div>
-            </div>
-            <div className="flex items-center justify-between py-1">
+            </Link>
+            <Link href="/tag/javascript" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span className="text-emerald-600 font-medium text-sm">#javascript</span>
               </div>
               <div className="text-sm font-semibold text-gray-900">2,100</div>
-            </div>
-            <div className="flex items-center justify-between py-1">
+            </Link>
+            <Link href="/tag/python" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
               <div className="flex items-center space-x-2">
                 <span className="text-emerald-600 font-medium text-sm">#python</span>
                 <span className="text-red-500 text-xs">📉</span>
               </div>
               <div className="text-sm font-semibold text-gray-900">1,850</div>
-            </div>
+            </Link>
           </>
         ) : (
           <>
             {trendingTopics.slice(0, 6).map((topic, index) => (
-              <div key={topic.tag} className="flex items-center justify-between py-1">
+              <Link key={topic.tag} href={`/tag/${topic.tag}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-2">
                   <span className="text-emerald-600 font-medium text-sm">#{topic.tag}</span>
 
@@ -140,7 +141,7 @@ function Trends() {
                 <div className="text-sm font-semibold text-gray-900">
                   {topic.posts.toLocaleString()}
                 </div>
-              </div>
+              </Link>
             ))}
           </>
         )}

@@ -31,6 +31,9 @@ interface DashboardData {
       totalComments: number
       avgLikes: number
       avgComments: number
+      lifetimePosts?: number
+      lifetimeLikes?: number
+      lifetimeComments?: number
     }
     xp: {
       breakdown: Array<{
@@ -184,7 +187,7 @@ export default function DashboardPage() {
             <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
           </CardHeader>
           <CardContent className="pt-1 sm:pt-2">
-            <div className="text-sm sm:text-xl font-bold">{dashboardData.stats.posts.totalPosts}</div>
+            <div className="text-sm sm:text-xl font-bold">{dashboardData.stats.posts.lifetimePosts || dashboardData.stats.posts.totalPosts}</div>
             <p className="text-[8px] sm:text-xs text-muted-foreground">
               {dashboardData.stats.posts.avgLikes.toFixed(1)} avg likes
             </p>
@@ -198,13 +201,16 @@ export default function DashboardPage() {
           </CardHeader>
           <CardContent className="pt-1 sm:pt-2">
             <div className="text-sm sm:text-xl font-bold">
-              {(dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments) > 999 
-                ? `${((dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments) / 1000).toFixed(1)}k`
-                : (dashboardData.stats.posts.totalLikes + dashboardData.stats.posts.totalComments)
+              {(() => {
+                const lifetimeLikes = dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes
+                const lifetimeComments = dashboardData.stats.posts.lifetimeComments || dashboardData.stats.posts.totalComments
+                const total = lifetimeLikes + lifetimeComments
+                return total > 999 ? `${(total / 1000).toFixed(1)}k` : total
+              })()
               }
             </div>
             <p className="text-[8px] sm:text-xs text-muted-foreground">
-              {dashboardData.stats.posts.totalLikes}♥ {dashboardData.stats.posts.totalComments}💬
+              {dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes}♥ {dashboardData.stats.posts.lifetimeComments || dashboardData.stats.posts.totalComments}💬
             </p>
           </CardContent>
         </Card>
@@ -304,16 +310,16 @@ export default function DashboardPage() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600 mb-2">{dashboardData.stats.posts.totalPosts}</div>
+                  <div className="text-3xl font-bold text-blue-600 mb-2">{dashboardData.stats.posts.lifetimePosts || dashboardData.stats.posts.totalPosts}</div>
                   <div className="text-sm text-muted-foreground">Posts Created</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-green-600 mb-2">{dashboardData.stats.posts.totalLikes}</div>
+                  <div className="text-3xl font-bold text-green-600 mb-2">{dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes}</div>
                   <div className="text-sm text-muted-foreground">Likes Received</div>
                 </div>
                 <div className="text-center">
                   <div className="text-3xl font-bold text-purple-600 mb-2">
-                    {dashboardData.stats.posts.totalComments}
+                    {dashboardData.stats.posts.lifetimeComments || dashboardData.stats.posts.totalComments}
                   </div>
                   <div className="text-sm text-muted-foreground">Comments Received</div>
                 </div>
@@ -348,13 +354,13 @@ export default function DashboardPage() {
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-semibold">Engagement Master</h4>
-                    <Badge variant="outline">{dashboardData.stats.posts.totalLikes}/50 likes</Badge>
+                    <Badge variant="outline">{dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes}/50 likes</Badge>
                   </div>
                   <div className="w-full bg-muted rounded-full h-2">
                     <div
                       className="bg-primary h-2 rounded-full"
                       style={{
-                        width: `${Math.min((dashboardData.stats.posts.totalLikes / 50) * 100, 100)}%`,
+                        width: `${Math.min(((dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes) / 50) * 100, 100)}%`,
                       }}
                     ></div>
                   </div>

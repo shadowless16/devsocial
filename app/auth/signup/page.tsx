@@ -93,83 +93,64 @@ useEffect(() => {
     e.preventDefault()
     setError("")
 
-    // Client-side validation with specific toast messages
-    if (!formData.firstName.trim()) {
-      const errorMsg = "First name is required";
+    // Helper function to scroll to top and show error
+    const showValidationError = (errorMsg: string) => {
       toast.error(errorMsg);
       setError(errorMsg);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    };
+
+    // Client-side validation with specific toast messages
+    if (!formData.firstName.trim()) {
+      showValidationError("First name is required");
       return;
     }
     if (!formData.lastName.trim()) {
-      const errorMsg = "Last name is required";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Last name is required");
       return;
     }
     if (!formData.username.trim()) {
-      const errorMsg = "Username is required";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Username is required");
       return;
     }
     if (formData.username.length < 3) {
-      const errorMsg = "Username must be at least 3 characters long";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Username must be at least 3 characters long");
       return;
     }
     if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
-      const errorMsg = "Username can only contain letters, numbers, and underscores";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Username can only contain letters, numbers, and underscores");
       return;
     }
     if (!formData.email.trim()) {
-      const errorMsg = "Email is required";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Email is required");
       return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      const errorMsg = "Please enter a valid email address";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Please enter a valid email address");
       return;
     }
     if (!formData.password) {
-      const errorMsg = "Password is required";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Password is required");
       return;
     }
     if (formData.password.length < 8) {
-      const errorMsg = "Password must be at least 8 characters long";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Password must be at least 8 characters long");
       return;
     }
     if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
-      const errorMsg = "Password must contain at least one uppercase letter, one lowercase letter, and one number";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Password must contain at least one uppercase letter, one lowercase letter, and one number");
       return;
     }
     if (formData.password !== formData.confirmPassword) {
-      const errorMsg = "Passwords do not match";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Passwords do not match");
       return;
     }
     if (!formData.birthMonth) {
-      const errorMsg = "Birth month is required";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Birth month is required");
       return;
     }
     if (!formData.birthDay) {
-      const errorMsg = "Birth day is required";
-      toast.error(errorMsg);
-      setError(errorMsg);
+      showValidationError("Birth day is required");
       return;
     }
 
@@ -232,11 +213,11 @@ useEffect(() => {
           
           if (validationErrors.length > 0) {
             errorMessage = validationErrors.join('\n');
-            // Show toast for each validation error
             validationErrors.forEach(err => {
               toast.error(err);
             });
             setError(errorMessage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
           }
         }
@@ -270,11 +251,11 @@ useEffect(() => {
           
           if (validationErrors.length > 0) {
             errorMessage = validationErrors.join('\n');
-            // Show toast for each validation error
             validationErrors.forEach(err => {
               toast.error(err);
             });
             setError(errorMessage);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
             return;
           }
         } else if (responseData.message) {
@@ -282,9 +263,10 @@ useEffect(() => {
         }
       }
       
-      // Show single toast for non-validation errors
+      // Show single toast for non-validation errors and scroll to top
       toast.error(errorMessage);
       setError(errorMessage);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     } finally {
       setLoading(false)
     }

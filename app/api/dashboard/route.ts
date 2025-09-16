@@ -6,6 +6,8 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import User from "@/models/User"
 import Post from "@/models/Post"
+import Like from "@/models/Like"
+import Comment from "@/models/Comment"
 import Activity from "@/models/Activity"
 import Notification from "@/models/Notification"
 import XPLog from "@/models/XPLog"
@@ -53,26 +55,37 @@ export async function GET(request: NextRequest) {
     const user = await User.findById(userObjectId).select("points level badges createdAt")
     console.log("[Dashboard] User found:", user ? "Yes" : "No")
 
-    // Posts analytics
-    console.log("[Dashboard] Fetching posts stats...")
-    const postsStats = await Post.aggregate([
-      {
-        $match: {
-          author: userObjectId,
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          totalPosts: { $sum: 1 },
-          totalLikes: { $sum: "$likesCount" },
-          totalComments: { $sum: "$commentsCount" },
-          avgLikes: { $avg: "$likesCount" },
-          avgComments: { $avg: "$commentsCount" },
-        },
-      },
+    // Get user's posts (both period and lifetime)
+    console.log("[Dashboard] Fetching user posts...")
+    const [periodPosts, allUserPosts] = await Promise.all([
+      Post.find({ author: userObjectId, createdAt: { $gte: startDate } }).select('_id'),
+      Post.find({ author: userObjectId }).select('_id')
     ])
+    
+    const periodPostIds = periodPosts.map(post => post._id)
+    const allPostIds = allUserPosts.map(post => post._id)
+    
+    // Count actual likes and comments for both period and lifetime
+    console.log("[Dashboard] Counting likes and comments...")
+    const [periodLikes, periodComments, totalLikes, totalComments] = await Promise.all([
+      Like.countDocuments({ post: { $in: periodPostIds } }),
+      Comment.countDocuments({ post: { $in: periodPostIds } }),
+      Like.countDocuments({ post: { $in: allPostIds } }),
+      Comment.countDocuments({ post: { $in: allPostIds } })
+    ])
+    
+    const postsStats = {
+      // Period stats
+      totalPosts: periodPosts.length,
+      totalLikes: periodLikes,
+      totalComments: periodComments,
+      avgLikes: periodPosts.length > 0 ? periodLikes / periodPosts.length : 0,
+      avgComments: periodPosts.length > 0 ? periodComments / periodPosts.length : 0,
+      // Lifetime stats for main display
+      lifetimePosts: allUserPosts.length,
+      lifetimeLikes: totalLikes,
+      lifetimeComments: totalComments,
+    }
 
     // XP analytics
     console.log("[Dashboard] Fetching XP stats...")
@@ -138,55 +151,35 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .limit(5)
 
-    // Engagement metrics
+    // Engagement metrics - get top post engagement from all posts
     console.log("[Dashboard] Fetching engagement stats...")
-    const engagementStats = await Post.aggregate([
-      {
-        $match: {
-          author: userObjectId,
-          createdAt: { $gte: startDate },
-        },
-      },
-      {
-        $lookup: {
-          from: "comments",
-          localField: "_id",
-          foreignField: "post",
-          as: "comments",
-        },
-      },
-      {
-        $lookup: {
-          from: "likes",
-          localField: "_id",
-          foreignField: "post",
-          as: "likes",
-        },
-      },
-      {
-        $addFields: {
-          engagementRate: {
-            $divide: [
-              { $add: [{ $size: "$comments" }, { $size: "$likes" }] },
-              { $max: [1, 1] }, // Avoid division by zero
-            ],
-          },
-        },
-      },
-      {
-        $group: {
-          _id: null,
-          avgEngagementRate: { $avg: "$engagementRate" },
-          topPost: { $max: { $add: ["$likesCount", "$commentsCount"] } },
-        },
-      },
-    ])
+    let topPostEngagement = 0
+    if (allPostIds.length > 0) {
+      const postEngagements = await Promise.all(
+        allPostIds.slice(0, 20).map(async (postId) => { // Limit to top 20 posts for performance
+          const [likes, comments] = await Promise.all([
+            Like.countDocuments({ post: postId }),
+            Comment.countDocuments({ post: postId })
+          ])
+          return likes + comments
+        })
+      )
+      topPostEngagement = Math.max(...postEngagements, 0)
+    }
+    
+    const engagementStats = {
+      avgEngagementRate: allUserPosts.length > 0 ? (totalLikes + totalComments) / allUserPosts.length : 0,
+      topPost: topPostEngagement,
+    }
 
     // Leaderboard position
-    const userRank =
-      (await User.countDocuments({
-        points: { $gt: user?.points || 0 },
-      })) + 1
+    console.log("[Dashboard] Calculating user rank...")
+    const userPoints = user?.points || 0
+    const userRank = (await User.countDocuments({
+      points: { $gt: userPoints },
+    })) + 1
+    
+    console.log("[Dashboard] User points:", userPoints, "Rank:", userRank)
 
     // Unread notifications count
     console.log("[Dashboard] Fetching notifications count...")
@@ -220,21 +213,13 @@ export async function GET(request: NextRequest) {
         rank: userRank,
       },
       stats: {
-        posts: postsStats[0] || {
-          totalPosts: 0,
-          totalLikes: 0,
-          totalComments: 0,
-          avgLikes: 0,
-          avgComments: 0,
-        },
+        posts: postsStats,
         xp: {
           breakdown: sampleXpStats,
-          total: sampleXpStats.reduce((sum, stat) => sum + stat.totalXP, 0),
+          total: user?.points || 0, // Use actual user points instead of period-based XP
+          periodTotal: sampleXpStats.reduce((sum, stat) => sum + stat.totalXP, 0),
         },
-        engagement: engagementStats[0] || {
-          avgEngagementRate: 0,
-          topPost: 0,
-        },
+        engagement: engagementStats,
       },
       charts: {
         dailyActivity: sampleDailyActivity,
