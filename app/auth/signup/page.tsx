@@ -93,38 +93,84 @@ useEffect(() => {
     e.preventDefault()
     setError("")
 
-    // Client-side validation
+    // Client-side validation with specific toast messages
     if (!formData.firstName.trim()) {
-      setError("First name is required")
-      return
+      const errorMsg = "First name is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (!formData.lastName.trim()) {
-      setError("Last name is required")
-      return
+      const errorMsg = "Last name is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (!formData.username.trim()) {
-      setError("Username is required")
-      return
+      const errorMsg = "Username is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
+    }
+    if (formData.username.length < 3) {
+      const errorMsg = "Username must be at least 3 characters long";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
+    }
+    if (!/^[a-zA-Z0-9_]+$/.test(formData.username)) {
+      const errorMsg = "Username can only contain letters, numbers, and underscores";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (!formData.email.trim()) {
-      setError("Email is required")
-      return
+      const errorMsg = "Email is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      setError("Please enter a valid email address")
-      return
+      const errorMsg = "Please enter a valid email address";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (!formData.password) {
-      setError("Password is required")
-      return
+      const errorMsg = "Password is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long")
-      return
+      const errorMsg = "Password must be at least 8 characters long";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
+    }
+    if (!/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(formData.password)) {
+      const errorMsg = "Password must contain at least one uppercase letter, one lowercase letter, and one number";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      return
+      const errorMsg = "Passwords do not match";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
+    }
+    if (!formData.birthMonth) {
+      const errorMsg = "Birth month is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
+    }
+    if (!formData.birthDay) {
+      const errorMsg = "Birth day is required";
+      toast.error(errorMsg);
+      setError(errorMsg);
+      return;
     }
 
     setLoading(true)
@@ -159,18 +205,39 @@ useEffect(() => {
         } else if (error.error.message) {
           errorMessage = error.error.message;
         } else if (error.error.details) {
-          // Handle Zod validation errors
+          // Handle Zod validation errors with specific field mapping
           const details = error.error.details;
           const validationErrors: string[] = [];
           
           for (const field in details) {
             if (details[field]?._errors && Array.isArray(details[field]._errors)) {
-              validationErrors.push(...details[field]._errors);
+              const fieldErrors = details[field]._errors;
+              fieldErrors.forEach((err: string) => {
+                // Map field names to user-friendly names
+                const fieldName = {
+                  username: "Username",
+                  email: "Email",
+                  password: "Password",
+                  firstName: "First name",
+                  lastName: "Last name",
+                  birthMonth: "Birth month",
+                  birthDay: "Birth day",
+                  affiliation: "Affiliation"
+                }[field] || field;
+                
+                validationErrors.push(`${fieldName}: ${err}`);
+              });
             }
           }
           
           if (validationErrors.length > 0) {
-            errorMessage = validationErrors.join('. ');
+            errorMessage = validationErrors.join('\n');
+            // Show toast for each validation error
+            validationErrors.forEach(err => {
+              toast.error(err);
+            });
+            setError(errorMessage);
+            return;
           }
         }
       } else if (error?.response?.data) {
@@ -183,18 +250,40 @@ useEffect(() => {
           
           for (const field in details) {
             if (details[field]?._errors && Array.isArray(details[field]._errors)) {
-              validationErrors.push(...details[field]._errors);
+              const fieldErrors = details[field]._errors;
+              fieldErrors.forEach((err: string) => {
+                const fieldName = {
+                  username: "Username",
+                  email: "Email", 
+                  password: "Password",
+                  firstName: "First name",
+                  lastName: "Last name",
+                  birthMonth: "Birth month",
+                  birthDay: "Birth day",
+                  affiliation: "Affiliation"
+                }[field] || field;
+                
+                validationErrors.push(`${fieldName}: ${err}`);
+              });
             }
           }
           
           if (validationErrors.length > 0) {
-            errorMessage = validationErrors.join('. ');
+            errorMessage = validationErrors.join('\n');
+            // Show toast for each validation error
+            validationErrors.forEach(err => {
+              toast.error(err);
+            });
+            setError(errorMessage);
+            return;
           }
         } else if (responseData.message) {
           errorMessage = responseData.message;
         }
       }
       
+      // Show single toast for non-validation errors
+      toast.error(errorMessage);
       setError(errorMessage);
     } finally {
       setLoading(false)

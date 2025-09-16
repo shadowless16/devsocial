@@ -14,6 +14,7 @@ import { PostModal } from "@/components/modals/post-modal"
 import { PostSkeleton } from "@/components/skeletons/post-skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { getAvatarUrl } from "@/lib/avatar-utils"
+import { OfflineIndicator } from "@/components/ui/offline-indicator"
 
 export default function HomePage() {
   const { user } = useAuth()
@@ -135,6 +136,7 @@ export default function HomePage() {
   return (
     <div className="w-full max-w-4xl mx-auto px-3 md:px-6 py-3 md:py-4">
       <HeaderBar onCreateClick={() => setShowPostModal(true)} />
+      <OfflineIndicator />
       <StatPills />
       <Compose onCreateClick={() => setShowPostModal(true)} />
       <div className="grid gap-2 md:gap-4">

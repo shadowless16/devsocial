@@ -3,6 +3,7 @@ import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import Notification from '@/models/Notification'
+import { cache } from '@/lib/cache'
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,42 +12,62 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    await connectDB()
-
     const { searchParams } = new URL(request.url)
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '20')
     const unreadOnly = searchParams.get('unread') === 'true'
+    
+    // Cache key for unread count queries (most frequent)
+    if (unreadOnly && limit === 1) {
+      const cacheKey = `notifications_unread_${session.user.id}`;
+      const cached = cache.get(cacheKey);
+      if (cached) {
+        return NextResponse.json(cached);
+      }
+    }
+
+    await connectDB()
 
     const query: any = { recipient: session.user.id }
     if (unreadOnly) {
       query.read = false
     }
 
-    const notifications = await Notification.find(query)
-      .populate('sender', 'username displayName avatar level')
-      .sort({ createdAt: -1 })
-      .limit(limit)
-      .skip((page - 1) * limit)
-      .select('type title message read createdAt actionUrl data sender')
-      .lean()
+    // Use aggregation for better performance
+    const [notifications, unreadCount] = await Promise.all([
+      Notification.find(query)
+        .populate('sender', 'username displayName avatar level')
+        .sort({ createdAt: -1 })
+        .limit(limit)
+        .skip((page - 1) * limit)
+        .select('type title message read createdAt actionUrl data sender')
+        .lean(),
+      
+      // Only count unread if we need it
+      unreadOnly ? 
+        Notification.countDocuments({ recipient: session.user.id, read: false }) :
+        Promise.resolve(0)
+    ])
 
-    // Always compute the true unread count from the DB.
-    // Previously, when `unread=true` we returned notifications.length which was
-    // limited by the `limit` param (often 1) and made the unread badge stuck at 1.
-    const unreadCount = await Notification.countDocuments({
-      recipient: session.user.id,
-      read: false
-    })
-
-    return NextResponse.json({
+    const responseData = {
       success: true,
       data: {
         notifications,
-        unreadCount,
+        unreadCount: unreadOnly ? unreadCount : await Notification.countDocuments({
+          recipient: session.user.id,
+          read: false
+        }),
         hasMore: notifications.length === limit
       }
-    })
+    };
+    
+    // Cache unread count queries for 10 seconds
+    if (unreadOnly && limit === 1) {
+      const cacheKey = `notifications_unread_${session.user.id}`;
+      cache.set(cacheKey, responseData, 10000);
+    }
+
+    return NextResponse.json(responseData)
   } catch (error) {
     console.error('Error fetching notifications:', error)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })

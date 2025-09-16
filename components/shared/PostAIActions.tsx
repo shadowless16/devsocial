@@ -25,9 +25,9 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
   const [explainLimit] = useState(5); // Daily limit
   const { toast } = useToast();
 
-  // Load usage on component mount
-  useEffect(() => {
-    const fetchSummarizeUsage = async () => {
+  // Fetch usage only when user clicks an AI action
+  const fetchUsageIfNeeded = async () => {
+    if (summarizeUsage === 0 && summarizeLimit === 5) {
       try {
         const response = await fetch('/api/posts/summarize/usage');
         if (response.ok) {
@@ -40,10 +40,8 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
       } catch (error) {
         console.error('Failed to fetch summarize usage:', error);
       }
-    };
-    
-    fetchSummarizeUsage();
-  }, []);
+    }
+  };
 
   const handleAIAction = async (type: 'summarize' | 'explain') => {
     if (!postContent.trim() || postContent.length < 10) {
@@ -54,6 +52,9 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
       });
       return;
     }
+
+    // Fetch usage data only when needed
+    await fetchUsageIfNeeded();
 
     const currentUsage = type === 'summarize' ? summarizeUsage : explainUsage;
     const currentLimit = type === 'summarize' ? summarizeLimit : explainLimit;

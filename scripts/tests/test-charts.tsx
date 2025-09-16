@@ -1,6 +1,6 @@
 "use client"
 
-import { ActivityChart, XPChart } from './components/dashboard-charts'
+import { ActivityChart, XPChart } from '../../components/dashboard-charts'
 
 // Test data
 const testActivityData = [

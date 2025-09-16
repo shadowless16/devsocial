@@ -123,9 +123,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     refreshUnreadCount()
-    // Also fetch notifications on mount to get initial data
-    fetchNotifications()
-    const interval = setInterval(refreshUnreadCount, 30000)
+    // Poll less frequently to reduce server load
+    const interval = setInterval(refreshUnreadCount, 120000) // 2 minutes instead of 30 seconds
     return () => clearInterval(interval)
   }, [])
 

@@ -6,10 +6,8 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Copy, Flag, Coins } from "lucide-react"
-import ReactMarkdown from "react-markdown"
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
-import { tomorrow } from "react-syntax-highlighter/dist/esm/styles/prism"
+import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Flag, Coins } from "lucide-react"
+import { PostContent } from "@/components/shared/PostContent"
 import { useToast } from "@/hooks/use-toast"
 import { ReportModal } from "@/components/modals/report-modal"
 import { TipModal } from "@/components/modals/tip-modal"
@@ -86,21 +84,19 @@ export default function PostCard({
     setCurrentLikesCount(likesCount)
   }, [liked, likesCount])
 
-  const copyToClipboard = async (text: string) => {
-    try {
-      await navigator.clipboard.writeText(text)
+  const handleCopyCode = (codeContent: string) => {
+    navigator.clipboard.writeText(codeContent).then(() => {
       toast({
-        title: "Copied!",
-        description: "Code snippet copied to clipboard",
-      })
-    } catch (error) {
+        title: "Copied to clipboard!",
+        variant: "success",
+      });
+    }).catch(() => {
       toast({
-        title: "Failed to copy",
-        description: "Could not copy code to clipboard",
+        title: "Failed to copy to clipboard",
         variant: "destructive",
-      })
-    }
-  }
+      });
+    });
+  };
 
   const handleLike = async () => {
     if (!postId || !onLike) return
@@ -221,49 +217,12 @@ export default function PostCard({
               </div>
               
               <div 
-                  className="text-sm md:text-sm mb-3 md:mb-3 prose prose-sm max-w-none cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors w-full max-w-full overflow-hidden break-words break-all"
+                  className="text-sm md:text-sm mb-3 md:mb-3 cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors w-full min-w-0 overflow-hidden"
                 onClick={() => postId && onClick?.(postId)}
               >
-                <ReactMarkdown
-                  components={{
-                    code({ className, children, ...props }: any) {
-                      const match = /language-(\w+)/.exec(className || '')
-                      const codeString = String(children).replace(/\n$/, '')
-                      const isInline = !match
-                      
-                      return !isInline && match ? (
-                        <div className="relative group">
-                          <SyntaxHighlighter
-                            style={tomorrow}
-                            language={match[1]}
-                            PreTag="div"
-                            className="rounded-md text-xs"
-                            {...props}
-                          >
-                            {codeString}
-                          </SyntaxHighlighter>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="absolute top-2 right-2 h-6 w-6 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 hover:bg-background border border-border text-foreground"
-                            onClick={(e) => {
-                              e.stopPropagation()
-                              copyToClipboard(codeString)
-                            }}
-                          >
-                            <Copy className="h-3 w-3" />
-                          </Button>
-                        </div>
-                      ) : (
-                        <code className="bg-muted px-1 py-0.5 rounded text-xs" {...props}>
-                          {children}
-                        </code>
-                      )
-                    }
-                  }}
-                >
-                  {content}
-                </ReactMarkdown>
+                <div className="w-full min-w-0 overflow-hidden">
+                  <PostContent content={content || ""} onCopyCode={handleCopyCode} />
+                </div>
               </div>
 
               {/* Image Display */}

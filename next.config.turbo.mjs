@@ -9,15 +9,37 @@ const nextConfig = {
   // Turbopack-specific configuration
   turbopack: {
     resolveAlias: {
-      // Module aliases if needed
+      '@': './'
+    },
+    loaders: {
+      '.svg': ['@svgr/webpack'],
     },
   },
 
   // Experimental features compatible with Turbopack
   experimental: {
-    optimizeCss: false,
-    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+    optimizeCss: true,
+    optimizePackageImports: [
+      'lucide-react', 
+      '@radix-ui/react-icons',
+      '@radix-ui/react-avatar',
+      '@radix-ui/react-button',
+      '@radix-ui/react-dialog',
+      '@radix-ui/react-dropdown-menu',
+      '@radix-ui/react-popover',
+      '@radix-ui/react-select',
+      '@radix-ui/react-tabs',
+      '@radix-ui/react-tooltip'
+    ],
     reactCompiler: false,
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
   },
 
   // Image configuration

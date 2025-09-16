@@ -99,43 +99,19 @@ export default function SideNav() {
   }, [pathname, user?.role])
 
   useEffect(() => {
-    // Fetch latest profile info (points/level) for display in the side nav.
-    // Use apiClient.getCurrentUserProfile which returns the current user's profile.
-    if (!user) return;
+    // Use user data from auth context instead of making additional API calls
+    if (user) {
+      setPoints(user.points || 0);
+      setLevel(user.level || 1);
+    }
 
-    const fetchUserPoints = async () => {
-      try {
-        const response = await apiClient.getCurrentUserProfile<any>();
-        console.log('[SideNav] getCurrentUserProfile response:', response);
-        if (response && response.success && response.data) {
-          // response.data may be { user } or { points }
-          const profileUser = (response.data as any).user ?? response.data;
-          console.log('[SideNav] profileUser resolved:', profileUser);
-          if (profileUser) {
-            const newPoints = profileUser.points ?? profileUser.totalXP ?? profileUser.xp ?? user?.points ?? 0;
-            const newLevel = profileUser.level ?? user?.level ?? 1;
-            setPoints(newPoints);
-            setLevel(newLevel);
-          }
-        } else {
-          console.warn('[SideNav] getCurrentUserProfile did not return data or success=false');
-        }
-      } catch (error) {
-        console.error("Failed to fetch user points:", error);
-      }
-    };
-
-    fetchUserPoints();
-
-    // Also listen for explicit user updates dispatched from AuthProvider
+    // Listen for user updates from AuthProvider
     const handleUserUpdated = (e: any) => {
       try {
         const updatedUser = e?.detail;
         if (!updatedUser) return;
-        const newPoints = updatedUser.points ?? points;
-        const newLevel = updatedUser.level ?? level;
-        setPoints(newPoints);
-        setLevel(newLevel);
+        setPoints(updatedUser.points ?? 0);
+        setLevel(updatedUser.level ?? 1);
       } catch (err) {
         console.debug('Error handling user:updated in SideNav', err);
       }
@@ -145,7 +121,7 @@ export default function SideNav() {
     return () => {
       window.removeEventListener('user:updated', handleUserUpdated as EventListener);
     };
-  }, [user?.id, user?.username]);
+  }, [user]);
 
   const getInitials = (name: string) => {
     return name.split(' ').map(n => n[0]).join('').toUpperCase()

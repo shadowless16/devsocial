@@ -285,6 +285,56 @@
     background-color: rgb(107 114 128);
   }
   
+  /* Code block responsive styles */
+  pre, code {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  
+  pre {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    white-space: pre;
+    overflow-x: auto;
+  }
+  
+  code {
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  
+  /* Syntax highlighter specific fixes */
+  .hljs {
+    overflow-x: auto !important;
+    white-space: pre !important;
+    word-wrap: normal !important;
+  }
+  
+  /* Mobile code block optimizations */
+  @media (max-width: 768px) {
+    pre {
+      font-size: clamp(0.65rem, 2vw, 0.75rem);
+      padding: 0.75rem 0.5rem;
+      margin: 0.5rem 0;
+    }
+    
+    code {
+      font-size: clamp(0.65rem, 2vw, 0.75rem);
+      padding: 0.125rem 0.25rem;
+    }
+    
+    /* Ensure code blocks don't break layout */
+    .hljs, [class*="language-"] {
+      font-size: clamp(0.65rem, 2vw, 0.75rem) !important;
+      line-height: 1.4 !important;
+    }
+  }
+
   /* Mobile text optimization */
   @media (max-width: 768px) {
     html {
