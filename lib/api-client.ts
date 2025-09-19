@@ -207,7 +207,8 @@ class ApiClient {
       const fullUrl = `${this.baseUrl}${endpoint}`;
       const response = await fetch(fullUrl, config);
       
-      if (response.status === 401) {
+      // Only redirect to login for protected endpoints, not public ones like trending
+      if (response.status === 401 && !endpoint.includes('/trending')) {
         await signOut({ redirect: false });
         window.location.href = "/auth/login";
         throw new Error("Unauthorized");

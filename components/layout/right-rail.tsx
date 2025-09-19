@@ -26,11 +26,18 @@ function Trends() {
     const fetchTrending = async () => {
       try {
         const response = await apiClient.getTrendingData("today")
+        console.log("[RightRail] Trending response:", response)
         if (response.success && response.data) {
-          setTrendingTopics((response.data as any).trendingTopics || [])
+          const topics = (response.data as any).trendingTopics || []
+          console.log("[RightRail] Setting trending topics:", topics)
+          setTrendingTopics(topics)
+        } else {
+          console.log("[RightRail] No trending data received")
+          setTrendingTopics([])
         }
       } catch (error) {
-        console.error("Failed to fetch trending:", error)
+        console.error("[RightRail] Failed to fetch trending:", error)
+        setTrendingTopics([])
       } finally {
         setLoading(false)
       }
@@ -52,55 +59,13 @@ function Trends() {
             <Loader2 className="w-4 h-4 animate-spin" />
           </div>
         ) : trendingTopics.length === 0 ? (
-          <>
-            <Link href="/tag/react" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium text-sm">#react</span>
-                <span className="text-green-500 text-xs">📈</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">1,240</div>
-            </Link>
-            <Link href="/tag/typescript" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium text-sm">#typescript</span>
-                <span className="text-green-500 text-xs">📈</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">890</div>
-            </Link>
-            <Link href="/tag/nextjs" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium text-sm">#nextjs</span>
-                <span className="text-green-500 text-xs">📈</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">670</div>
-            </Link>
-            <Link href="/tag/tailwind" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium text-sm">#tailwind</span>
-                <span className="text-green-500 text-xs">📈</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">540</div>
-            </Link>
-            <Link href="/tag/javascript" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium text-sm">#javascript</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">2,100</div>
-            </Link>
-            <Link href="/tag/python" className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
-              <div className="flex items-center space-x-2">
-                <span className="text-emerald-600 font-medium text-sm">#python</span>
-                <span className="text-red-500 text-xs">📉</span>
-              </div>
-              <div className="text-sm font-semibold text-gray-900">1,850</div>
-            </Link>
-          </>
+          <div className="text-xs text-muted-foreground py-2">No trending topics available</div>
         ) : (
           <>
             {trendingTopics.slice(0, 6).map((topic, index) => (
-              <Link key={topic.tag} href={`/tag/${topic.tag}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
+              <Link key={topic.tag} href={`/tag/${topic.tag.replace(/^#+/, '')}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-2">
-                  <span className="text-emerald-600 font-medium text-sm">#{topic.tag}</span>
+                  <span className="text-emerald-600 font-medium text-sm">#{topic.tag.replace(/^#+/, '')}</span>
 
                   {/* nicer React-friendly SVG icons instead of emojis */}
                   {topic.trend === "up" ? (
@@ -139,7 +104,7 @@ function Trends() {
                 </div>
 
                 <div className="text-sm font-semibold text-gray-900">
-                  {topic.posts.toLocaleString()}
+                  {typeof topic.posts === 'number' ? topic.posts.toLocaleString() : topic.posts}
                 </div>
               </Link>
             ))}

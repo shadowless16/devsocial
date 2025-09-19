@@ -56,8 +56,8 @@ export default withAuth(
           }
         }
         
-        // Allow public access to auth pages and onboarding
-        if (pathname.startsWith('/auth') || pathname === '/onboarding') {
+        // Allow public access to auth pages, onboarding, and trending
+        if (pathname.startsWith('/auth') || pathname === '/onboarding' || pathname.startsWith('/trending')) {
           return true;
         }
         
@@ -80,12 +80,13 @@ export const config = {
      * - api (all API routes)
      * - auth (login/signup pages)
      * - onboarding (onboarding page)
+     * - trending (public trending page)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      * - .well-known (well-known URIs)
      */
-    "/((?!api|auth|onboarding|_next/static|_next/image|favicon.ico|\.well-known).*)",
+    "/((?!api|auth|onboarding|trending|_next/static|_next/image|favicon.ico|\.well-known).*)",
   ]
 }
 

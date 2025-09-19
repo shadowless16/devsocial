@@ -121,7 +121,13 @@ export async function GET(request: NextRequest) {
       { $limit: 10 },
       {
         $project: {
-          tag: "$_id",
+          tag: { 
+            $replaceAll: { 
+              input: "$_id", 
+              find: "#", 
+              replacement: "" 
+            } 
+          },
           posts: 1,
           growth: "+100%",
           trend: "up",
@@ -157,7 +163,13 @@ export async function GET(request: NextRequest) {
         { $limit: 5 },
         {
           $project: {
-            tag: "$_id",
+            tag: { 
+              $replaceAll: { 
+                input: "$_id", 
+                find: "#", 
+                replacement: "" 
+              } 
+            },
             posts: 1,
             growth: "+0%",
             trend: "up",
@@ -229,7 +241,9 @@ export async function GET(request: NextRequest) {
         trendingTopics: [
           { tag: "react", posts: 15, growth: "+100%", trend: "up", description: "Popular frontend framework" },
           { tag: "typescript", posts: 12, growth: "+80%", trend: "up", description: "Type-safe JavaScript" },
-          { tag: "nextjs", posts: 8, growth: "+60%", trend: "up", description: "React framework" }
+          { tag: "nextjs", posts: 8, growth: "+60%", trend: "up", description: "React framework" },
+          { tag: "javascript", posts: 25, growth: "+120%", trend: "up", description: "Popular programming language" },
+          { tag: "python", posts: 18, growth: "+90%", trend: "up", description: "Versatile programming language" }
         ],
         risingUsers: []
       }

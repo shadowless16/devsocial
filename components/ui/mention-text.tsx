@@ -8,8 +8,9 @@ interface MentionTextProps {
 }
 
 export function MentionText({ text, className = "" }: MentionTextProps) {
-  // Split text by mentions and create clickable links
-  const parts = text.split(/(@\w+)/g)
+  // Split text by mentions and hashtags and create clickable links
+  // Updated regex to handle hashtags and mentions with better word boundaries
+  const parts = text.split(/(@[a-zA-Z0-9_]+|#[a-zA-Z0-9_]+)/g)
   
   return (
     <span className={className}>
@@ -20,6 +21,19 @@ export function MentionText({ text, className = "" }: MentionTextProps) {
             <Link
               key={index}
               href={`/profile/${username}`}
+              className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </Link>
+          )
+        }
+        if (part.startsWith('#')) {
+          const hashtag = part.substring(1)
+          return (
+            <Link
+              key={index}
+              href={`/tag/${hashtag}`}
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
               onClick={(e) => e.stopPropagation()}
             >

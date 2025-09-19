@@ -202,7 +202,6 @@ export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps
           <SelectContent>
             <SelectItem value="male">Male</SelectItem>
             <SelectItem value="female">Female</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-gray-500">
