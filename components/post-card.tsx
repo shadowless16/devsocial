@@ -295,6 +295,9 @@ export default function PostCard({
                 </div>
               )}
 
+              {/* Tags */}
+              {/* Add tags prop to interface and display them */}
+              
               {/* AI Actions */}
               <div className="mb-3">
                 <PostAIActions 

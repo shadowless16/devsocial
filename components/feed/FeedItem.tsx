@@ -545,9 +545,12 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 key={tag}
                 variant="outline"
                 className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer text-xs px-2 py-0.5"
-                onClick={(e) => e.stopPropagation()}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/tag/${encodeURIComponent(tag)}`);
+                }}
               >
-                {tag}
+                #{tag}
               </Badge>
             ))}
           </div>

@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
@@ -29,6 +30,7 @@ export default function SignupPage() {
     affiliation: "",
     affiliationType: "techBootcamps"
   })
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [affiliations, setAffiliations] = useState<Record<string, string[]>>({}) 
@@ -151,6 +153,10 @@ useEffect(() => {
     }
     if (!formData.birthDay) {
       showValidationError("Birth day is required");
+      return;
+    }
+    if (!acceptedTerms) {
+      showValidationError("You must accept the Terms of Service and Privacy Policy");
       return;
     }
 
@@ -530,7 +536,26 @@ useEffect(() => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading}>
+            <div className="flex items-start space-x-2">
+              <Checkbox
+                id="terms"
+                checked={acceptedTerms}
+                onCheckedChange={(checked) => setAcceptedTerms(checked as boolean)}
+                className="mt-1"
+              />
+              <Label htmlFor="terms" className="text-sm leading-5 cursor-pointer">
+                I agree to the{" "}
+                <Link href="/terms" target="_blank" className="text-primary hover:underline">
+                  Terms of Service
+                </Link>
+                {" "}and{" "}
+                <Link href="/privacy" target="_blank" className="text-primary hover:underline">
+                  Privacy Policy
+                </Link>
+              </Label>
+            </div>
+
+            <Button type="submit" className="w-full bg-emerald-600 hover:bg-emerald-700" disabled={loading || !acceptedTerms}>
               {loading ? "Creating account..." : "Create account"}
             </Button>
           </form>
