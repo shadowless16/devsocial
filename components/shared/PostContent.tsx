@@ -44,7 +44,7 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
           const inline = !className;
           const match = /language-(\w+)/.exec(className || "");
           return !inline && match ? (
-            <div className="relative my-4 rounded-lg overflow-hidden border border-gray-600 w-full max-w-full">
+            <div className="relative my-4 rounded-lg overflow-hidden border border-gray-600 w-full">
               <div className="bg-gray-800 px-3 py-1 border-b border-gray-600 flex items-center justify-between">
                 <span className="text-xs text-gray-300 font-medium uppercase">{match[1]}</span>
                 <Button
@@ -59,24 +59,23 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
                   <Copy className="w-3 h-3" />
                 </Button>
               </div>
-              <div className="overflow-x-auto w-full">
+              <div className="overflow-x-auto max-w-full">
                 <SyntaxHighlighter
                   style={vscDarkPlus}
                   language={match[1]}
                   PreTag="div"
-                  className="!bg-gray-900 !m-0 !w-full"
+                  className="!bg-gray-900 !m-0"
                   customStyle={{
                     margin: 0,
                     padding: '0.75rem',
                     backgroundColor: '#0f172a',
                     borderRadius: '0',
-                    fontSize: 'clamp(0.65rem, 2vw, 0.75rem)',
+                    fontSize: '0.75rem',
                     lineHeight: '1.4',
-                    width: '100%',
-                    minWidth: 'max-content',
                     minHeight: '60px',
                     whiteSpace: 'pre',
                     overflowX: 'auto',
+                    maxWidth: '100%',
                   }}
                   wrapLongLines={false}
                 >

@@ -32,8 +32,9 @@ const ViewSchema = new Schema<IView>(
   { timestamps: true }
 );
 
-// Compound index to prevent duplicate views from same user/IP for same post
-ViewSchema.index({ post: 1, user: 1 }, { unique: true, sparse: true });
-ViewSchema.index({ post: 1, ipAddress: 1 }, { unique: true, sparse: true });
+// Index for efficient querying
+ViewSchema.index({ post: 1, user: 1 });
+ViewSchema.index({ post: 1, ipAddress: 1 });
+ViewSchema.index({ createdAt: -1 });
 
 export default models.View || model<IView>("View", ViewSchema);

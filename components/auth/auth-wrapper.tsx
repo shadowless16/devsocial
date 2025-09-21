@@ -2,7 +2,7 @@
 "use client";
 
 import React, { memo, useMemo } from 'react';
-import { useAuth } from '@/contexts/auth-context';
+import { useAuth } from '@/contexts/app-context';
 
 interface AuthWrapperProps {
   children: (auth: { user: any; loading: boolean }) => React.ReactNode;

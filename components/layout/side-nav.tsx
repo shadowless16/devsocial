@@ -3,7 +3,8 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth, useApp } from "@/contexts/app-context"
+import { useUIState } from "@/hooks/use-ui-state"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 import { Badge } from "@/components/ui/badge"
@@ -33,7 +34,7 @@ import {
   MessageSquare,
 } from "lucide-react"
 import { PostModal } from "@/components/modals/post-modal"
-import { useNotifications } from "@/contexts/notification-context"
+
 import { useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
@@ -49,6 +50,7 @@ const getNavItems = (userRole?: string): NavItem[] => {
   const baseNav: NavItem[] = [
     { label: "Home", icon: Home, href: "/home" },
     { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
+    { label: "Communities", icon: MessageSquare, href: "/communities" },
     { label: "Search", icon: Search, href: "/search" },
     { label: "Trending", icon: Compass, href: "/trending" },
     { label: "Projects", icon: FolderOpen, href: "/projects" },
@@ -71,6 +73,7 @@ const getNavItems = (userRole?: string): NavItem[] => {
 export default function SideNav() {
   const pathname = usePathname()
   const { user } = useAuth()
+  const { handleThemeToggle } = useUIState()
   const [active, setActive] = useState("")
   const [points, setPoints] = useState<number>(user?.points || 0)
   const [level, setLevel] = useState<number>(user?.level || 1)
@@ -226,18 +229,7 @@ export default function SideNav() {
         <Button 
           variant="ghost" 
           className="justify-start gap-1 text-xs h-7"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            const isDark = document.documentElement.classList.contains('dark')
-            if (isDark) {
-              document.documentElement.classList.remove('dark')
-              localStorage.setItem('theme', 'light')
-            } else {
-              document.documentElement.classList.add('dark')
-              localStorage.setItem('theme', 'dark')
-            }
-          }}
+          onClick={handleThemeToggle}
         >
           <Moon className="h-3 w-3" />
           Dark Mode
@@ -303,7 +295,7 @@ function CreateButton() {
 }
 
 function NotificationButton() {
-  const { unreadCount } = useNotifications()
+  const { state } = useApp()
   const router = useRouter()
 
   return (
@@ -313,11 +305,9 @@ function NotificationButton() {
       onClick={() => router.push('/notifications')}
     >
       <Bell className="h-3 w-3" />
-      {/* Show badge only when there are unread notifications. This avoids a constant "1" being shown
-          when the API returned a limited result previously. */}
-      {unreadCount > 0 ? (
+      {state.unreadCount > 0 ? (
         <span className="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-medium leading-none rounded-full bg-red-600 text-white">
-          {unreadCount > 99 ? '99+' : unreadCount}
+          {state.unreadCount > 99 ? '99+' : state.unreadCount}
         </span>
       ) : null}
     </Button>

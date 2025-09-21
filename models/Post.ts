@@ -2,6 +2,7 @@ import mongoose, { Schema, type Document } from "mongoose"
 
 export interface IPost extends Document {
   author: mongoose.Types.ObjectId
+  community?: mongoose.Types.ObjectId
   isAnonymous: boolean
   content: string
   imageUrl?: string
@@ -33,6 +34,12 @@ const PostSchema = new Schema<IPost>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
+      index: true,
+    },
+    community: {
+      type: Schema.Types.ObjectId,
+      ref: "Community",
+      default: null,
       index: true,
     },
     isAnonymous: {

@@ -15,7 +15,7 @@ import ReactMarkdown from "react-markdown";
 import { Textarea } from "@/components/ui/textarea"
 import { apiClient } from "@/lib/api-client"
 import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/app-context"
 import { PostContent } from "@/components/shared/PostContent"
 import { MentionText } from "@/components/ui/mention-text"
 import { UserLink } from "@/components/shared/UserLink"
@@ -31,6 +31,7 @@ import {
 import dynamic from 'next/dynamic'
 import { TipModal } from "@/components/modals/tip-modal"
 import { getAvatarUrl } from "@/lib/avatar-utils"
+import { formatTimeAgo } from "@/lib/time-utils"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -118,7 +119,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
   const router = useRouter();
   
   // Track views when post becomes visible
-  useViewTracker(post.id);
+  const viewTrackerRef = useViewTracker(post.id) as React.RefObject<HTMLDivElement>;
 
   const handlePostClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement;
@@ -346,7 +347,12 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
 
   return (
     <TooltipProvider>
-      <Card className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-full" onClick={handlePostClick} data-post-id={post.id}>
+      <Card 
+        ref={viewTrackerRef}
+        className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-full" 
+        onClick={handlePostClick} 
+        data-post-id={post.id}
+      >
         <div className="flex flex-row items-start gap-2 md:gap-3 space-y-0 p-3 md:p-6">
         {post.isAnonymous ? (
           <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
@@ -401,7 +407,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 </UserLink>
               )}
               <span className="flex-shrink-0">•</span>
-              <time className="flex-shrink-0">{post.createdAt}</time>
+              <time className="flex-shrink-0">{formatTimeAgo(post.createdAt)}</time>
               {post.imprintStatus && post.imprintStatus !== "none" && (
                 <PostMeta 
                   imprintStatus={post.imprintStatus} 
@@ -709,7 +715,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                                   <span className="text-sm text-gray-500 hover:text-emerald-600 transition-colors">@{comment.author.username}</span>
                                 </UserLink>
                                 <span className="text-gray-400">•</span>
-                                <span className="text-sm text-gray-500">{comment.createdAt}</span>
+                                <span className="text-sm text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
                               </div>
                               <div className="text-gray-800 mb-3 leading-relaxed">
                                 <MentionText text={comment.content} />

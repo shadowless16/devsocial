@@ -170,7 +170,7 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-3 md:px-6">
+    <div className="w-full max-w-6xl mx-auto px-3 md:px-6 overflow-hidden">
       {/* Header */}
       <div className="text-center mb-6 md:mb-8">
         <div className="flex items-center justify-center mb-3 md:mb-4">
@@ -245,7 +245,7 @@ export default function SearchPage() {
           </TabsList>
 
           {/* All Results */}
-          <TabsContent value="all" className="space-y-4 md:space-y-6 mt-4 md:mt-6">
+          <TabsContent value="all" className="space-y-4 md:space-y-6 mt-4 md:mt-6 overflow-hidden">
             {/* Posts Section */}
             {searchResults.posts.length > 0 && (
               <div>
@@ -253,17 +253,18 @@ export default function SearchPage() {
                   <FileText className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                   Posts
                 </h3>
-                <div className="space-y-3 md:space-y-4">
+                <div className="space-y-3 md:space-y-4 overflow-hidden">
                   {searchResults.posts.slice(0, 3).map((post) => (
-                    <FeedItem 
-                      key={post._id || post.id} 
-                      post={{
-                        ...post,
-                        id: post._id || post.id,
-                        createdAt: new Date(post.createdAt).toLocaleDateString()
-                      }} 
-                      onLike={handleLike} 
-                    />
+                    <div key={post._id || post.id} className="w-full overflow-hidden">
+                      <FeedItem 
+                        post={{
+                          ...post,
+                          id: post._id || post.id,
+                          createdAt: new Date(post.createdAt).toLocaleDateString()
+                        }} 
+                        onLike={handleLike} 
+                      />
+                    </div>
                   ))}
                   {searchResults.posts.length > 3 && (
                     <div className="text-center">
@@ -286,7 +287,7 @@ export default function SearchPage() {
                   <User className="w-5 h-5 mr-2" />
                   Users
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   {searchResults.users.slice(0, 4).map((user) => (
                     <UserLink key={user._id} username={user.username}>
                       <Card className="hover:shadow-md transition-shadow cursor-pointer">
@@ -383,19 +384,20 @@ export default function SearchPage() {
           </TabsContent>
 
           {/* Posts Tab */}
-          <TabsContent value="posts" className="mt-6">
+          <TabsContent value="posts" className="mt-6 overflow-hidden">
             {searchResults.posts.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-4 overflow-hidden">
                 {searchResults.posts.map((post) => (
-                  <FeedItem 
-                    key={post._id || post.id} 
-                    post={{
-                      ...post,
-                      id: post._id || post.id,
-                      createdAt: new Date(post.createdAt).toLocaleDateString()
-                    }} 
-                    onLike={handleLike} 
-                  />
+                  <div key={post._id || post.id} className="w-full overflow-hidden">
+                    <FeedItem 
+                      post={{
+                        ...post,
+                        id: post._id || post.id,
+                        createdAt: new Date(post.createdAt).toLocaleDateString()
+                      }} 
+                      onLike={handleLike} 
+                    />
+                  </div>
                 ))}
               </div>
             ) : (

@@ -1,6 +1,6 @@
-export function formatTimeAgo(timestamp: string | Date): string {
+export function formatTimeAgo(dateString: string): string {
   const now = new Date()
-  const date = new Date(timestamp)
+  const date = new Date(dateString)
   const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
 
   if (diffInSeconds < 60) {
@@ -32,17 +32,5 @@ export function formatTimeAgo(timestamp: string | Date): string {
     month: 'short', 
     day: 'numeric',
     year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
-  })
-}
-
-export function formatFullDate(timestamp: string | Date): string {
-  const date = new Date(timestamp)
-  return date.toLocaleDateString('en-US', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
   })
 }

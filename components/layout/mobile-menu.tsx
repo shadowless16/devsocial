@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth, useApp } from "@/contexts/app-context"
 import { cn } from "@/lib/utils"
 import { 
   Grid2X2,
@@ -17,7 +17,13 @@ import {
   MessageCircle,
   Shield,
   X,
-  ChevronRight
+  ChevronRight,
+  User,
+  Bell,
+  Users,
+  Trophy,
+  Home,
+  Hash
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -30,13 +36,18 @@ interface MobileMenuProps {
 }
 
 const menuItems = [
+  { icon: Home, href: "/home", label: "Home" },
+  { icon: User, href: "/profile", label: "My Profile" },
+  { icon: Bell, href: "/notifications", label: "Notifications" },
   { icon: Grid2X2, href: "/dashboard", label: "Dashboard" },
+  { icon: Hash, href: "/communities", label: "Communities" },
+  { icon: Users, href: "/referrals", label: "Referrals" },
   { icon: Compass, href: "/trending", label: "Trending" },
   { icon: Search, href: "/search", label: "Search" },
-  { icon: ListOrdered, href: "/leaderboard", label: "Leaderboard" },    
+  { icon: Trophy, href: "/leaderboard", label: "Leaderboard" },    
   { icon: FolderOpen, href: "/projects", label: "Projects" },
   { icon: ListOrdered, href: "/missions", label: "Missions", badge: "3" },
-  { icon: MessageCircle, href: "/messages", label: "Messages" },
+  { icon: MessageCircle, href: "/feedback", label: "Feedback" },
   { icon: Shield, href: "/moderation", label: "Moderation", adminOnly: true },
   { icon: Settings, href: "/settings", label: "Settings" },
 ]
@@ -44,6 +55,7 @@ const menuItems = [
 export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const pathname = usePathname()
   const { user, logout } = useAuth()
+  const { state } = useApp()
   const [localUser, setLocalUser] = useState(user)
 
   const handleThemeToggle = () => {
@@ -143,6 +155,11 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                       {item.badge && (
                         <Badge className="bg-orange-100 text-orange-700 text-xs px-1.5">
                           {item.badge}
+                        </Badge>
+                      )}
+                      {item.label === "Notifications" && state.unreadCount > 0 && (
+                        <Badge className="bg-red-500 text-white text-xs px-1.5">
+                          {state.unreadCount > 99 ? '99+' : state.unreadCount}
                         </Badge>
                       )}
                       <ChevronRight className="h-4 w-4 text-gray-400" />

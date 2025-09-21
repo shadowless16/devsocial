@@ -1,0 +1,24 @@
+import { NextRequest, NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import dbConnect from "@/lib/db"
+import Community from "@/models/Community"
+
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  try {
+    const { id } = await params
+    await dbConnect()
+    
+    const community = await Community.findById(id)
+      .populate('creator', 'username displayName avatar')
+      .populate('members', 'username displayName avatar')
+    
+    if (!community) {
+      return NextResponse.json({ success: false, message: "Community not found" }, { status: 404 })
+    }
+    
+    return NextResponse.json({ success: true, data: community })
+  } catch (error: any) {
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 })
+  }
+}

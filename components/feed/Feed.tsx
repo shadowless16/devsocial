@@ -4,6 +4,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { FeedItem } from "@/components/feed/FeedItem";
 import { CommentItem } from "@/components/feed/comment-item";
+import { usePostsState } from "@/hooks/use-posts-state";
 
 interface Post {
   id: string;
@@ -43,66 +44,21 @@ interface Comment {
 }
 
 export function Feed() {
-  const [posts, setPosts] = useState<Post[]>([]);
+  const { posts, loading, handleLike, handleDelete, handleComment, fetchPosts } = usePostsState();
   const [commentsByPost, setCommentsByPost] = useState<{ [postId: string]: Comment[] }>({});
-  const [loading, setLoading] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const observer = useRef<IntersectionObserver | null>(null);
 
-  const fetchPosts = useCallback(async (pageNum: number, reset = false) => {
+  const handleFetchPosts = useCallback(async (pageNum: number, reset = false) => {
     if (loading) return;
-    setLoading(true);
-    
-    try {
-      const response = await fetch(`/api/posts?page=${pageNum}&limit=10`);
-      const data = await response.json();
-      if (data.success) {
-        const newPosts = data.data.posts.map((post: any) => ({
-          ...post,
-          id: post._id,
-          isLiked: false,
-          viewsCount: post.viewsCount || 0,
-          createdAt: new Date(post.createdAt).toLocaleDateString(),
-        }));
-        
-        setPosts(prev => reset ? newPosts : [...prev, ...newPosts]);
-        setHasMore(newPosts.length === 10); // If less than 10, no more posts
-      }
-    } catch (error) {
-      console.error("Failed to fetch posts:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [loading]);
+    await fetchPosts(pageNum, reset);
+    setHasMore(posts.length % 10 === 0); // If not divisible by 10, no more posts
+  }, [loading, fetchPosts, posts.length]);
 
   useEffect(() => {
-    fetchPosts(1, true);
-
-    // Optimistic post created listener
-    const handlePostCreated = (e: any) => {
-      try {
-        const p = e?.detail;
-        if (!p) return;
-        const normalized = {
-          ...p,
-          id: p.id || p._id || p._id?.toString(),
-          isLiked: p.isLiked || false,
-          viewsCount: p.viewsCount || p.viewsCount || 0,
-          createdAt: p.createdAt ? new Date(p.createdAt).toLocaleDateString() : new Date().toLocaleDateString(),
-        } as Post;
-        setPosts(prev => [normalized, ...prev]);
-      } catch (err) {
-        console.debug('Failed to handle post:created', err);
-      }
-    };
-
-    window.addEventListener('post:created', handlePostCreated as EventListener);
-
-    return () => {
-      window.removeEventListener('post:created', handlePostCreated as EventListener);
-    };
-  }, [fetchPosts]);
+    handleFetchPosts(1, true);
+  }, []);
 
   // Infinite scroll logic
   const lastPostElementRef = useCallback((node: HTMLDivElement) => {
@@ -112,13 +68,13 @@ export function Feed() {
       if (entries[0].isIntersecting && hasMore) {
         setPage(prevPage => {
           const nextPage = prevPage + 1;
-          fetchPosts(nextPage);
+          handleFetchPosts(nextPage);
           return nextPage;
         });
       }
     });
   if (node) observer.current?.observe(node);
-  }, [loading, hasMore, fetchPosts]);
+  }, [loading, hasMore, handleFetchPosts]);
 
   const fetchComments = async (postId: string) => {
     try {
@@ -140,49 +96,7 @@ export function Feed() {
     }
   };
 
-  const handleLike = async (postId: string) => {
-    try {
-      const response = await fetch(`/api/likes/posts/${postId}`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setPosts((prevPosts) =>
-          prevPosts.map((p) =>
-            p.id === postId
-              ? { ...p, isLiked: data.data.liked, likesCount: data.data.likesCount }
-              : p
-          )
-        );
-      }
-    } catch (error) {
-      console.error("Failed to like post:", error);
-    }
-  };
 
-  const handleComment = async (postId: string, content: string) => {
-    try {
-      const response = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ postId, content }),
-      });
-      const data = await response.json();
-      if (data.success) {
-        setPosts((prevPosts) =>
-          prevPosts.map((p) =>
-            p.id === postId
-              ? { ...p, commentsCount: p.commentsCount + 1 }
-              : p
-          )
-        );
-        await fetchComments(postId);
-      }
-    } catch (error) {
-      console.error("Failed to post comment:", error);
-    }
-  };
 
   const handleCommentLike = async (commentId: string, postId: string) => {
     try {
@@ -223,6 +137,7 @@ c.id === commentId
               post={post}
               onLike={handleLike}
               onComment={handleComment}
+              onDelete={handleDelete}
               onShowComments={(show: boolean) => handleShowComments(post.id, show)}
             >
               {commentsByPost[post.id]?.map((comment) => (

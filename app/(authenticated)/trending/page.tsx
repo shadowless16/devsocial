@@ -139,7 +139,7 @@ export default function TrendingPage() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto px-3 md:px-6">
+    <div className="w-full max-w-6xl mx-auto px-3 md:px-6 overflow-hidden">
       <div className="text-center mb-6 md:mb-8">
         <div className="flex items-center justify-center mb-3 md:mb-4">
           <div className="bg-gradient-to-r from-orange-400 to-red-500 p-2 md:p-3 rounded-full">
@@ -214,7 +214,7 @@ export default function TrendingPage() {
           <TabsTrigger value="users" className="text-xs md:text-sm px-2 py-2">Rising Stars</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="posts" className="space-y-3 md:space-y-6 mt-4 md:mt-6">
+        <TabsContent value="posts" className="space-y-3 md:space-y-6 mt-4 md:mt-6 overflow-hidden">
           {loading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="w-6 h-6 animate-spin" />
@@ -225,16 +225,18 @@ export default function TrendingPage() {
             <div className="text-center py-8 text-gray-500">No trending posts found for this period</div>
           ) : (
             trendingPosts.map((post, index) => (
-              <div key={post.id} className="relative">
+              <div key={post.id} className="relative w-full overflow-hidden">
                 <div className="absolute -top-2 -left-2 z-10">
-                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs">
                     <Fire className="w-3 h-3 mr-1" />#{index + 1} Trending
                   </Badge>
                 </div>
-                <FeedItem 
-                  post={{...post, id: post.id || post._id || '', createdAt: formatTimeAgo(post.createdAt)}} 
-                  onLike={() => handleLike(post.id || post._id || '')} 
-                />
+                <div className="w-full overflow-hidden">
+                  <FeedItem 
+                    post={{...post, id: post.id || post._id || '', createdAt: formatTimeAgo(post.createdAt)}} 
+                    onLike={() => handleLike(post.id || post._id || '')} 
+                  />
+                </div>
               </div>
             ))
           )}
@@ -250,7 +252,7 @@ export default function TrendingPage() {
           ) : trendingTopics.length === 0 ? (
             <div className="text-center py-8 text-gray-500">No trending topics found for this period</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
               {trendingTopics.map((topic, index) => (
                 <Card key={topic.tag} className="hover:shadow-md transition-shadow cursor-pointer">
                   <CardContent className="p-6">
@@ -288,7 +290,7 @@ export default function TrendingPage() {
           ) : trendingUsers.length === 0 ? (
             <div className="text-center py-8 text-gray-500">No rising stars found for this period</div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
               {trendingUsers.map((user, index) => (
                 <UserLink key={user.username} username={user.username}>
                   <Card className="hover:shadow-md transition-shadow cursor-pointer">

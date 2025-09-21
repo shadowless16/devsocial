@@ -16,9 +16,10 @@ export async function POST(
     await connectDB();
     const { id } = await params;
     const session = await getServerSession(authOptions);
-  // NextRequest doesn't expose `ip`; use x-forwarded-for header or fallback
-  const ipHeader = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
-  const ipAddress = ipHeader ? ipHeader.split(',')[0].trim() : 'unknown';
+    
+    // Get IP address
+    const ipHeader = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');
+    const ipAddress = ipHeader ? ipHeader.split(',')[0].trim() : 'unknown';
     const userAgent = request.headers.get('user-agent') || '';
 
     // Check if post exists
@@ -27,31 +28,43 @@ export async function POST(
       return NextResponse.json({ success: false, message: "Post not found" }, { status: 404 });
     }
 
-    // Try to create a new view record
-    try {
-      const viewData: any = {
-        post: id,
-        ipAddress,
-        userAgent,
-      };
+    // Check for recent views to prevent spam (within last hour)
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    const recentViewQuery: any = {
+      post: id,
+      createdAt: { $gte: oneHourAgo }
+    };
 
-      if (session?.user?.id) {
-        viewData.user = session.user.id;
-      }
-
-      await View.create(viewData);
-      
-      // Increment view count on post
-      await Post.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } });
-      
-      return NextResponse.json({ success: true, message: "View recorded" });
-    } catch (error: any) {
-      // If it's a duplicate key error, the view was already recorded
-      if (error.code === 11000) {
-        return NextResponse.json({ success: true, message: "View already recorded" });
-      }
-      throw error;
+    if (session?.user?.id) {
+      recentViewQuery.user = session.user.id;
+    } else {
+      recentViewQuery.ipAddress = ipAddress;
     }
+
+    const existingView = await View.findOne(recentViewQuery);
+    
+    if (existingView) {
+      console.log(`Recent view found for post ${id}, not counting again`);
+      return NextResponse.json({ success: true, message: "View already recorded recently" });
+    }
+
+    // Create view data
+    const viewData: any = {
+      post: id,
+      ipAddress,
+      userAgent,
+    };
+
+    if (session?.user?.id) {
+      viewData.user = session.user.id;
+    }
+
+    // Create new view record and increment count
+    await View.create(viewData);
+    await Post.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } });
+    
+    console.log(`New view recorded and count incremented for post ${id}`);
+    return NextResponse.json({ success: true, message: "View recorded" });
   } catch (error) {
     console.error("Error recording view:", error);
     return NextResponse.json({ success: false, message: "Failed to record view" }, { status: 500 });
