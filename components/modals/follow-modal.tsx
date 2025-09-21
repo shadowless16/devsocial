@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
-import { User as UserType } from '@/contexts/auth-context';
+import type { User as UserType } from '@/contexts/app-context';
 
 interface FollowModalProps {
   isOpen: boolean;

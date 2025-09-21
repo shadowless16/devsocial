@@ -137,6 +137,7 @@ interface AppContextType {
   login: (credentials: { usernameOrEmail: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
+  signup: (userData: any) => Promise<void>;
   
   // Posts actions
   fetchPosts: (page?: number, reset?: boolean) => Promise<void>;
@@ -161,6 +162,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const login = useCallback(async (credentials: { usernameOrEmail: string; password: string }) => {
     // Implementation handled by NextAuth
     throw new Error('Use NextAuth signIn instead');
+  }, []);
+
+  const signup = useCallback(async (userData: any) => {
+    try {
+      const response = await apiClient.request("/auth/signup", {
+        method: "POST",
+        body: JSON.stringify(userData),
+      }) as any;
+      
+      const hasUserData = response?.data?.user || response?.user || response?.data?.id || response?.id;
+      const isSuccess = response?.success === true || response?.status === 'success' || response?.message?.includes('success') || hasUserData;
+      
+      if (!isSuccess && response?.error) {
+        const error: any = new Error(response?.message || response?.error || "Signup failed");
+        error.error = response?.error;
+        throw error;
+      }
+    } catch (error: any) {
+      console.error('Signup error:', error);
+      throw error;
+    }
   }, []);
 
   const logout = useCallback(async () => {
@@ -318,6 +340,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     login,
     logout,
     updateUser,
+    signup,
     fetchPosts,
     likePost,
     deletePost,
@@ -343,12 +366,13 @@ export function useAuth() {
   if (context === undefined) {
     throw new Error('useAuth must be used within an AppProvider');
   }
-  const { state, updateUser, logout } = context;
+  const { state, updateUser, logout, signup } = context;
   return {
     user: state.user,
     loading: state.authLoading,
     updateUser,
     logout,
+    signup,
   };
 }
 

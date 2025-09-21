@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { useAuth } from "./auth-context";
+import { useAuth } from "./app-context";
 import { apiClient } from "@/lib/api-client";
 
 interface AppearanceSettings {

@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { UsernameInput } from './username-input'
 import { Send, Loader2 } from 'lucide-react'
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth } from '@/contexts/app-context'
 import { useToast } from '@/hooks/use-toast'
 
 export function TransferForm() {

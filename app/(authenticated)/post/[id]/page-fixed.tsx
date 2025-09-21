@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { PostContent } from "@/components/shared/PostContent"
 import Image from "next/image"
 import { apiClient } from "@/lib/api-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import {
   DropdownMenu,
