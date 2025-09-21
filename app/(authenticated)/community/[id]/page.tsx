@@ -74,6 +74,13 @@ export default function CommunityPage() {
     }
   }
 
+  // Check if user is creator or member
+  const isCreator = user && community?.creator && (community.creator._id === user.id || community.creator === user.id)
+  const isMember = user && community?.members?.some((member: any) => 
+    member._id === user.id || member === user.id || member.toString() === user.id
+  )
+  const canPost = isCreator || isMember
+
   const handleCreatePost = async (postData: any) => {
     try {
       const response = await fetch(`/api/communities/${communityId}/posts`, {
@@ -158,22 +165,29 @@ export default function CommunityPage() {
                   </Badge>
                 </div>
 
-                <Button
-                  onClick={handleJoinToggle}
-                  variant={user && community.members?.some((member: any) => member._id === user.id || member === user.id) ? "destructive" : "default"}
-                  className={`w-full sm:w-auto ${
-                    user && community.members?.some((member: any) => member._id === user.id || member === user.id)
-                      ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                      : "bg-primary text-primary-foreground hover:bg-primary/90"
-                  }`}
-                >
-                  <span className="hidden sm:inline">
-                    {user && community.members?.some((member: any) => member._id === user.id || member === user.id) ? "Leave Community" : "Join Community"}
-                  </span>
-                  <span className="sm:hidden">
-                    {user && community.members?.some((member: any) => member._id === user.id || member === user.id) ? "Leave" : "Join"}
-                  </span>
-                </Button>
+                {isCreator ? (
+                  <Badge variant="default" className="w-full sm:w-auto justify-center bg-yellow-500 text-white">
+                    <span className="hidden sm:inline">Community Creator</span>
+                    <span className="sm:hidden">Creator</span>
+                  </Badge>
+                ) : (
+                  <Button
+                    onClick={handleJoinToggle}
+                    variant={isMember ? "destructive" : "default"}
+                    className={`w-full sm:w-auto ${
+                      isMember
+                        ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                        : "bg-primary text-primary-foreground hover:bg-primary/90"
+                    }`}
+                  >
+                    <span className="hidden sm:inline">
+                      {isMember ? "Leave Community" : "Join Community"}
+                    </span>
+                    <span className="sm:hidden">
+                      {isMember ? "Leave" : "Join"}
+                    </span>
+                  </Button>
+                )}
               </div>
 
               <div className="flex items-center gap-4 sm:gap-6 text-sm text-muted-foreground mb-4">
@@ -196,7 +210,7 @@ export default function CommunityPage() {
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-4 sm:space-y-6">
             {/* Create Post */}
-            {user && community.members?.some((member: any) => member._id === user.id || member === user.id) ? (
+            {canPost ? (
               <Card className="bg-card border-border">
                 <CardContent className="p-6">
                   <div className="flex items-center gap-3">
@@ -220,13 +234,17 @@ export default function CommunityPage() {
               <Card className="bg-card border-border">
                 <CardContent className="p-6">
                   <div className="text-center py-4">
-                    <p className="text-muted-foreground mb-4">Join this community to start posting and engaging with other members!</p>
-                    <Button 
-                      onClick={handleJoinToggle}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90"
-                    >
-                      Join Community
-                    </Button>
+                    <p className="text-muted-foreground mb-4">
+                      {isCreator ? "Welcome to your community! Start posting to engage with members." : "Join this community to start posting and engaging with other members!"}
+                    </p>
+                    {!isCreator && (
+                      <Button 
+                        onClick={handleJoinToggle}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90"
+                      >
+                        Join Community
+                      </Button>
+                    )}
                   </div>
                 </CardContent>
               </Card>

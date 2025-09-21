@@ -21,6 +21,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const userId = session.user.id
     const isMember = community.members.includes(userId)
+    const isCreator = community.creator.toString() === userId
+
+    // Prevent creator from leaving their own community
+    if (isCreator && isMember) {
+      return NextResponse.json({ 
+        success: false, 
+        message: "Community creators cannot leave their own community" 
+      }, { status: 400 })
+    }
 
     if (isMember) {
       // Leave community

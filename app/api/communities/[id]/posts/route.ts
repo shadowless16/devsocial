@@ -37,11 +37,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, message: "Community not found" }, { status: 404 })
     }
 
+    const isCreator = community.creator.toString() === session.user.id
     const isMember = community.members.some((member: any) => 
       member.toString() === session.user.id || member._id?.toString() === session.user.id
     )
     
-    if (!isMember) {
+    if (!isCreator && !isMember) {
       return NextResponse.json({ success: false, message: "Must be a member to post" }, { status: 403 })
     }
 
@@ -54,6 +55,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       author: session.user.id,
       community: id
     })
+
+    // Update community post count
+    await Community.findByIdAndUpdate(id, { $inc: { postCount: 1 } })
 
     await post.populate('author', 'username displayName avatar level points')
     await post.populate('community', 'name')
