@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from "react";
 // FIX 1: Import the 'User' type directly from the context file.
-import { useAuth, User } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/app-context";
+import type { User } from "@/contexts/app-context";
 import { apiClient } from "@/lib/api-client";
 import { Settings, Save, Upload, User as UserIcon, Bell, Shield, Palette } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

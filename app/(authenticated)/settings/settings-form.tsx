@@ -3,7 +3,8 @@
 
 import { useState, useEffect } from "react";
 import dynamic from 'next/dynamic';
-import { useAuth, User } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/app-context";
+import type { User } from "@/contexts/app-context";
 import { apiClient } from "@/lib/api-client";
 import { Save, Upload, User as UserIcon, Camera } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";

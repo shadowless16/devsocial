@@ -3,7 +3,30 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { apiClient } from '@/lib/api-client';
-import type { User } from './auth-context';
+// User type definition
+export interface User {
+  id: string;
+  username: string;
+  email: string;
+  bio: string;
+  affiliation: string;
+  avatar: string;
+  bannerUrl: string;
+  role: "user" | "moderator" | "admin" | "analytics";
+  points: number;
+  badges: string[];
+  level: number;
+  isVerified: boolean;
+  displayName?: string;
+  location?: string;
+  website?: string;
+  refreshTokens: string[];
+  loginStreak: number;
+  onboardingCompleted: boolean;
+  demoWalletBalance?: number;
+  xpToNext: number;
+  totalXpForLevel: number;
+}
 
 // Unified App State
 interface AppState {
@@ -316,7 +339,11 @@ export function useApp() {
 
 // Convenience hooks for specific parts of state
 export function useAuth() {
-  const { state, updateUser, logout } = useApp();
+  const context = useContext(AppContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AppProvider');
+  }
+  const { state, updateUser, logout } = context;
   return {
     user: state.user,
     loading: state.authLoading,

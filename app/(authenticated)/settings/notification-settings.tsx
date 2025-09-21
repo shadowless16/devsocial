@@ -6,7 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/app-context";
 import { apiClient } from "@/lib/api-client";
 
 interface NotificationPreferences {

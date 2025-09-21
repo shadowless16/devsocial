@@ -14,7 +14,7 @@ import { TipModal } from "@/components/modals/tip-modal"
 import { formatTimeAgo } from "@/lib/time-utils"
 import { PostMeta } from "@/components/shared/PostMeta"
 import { PostAIActions } from "@/components/shared/PostAIActions"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/app-context"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 
 interface PostCardProps {
