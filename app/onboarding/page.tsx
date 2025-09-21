@@ -10,7 +10,7 @@ import { InterestTags } from "@/components/onboarding/interest-tags"
 import { StarterBadge } from "@/components/onboarding/starter-badge"
 import { WelcomeGamification } from "@/components/onboarding/welcome-gamification"
 import { apiClient } from "@/lib/api-client"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/app-context"
 
 const steps = [
   { id: 1, title: "Avatar & Bio Setup", component: AvatarSetup },

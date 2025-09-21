@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Loader2, Users, Search, X } from "lucide-react";
 import { apiClient } from "@/lib/api-client";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/app-context";
 import { GAMIFIED_TERMS } from "@/lib/gamified-terms";
 import { ScrollArea } from '@/components/ui/scroll-area';
 

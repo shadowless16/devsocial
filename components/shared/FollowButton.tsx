@@ -7,7 +7,7 @@ import { apiClient } from "@/lib/api-client";
 import { useToast } from "@/hooks/use-toast";
 import { useWebSocket } from "@/contexts/websocket-context";
 import { useFollow } from "@/contexts/follow-context";
-import { useAuth } from "@/contexts/auth-context";
+import { useAuth } from "@/contexts/app-context";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
 import { getFollowActionText, getFollowingActionText, getFollowTooltip } from "@/lib/gamified-terms";
 

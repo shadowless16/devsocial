@@ -1,7 +1,8 @@
 "use client"
 
 import React, { useState } from 'react'
-import * as AuthContext from '@/contexts/auth-context'
+import { useAuth } from '@/contexts/app-context'
+import type { User } from '@/contexts/app-context'
 import FollowModal from '@/components/modals/follow-modal'
 import { MapPin, Calendar, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -62,7 +63,7 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
   const [showRPMModal, setShowRPMModal] = useState(false)
   const [showViewerModal, setShowViewerModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
-  const { user: currentUser } = AuthContext.useAuth();
+  const { user: currentUser } = useAuth();
   const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
   const [followersCount, setFollowersCount] = useState(profile.followersCount);
   const [followingCount, setFollowingCount] = useState(profile.followingCount);
