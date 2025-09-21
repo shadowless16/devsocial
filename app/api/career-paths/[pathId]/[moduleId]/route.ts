@@ -32,13 +32,13 @@ export async function GET(request: NextRequest, { params }: Props) {
     }
 
     // Get module by slug or ID
-    const module = await Module.findOne({
+    const moduleData = await Module.findOne({
       $or: [{ slug: moduleId }, { _id: moduleId }],
       pathId: path._id,
       isActive: true
     })
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { success: false, message: 'Module not found' },
         { status: 404 }
@@ -56,7 +56,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       })
 
       moduleProgress = userProgress?.moduleProgress.find(
-(mp: any) => mp.moduleId.toString() === module._id.toString()
+(mp: any) => mp.moduleId.toString() === moduleData._id.toString()
       )
     }
 
@@ -66,8 +66,8 @@ export async function GET(request: NextRequest, { params }: Props) {
       isActive: true 
     }).sort({ order: 1 }).select('_id title slug order')
 
-    const moduleData = {
-      ...module.toObject(),
+    const responseData = {
+      ...moduleData.toObject(),
       isCompleted: !!moduleProgress?.completedAt,
       userProgress: moduleProgress || null,
       path: {
@@ -80,7 +80,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     return NextResponse.json({
       success: true,
-      data: moduleData
+      data: responseData
     })
   } catch (error: any) {
     console.error('Error fetching module:', error)
@@ -121,13 +121,13 @@ export async function POST(request: NextRequest, { params }: Props) {
       )
     }
 
-    const module = await Module.findOne({
+    const moduleData = await Module.findOne({
       $or: [{ slug: moduleId }, { _id: moduleId }],
       pathId: path._id,
       isActive: true
     })
 
-    if (!module) {
+    if (!moduleData) {
       return NextResponse.json(
         { success: false, message: 'Module not found' },
         { status: 404 }
@@ -150,7 +150,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     // Check if module is already completed
     const existingProgress = userProgress.moduleProgress.find(
-(mp: any) => mp.moduleId.toString() === module._id.toString()
+(mp: any) => mp.moduleId.toString() === moduleData._id.toString()
     )
 
     if (existingProgress && existingProgress.completedAt) {
@@ -166,7 +166,7 @@ export async function POST(request: NextRequest, { params }: Props) {
       existingProgress.completedAt = new Date()
     } else {
       userProgress.moduleProgress.push({
-        moduleId: module._id,
+        moduleId: moduleData._id,
         completedAt: new Date(),
         timeSpent: 0
       })
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     const totalModules = await Module.countDocuments({ pathId: path._id, isActive: true })
     
     userProgress.completionPercentage = (completedModules / totalModules) * 100
-    userProgress.totalXpEarned += module.xpReward
+    userProgress.totalXpEarned += moduleData.xpReward
     userProgress.lastAccessedAt = new Date()
 
     // Check if path is completed
@@ -194,7 +194,7 @@ export async function POST(request: NextRequest, { params }: Props) {
       success: true,
       message: 'Module completed successfully',
       data: {
-        xpEarned: module.xpReward,
+        xpEarned: moduleData.xpReward,
         completionPercentage: userProgress.completionPercentage,
         pathCompleted: !!userProgress.completedAt
       }

@@ -1,5 +1,6 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, ChevronLeft, ChevronRight, Clock, Trophy } from 'lucide-react'
@@ -150,13 +151,22 @@ const mockPath = {
   ]
 }
 
-export default async function ModulePage({ params }: Props) {
-  const { pathId, moduleId } = await params
+export default function ModulePage({ params }: Props) {
+  const [pathId, setPathId] = useState('')
+  const [moduleId, setModuleId] = useState('')
   
-  // Mock validation - replace with actual API calls
-  if (pathId !== 'frontend-developer' || moduleId !== 'html-basics') {
-    notFound()
-  }
+  useEffect(() => {
+    params.then(({ pathId, moduleId }) => {
+      setPathId(pathId)
+      setModuleId(moduleId)
+      if (pathId !== 'frontend-developer' || moduleId !== 'html-basics') {
+        notFound()
+      }
+    })
+  }, [params])
+  
+  if (!pathId || !moduleId) return null
+
 
   const currentModuleIndex = mockPath.modules.findIndex(m => m.slug === moduleId)
   const prevModule = currentModuleIndex > 0 ? mockPath.modules[currentModuleIndex - 1] : null
