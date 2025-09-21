@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react'
 import { useParams } from 'next/navigation'
 import { User, Activity, TrendingUp } from 'lucide-react'
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth } from '@/contexts/app-context'
 import ProfileHeader from '@/components/profile/ProfileHeader'
 import ProfileStats from '@/components/profile/ProfileStats'
 import AchievementShowcase from '@/components/profile/AchievementShowcase'

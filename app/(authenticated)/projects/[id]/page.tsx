@@ -11,7 +11,7 @@ import { ArrowLeft, Github, ExternalLink, Heart, Eye, Share2, Settings, Trash2 }
 import Image from "next/image"
 import Link from "next/link"
 import { toast } from "sonner"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/app-context"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 
 interface Project {

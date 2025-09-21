@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { useAuth } from "@/contexts/auth-context"
+import { useAuth } from "@/contexts/app-context"
 import { apiClient } from "@/lib/api-client"
 import { toast } from "sonner"
 
