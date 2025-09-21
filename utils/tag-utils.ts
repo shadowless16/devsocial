@@ -29,7 +29,7 @@ export async function findOrCreateTags(tagNames: string[], userId: string) {
 }
 
 export function extractHashtags(content: string): string[] {
-  const hashtagRegex = /#[\w]+/g
+  const hashtagRegex = /#[a-zA-Z0-9_]+/g
   const matches = content.match(hashtagRegex) || []
-  return matches.map(tag => tag.substring(1)) // Remove # symbol
+  return matches.map(tag => tag.substring(1).toLowerCase()) // Remove # symbol and normalize
 }

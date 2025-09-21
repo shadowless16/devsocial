@@ -267,7 +267,7 @@ export default function ContentAnalyticsPage() {
               <div style={{ width: '100%', height: '200px' }}>
                 <PieChart width={300} height={200}>
                   <Pie
-                    data={engagementDistribution}
+                    data={engagementDistribution as any}
                     cx={150}
                     cy={100}
                     innerRadius={40}

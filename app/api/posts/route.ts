@@ -11,6 +11,7 @@ import UserStats from "@/models/UserStats";
 import { checkReferralMiddleware } from "@/utils/check-referral-middleware";
 import { processMentions } from "@/utils/mention-utils";
 import { hashPost } from "@/lib/canonicalizer";
+import { extractHashtags, findOrCreateTags } from "@/utils/tag-utils";
 import { enqueueImprintJob } from "@/services/imprintQueue";
 import Activity from '@/models/Activity'
 import Notification from '@/models/Notification'
@@ -195,14 +196,29 @@ export async function POST(req: NextRequest) {
       return errorResponse("Author not found.", 404);
     }
 
+    // Extract hashtags from content
+    const extractedHashtags = extractHashtags(content);
+    const allTags = [...(tags || []), ...extractedHashtags];
+    const uniqueTags = [...new Set(allTags)];
+
+    // Create or find tags in database
+    let tagIds = [];
+    if (uniqueTags.length > 0) {
+      tagIds = await findOrCreateTags(uniqueTags, authorId);
+    }
+
     const newPost = await Post.create({
       content,
       author: authorId,
-      tags: tags || [],
+      tags: uniqueTags,
+      tagIds,
       imageUrl: imageUrl || null,
       imageUrls: imageUrls || [],
       videoUrls: videoUrls || [],
       isAnonymous: isAnonymous || false,
+      viewsCount: 0,
+      likesCount: 0,
+      commentsCount: 0,
     });
 
     // Compute contentHash and set imprint status
@@ -264,12 +280,34 @@ export async function POST(req: NextRequest) {
       // Do not fail post creation if activity logging fails
     }
 
+    // Check for daily hashtag bonus
+    const dailyHashtags = {
+      0: { hashtag: 'studysunday', xp: 75 }, // Sunday
+      1: { hashtag: 'motivationmonday', xp: 50 }, // Monday
+      2: { hashtag: 'tutorialtuesday', xp: 100 }, // Tuesday
+      3: { hashtag: 'wipwednesday', xp: 60 }, // Wednesday
+      4: { hashtag: 'throwbackthursday', xp: 40 }, // Thursday
+      5: { hashtag: 'featurefriday', xp: 80 }, // Friday
+      6: { hashtag: 'socialsaturday', xp: 30 }, // Saturday
+    };
+    
+    const today = new Date().getDay();
+    const todayChallenge = dailyHashtags[today as keyof typeof dailyHashtags];
+    const hasDailyHashtag = uniqueTags.some(tag => 
+      tag.toLowerCase().replace(/[^a-z0-9]/g, '') === todayChallenge.hashtag
+    );
+
     // Award XP for post creation
     const isFirstPost = await checkFirstTimeAction(authorId, "post");
     if (isFirstPost) {
       await awardXP(authorId, "first_post", newPost._id.toString());
     } else {
       await awardXP(authorId, "post_creation", newPost._id.toString());
+    }
+
+    // Award bonus XP for daily hashtag participation
+    if (hasDailyHashtag) {
+      await awardXP(authorId, "daily_challenge", newPost._id.toString(), todayChallenge.xp);
     }
 
     // Update user stats

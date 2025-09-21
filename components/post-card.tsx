@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -78,11 +78,45 @@ export default function PostCard({
   const [currentLikesCount, setCurrentLikesCount] = useState(likesCount)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showTipModal, setShowTipModal] = useState(false)
+  const [currentViews, setCurrentViews] = useState(views)
+  const viewTracked = useRef(false)
   
   useEffect(() => {
     setIsLiked(liked)
     setCurrentLikesCount(likesCount)
-  }, [liked, likesCount])
+    setCurrentViews(views)
+  }, [liked, likesCount, views])
+
+  // Track view when component mounts
+  useEffect(() => {
+    if (postId && !viewTracked.current) {
+      viewTracked.current = true
+      trackView()
+    }
+  }, [postId])
+
+  const trackView = async () => {
+    if (!postId) return
+    
+    try {
+      const response = await fetch(`/api/posts/${postId}/views`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        // Only increment if it's a new view (not already viewed recently)
+        if (data.success && !data.alreadyViewed) {
+          setCurrentViews(prev => prev + 1)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to track view:', error)
+    }
+  }
 
   const handleCopyCode = (codeContent: string) => {
     navigator.clipboard.writeText(codeContent).then(() => {
@@ -354,7 +388,7 @@ export default function PostCard({
                 </div>
 
                 <div className="text-xs text-muted-foreground flex-shrink-0">
-                  {views} views
+                  {currentViews} views
                 </div>
               </div>
             </div>

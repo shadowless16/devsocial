@@ -32,6 +32,7 @@ import {
   BarChart3,
   Shield,
   MessageSquare,
+  BookOpen,
 } from "lucide-react"
 import { PostModal } from "@/components/modals/post-modal"
 
@@ -50,6 +51,7 @@ const getNavItems = (userRole?: string): NavItem[] => {
   const baseNav: NavItem[] = [
     { label: "Home", icon: Home, href: "/home" },
     { label: "Dashboard", icon: Grid2X2, href: "/dashboard" },
+    { label: "Career Paths", icon: BookOpen, href: "/career-paths" },
     { label: "Communities", icon: MessageSquare, href: "/communities" },
     { label: "Search", icon: Search, href: "/search" },
     { label: "Trending", icon: Compass, href: "/trending" },

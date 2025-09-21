@@ -45,7 +45,7 @@ export async function POST(
     
     if (existingView) {
       console.log(`Recent view found for post ${id}, not counting again`);
-      return NextResponse.json({ success: true, message: "View already recorded recently" });
+      return NextResponse.json({ success: true, message: "View already recorded recently", alreadyViewed: true });
     }
 
     // Create view data
@@ -61,10 +61,10 @@ export async function POST(
 
     // Create new view record and increment count
     await View.create(viewData);
-    await Post.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } });
+    const updatedPost = await Post.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } }, { new: true });
     
-    console.log(`New view recorded and count incremented for post ${id}`);
-    return NextResponse.json({ success: true, message: "View recorded" });
+    console.log(`New view recorded and count incremented for post ${id}. New count: ${updatedPost?.viewsCount}`);
+    return NextResponse.json({ success: true, message: "View recorded", newCount: updatedPost?.viewsCount });
   } catch (error) {
     console.error("Error recording view:", error);
     return NextResponse.json({ success: false, message: "Failed to record view" }, { status: 500 });

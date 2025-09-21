@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next dev",
-  "dev:fast": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.fast.mjs next dev --turbo",
-  "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.turbo.mjs next dev --turbo",
+    "dev:fast": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.fast.mjs next dev --turbo",
+    "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.turbo.mjs next dev --turbo",
     "build": "next build",
     "build:stats": "cross-env ANALYZE=true next build",
     "build:fast": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next build",
@@ -98,7 +98,9 @@
     "framer-motion": "latest",
     "geist": "^1.3.1",
     "http": "latest",
+    "immutable": "^4.3.7",
     "input-otp": "1.4.1",
+    "lit": "^3.3.1",
     "lucide-react": "^0.454.0",
     "mongodb": "^6.18.0",
     "mongoose": "latest",
@@ -119,6 +121,8 @@
     "react-resizable-panels": "^2.1.7",
     "react-syntax-highlighter": "^15.6.1",
     "recharts": "latest",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
     "socket.io": "latest",
     "socket.io-client": "latest",
     "sonner": "^1.7.1",
@@ -127,9 +131,7 @@
     "three": "^0.179.1",
     "vaul": "^0.9.6",
     "wagmi": "^2.16.3",
-    "zod": "^3.24.1",
-    "immutable": "^4.3.7",
-    "lit": "^3.3.1"
+    "zod": "^3.24.1"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.6.4",
@@ -153,6 +155,7 @@
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.20.5",
     "typescript": "^5",
     "vitest": "^3.2.4"
   }

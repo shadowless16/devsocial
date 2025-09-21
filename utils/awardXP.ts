@@ -21,17 +21,19 @@ export const XP_VALUES = {
   email_verified: 10,
   user_followed: 5,
   challenge_completion: 75,
+  daily_challenge: 50,  // Default value, can be overridden
 }
 
 export async function awardXP(
   userId: string,
   type: keyof typeof XP_VALUES,
   refId?: string,
+  customXP?: number,
 ): Promise<{ success: boolean; newLevel?: number; levelUp?: boolean }> {
   try {
     // await connectDB() // Remove in tests, connection already exists
 
-    const xpAmount = XP_VALUES[type]
+    const xpAmount = customXP || XP_VALUES[type]
     if (!xpAmount) {
       throw new Error(`Invalid XP type: ${type}`)
     }

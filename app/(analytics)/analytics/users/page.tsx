@@ -381,7 +381,7 @@ export default function UserAnalyticsPage() {
               <div style={{ width: '100%', height: '200px' }}>
               <PieChart width={300} height={200}>
                 <Pie
-                  data={registrationSources}
+                  data={registrationSources as any}
                   cx={150}
                   cy={100}
                   outerRadius={80}
