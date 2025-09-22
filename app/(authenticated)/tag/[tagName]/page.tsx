@@ -40,11 +40,14 @@ export default function TagPage() {
   const fetchTagPosts = async () => {
     try {
       setLoading(true)
-      const response = await apiClient.request<{ posts: Post[], stats: any }>(`/posts/by-tag/${encodeURIComponent(tagName)}`)
+      const response = await apiClient.request<{ posts: Post[], pagination: any }>(`/tags/search?tag=${encodeURIComponent(tagName)}`)
       
-      if (response.success && response.data) {
-        setPosts(response.data.posts || [])
-        setTagStats(response.data.stats || { totalPosts: 0, totalEngagement: 0 })
+      if (response.posts) {
+        setPosts(response.posts || [])
+        setTagStats({ 
+          totalPosts: response.pagination?.total || 0, 
+          totalEngagement: response.posts?.reduce((sum: number, post: Post) => sum + post.likesCount + post.commentsCount, 0) || 0 
+        })
       }
     } catch (error) {
       console.error("Failed to fetch tag posts:", error)

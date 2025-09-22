@@ -18,14 +18,17 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Tag parameter required" }, { status: 400 })
     }
 
-    const posts = await Post.find({ tags: tag })
+    // Normalize tag (remove # prefix)
+    const normalizedTag = tag.replace(/^#/, '').toLowerCase().trim()
+
+    const posts = await Post.find({ tags: normalizedTag })
       .populate("author", "username avatar displayName")
       .populate("tags", "name color")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
 
-    const total = await Post.countDocuments({ tags: tag })
+    const total = await Post.countDocuments({ tags: normalizedTag })
 
     return NextResponse.json({
       posts,
