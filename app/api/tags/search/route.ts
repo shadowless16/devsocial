@@ -31,12 +31,15 @@ export async function GET(request: NextRequest) {
     const total = await Post.countDocuments({ tags: normalizedTag })
 
     return NextResponse.json({
-      posts,
-      pagination: {
-        page,
-        limit,
-        total,
-        pages: Math.ceil(total / limit)
+      success: true,
+      data: {
+        posts,
+        pagination: {
+          page,
+          limit,
+          total,
+          pages: Math.ceil(total / limit)
+        }
       }
     })
   } catch (error) {

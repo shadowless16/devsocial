@@ -42,11 +42,12 @@ export default function TagPage() {
       setLoading(true)
       const response = await apiClient.request<{ posts: Post[], pagination: any }>(`/tags/search?tag=${encodeURIComponent(tagName)}`)
       
-      if (response.posts) {
-        setPosts(response.posts || [])
+      if (response.success && response.data) {
+        const posts = response.data.posts || []
+        setPosts(posts)
         setTagStats({ 
-          totalPosts: response.pagination?.total || 0, 
-          totalEngagement: response.posts?.reduce((sum: number, post: Post) => sum + post.likesCount + post.commentsCount, 0) || 0 
+          totalPosts: response.data.pagination?.total || 0, 
+          totalEngagement: posts.reduce((sum: number, post: Post) => sum + post.likesCount + post.commentsCount, 0) 
         })
       }
     } catch (error) {
