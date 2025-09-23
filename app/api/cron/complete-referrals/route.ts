@@ -38,11 +38,11 @@ export async function GET(request: NextRequest) {
       completed
     });
 
-  } catch (error) {
+  } catch (error: any) {
     console.error("Cron job error:", error);
     return NextResponse.json({
       success: false,
-      error: error.message
+      error: error?.message || 'Unknown error'
     }, { status: 500 });
   }
 }

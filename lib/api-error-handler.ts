@@ -31,7 +31,7 @@ export function handleDatabaseError(error: DatabaseError): NextResponse {
     }
     
     return NextResponse.json(
-      errorResponse(message, { field, value }), 
+      errorResponse(message), 
       { status: 409 }
     );
   }
@@ -47,7 +47,7 @@ export function handleDatabaseError(error: DatabaseError): NextResponse {
   // Handle validation errors
   if (error.name === 'ValidationError') {
     return NextResponse.json(
-      errorResponse('Invalid data provided', { details: error.message }), 
+      errorResponse('Invalid data provided'), 
       { status: 400 }
     );
   }

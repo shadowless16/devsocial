@@ -97,7 +97,7 @@ export {
   RefreshCw,
   Play,
   Pause,
-  Stop,
+  Square,
   Volume2,
   VolumeX,
   Wifi,

@@ -10,10 +10,15 @@ import { FollowProvider } from '@/contexts/follow-context'
 import { NotificationProvider } from '@/contexts/notification-context'
 import { Toaster } from '@/components/ui/toaster'
 import { authConfig } from '@/lib/auth-config'
+import '@/lib/session-interceptor' // Intercept and cache session calls
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <SessionProvider {...authConfig}>
+    <SessionProvider 
+      {...authConfig}
+      refetchInterval={5 * 60} // Reduce refetch frequency to 5 minutes
+      refetchOnWindowFocus={false} // Disable refetch on window focus
+    >
       <ThemeProvider
         attribute="class"
         defaultTheme="system"

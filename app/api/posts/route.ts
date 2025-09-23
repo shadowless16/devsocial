@@ -111,7 +111,7 @@ export async function GET(req: NextRequest) {
       { $limit: limit }
     ];
 
-    const posts = await Post.aggregate(aggregationPipeline);
+    const posts = await Post.aggregate(aggregationPipeline as any);
     const filteredPosts = posts; // Already filtered in aggregation
 
     // Get user likes if authenticated - batch query for better performance

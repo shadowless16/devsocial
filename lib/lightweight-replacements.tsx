@@ -1,5 +1,6 @@
-// lib/lightweight-replacements.ts
+// lib/lightweight-replacements.tsx
 // Lightweight replacements for heavy dependencies
+import React from 'react';
 
 // Replace heavy date-fns with minimal date utilities
 export const formatDate = (date: Date | string) => {
