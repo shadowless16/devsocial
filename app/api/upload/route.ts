@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
         allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
         transformation: [
           { width: 2000, height: 2000, crop: 'limit' }, // Limit max dimensions
-          { quality: 'auto:good' } // Auto optimize quality
+          { quality: 'auto:best' } // Use best quality
         ]
       });
     }

@@ -230,7 +230,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
           resolve(file);
         },
         'image/jpeg',
-        0.95
+        1.0
       );
     });
   };
