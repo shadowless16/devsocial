@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, FormEvent, useEffect } from "react";
-import { X, ImageIcon, Code, Hash, Eye, EyeOff, Target, Search, Video, Upload, Trash2, Sparkles } from "lucide-react";
+import { X, ImageIcon, Hash, Eye, EyeOff, Video, Upload, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MentionInput } from "@/components/ui/mention-input";
@@ -44,141 +44,7 @@ const suggestedTags = [
   "#tips",
 ];
 
-const programmingLanguages = [
-  {
-    id: 'javascript',
-    name: 'JavaScript',
-    template: 'const greeting = "Hello, World!";\nconsole.log(greeting);',
-    icon: '🟨'
-  },
-  {
-    id: 'typescript',
-    name: 'TypeScript',
-    template: 'interface User {\n  name: string;\n  age: number;\n}\n\nconst user: User = {\n  name: "John",\n  age: 30\n};',
-    icon: '🔷'
-  },
-  {
-    id: 'python',
-    name: 'Python',
-    template: 'def hello_world():\n    print("Hello, World!")\n\nhello_world()',
-    icon: '🐍'
-  },
-  {
-    id: 'java',
-    name: 'Java',
-    template: 'public class HelloWorld {\n    public static void main(String[] args) {\n        System.out.println("Hello, World!");\n    }\n}',
-    icon: '☕'
-  },
-  {
-    id: 'cpp',
-    name: 'C++',
-    template: '#include <iostream>\n\nint main() {\n    std::cout << "Hello, World!" << std::endl;\n    return 0;\n}',
-    icon: '⚡'
-  },
-  {
-    id: 'go',
-    name: 'Go',
-    template: 'package main\n\nimport "fmt"\n\nfunc main() {\n    fmt.Println("Hello, World!")\n}',
-    icon: '🐹'
-  },
-  {
-    id: 'rust',
-    name: 'Rust',
-    template: 'fn main() {\n    println!("Hello, World!");\n}',
-    icon: '🦀'
-  },
-  {
-    id: 'php',
-    name: 'PHP',
-    template: '<?php\necho "Hello, World!";\n?>',
-    icon: '🐘'
-  },
-  {
-    id: 'ruby',
-    name: 'Ruby',
-    template: 'puts "Hello, World!"',
-    icon: '💎'
-  },
-  {
-    id: 'swift',
-    name: 'Swift',
-    template: 'import Foundation\n\nprint("Hello, World!")',
-    icon: '🍎'
-  },
-  {
-    id: 'kotlin',
-    name: 'Kotlin',
-    template: 'fun main() {\n    println("Hello, World!")\n}',
-    icon: '🎯'
-  },
-  {
-    id: 'csharp',
-    name: 'C#',
-    template: 'using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, World!");\n    }\n}',
-    icon: '🔵'
-  },
-  {
-    id: 'html',
-    name: 'HTML',
-    template: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Hello World</title>\n</head>\n<body>\n    <h1>Hello, World!</h1>\n</body>\n</html>',
-    icon: '🌐'
-  },
-  {
-    id: 'css',
-    name: 'CSS',
-    template: '.hello-world {\n    color: #333;\n    font-size: 24px;\n    text-align: center;\n}',
-    icon: '🎨'
-  },
-  {
-    id: 'sql',
-    name: 'SQL',
-    template: 'SELECT * FROM users\nWHERE active = true\nORDER BY created_at DESC;',
-    icon: '🗃️'
-  }
-];
 
-const sampleChallenges = [
-  {
-    id: 1,
-    title: "Build a Todo App",
-    description: "Create a fully functional todo application with CRUD operations",
-    xp: 100,
-    difficulty: "Beginner",
-    tags: ["javascript", "react"]
-  },
-  {
-    id: 2,
-    title: "Implement Binary Search",
-    description: "Write an efficient binary search algorithm",
-    xp: 150,
-    difficulty: "Intermediate",
-    tags: ["algorithms", "javascript"]
-  },
-  {
-    id: 3,
-    title: "Create a REST API",
-    description: "Build a RESTful API with authentication and database integration",
-    xp: 250,
-    difficulty: "Advanced",
-    tags: ["nodejs", "backend", "api"]
-  },
-  {
-    id: 4,
-    title: "CSS Animation Challenge",
-    description: "Create smooth animations using pure CSS",
-    xp: 80,
-    difficulty: "Beginner",
-    tags: ["css", "animation"]
-  },
-  {
-    id: 5,
-    title: "Database Optimization",
-    description: "Optimize database queries for better performance",
-    xp: 200,
-    difficulty: "Advanced",
-    tags: ["database", "sql", "performance"]
-  }
-];
 
 export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const { toast } = useToast();
@@ -190,13 +56,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const [imageUrl, setImageUrl] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [postType, setPostType] = useState<'normal' | 'code' | 'challenge'>('normal');
-  const [selectedChallenge, setSelectedChallenge] = useState<any>(null);
-  const [showChallengeDropdown, setShowChallengeDropdown] = useState(false);
-  const [showLanguageSelector, setShowLanguageSelector] = useState(false);
-  const [languageFilter, setLanguageFilter] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
-  const [isAiSummarizing, setIsAiSummarizing] = useState(false);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -453,7 +314,6 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
       videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
       isAnonymous,
       postType,
-      selectedChallenge,
     };
     
     // Track mission progress
@@ -482,13 +342,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     setImageUrl("");
     setMediaUrls([]);
     setPostType('normal');
-    setSelectedChallenge(null);
-    setShowChallengeDropdown(false);
-    setShowLanguageSelector(false);
-    setLanguageFilter('');
     setUploadError(null);
     setIsUploading(false);
-    setIsAiSummarizing(false);
     resetCropState();
   };
 
@@ -536,85 +391,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     }
   };
 
-  const handleCodeSnippetClick = () => {
-    setShowLanguageSelector(!showLanguageSelector);
-  };
 
-  const selectLanguage = (language: any) => {
-    const codeTemplate = `\n\n\`\`\`${language.id}\n${language.template}\n\`\`\`\n\n`;
-    setContent(prev => prev + codeTemplate);
-    setPostType('code');
-    setShowLanguageSelector(false);
-    const languageTag = `#${language.id}`;
-    if (!tags.includes(languageTag) && tags.length < 5) {
-      setTags(prev => [...prev, languageTag]);
-    }
-  };
-
-  const filteredLanguages = programmingLanguages.filter(lang => 
-    lang.name.toLowerCase().includes(languageFilter.toLowerCase())
-  );
-
-  const handleChallengeClick = () => {
-    setShowChallengeDropdown(!showChallengeDropdown);
-  };
-
-  const selectChallenge = (challenge: any) => {
-    setSelectedChallenge(challenge);
-    setShowChallengeDropdown(false);
-    setPostType('challenge');
-    challenge.tags.forEach((tag: string) => {
-      const formattedTag = tag.startsWith('#') ? tag : `#${tag}`;
-      if (!tags.includes(formattedTag) && tags.length < 5) {
-        setTags(prev => [...prev, formattedTag]);
-      }
-    });
-  };
-
-  const removeChallenge = () => {
-    setSelectedChallenge(null);
-    setPostType('normal');
-  };
-
-  const handleAiSummarize = async () => {
-    if (!content.trim()) return;
-    
-    setIsAiSummarizing(true);
-    try {
-      const response = await fetch('/api/posts/summarize', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ content }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to summarize content');
-      }
-      
-      if (data.success && data.data?.summary) {
-        setContent(data.data.summary);
-        toast({
-          title: "Content summarized",
-          description: "Your post has been condensed using AI.",
-        });
-      } else {
-        throw new Error('Invalid response format');
-      }
-    } catch (error) {
-      console.error('Summarization error:', error);
-      toast({
-        title: "Summarization failed",
-        description: error instanceof Error ? error.message : "Unable to summarize content. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsAiSummarizing(false);
-    }
-  };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-end sm:items-center justify-center z-50 p-2 sm:p-4">
@@ -914,45 +691,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             </div>
           </div>
 
-          {selectedChallenge && (
-            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Target className="w-4 h-4 text-blue-600" />
-                    <h3 className="font-medium text-foreground">{selectedChallenge.title}</h3>
-                    <Badge variant="outline" className={`text-xs ${
-                      selectedChallenge.difficulty === 'Beginner' ? 'bg-green-50 text-green-700' :
-                      selectedChallenge.difficulty === 'Intermediate' ? 'bg-yellow-50 text-yellow-700' :
-                      'bg-red-50 text-red-700'
-                    }`}>
-                      {selectedChallenge.difficulty}
-                    </Badge>
-                    <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
-                      {selectedChallenge.xp} XP
-                    </Badge>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-2">{selectedChallenge.description}</p>
-                  <div className="flex flex-wrap gap-1">
-                    {selectedChallenge.tags.map((tag: string) => (
-                      <Badge key={tag} variant="secondary" className="text-xs">
-                        #{tag}
-                      </Badge>
-                    ))}
-                  </div>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={removeChallenge}
-                  className="text-blue-600 hover:text-blue-800 hover:bg-blue-100"
-                >
-                  <X className="w-4 h-4" />
-                </Button>
-              </div>
-            </div>
-          )}
+
 
           <div className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center space-x-3">
@@ -967,136 +706,17 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
 
-          <div className="flex flex-col sm:flex-row justify-between pt-4 sm:pt-4 border-t border-border gap-4 sm:gap-0 sticky bottom-0 bg-background pb-4 sm:pb-0 sm:static">
-            <div className="flex items-center space-x-1 sm:space-x-2 relative overflow-x-auto">
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAiSummarize}
-                disabled={!content.trim() || isAiSummarizing}
-                className="text-xs sm:text-sm h-8 px-2 sm:px-3"
-              >
-                <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                <span className="hidden sm:inline">{isAiSummarizing ? 'Summarizing...' : 'AI Summarize'}</span>
-                <span className="sm:hidden">{isAiSummarizing ? '...' : 'AI'}</span>
-              </Button>
-              
-              <div className="relative">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleCodeSnippetClick}
-                  className={`text-xs sm:text-sm h-8 px-2 sm:px-3 ${postType === 'code' ? 'bg-blue-50 border-blue-300' : ''} ${showLanguageSelector ? 'ring-2 ring-blue-200' : ''}`}
-                >
-                  <Code className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                  <span className="hidden sm:inline">✨ Code Snippet</span>
-                  <span className="sm:hidden">Code</span>
-                </Button>
-                
-                {showLanguageSelector && (
-                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-96 bg-background border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-hidden">
-                    <div className="p-3 border-b border-border">
-                      <div className="flex items-center space-x-2 mb-2">
-                        <Search className="w-4 h-4 text-gray-400" />
-                        <Input
-                          placeholder="Search programming languages..."
-                          value={languageFilter}
-                          onChange={(e) => setLanguageFilter(e.target.value)}
-                          className="border-0 focus:ring-0 p-0 text-sm"
-                        />
-                      </div>
-                      <p className="text-xs text-muted-foreground">Choose a language to insert a code template:</p>
-                    </div>
-                    <div className="max-h-64 overflow-y-auto p-2">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1">
-                        {filteredLanguages.map((language) => (
-                          <div
-                            key={language.id}
-                            onClick={() => selectLanguage(language)}
-                            className="flex items-center space-x-3 p-3 hover:bg-muted/50 cursor-pointer rounded-md transition-colors"
-                          >
-                            <span className="text-xl">{language.icon}</span>
-                            <div className="flex-1 min-w-0">
-                              <p className="font-medium text-sm text-foreground truncate">{language.name}</p>
-                              <p className="text-xs text-muted-foreground truncate">
-                                {language.template.split('\n')[0].substring(0, 30)}...
-                              </p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                      {filteredLanguages.length === 0 && (
-                        <div className="text-center py-6 text-muted-foreground text-sm">
-                          No languages found matching "{languageFilter}"
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-              
-              <div className="relative">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={handleChallengeClick}
-                  className={`${selectedChallenge ? 'bg-blue-50 border-blue-300' : ''} ${showChallengeDropdown ? 'ring-2 ring-blue-200' : ''}`}
-                >
-                  <Target className="w-4 h-4 mr-2" />
-                  🎯 Challenge
-                </Button>
-                
-                {showChallengeDropdown && (
-                  <div className="absolute top-full left-0 mt-2 w-[90vw] sm:w-80 bg-background border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
-                    <div className="p-2">
-                      <p className="text-sm text-muted-foreground mb-2 px-2">Select a challenge to attach:</p>
-                      {sampleChallenges.map((challenge) => (
-                        <div
-                          key={challenge.id}
-                          onClick={() => selectChallenge(challenge)}
-                          className="p-3 hover:bg-muted/50 cursor-pointer rounded-md border-b border-border last:border-b-0"
-                        >
-                          <div className="flex items-start justify-between">
-                            <div className="flex-1">
-                              <h4 className="font-medium text-sm text-foreground">{challenge.title}</h4>
-                              <p className="text-xs text-muted-foreground mt-1">{challenge.description}</p>
-                              <div className="flex items-center space-x-2 mt-2">
-                                <Badge variant="outline" className={`text-xs ${
-                                  challenge.difficulty === 'Beginner' ? 'bg-green-50 text-green-700' :
-                                  challenge.difficulty === 'Intermediate' ? 'bg-yellow-50 text-yellow-700' :
-                                  'bg-red-50 text-red-700'
-                                }`}>
-                                  {challenge.difficulty}
-                                </Badge>
-                                <Badge variant="outline" className="text-xs bg-purple-50 text-purple-700">
-                                  {challenge.xp} XP
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="flex space-x-2 sm:space-x-3">
-              <Button type="button" variant="outline" onClick={onClose} className="text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4">
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm h-8 sm:h-9 px-3 sm:px-4"
-                disabled={!content.trim() || isUploading}
-              >
-                {isUploading ? "Uploading..." : "Post"}
-              </Button>
-            </div>
+          <div className="flex justify-end pt-4 border-t border-border gap-2">
+            <Button type="button" variant="outline" onClick={onClose} className="text-sm h-9 px-4">
+              Cancel
+            </Button>
+            <Button
+              type="submit"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-9 px-4"
+              disabled={!content.trim() || isUploading}
+            >
+              {isUploading ? "Uploading..." : "Post"}
+            </Button>
           </div>
         </form>
       </div>
