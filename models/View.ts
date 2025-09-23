@@ -32,9 +32,20 @@ const ViewSchema = new Schema<IView>(
   { timestamps: true }
 );
 
-// Index for efficient querying
-ViewSchema.index({ post: 1, user: 1 });
-ViewSchema.index({ post: 1, ipAddress: 1 });
+// Compound unique index to prevent duplicate views
+// Use sparse index to handle null user values
+ViewSchema.index(
+  { post: 1, user: 1, ipAddress: 1 }, 
+  { 
+    unique: true,
+    sparse: true,
+    name: 'post_user_ip_unique'
+  }
+);
+
+// Additional indexes for performance
+ViewSchema.index({ post: 1 });
 ViewSchema.index({ createdAt: -1 });
+ViewSchema.index({ user: 1 }, { sparse: true });
 
 export default models.View || model<IView>("View", ViewSchema);

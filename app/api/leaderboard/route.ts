@@ -29,12 +29,23 @@ export async function GET(request: NextRequest) {
       timeFilter = { lastActive: { $gte: monthAgo } }
     }
 
-    // Optimized leaderboard query
-    const users = await User.find(timeFilter)
-      .select('username displayName firstName lastName avatar points level')
-      .sort({ points: -1 })
-      .limit(limit)
-      .lean()
+    // Optimized leaderboard query with aggregation pipeline
+    const users = await User.aggregate([
+      { $match: timeFilter },
+      {
+        $project: {
+          username: 1,
+          displayName: 1,
+          firstName: 1,
+          lastName: 1,
+          avatar: 1,
+          points: { $ifNull: ['$points', 0] },
+          level: { $ifNull: ['$level', 1] }
+        }
+      },
+      { $sort: { points: -1 } },
+      { $limit: limit }
+    ])
 
     // Transform and add rank
     const leaderboard = users.map((user: any, index) => ({
@@ -66,8 +77,8 @@ export async function GET(request: NextRequest) {
       }
     };
     
-    // Cache for 10 minutes to improve performance
-    cache.set(cacheKey, responseData, 600000);
+    // Cache for 5 minutes for better real-time updates
+    cache.set(cacheKey, responseData, 300000);
 
     return NextResponse.json(responseData)
 

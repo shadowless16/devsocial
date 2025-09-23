@@ -4,6 +4,7 @@ import Post from "@/models/Post";
 import View from "@/models/View";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { handleDatabaseError } from "@/lib/api-error-handler";
 
 export const dynamic = 'force-dynamic'
 
@@ -58,14 +59,23 @@ export async function POST(
       viewData.user = session.user.id;
     }
 
-    // Create new view record and increment count
-    await View.create(viewData);
+    // Use upsert to prevent duplicate key errors
+    try {
+      await View.create(viewData);
+    } catch (error: any) {
+      if (error.code === 11000) {
+        // Duplicate key error - view already exists, just return success
+        console.log(`Duplicate view prevented for post ${id}`);
+        return NextResponse.json({ success: true, message: "View already recorded", alreadyViewed: true });
+      }
+      throw error;
+    }
     const updatedPost = await Post.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } }, { new: true });
     
     console.log(`New view recorded and count incremented for post ${id}. New count: ${updatedPost?.viewsCount}`);
     return NextResponse.json({ success: true, message: "View recorded", newCount: updatedPost?.viewsCount });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error recording view:", error);
-    return NextResponse.json({ success: false, message: "Failed to record view" }, { status: 500 });
+    return handleDatabaseError(error);
   }
 }

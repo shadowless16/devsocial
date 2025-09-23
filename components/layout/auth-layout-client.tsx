@@ -2,8 +2,8 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/app-context"
 import { Menu, X, Loader2, ChevronLeft, ChevronRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SideNav from "@/components/layout/side-nav"
@@ -18,7 +18,7 @@ export function AuthLayoutClient({
 }: {
   children: React.ReactNode
 }) {
-  const { data: session, status } = useSession()
+  const { user, loading, status } = useAuth()
   const router = useRouter()
   const [leftSidebarOpen, setLeftSidebarOpen] = useState(false)
   const [rightSidebarOpen, setRightSidebarOpen] = useState(false)
@@ -44,7 +44,7 @@ export function AuthLayoutClient({
     setTimeout(() => setIsTransitioning(false), 300)
   }
 
-  if (status === "loading") {
+  if (loading || status === "loading") {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
@@ -55,7 +55,7 @@ export function AuthLayoutClient({
     )
   }
 
-  if (status === "unauthenticated") {
+  if (status === "unauthenticated" || !user) {
     return null
   }
 

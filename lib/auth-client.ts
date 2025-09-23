@@ -1,11 +1,11 @@
 // lib/auth-client.ts
 "use client";
 
-import { signIn, signOut, useSession } from "next-auth/react";
+import { signIn, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useAuth as useAppAuth } from "@/contexts/app-context";
 
-export const useAuth = () => {
-  const { data: session, status } = useSession();
+export const useAuthClient = () => {
   const router = useRouter();
 
   const login = async (credentials: { usernameOrEmail: string; password: string }) => {
@@ -31,20 +31,17 @@ export const useAuth = () => {
     router.push("/auth/login");
   };
 
-  return {
-    user: session?.user,
-    isLoading: status === "loading",
-    isAuthenticated: !!session,
-    login,
-    logout,
-  };
+  return { login, logout };
 };
+
+// Use the centralized auth from AppContext
+export const useAuth = useAppAuth;
 
 // Helper function for API calls with authentication
 export const authenticatedFetch = async (url: string, options: RequestInit = {}) => {
   const response = await fetch(url, {
     ...options,
-    credentials: "include", // Include cookies for NextAuth session
+    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...options.headers,
@@ -52,7 +49,6 @@ export const authenticatedFetch = async (url: string, options: RequestInit = {})
   });
 
   if (response.status === 401) {
-    // Session expired, redirect to login
     window.location.href = "/auth/login";
     return null;
   }

@@ -3,7 +3,7 @@
   "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=4096 next dev",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --turbo",
     "dev:fast": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.fast.mjs next dev --turbo",
     "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.turbo.mjs next dev --turbo",
     "build": "next build",
@@ -37,7 +37,14 @@
     "test:mcp": "jest __tests__/analytics/mcp-growth.test.ts",
     "generate:test-data": "node scripts/generate-test-growth-data.js",
     "dev:with-mcp": "concurrently \"npm run mcp:dev\" \"npm run dev\"",
-    "ts-node:run": "ts-node -r tsconfig-paths/register --files --transpile-only"
+    "ts-node:run": "ts-node -r tsconfig-paths/register --files --transpile-only",
+    "debug:referrals": "node scripts/debug-referral-node.js",
+    "test:referral-signup": "node scripts/test-referral-signup-flow.js",
+    "mcp:referral-debug": "node mcp-server/referral-debug.js",
+    "fix:stuck-referrals": "node scripts/fix-stuck-referrals.js",
+    "check:missing-referrals": "node scripts/test-missing-referrals.js",
+    "fix:all-referrals": "node scripts/fix-all-referral-issues.js",
+    "test:signup-flow": "node scripts/test-signup-flow-complete.js"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",

@@ -415,8 +415,19 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <p className="text-xs text-muted-foreground mt-1">
               Use Markdown for formatting. For code snippets, use triple backticks, e.g., ```javascript console.log("Hello"); ```
             </p>
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>{content.length}/2000 characters</span>
+            <div className="flex justify-between text-xs">
+              <span className={`${
+                content.length > 1800 ? 'text-red-500 font-medium' : 
+                content.length > 1500 ? 'text-yellow-500' : 
+                'text-muted-foreground'
+              }`}>
+                {content.length}/2000 characters
+                {content.length > 2000 && (
+                  <span className="ml-2 text-red-500 font-medium">
+                    ⚠️ Too long! Please shorten your post.
+                  </span>
+                )}
+              </span>
               {postType === 'code' && (
                 <span className="text-blue-600 flex items-center gap-1">
                   ✨ Code detected & formatted automatically
@@ -713,9 +724,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Button
               type="submit"
               className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-9 px-4"
-              disabled={!content.trim() || isUploading}
+              disabled={!content.trim() || isUploading || content.length > 2000}
             >
-              {isUploading ? "Uploading..." : "Post"}
+              {isUploading ? "Uploading..." : content.length > 2000 ? "Too Long" : "Post"}
             </Button>
           </div>
         </form>

@@ -30,7 +30,7 @@ export const loginSchema = z.object({
 
 // Post validation schemas
 export const createPostSchema = z.object({
-  content: z.string().min(1, "Content is required").max(2000, "Content must be less than 2000 characters"),
+  content: z.string().min(1, "Content is required").max(2000, "Your post is too long! Please keep it under 2000 characters. Try breaking it into multiple posts or shortening your content."),
   isAnonymous: z.boolean().optional().default(false),
   imageUrl: z.string().url().optional().nullable(),
   tags: z.array(z.string().max(50)).max(5, "Maximum 5 tags allowed").optional().default([]),

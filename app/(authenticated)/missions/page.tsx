@@ -10,7 +10,7 @@ import DensityToggle, { type Density } from "@/components/density-toggle"
 import { apiClient } from "@/lib/api-client"
 import { Loader2, Sparkles, Trash2 } from "lucide-react"
 import { MissionsSkeleton } from "@/components/skeletons/missions-skeleton"
-import { useSession } from "next-auth/react"
+import { useAuth } from "@/contexts/app-context"
 
 export default function MissionsPage() {
   const [tab, setTab] = useState<"available" | "active" | "completed">("available")
@@ -25,7 +25,7 @@ export default function MissionsPage() {
   const [error, setError] = useState<string | null>(null)
   const [refreshKey, setRefreshKey] = useState(0)
   const [generating, setGenerating] = useState(false)
-  const { data: session } = useSession()
+  const { user } = useAuth()
 
   useEffect(() => {
     fetchMissions()
@@ -125,7 +125,7 @@ export default function MissionsPage() {
             </p>
           </div>
           <div className="flex items-center gap-2">
-            {((session?.user as any)?.isAdmin || (session?.user as any)?.role === 'admin') && (
+            {(user?.role === 'admin' || user?.role === 'analytics') && (
               <Button 
                 onClick={generateMissions} 
                 disabled={generating}
@@ -158,7 +158,7 @@ export default function MissionsPage() {
                 density={density} 
                 onProgressUpdate={() => setRefreshKey(prev => prev + 1)}
               />
-              {((session?.user as any)?.isAdmin || (session?.user as any)?.role === 'admin') && (
+              {(user?.role === 'admin' || user?.role === 'analytics') && (
                 <Button
                   onClick={() => deleteMission(m.id)}
                   size="sm"

@@ -44,15 +44,16 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 20,
+      maxPoolSize: 10,
       minPoolSize: 5,
-      serverSelectionTimeoutMS: 3000,
-      socketTimeoutMS: 20000,
-      connectTimeoutMS: 5000,
-      maxIdleTimeMS: 15000,
+      serverSelectionTimeoutMS: 30000, // 30 seconds
+      socketTimeoutMS: 30000, // 30 seconds
+      connectTimeoutMS: 30000, // 30 seconds
+      maxIdleTimeMS: 30000, // 30 seconds
       retryWrites: true,
-      retryReads: false,
-      readPreference: 'primary' as const
+      retryReads: true,
+      readPreference: 'primary' as const,
+      heartbeatFrequencyMS: 10000, // 10 seconds
       // writeConcern: { w: 1, j: false }
     }
 

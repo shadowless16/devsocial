@@ -62,27 +62,59 @@ export async function GET(req: NextRequest) {
       // Continue without authentication for public posts
     }
 
-    // Simplified query - get posts directly with populate for better performance
-    const posts = await Post.find({})
-      .populate({
-        path: 'author',
-        select: 'username firstName lastName avatar level isGenerated'
-      })
-      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded')
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .lean();
+    // Optimized aggregation pipeline to eliminate N+1 queries
+    const aggregationPipeline = [
+      {
+        $lookup: {
+          from: 'users',
+          localField: 'author',
+          foreignField: '_id',
+          as: 'author',
+          pipeline: [{
+            $project: {
+              username: 1,
+              firstName: 1,
+              lastName: 1,
+              avatar: 1,
+              level: 1,
+              isGenerated: 1
+            }
+          }]
+        }
+      },
+      { $unwind: '$author' },
+      {
+        $match: dataMode === 'real' 
+          ? { 'author.isGenerated': { $ne: true } }
+          : dataMode === 'generated'
+          ? { 'author.isGenerated': true }
+          : {}
+      },
+      {
+        $project: {
+          content: 1,
+          author: 1,
+          tags: 1,
+          imageUrl: 1,
+          imageUrls: 1,
+          videoUrls: 1,
+          isAnonymous: 1,
+          createdAt: 1,
+          likesCount: { $ifNull: ['$likesCount', 0] },
+          commentsCount: { $ifNull: ['$commentsCount', 0] },
+          viewsCount: { $ifNull: ['$viewsCount', 0] },
+          xpAwarded: 1
+        }
+      },
+      { $sort: { createdAt: -1 } },
+      { $skip: skip },
+      { $limit: limit }
+    ];
 
-    // Filter by data mode after fetching (more efficient for small result sets)
-    const filteredPosts = posts.filter(post => {
-      if (!post.author) return false;
-      if (dataMode === 'real') return !post.author.isGenerated;
-      if (dataMode === 'generated') return post.author.isGenerated;
-      return true;
-    });
+    const posts = await Post.aggregate(aggregationPipeline);
+    const filteredPosts = posts; // Already filtered in aggregation
 
-    // Get user likes if authenticated - only for visible posts
+    // Get user likes if authenticated - batch query for better performance
     let userLikes = new Set();
     if (currentUserId && filteredPosts.length > 0) {
       const Like = (await import("@/models/Like")).default;
@@ -126,9 +158,9 @@ export async function GET(req: NextRequest) {
       },
     };
     
-    // Cache page 1 for 30 seconds to improve performance
+    // Cache page 1 for 60 seconds to improve performance
     if (page === 1) {
-      cache.set(cacheKey, responseData, 30000);
+      cache.set(cacheKey, responseData, 60000);
     }
     
     return NextResponse.json(responseData);
@@ -185,7 +217,15 @@ export async function POST(req: NextRequest) {
     const authorId = session.user.id;
 
     if (!content || content.trim().length === 0) {
-      return errorResponse("Post content cannot be empty.", 400);
+      return NextResponse.json(errorResponse("Post content cannot be empty."), { status: 400 });
+    }
+
+    // Check content length limit with user-friendly message
+    if (content.length > 2000) {
+      const wordCount = content.split(/\s+/).length;
+      return NextResponse.json(errorResponse(
+        `Your post is too long! Please keep it under 2000 characters. Your post has ${content.length} characters (approximately ${wordCount} words). Try breaking it into multiple posts or removing some content.`
+      ), { status: 400 });
     }
 
     await connectDB();

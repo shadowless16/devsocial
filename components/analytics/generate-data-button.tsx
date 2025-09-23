@@ -2,16 +2,16 @@
 
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/app-context'
 import { Database, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 export function GenerateDataButton() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [isGenerating, setIsGenerating] = useState(false)
 
   const handleGenerateData = async () => {
-    if (!session?.user || session.user.role !== 'admin') {
+    if (!user || user.role !== 'admin') {
       toast.error('Only admin users can generate sample data')
       return
     }
@@ -45,7 +45,7 @@ export function GenerateDataButton() {
   }
 
   // Only show for admin users
-  if (!session?.user || session.user.role !== 'admin') {
+  if (!user || user.role !== 'admin') {
     return null
   }
 

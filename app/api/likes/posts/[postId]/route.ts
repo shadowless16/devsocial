@@ -10,6 +10,7 @@ import connectDB from "@/lib/db";
 import { successResponse, errorResponse } from "@/utils/response";
 import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/websocket";
+import { handleDatabaseError } from "@/lib/api-error-handler";
 // Only import mission models if needed
 let MissionProgress: any = null;
 let Mission: any = null;
@@ -53,7 +54,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       const like = new Like({
         user: userId,
         post: postId,
-        comment: undefined, // Ensure comment is unset
+        // Don't set comment field at all for post likes
       });
       await like.save();
 
@@ -163,8 +164,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
       data: { liked, likesCount }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error toggling post like:", error);
-    return NextResponse.json(errorResponse("Failed to toggle like"), { status: 500 });
+    return handleDatabaseError(error);
   }
 }

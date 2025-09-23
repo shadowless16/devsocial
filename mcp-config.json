@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "referral-debug": {
+      "command": "node",
+      "args": ["mcp-server/referral-debug.js"],
+      "env": {
+        "NODE_ENV": "development"
+      }
+    }
+  }
+}

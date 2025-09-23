@@ -5,16 +5,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { CheckCircle, XCircle, AlertCircle, RefreshCw } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { useAuth } from '@/contexts/app-context'
 
 export function AnalyticsStatus() {
-  const { data: session } = useSession()
+  const { user } = useAuth()
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | null>(null)
   const [statusData, setStatusData] = useState<any>(null)
   const [isChecking, setIsChecking] = useState(false)
 
   const checkAnalyticsStatus = async () => {
-    if (!session?.user || (session.user.role !== 'admin' && session.user.role !== 'analytics')) {
+    if (!user || (user.role !== 'admin' && user.role !== 'analytics')) {
       return
     }
 
@@ -40,10 +40,10 @@ export function AnalyticsStatus() {
 
   useEffect(() => {
     checkAnalyticsStatus()
-  }, [session])
+  }, [user])
 
   // Don't show for non-admin users
-  if (!session?.user || (session.user.role !== 'admin' && session.user.role !== 'analytics')) {
+  if (!user || (user.role !== 'admin' && user.role !== 'analytics')) {
     return null
   }
 

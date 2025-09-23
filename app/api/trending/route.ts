@@ -179,20 +179,29 @@ export async function GET(request: NextRequest) {
       ]);
     }
 
-    // Simplified rising users query
-    const risingUsers = await User.find({
-      lastActive: { $gte: dateFilter }
-    })
-    .select('username displayName avatar level points')
-    .sort({ points: -1 })
-    .limit(10)
-    .lean()
-    .then(users => users.map(user => ({
-      ...user,
-      postsThisWeek: Math.floor(Math.random() * 10) + 1,
-      totalEngagement: user.points || 0,
-      growthRate: "+" + Math.floor(Math.random() * 50) + "%"
-    })))
+    // Optimized rising users query with aggregation
+    const risingUsers = await User.aggregate([
+      {
+        $match: {
+          lastActive: { $gte: dateFilter },
+          points: { $gt: 0 }
+        }
+      },
+      {
+        $project: {
+          username: 1,
+          displayName: 1,
+          avatar: 1,
+          level: { $ifNull: ['$level', 1] },
+          points: { $ifNull: ['$points', 0] },
+          postsThisWeek: { $literal: Math.floor(Math.random() * 10) + 1 },
+          totalEngagement: '$points',
+          growthRate: { $literal: '+' + Math.floor(Math.random() * 50) + '%' }
+        }
+      },
+      { $sort: { points: -1 } },
+      { $limit: 10 }
+    ])
 
     // Simplified stats calculation
     const currentPosts = trendingPosts.length;
@@ -225,8 +234,8 @@ export async function GET(request: NextRequest) {
       }
     };
     
-    // Cache for 5 minutes to improve performance
-    cache.set(cacheKey, responseData, 300000);
+    // Cache for 10 minutes to improve performance (trending data doesn't need to be real-time)
+    cache.set(cacheKey, responseData, 600000);
 
     return NextResponse.json(responseData)
   } catch (error) {

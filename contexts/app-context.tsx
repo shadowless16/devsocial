@@ -3,6 +3,7 @@
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { apiClient } from '@/lib/api-client';
+import { useSessionCache } from './session-cache-context';
 // User type definition
 export interface User {
   id: string;
@@ -157,6 +158,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const { data: session, status } = useSession();
+  const { getCachedSession, setCachedSession, clearCache } = useSessionCache();
 
   // Auth actions
   const login = useCallback(async (credentials: { usernameOrEmail: string; password: string }) => {
@@ -283,7 +285,17 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
   // Load user data when session changes
   useEffect(() => {
+    if (status === 'loading') return;
+    
     if (status === 'authenticated' && session?.user?.id) {
+      // Check cache first
+      const cachedSession = getCachedSession();
+      if (cachedSession && cachedSession.user?.id === session.user.id) {
+        dispatch({ type: 'SET_USER', payload: cachedSession.user });
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+        return;
+      }
+      
       dispatch({ type: 'SET_AUTH_LOADING', payload: true });
       
       apiClient.getCurrentUserProfile<{ user: any }>()
@@ -315,6 +327,9 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             };
             dispatch({ type: 'SET_USER', payload: user });
             
+            // Cache the session data
+            setCachedSession({ user, session });
+            
             // Preload frequently accessed data
             apiClient.preload('/dashboard');
             apiClient.preload('/trending');
@@ -329,10 +344,10 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } else if (status === 'unauthenticated') {
       dispatch({ type: 'SET_USER', payload: null });
       dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-      // Clear cache on logout
+      clearCache();
       apiClient.invalidateCache();
     }
-  }, [status, session]);
+  }, [status, session, getCachedSession, setCachedSession, clearCache]);
 
   const value: AppContextType = {
     state,
@@ -370,6 +385,8 @@ export function useAuth() {
   return {
     user: state.user,
     loading: state.authLoading,
+    isAuthenticated: !!state.user,
+    status: state.authLoading ? 'loading' : state.user ? 'authenticated' : 'unauthenticated',
     updateUser,
     logout,
     signup,

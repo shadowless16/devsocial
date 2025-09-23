@@ -1,7 +1,7 @@
 import User from "@/models/User"
 import XPLog from "@/models/XPLog"
 import connectDB from "@/lib/db"
-import { ReferralSystem } from "./referral-system"
+import { ReferralSystemFixed } from "./referral-system-fixed"
 
 // XP values for different actions
 export const XP_VALUES = {
@@ -76,7 +76,7 @@ export async function awardXP(
     // Don't check for referral-related XP types to avoid infinite loops
     if (type !== "referral_success" && type !== "referral_bonus") {
       try {
-        await ReferralSystem.checkReferralCompletion(userId)
+        await ReferralSystemFixed.checkReferralCompletion(userId)
       } catch (error) {
         console.error("Error checking referral completion:", error)
         // Don't fail the XP award if referral check fails

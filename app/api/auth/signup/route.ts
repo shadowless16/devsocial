@@ -100,14 +100,19 @@ export async function POST(request: NextRequest) {
     // Handle referral if code was provided and validated
     if (referralCode && referrerInfo) {
       try {
+        console.log(`Processing referral for ${user.username} with code ${referralCode} from ${referrerInfo.username}`)
         const success = await ReferralSystemFixed.processReferralFromSignup(referralCode, user._id.toString())
         if (success) {
-          console.log(`Referral processed successfully for user ${user.username} with code ${referralCode}`)
+          console.log(`✅ Referral processed successfully for user ${user.username} with code ${referralCode}`)
+        } else {
+          console.log(`❌ Referral processing failed for user ${user.username} with code ${referralCode}`)
         }
       } catch (error) {
-        console.error("Referral creation error:", error)
+        console.error("❌ Referral creation error:", error)
         // Don't fail the signup if referral fails
       }
+    } else if (referralCode) {
+      console.log(`❌ Referral code ${referralCode} provided but validation failed or referrer not found`)
     }
 
     // Return user data (excluding password) - NextAuth will handle authentication
