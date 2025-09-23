@@ -1,72 +1,99 @@
-// Lazily load bundle-analyzer only when not running with Turbopack
-// to avoid registering webpack plugins that trigger the Turbopack warning.
-const isTurbopack = !!(
-  process.env.__NEXT_PRIVATE_TURBOPACK === '1' ||
-  process.env.NEXT_TURBOPACK === '1' ||
-  process.env.__NEXT_PRIVATE_TURBOPACK
-)
-
-let withBundleAnalyzer = (cfg) => cfg
-
-// Use an async export below to dynamically import the analyzer only when needed.
-
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  
-  images: {
-    unoptimized: true,
-    domains: ['res.cloudinary.com'],
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-        pathname: '/**',
-      },
+  // Optimize bundle size
+  experimental: {
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      'date-fns',
+      'recharts'
     ],
-  },
-  
-  // Webpack customizations are attached only when Turbopack is not active.
-  // This prevents Next from warning when running `next dev --turbo`.
-  
-  serverExternalPackages: ['mongoose'],
-  
-  async rewrites() {
-    return [
-      {
-        source: '/.well-known/appspecific/:path*',
-        destination: '/api/well-known?path=:path*',
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
       },
-    ]
+    },
   },
-}
 
-export default (async () => {
-  if (!isTurbopack) {
-    try {
-      const mod = await import('@next/bundle-analyzer')
-      const bundleAnalyzer = mod.default || mod
-      withBundleAnalyzer = bundleAnalyzer({ enabled: process.env.ANALYZE === 'true' })
-    } catch (err) {
-      // If import fails, fall back to identity.
-      // Keep going — analyzer is an optional dev tool.
-      // eslint-disable-next-line no-console
-      console.warn('Could not load @next/bundle-analyzer:', err?.message || err)
-    }
+  // Bundle optimization
+  webpack: (config, { dev, isServer }) => {
+    // Optimize for production builds
+    if (!dev && !isServer) {
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: 'all',
+          cacheGroups: {
+            vendor: {
+              test: /[\\/]node_modules[\\/]/,
+              name: 'vendors',
+              chunks: 'all',
+              priority: 10,
+            },
+            radix: {
+              test: /[\\/]node_modules[\\/]@radix-ui[\\/]/,
+              name: 'radix',
+              chunks: 'all',
+              priority: 20,
+            },
+            common: {
+              name: 'common',
+              minChunks: 2,
+              chunks: 'all',
+              priority: 5,
+            },
+          },
+        },
+      };
 
-    // Attach webpack customizations only when running webpack (not Turbopack)
-    nextConfig.webpack = (config, { isServer }) => {
+      // Tree shaking optimizations
+      config.resolve.alias = {
+        ...config.resolve.alias,
+        'react-syntax-highlighter/dist/esm/styles/prism': 'react-syntax-highlighter/dist/cjs/styles/prism',
+        'react-syntax-highlighter/dist/esm/languages/prism': 'react-syntax-highlighter/dist/cjs/languages/prism',
+      };
+
+      // Exclude heavy dependencies from client bundle if not used
+      config.externals = config.externals || [];
       if (!isServer) {
-        config.resolve = config.resolve || {}
-        config.resolve.fallback = {
-          ...config.resolve.fallback,
-          fs: false,
-          net: false,
-          tls: false,
-        }
+        config.externals.push({
+          'three': 'three',
+          '@react-three/fiber': '@react-three/fiber',
+          '@react-three/drei': '@react-three/drei',
+        });
       }
-      return config
     }
-  }
 
-  return withBundleAnalyzer(nextConfig)
-})()
+    return config;
+  },
+
+  // Image optimization
+  images: {
+    domains: ['res.cloudinary.com', 'images.unsplash.com'],
+    formats: ['image/webp', 'image/avif'],
+    minimumCacheTTL: 60,
+  },
+
+  // Compression
+  compress: true,
+  
+  // Remove unused CSS
+  experimental: {
+    ...nextConfig.experimental,
+    optimizeCss: true,
+  },
+
+  // Reduce JavaScript bundle size
+  swcMinify: true,
+  
+  // Output optimization
+  output: 'standalone',
+  
+  // Disable source maps in production for smaller bundles
+  productionBrowserSourceMaps: false,
+};
+
+export default nextConfig;

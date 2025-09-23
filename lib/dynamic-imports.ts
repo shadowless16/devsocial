@@ -1,47 +1,36 @@
 // lib/dynamic-imports.ts
 import dynamic from 'next/dynamic';
 
+// Simple loading components without JSX
+const LoadingDiv = () => {
+  const div = document.createElement('div');
+  div.className = 'animate-pulse bg-gray-200 h-64 rounded';
+  return div as any;
+};
+
 // Heavy components that should be loaded dynamically
-export const DynamicRecharts = dynamic(() => import('recharts'), {
-  loading: () => <div className="animate-pulse bg-gray-200 h-64 rounded" />,
+export const DynamicRecharts = dynamic(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })), {
+  loading: LoadingDiv,
   ssr: false,
 });
 
 export const DynamicSyntaxHighlighter = dynamic(
   () => import('react-syntax-highlighter').then(mod => mod.Prism),
   {
-    loading: () => <div className="animate-pulse bg-gray-100 h-32 rounded" />,
+    loading: LoadingDiv,
     ssr: false,
   }
 );
 
 export const DynamicMarkdown = dynamic(() => import('react-markdown'), {
-  loading: () => <div className="animate-pulse bg-gray-100 h-24 rounded" />,
+  loading: LoadingDiv,
   ssr: false,
 });
 
-export const DynamicQRCode = dynamic(() => import('qrcode.react'), {
-  loading: () => <div className="animate-pulse bg-gray-100 w-32 h-32 rounded" />,
+export const DynamicQRCode = dynamic(() => import('qrcode.react').then(mod => ({ default: mod.QRCodeSVG || mod })), {
+  loading: LoadingDiv,
   ssr: false,
 });
-
-// 3D components (if used)
-export const Dynamic3DViewer = dynamic(
-  () => import('@react-three/fiber').then(mod => mod.Canvas),
-  {
-    loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded" />,
-    ssr: false,
-  }
-);
-
-// Avatar creator (heavy component)
-export const DynamicAvatarCreator = dynamic(
-  () => import('@readyplayerme/react-avatar-creator'),
-  {
-    loading: () => <div className="animate-pulse bg-gray-200 h-96 rounded" />,
-    ssr: false,
-  }
-);
 
 // Socket.io client (only load when needed)
 export const loadSocketIO = () => {
