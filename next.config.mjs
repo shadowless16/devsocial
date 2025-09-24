@@ -1,22 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Optimize bundle size
-  experimental: {
-    optimizePackageImports: [
-      'lucide-react',
-      '@radix-ui/react-icons',
-      'date-fns',
-      'recharts'
-    ],
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
-      },
-    },
-  },
 
   // Bundle optimization
   webpack: (config, { dev, isServer }) => {
@@ -82,7 +65,20 @@ const nextConfig = {
   
   // Remove unused CSS
   experimental: {
-    ...nextConfig.experimental,
+    optimizePackageImports: [
+      'lucide-react',
+      '@radix-ui/react-icons',
+      'date-fns',
+      'recharts'
+    ],
+    turbo: {
+      rules: {
+        '*.svg': {
+          loaders: ['@svgr/webpack'],
+          as: '*.js',
+        },
+      },
+    },
     optimizeCss: true,
   },
 
