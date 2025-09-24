@@ -2,8 +2,8 @@ import mongoose, { Schema, type Document } from "mongoose"
 
 export interface ILike extends Document {
   user: mongoose.Types.ObjectId
-  post?: mongoose.Types.ObjectId
-  comment?: mongoose.Types.ObjectId
+  targetId: mongoose.Types.ObjectId
+  targetType: 'post' | 'comment'
   createdAt: Date
 }
 
@@ -14,13 +14,14 @@ const LikeSchema = new Schema<ILike>(
       ref: "User",
       required: true,
     },
-    post: {
+    targetId: {
       type: Schema.Types.ObjectId,
-      ref: "Post",
+      required: true,
     },
-    comment: {
-      type: Schema.Types.ObjectId,
-      ref: "Comment",
+    targetType: {
+      type: String,
+      enum: ['post', 'comment'],
+      required: true,
     },
   },
   {
@@ -28,23 +29,11 @@ const LikeSchema = new Schema<ILike>(
   },
 )
 
-// Validation: Either post or comment must be present, but not both
-LikeSchema.pre('save', function() {
-  if (!this.post && !this.comment) {
-    throw new Error('Either post or comment must be specified');
-  }
-  if (this.post && this.comment) {
-    throw new Error('Cannot like both post and comment simultaneously');
-  }
-});
+// Unique index on user + targetId + targetType
+LikeSchema.index({ user: 1, targetId: 1, targetType: 1 }, { unique: true })
 
-// Simple unique indexes
-LikeSchema.index({ user: 1, post: 1 }, { unique: true })
-LikeSchema.index({ user: 1, comment: 1 }, { unique: true })
-
-// Additional indexes for performance
-LikeSchema.index({ post: 1 })
-LikeSchema.index({ comment: 1 })
+// Performance indexes
+LikeSchema.index({ targetId: 1, targetType: 1 })
 LikeSchema.index({ user: 1 })
 
 export default mongoose.models.Like || mongoose.model<ILike>("Like", LikeSchema)

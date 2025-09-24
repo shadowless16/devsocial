@@ -27,19 +27,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(errorResponse("Comment not found"), { status: 404 });
     }
 
-    const existingLike = await Like.findOne({ user: userId, comment: commentId });
+    const existingLike = await Like.findOne({ user: userId, targetId: commentId, targetType: 'comment' });
 
     let liked = false;
-    let likesCount = await Like.countDocuments({ comment: commentId });
+    let likesCount = await Like.countDocuments({ targetId: commentId, targetType: 'comment' });
 
     if (existingLike) {
       await Like.findByIdAndDelete(existingLike._id);
       likesCount = Math.max(0, likesCount - 1);
     } else {
-      const likeData: any = { user: userId };
-      if (commentId) likeData.comment = commentId;
-      
-      const like = new Like(likeData);
+      const like = new Like({
+        user: userId,
+        targetId: commentId,
+        targetType: 'comment'
+      });
       await like.save();
       likesCount += 1;
       liked = true;

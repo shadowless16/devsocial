@@ -41,7 +41,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(errorResponse("Post not found"), { status: 404 });
     }
 
-    const existingLike = await Like.findOne({ user: userId, post: postId });
+    const existingLike = await Like.findOne({ user: userId, targetId: postId, targetType: 'post' });
 
     let liked = false;
     let likesCount = post.likesCount;
@@ -51,10 +51,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       likesCount = Math.max(0, likesCount - 1);
       await Post.findByIdAndUpdate(postId, { likesCount });
     } else {
-      const likeData: any = { user: userId };
-      if (postId) likeData.post = postId;
-      
-      const like = new Like(likeData);
+      const like = new Like({
+        user: userId,
+        targetId: postId,
+        targetType: 'post'
+      });
       await like.save();
 
       likesCount += 1;
