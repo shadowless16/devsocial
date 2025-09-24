@@ -4,12 +4,7 @@ import dynamic from 'next/dynamic';
 // Minimal loading
 const Loading = () => null;
 
-// Lazy load heavy components only when needed
-export const DynamicRecharts = dynamic(() => import('recharts'), {
-  loading: Loading,
-  ssr: false,
-});
-
+// Dynamic components that work properly
 export const DynamicSyntaxHighlighter = dynamic(() => import('react-syntax-highlighter'), {
   loading: Loading,
   ssr: false,

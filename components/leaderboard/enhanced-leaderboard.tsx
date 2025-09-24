@@ -60,43 +60,10 @@ export function EnhancedLeaderboard() {
   const fetchLeaderboard = async (type: string) => {
     setLoading(true)
     try {
-      const useMCP = process.env.NEXT_PUBLIC_USE_MCP === "true"
-
-      if (useMCP) {
-        const response = await fetch("/api/mcp", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            tool: "get_leaderboard",
-            args: { limit: 50 },
-          }),
-        })
-
-        const data = await response.json()
-
-        if (response.ok && data) {
-          // Transform MCP data to match expected format
-          const transformedData = data.map((user: any, index: number) => ({
-            _id: user._id,
-            user: {
-              _id: user._id,
-              username: user.username,
-              displayName: user.displayName,
-              avatar: getAvatarUrl(user.avatar) || '/placeholder.svg',
-              level: user.level || 1,
-            },
-            totalXP: user.points || 0,
-            rank: index + 1,
-            level: user.level || 1,
-          }))
-          setLeaderboard(transformedData)
-        }
-      } else {
-        const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
-        const data = await response.json()
-        if (data.success) {
-          setLeaderboard(data.data.leaderboard)
-        }
+      const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
+      const data = await response.json()
+      if (data.success) {
+        setLeaderboard(data.data.leaderboard)
       }
     } catch (error) {
       console.error("Error fetching leaderboard:", error)
