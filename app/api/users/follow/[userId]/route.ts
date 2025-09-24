@@ -25,6 +25,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { userId } = await params
     const currentUserId = authResult.user.id
 
+    // Validate IDs are not null or undefined
+    if (!userId || !currentUserId) {
+      return NextResponse.json(errorResponse("Invalid user IDs"), { status: 400 })
+    }
+
     if (userId === currentUserId) {
       return NextResponse.json(errorResponse("Cannot follow yourself"), { status: 400 })
     }
@@ -43,10 +48,19 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(errorResponse("Already following this user"), { status: 400 })
     }
 
-    const follow = await Follow.create({
-      follower: currentUserId,
-      following: userId,
-    })
+    let follow;
+    try {
+      follow = await Follow.create({
+        follower: currentUserId,
+        following: userId,
+      });
+    } catch (createError: any) {
+      console.error("Error creating follow record:", createError);
+      if (createError.code === 11000) {
+        return NextResponse.json(errorResponse("Already following this user"), { status: 400 });
+      }
+      throw createError;
+    }
 
     await User.findByIdAndUpdate(currentUserId, { $inc: { followingCount: 1 } })
     await User.findByIdAndUpdate(userId, { $inc: { followersCount: 1 } })
@@ -187,6 +201,11 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     const { userId } = await params
     const currentUserId = authResult.user.id
+
+    // Validate IDs are not null or undefined
+    if (!userId || !currentUserId) {
+      return NextResponse.json(errorResponse("Invalid user IDs"), { status: 400 })
+    }
 
     // Prevent unfollowing AkDavid
     const userToUnfollow = await User.findById(userId)

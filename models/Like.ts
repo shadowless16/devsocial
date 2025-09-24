@@ -39,26 +39,24 @@ LikeSchema.pre('save', function() {
 });
 
 // Create separate unique indexes for post and comment likes
-// Index for post likes (when comment is not set)
+// Index for post likes only
 LikeSchema.index(
   { user: 1, post: 1 }, 
   { 
     unique: true,
     partialFilterExpression: { 
-      post: { $exists: true, $ne: null },
-      comment: { $exists: false }
+      post: { $exists: true }
     }
   }
 )
 
-// Index for comment likes (when comment is set)
+// Index for comment likes only
 LikeSchema.index(
   { user: 1, comment: 1 }, 
   { 
     unique: true,
     partialFilterExpression: { 
-      comment: { $exists: true, $ne: null },
-      post: { $exists: false }
+      comment: { $exists: true }
     }
   }
 )

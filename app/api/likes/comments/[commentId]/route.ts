@@ -1,9 +1,12 @@
 // app/api/likes/comments/[commentId]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { authMiddleware } from "@/middleware/auth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import Like from "@/models/Like";
 import Comment from "@/models/Comment";
 import connectDB from "@/lib/db";
-import { successResponse, errorResponse } from "@/utils/response";
+import { errorResponse } from "@/utils/response";
+import { handleDatabaseError } from "@/lib/api-error-handler";
 
 export const dynamic = 'force-dynamic'
 
@@ -11,12 +14,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     await connectDB();
 
-    const authResult = await authMiddleware(request);
-    if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 });
+    const session = await getServerSession(authOptions);
+    if (!session?.user?.id) {
+      return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
     }
 
-    const userId = authResult.user!.id;
+    const userId = session.user.id;
     const { commentId } = await params;
 
     const comment = await Comment.findById(commentId);
@@ -24,27 +27,33 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(errorResponse("Comment not found"), { status: 404 });
     }
 
-    const userIndex = comment.likes.indexOf(userId as any);
-    let liked = false;
+    const existingLike = await Like.findOne({ user: userId, comment: commentId });
 
-    if (userIndex > -1) {
-      comment.likes.splice(userIndex, 1);
+    let liked = false;
+    let likesCount = await Like.countDocuments({ comment: commentId });
+
+    if (existingLike) {
+      await Like.findByIdAndDelete(existingLike._id);
+      likesCount = Math.max(0, likesCount - 1);
     } else {
-      comment.likes.push(userId as any);
+      const like = new Like({
+        user: userId,
+        comment: commentId
+      });
+      await like.save();
+      likesCount += 1;
       liked = true;
     }
-
-    await comment.save();
 
     return NextResponse.json({
       success: true,
       data: {
         liked,
-        likesCount: comment.likes.length,
+        likesCount,
       }
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error toggling comment like:", error);
-    return NextResponse.json(errorResponse("Failed to toggle like"), { status: 500 });
+    return handleDatabaseError(error);
   }
 }

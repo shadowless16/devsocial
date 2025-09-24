@@ -53,8 +53,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     } else {
       const like = new Like({
         user: userId,
-        post: postId,
-        // Don't set comment field at all for post likes
+        post: postId
       });
       await like.save();
 
