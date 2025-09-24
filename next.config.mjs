@@ -82,8 +82,7 @@ const nextConfig = {
     optimizeCss: true,
   },
 
-  // Reduce JavaScript bundle size
-  swcMinify: true,
+
   
   // Output optimization
   output: 'standalone',

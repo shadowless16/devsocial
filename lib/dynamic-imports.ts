@@ -1,12 +1,10 @@
 // lib/dynamic-imports.ts
+import React from 'react';
 import dynamic from 'next/dynamic';
 
-// Simple loading components without JSX
-const LoadingDiv = () => {
-  const div = document.createElement('div');
-  div.className = 'animate-pulse bg-gray-200 h-64 rounded';
-  return div as any;
-};
+// Simple loading component
+const LoadingDiv = () => 
+  React.createElement('div', { className: 'animate-pulse bg-gray-200 h-64 rounded' });
 
 // Heavy components that should be loaded dynamically
 export const DynamicRecharts = dynamic(() => import('recharts').then(mod => ({ default: mod.ResponsiveContainer })), {
