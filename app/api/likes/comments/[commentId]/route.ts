@@ -36,10 +36,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       await Like.findByIdAndDelete(existingLike._id);
       likesCount = Math.max(0, likesCount - 1);
     } else {
-      const like = new Like({
-        user: userId,
-        comment: commentId
-      });
+      const likeData: any = { user: userId };
+      if (commentId) likeData.comment = commentId;
+      
+      const like = new Like(likeData);
       await like.save();
       likesCount += 1;
       liked = true;

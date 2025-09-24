@@ -51,10 +51,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       likesCount = Math.max(0, likesCount - 1);
       await Post.findByIdAndUpdate(postId, { likesCount });
     } else {
-      const like = new Like({
-        user: userId,
-        post: postId
-      });
+      const likeData: any = { user: userId };
+      if (postId) likeData.post = postId;
+      
+      const like = new Like(likeData);
       await like.save();
 
       likesCount += 1;
