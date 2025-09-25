@@ -85,7 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                 const stepText = (step.title + ' ' + step.description).toLowerCase();
                 if (stepText.includes('like') && stepText.includes('post')) {
                   // Get current like count for user
-                  const userLikeCount = await Like.countDocuments({ user: userId });
+                  const userLikeCount = await Like.countDocuments({ user: userId, targetType: 'post' });
                   
                   // Check if target is met
                   if (userLikeCount >= (step.target || 1)) {
