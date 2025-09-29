@@ -90,7 +90,6 @@ const UserSchema = new Schema<IUser>(
       trim: true,
       minlength: 3,
       maxlength: 30,
-      index: true,
     },
     email: {
       type: String,
@@ -98,7 +97,6 @@ const UserSchema = new Schema<IUser>(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
     },
     password: {
       type: String,
@@ -185,7 +183,6 @@ const UserSchema = new Schema<IUser>(
     points: {
       type: Number,
       default: 10, // Your default is 10, which is great!
-      index: true,
     },
     badges: [{ type: String }],
     level: { type: Number, default: 1 },
@@ -205,27 +202,22 @@ const UserSchema = new Schema<IUser>(
       type: String, 
       unique: true, 
       sparse: true,
-      index: true,
     },
     onboardingCompleted: {
       type: Boolean,
       default: false,
-      index: true,
     },
     followersCount: {
       type: Number,
       default: 0,
-      index: true,
     },
     followingCount: {
       type: Number,
       default: 0,
-      index: true,
     },
     lastActive: {
       type: Date,
       default: Date.now,
-      index: true,
     },
     sessionStart: {
       type: Date,
@@ -247,13 +239,11 @@ const UserSchema = new Schema<IUser>(
     isGenerated: {
       type: Boolean,
       default: false,
-      index: true,
     },
     hederaAccountId: {
       type: String,
       trim: true,
       sparse: true,
-      index: true,
     },
     walletConnected: {
       type: Boolean,
@@ -263,7 +253,6 @@ const UserSchema = new Schema<IUser>(
       type: Number,
       default: 100, // Each user starts with 100 demo HBAR
       min: 0,
-      index: true,
     },
     summaryUsage: {
       type: Map,
@@ -415,6 +404,12 @@ UserSchema.pre("save", function (next) {
 
 // --- END: COMBINED MIDDLEWARE ---
 
+
+// Performance indexes
+UserSchema.index({ points: -1 }); // For leaderboards
+UserSchema.index({ lastActive: -1 }); // For active users
+UserSchema.index({ followersCount: -1 }); // For popular users
+UserSchema.index({ onboardingCompleted: 1 }); // For filtering
 
 // Your existing methods
 UserSchema.methods.calculateLevel = function () {

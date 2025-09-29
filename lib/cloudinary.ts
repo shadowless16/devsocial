@@ -96,7 +96,7 @@ export const getCloudinaryUrl = (
     crop?: string;
   } = {}
 ): string => {
-  const { width, height, quality = 'auto', format = 'auto', crop = 'fill' } = options;
+  const { width, height, quality = 100, format = 'auto', crop = 'fill' } = options;
   
   let transformations = [];
   if (width) transformations.push(`w_${width}`);
@@ -109,4 +109,20 @@ export const getCloudinaryUrl = (
 // Video thumbnail URL
 export const getVideoThumbnail = (publicId: string): string => {
   return `https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/video/upload/so_0/${publicId}.jpg`;
+};
+
+// Get high-quality image URL without any compression
+export const getHighQualityImageUrl = (url: string): string => {
+  // If it's already a Cloudinary URL, ensure it has quality=100
+  if (url.includes('res.cloudinary.com')) {
+    // Remove any existing quality parameters
+    const baseUrl = url.split('/upload/')[0] + '/upload/';
+    const imagePath = url.split('/upload/')[1];
+    
+    // Add quality=100 transformation
+    return `${baseUrl}q_100/${imagePath}`;
+  }
+  
+  // Return original URL if not Cloudinary
+  return url;
 };

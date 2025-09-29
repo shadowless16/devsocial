@@ -14,12 +14,10 @@ const ViewSchema = new Schema<IView>(
       type: Schema.Types.ObjectId,
       ref: "Post",
       required: true,
-      index: true,
     },
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      index: true,
     },
     ipAddress: {
       type: String,

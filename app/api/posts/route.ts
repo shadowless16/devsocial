@@ -62,68 +62,37 @@ export async function GET(req: NextRequest) {
       // Continue without authentication for public posts
     }
 
-    // Optimized aggregation pipeline to eliminate N+1 queries
-    const aggregationPipeline = [
-      {
-        $lookup: {
-          from: 'users',
-          localField: 'author',
-          foreignField: '_id',
-          as: 'author',
-          pipeline: [{
-            $project: {
-              username: 1,
-              firstName: 1,
-              lastName: 1,
-              avatar: 1,
-              level: 1,
-              isGenerated: 1
-            }
-          }]
-        }
-      },
-      { $unwind: '$author' },
-      {
-        $match: dataMode === 'real' 
-          ? { 'author.isGenerated': { $ne: true } }
+    // Optimized query with proper indexing
+    const posts = await Post.find()
+      .populate({
+        path: 'author',
+        select: 'username firstName lastName avatar level isGenerated',
+        match: dataMode === 'real' 
+          ? { isGenerated: { $ne: true } }
           : dataMode === 'generated'
-          ? { 'author.isGenerated': true }
+          ? { isGenerated: true }
           : {}
-      },
-      {
-        $project: {
-          content: 1,
-          author: 1,
-          tags: 1,
-          imageUrl: 1,
-          imageUrls: 1,
-          videoUrls: 1,
-          isAnonymous: 1,
-          createdAt: 1,
-          likesCount: { $ifNull: ['$likesCount', 0] },
-          commentsCount: { $ifNull: ['$commentsCount', 0] },
-          viewsCount: { $ifNull: ['$viewsCount', 0] },
-          xpAwarded: 1
-        }
-      },
-      { $sort: { createdAt: -1 } },
-      { $skip: skip },
-      { $limit: limit }
-    ];
+      })
+      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded')
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean();
 
-    const posts = await Post.aggregate(aggregationPipeline as any);
-    const filteredPosts = posts; // Already filtered in aggregation
+    // Filter out posts with null authors (due to populate match)
+    const filteredPosts = posts.filter(post => post.author);
 
-    // Get user likes if authenticated - batch query for better performance
+    // Get user likes if authenticated - single optimized query
     let userLikes = new Set();
     if (currentUserId && filteredPosts.length > 0) {
       const Like = (await import("@/models/Like")).default;
       const postIds = filteredPosts.map(p => p._id);
       const likes = await Like.find({ 
         user: currentUserId, 
-        post: { $in: postIds } 
-      }).select('post').lean();
-      userLikes = new Set(likes.map(like => like.post.toString()));
+        targetId: { $in: postIds },
+        targetType: 'post'
+      }).select('targetId').lean();
+      userLikes = new Set(likes.map(like => like.targetId.toString()));
     }
 
     // Transform filtered posts
@@ -143,8 +112,10 @@ export async function GET(req: NextRequest) {
       isLiked: currentUserId ? userLikes.has(post._id.toString()) : false,
     }));
 
-    // Use estimated count for better performance
-    const totalPosts = await Post.estimatedDocumentCount();
+    // Use count with filter for accuracy, but limit to reasonable number
+    const totalPosts = dataMode === 'real' || dataMode === 'generated' 
+      ? Math.min(await Post.countDocuments(), 10000) // Cap at 10k for performance
+      : await Post.estimatedDocumentCount();
 
     const responseData = {
       success: true,

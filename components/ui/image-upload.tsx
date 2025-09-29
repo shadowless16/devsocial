@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react'
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { uploadToCloudinary } from '@/lib/cloudinary'
+import { uploadToCloudinary, getHighQualityImageUrl } from '@/lib/cloudinary'
 import { toast } from 'sonner'
 
 interface ImageUploadProps {
@@ -214,9 +214,10 @@ export function ImageUpload({
             {uploadedUrls.map((url, index) => (
               <div key={index} className="relative group">
                 <img
-                  src={url}
+                  src={getHighQualityImageUrl(url)}
                   alt={`Upload ${index + 1}`}
                   className="w-full h-32 object-cover rounded-lg border"
+                  loading="lazy"
                 />
                 <button
                   onClick={() => removeUploadedImage(url)}

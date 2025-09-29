@@ -8,7 +8,8 @@ const nextConfig = {
   // Image optimization
   images: {
     domains: ['res.cloudinary.com'],
-    formats: ['image/webp'],
+    formats: ['image/webp', 'image/avif'], // Allow WebP/AVIF but don't force
+    unoptimized: false, // Keep optimization enabled
   },
 
   // Webpack config to handle client-side libraries

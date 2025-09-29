@@ -48,10 +48,9 @@ export async function POST(req: NextRequest) {
         folder: 'posts',
         resource_type: 'image',
         allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
-        transformation: [
-          { width: 2000, height: 2000, crop: 'limit' }, // Limit max dimensions
-          { quality: 'auto:best' } // Use best quality
-        ]
+        quality: 100, // Maximum quality
+        flags: 'preserve_transparency', // Preserve PNG transparency
+        // No transformation to maintain original quality and dimensions
       });
     }
 

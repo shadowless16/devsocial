@@ -17,18 +17,15 @@ const CommentSchema = new Schema<IComment>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     post: {
       type: Schema.Types.ObjectId,
       ref: "Post",
       required: true,
-      index: true,
     },
     parentComment: {
       type: Schema.Types.ObjectId,
       ref: "Comment",
-      index: true,  // Add index for nested comments
     },
     content: {
       type: String,

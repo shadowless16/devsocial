@@ -29,11 +29,10 @@ const LikeSchema = new Schema<ILike>(
   },
 )
 
-// Unique index on user + targetId + targetType
+// Unique compound index to prevent duplicate likes
 LikeSchema.index({ user: 1, targetId: 1, targetType: 1 }, { unique: true })
 
-// Performance indexes
+// Performance indexes for queries
 LikeSchema.index({ targetId: 1, targetType: 1 })
-LikeSchema.index({ user: 1 })
 
 export default mongoose.models.Like || mongoose.model<ILike>("Like", LikeSchema)

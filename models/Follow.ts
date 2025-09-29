@@ -17,8 +17,10 @@ const followSchema = new mongoose.Schema({
   },
 })
 
-// Compound index to prevent duplicate follows and optimize queries
+// Unique compound index to prevent duplicate follows
 followSchema.index({ follower: 1, following: 1 }, { unique: true })
+
+// Performance indexes for queries
 followSchema.index({ follower: 1 })
 followSchema.index({ following: 1 })
 

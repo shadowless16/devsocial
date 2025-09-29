@@ -28,11 +28,11 @@ export async function POST(
       return NextResponse.json({ success: false, message: "Post not found" }, { status: 404 });
     }
 
-    // Check for recent views to prevent spam (within last hour)
-    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+    // Check for recent views to prevent spam (within last 5 minutes for better UX)
+    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
     const recentViewQuery: any = {
       post: id,
-      createdAt: { $gte: oneHourAgo }
+      createdAt: { $gte: fiveMinutesAgo }
     };
 
     if (session?.user?.id) {
@@ -41,10 +41,10 @@ export async function POST(
       recentViewQuery.ipAddress = ipAddress;
     }
 
-    const existingView = await View.findOne(recentViewQuery);
+    const existingView = await View.findOne(recentViewQuery).lean();
     
     if (existingView) {
-      console.log(`Recent view found for post ${id}, not counting again`);
+      console.log(`Duplicate view prevented for post ${id}`);
       return NextResponse.json({ success: true, message: "View already recorded recently", alreadyViewed: true });
     }
 
@@ -70,10 +70,18 @@ export async function POST(
       }
       throw error;
     }
-    const updatedPost = await Post.findByIdAndUpdate(id, { $inc: { viewsCount: 1 } }, { new: true });
+    // Update view count atomically
+    const updatedPost = await Post.findByIdAndUpdate(
+      id, 
+      { $inc: { viewsCount: 1 } }, 
+      { new: true, select: 'viewsCount' }
+    );
     
-    console.log(`New view recorded and count incremented for post ${id}. New count: ${updatedPost?.viewsCount}`);
-    return NextResponse.json({ success: true, message: "View recorded", newCount: updatedPost?.viewsCount });
+    return NextResponse.json({ 
+      success: true, 
+      message: "View recorded", 
+      newCount: updatedPost?.viewsCount || 0 
+    });
   } catch (error: any) {
     console.error("Error recording view:", error);
     return handleDatabaseError(error);

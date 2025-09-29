@@ -48,6 +48,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json(errorResponse("Already following this user"), { status: 400 })
     }
 
+    // Ensure we have valid ObjectIds
+    if (!currentUserId || !userId || currentUserId === 'undefined' || userId === 'undefined') {
+      return NextResponse.json(errorResponse("Invalid user identifiers"), { status: 400 })
+    }
+
     let follow;
     try {
       follow = await Follow.create({

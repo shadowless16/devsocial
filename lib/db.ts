@@ -44,17 +44,18 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 10,
-      minPoolSize: 5,
-      serverSelectionTimeoutMS: 30000, // 30 seconds
-      socketTimeoutMS: 30000, // 30 seconds
-      connectTimeoutMS: 30000, // 30 seconds
-      maxIdleTimeMS: 30000, // 30 seconds
+      maxPoolSize: 20, // Increased pool size
+      minPoolSize: 2, // Reduced min pool size
+      serverSelectionTimeoutMS: 10000, // Reduced to 10 seconds
+      socketTimeoutMS: 45000, // Increased socket timeout
+      connectTimeoutMS: 10000, // Reduced connection timeout
+      maxIdleTimeMS: 60000, // Increased idle time
       retryWrites: true,
       retryReads: true,
-      readPreference: 'primary' as const,
-      heartbeatFrequencyMS: 10000, // 10 seconds
-      // writeConcern: { w: 1, j: false }
+      readPreference: 'primaryPreferred' as const, // Allow secondary reads
+      heartbeatFrequencyMS: 30000, // Reduced heartbeat frequency
+      compressors: ['zlib'], // Enable compression
+      zlibCompressionLevel: 6
     }
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts) as any

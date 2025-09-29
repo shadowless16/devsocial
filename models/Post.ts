@@ -35,13 +35,11 @@ const PostSchema = new Schema<IPost>(
       type: Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
     community: {
       type: Schema.Types.ObjectId,
       ref: "Community",
       default: null,
-      index: true,
     },
     isAnonymous: {
       type: Boolean,
@@ -81,7 +79,6 @@ const PostSchema = new Schema<IPost>(
     likesCount: {
       type: Number,
       default: 0,
-      index: true,
     },
     commentsCount: {
       type: Number,
@@ -90,7 +87,6 @@ const PostSchema = new Schema<IPost>(
     viewsCount: {
       type: Number,
       default: 0,
-      index: true,
     },
     xpAwarded: {
       type: Number,
