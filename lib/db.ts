@@ -55,7 +55,7 @@ async function connectDB() {
       readPreference: 'primaryPreferred' as const, // Allow secondary reads
       heartbeatFrequencyMS: 30000, // Reduced heartbeat frequency
       compressors: ['zlib'] as ('none' | 'zlib' | 'snappy' | 'zstd')[], // Enable compression
-      zlibCompressionLevel: 6
+      zlibCompressionLevel: 6 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
     }
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts) as any
