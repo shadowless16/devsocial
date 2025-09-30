@@ -54,7 +54,7 @@ async function connectDB() {
       retryReads: true,
       readPreference: 'primaryPreferred' as const, // Allow secondary reads
       heartbeatFrequencyMS: 30000, // Reduced heartbeat frequency
-      compressors: ['zlib'] as const, // Enable compression
+      compressors: ['zlib'] as ('none' | 'zlib' | 'snappy' | 'zstd')[], // Enable compression
       zlibCompressionLevel: 6
     }
 
