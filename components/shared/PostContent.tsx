@@ -44,7 +44,7 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
           const inline = !className;
           const match = /language-(\w+)/.exec(className || "");
           return !inline && match ? (
-            <div className="relative my-4 rounded-lg overflow-hidden border border-gray-600 w-full">
+            <div className="relative my-4 rounded-lg overflow-hidden border border-gray-600">
               <div className="bg-gray-800 px-3 py-1 border-b border-gray-600 flex items-center justify-between">
                 <span className="text-xs text-gray-300 font-medium uppercase">{match[1]}</span>
                 <Button
@@ -59,28 +59,31 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
                   <Copy className="w-3 h-3" />
                 </Button>
               </div>
-              <div className="overflow-x-auto max-w-full">
-                <SyntaxHighlighter
-                  style={vscDarkPlus}
-                  language={match[1]}
-                  PreTag="div"
-                  className="!bg-gray-900 !m-0"
-                  customStyle={{
+              <div className="overflow-hidden">
+                <pre 
+                  className="bg-gray-900 text-gray-100 p-2 rounded-none text-xs leading-relaxed overflow-hidden"
+                  style={{
                     margin: 0,
-                    padding: '0.75rem',
+                    padding: '0.5rem',
                     backgroundColor: '#0f172a',
-                    borderRadius: '0',
-                    fontSize: '0.75rem',
-                    lineHeight: '1.4',
-                    minHeight: '60px',
-                    whiteSpace: 'pre',
-                    overflowX: 'auto',
-                    maxWidth: '100%',
+                    fontSize: '10px',
+                    lineHeight: '1.2',
+                    minHeight: '40px',
+                    whiteSpace: 'pre-wrap',
+                    overflowX: 'hidden',
+                    wordBreak: 'break-all',
+                    overflowWrap: 'anywhere',
+                    overflow: 'hidden'
                   }}
-                  wrapLongLines={false}
                 >
-                  {String(children).replace(/\n$/, "")}
-                </SyntaxHighlighter>
+                  <code style={{ 
+                    fontSize: '10px', 
+                    wordBreak: 'break-all', 
+                    overflowWrap: 'anywhere',
+                    whiteSpace: 'pre-wrap',
+                    display: 'block'
+                  }}>{String(children).replace(/\n$/, "")}</code>
+                </pre>
               </div>
             </div>
           ) : (
@@ -93,7 +96,7 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
           // Convert children to string and check for mentions
           const textContent = React.Children.toArray(children).join('');
           return (
-            <p className="text-gray-900 leading-relaxed mb-4">
+            <p className="text-gray-900 leading-relaxed mb-4 break-words overflow-wrap-anywhere whitespace-pre-wrap">
               <MentionText text={textContent} />
             </p>
           );

@@ -173,46 +173,66 @@ export default function PostCard({
 
   return (
     <>
-        <Card className="border-0 ring-1 ring-black/5 w-full max-w-full overflow-hidden">
-          <CardContent className="p-3 md:p-4 w-full max-w-full">
-          <div className="flex items-start gap-2 md:gap-3 w-full">
+<Card className="group relative border-0 p-3 sm:p-4 ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-[280px] sm:w-full box-border overflow-hidden">
+        <div 
+          className="flex items-start gap-2 sm:gap-3 w-full min-w-0"
+        >
+            {/* Avatar */}
             <div 
               className="cursor-pointer hover:ring-primary/20 transition-all flex-shrink-0"
-              onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
+              onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
             >
-              <Avatar className="h-9 w-9 md:h-10 md:w-10 ring-1 ring-primary/20">
+              <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-1 ring-primary/20">
                 <AvatarImage 
                   src={getAvatarUrl(avatar)} 
                   alt={author}
                 />
-                <AvatarFallback>
-                  {author.split(' ').map(n => n[0]).join('')}
+                <AvatarFallback className="text-xs">
+                  {author?.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
             </div>
             
-            <div className="flex-1 min-w-0 w-full overflow-hidden">
-              <div className="flex items-start justify-between mb-1 w-full">
-                <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2 min-w-0 flex-1 mr-2">
-                  <div className="flex items-center gap-1 md:gap-2 min-w-0">
+            {/* Content */}
+            <div className="flex-1 min-w-0 w-full">
+              {/* Header */}
+              <div 
+                className="flex items-start justify-between mb-2 w-full min-w-0"
+                onClick={(e) => {
+                  if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
+                    return;
+                  }
+                  postId && onClick?.(postId)
+                }}
+              >
+                <div className="flex flex-col gap-1 min-w-0 flex-1 mr-2">
+                  <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-wrap">
                     <span 
-                      className="font-medium text-sm md:text-sm cursor-pointer hover:text-primary transition-colors truncate"
-                      onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
-                    >{author}</span>
-                    <Badge className="bg-primary/10 text-primary text-xs px-2 py-0.5 flex-shrink-0">{level}</Badge>
+                      className="font-medium text-sm cursor-pointer hover:text-primary transition-colors truncate max-w-[100px] sm:max-w-[140px]"
+                      onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
+                    >
+                      {author}
+                    </span>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5">
+                        {level}
+                      </Badge>
+                      {xpDelta > 0 && (
+                        <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-1.5 py-0 h-5">
+                          +{xpDelta}
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
                     <span 
-                      className="cursor-pointer hover:text-primary transition-colors truncate"
-                      onClick={() => window.location.href = `/profile/${handle.replace('@', '')}`}
-                    >{handle}</span>
+                      className="cursor-pointer hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px]"
+                      onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
+                    >
+                      {handle}
+                    </span>
                     <span className="flex-shrink-0">•</span>
                     <span className="flex-shrink-0">{formatTimeAgo(timestamp)}</span>
-                    {xpDelta > 0 && (
-                      <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-2 py-0.5 flex-shrink-0">
-                        +{xpDelta}
-                      </Badge>
-                    )}
                     {imprintStatus && imprintStatus !== "none" && (
                       <PostMeta 
                         imprintStatus={imprintStatus} 
@@ -222,10 +242,11 @@ export default function PostCard({
                   </div>
                 </div>
                 
+                {/* Dropdown Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
-                      <MoreHorizontal className="h-4 w-4" />
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 flex-shrink-0">
+                      <MoreHorizontal className="h-3.5 w-3.5" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -250,88 +271,97 @@ export default function PostCard({
                 </DropdownMenu>
               </div>
               
+              {/* Post Content */}
               <div 
-                  className="text-sm md:text-sm mb-3 md:mb-3 cursor-pointer hover:bg-muted/50 rounded-md p-2 -m-2 transition-colors w-full min-w-0 overflow-hidden"
-                onClick={() => postId && onClick?.(postId)}
+                className="text-sm mb-3 w-full break-words whitespace-pre-line overflow-wrap-anywhere"
+                onClick={(e) => {
+                  if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
+                    return;
+                  }
+                  postId && onClick?.(postId)
+                }}
               >
-                <div className="w-full min-w-0 overflow-hidden">
-                  <PostContent content={content || ""} onCopyCode={handleCopyCode} />
-                </div>
+                <PostContent content={content || ""} onCopyCode={handleCopyCode} />
               </div>
 
-              {/* Image Display */}
-              {imageUrl && (
-                <div className="mb-2 md:mb-3 rounded-lg overflow-hidden">
-                  <img
-                    src={imageUrl}
-                    alt="Post image"
-                    className="w-full h-auto object-cover max-h-96 rounded-lg cursor-pointer"
-                    onClick={() => postId && onClick?.(postId)}
-                  />
-                </div>
-              )}
+              {/* Media Display */}
+              <div className="w-full" onClick={(e) => {
+                  if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
+                    return;
+                  }
+                  postId && onClick?.(postId)
+                }}>
+                {imageUrl && (
+                  <div className="mb-3 rounded-lg overflow-hidden">
+                    <img
+                      src={imageUrl}
+                      alt="Post image"
+                      className="w-full h-auto object-cover max-h-48 sm:max-h-80 rounded-lg"
+                    />
+                  </div>
+                )}
 
-              {/* Multiple Images */}
-              {imageUrls && imageUrls.length > 0 && (
-                <div className="mb-2 md:mb-3">
-                  {imageUrls.length === 1 ? (
-                    <div className="rounded-lg overflow-hidden">
-                      <img
-                        src={imageUrls[0]}
-                        alt="Post image"
-                        className="w-full h-auto object-cover max-h-96 rounded-lg cursor-pointer"
-                        onClick={() => postId && onClick?.(postId)}
-                      />
-                    </div>
-                  ) : (
-                    <div className={`grid gap-2 rounded-lg overflow-hidden ${
-                      imageUrls.length === 2 ? 'grid-cols-2' :
-                      imageUrls.length === 3 ? 'grid-cols-2' :
-                      'grid-cols-2'
-                    }`}>
-                      {imageUrls.map((imageUrl, index) => (
-                        <div 
-                          key={index} 
-                          className={`relative cursor-pointer ${
-                            imageUrls.length === 3 && index === 0 ? 'row-span-2' : ''
-                          }`}
-                          onClick={() => postId && onClick?.(postId)}
+                {imageUrls && imageUrls.length > 0 && (
+                  <div className="mb-3">
+                    {imageUrls.length === 1 ? (
+                      <div className="rounded-lg overflow-hidden">
+                        <img
+                          src={imageUrls[0]}
+                          alt="Post image"
+                          className="w-full h-auto object-cover max-h-48 sm:max-h-80 rounded-lg"
+                        />
+                      </div>
+                    ) : (
+                      <div className={`grid gap-1 rounded-lg overflow-hidden ${
+                        imageUrls.length === 2 ? 'grid-cols-2' :
+                        imageUrls.length === 3 ? 'grid-cols-2' :
+                        'grid-cols-2'
+                      }`}>
+                        {imageUrls.slice(0, 4).map((imageUrl, index) => (
+                          <div 
+                            key={index} 
+                            className={`relative ${
+                              imageUrls.length === 3 && index === 0 ? 'row-span-2' : ''
+                            }`}
+                          >
+                            <img
+                              src={imageUrl}
+                              alt={`Post image ${index + 1}`}
+                              className="w-full h-20 sm:h-32 object-cover rounded-md"
+                            />
+                            {index === 3 && imageUrls.length > 4 && (
+                              <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
+                                <span className="text-white font-medium text-sm">+{imageUrls.length - 4}</span>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Videos */}
+                {videoUrls && videoUrls.length > 0 && (
+                  <div className="mb-3">
+                    {videoUrls.map((videoUrl, index) => (
+                      <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
+                        <video 
+                          controls
+                          className="w-full max-h-48 sm:max-h-80 object-cover rounded-lg"
+                          preload="metadata"
                         >
-                          <img
-                            src={imageUrl}
-                            alt={`Post image ${index + 1}`}
-                            className="w-full h-full object-cover rounded-md"
-                          />
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+                          <source src={videoUrl} type="video/mp4" />
+                          <source src={videoUrl} type="video/webm" />
+                          <source src={videoUrl} type="video/ogg" />
+                          Your browser does not support the video tag.
+                        </video>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-              {/* Videos */}
-              {videoUrls && videoUrls.length > 0 && (
-                <div className="mb-2 md:mb-3">
-                  {videoUrls.map((videoUrl, index) => (
-                    <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
-                      <video 
-                        controls
-                        className="w-full max-h-96 object-cover rounded-lg"
-                        preload="metadata"
-                      >
-                        <source src={videoUrl} type="video/mp4" />
-                        <source src={videoUrl} type="video/webm" />
-                        <source src={videoUrl} type="video/ogg" />
-                        Your browser does not support the video tag.
-                      </video>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              {/* Tags */}
-              {/* Add tags prop to interface and display them */}
-              
               {/* AI Actions */}
               <div className="mb-3">
                 <PostAIActions 
@@ -340,12 +370,13 @@ export default function PostCard({
                 />
               </div>
 
-              <div className="flex items-center justify-between pt-3 border-t border-border">
-                <div className="flex items-center gap-1 md:gap-4">
+              {/* Actions Footer */}
+              <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
+                <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
                   <Button
                     variant="ghost"
                     size="sm"
-                    className={`h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-red-500 ${
+                    className={`h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-red-500 flex-shrink-0 ${
                       isLiked ? "text-red-500" : ""
                     }`}
                     onClick={handleLike}
@@ -357,7 +388,7 @@ export default function PostCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-blue-500"
+                    className="h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-blue-500 flex-shrink-0"
                     onClick={() => postId && onComment?.(postId)}
                   >
                     <MessageCircle className="h-4 w-4" />
@@ -367,7 +398,7 @@ export default function PostCard({
                   <Button
                     variant="ghost"
                     size="sm"
-                    className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-green-500"
+                    className="h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-green-500 flex-shrink-0"
                     onClick={handleShare}
                   >
                     <Share className="h-4 w-4" />
@@ -378,7 +409,7 @@ export default function PostCard({
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-yellow-600"
+                      className="h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-yellow-600 flex-shrink-0"
                       onClick={() => setShowTipModal(true)}
                     >
                       <Coins className="h-4 w-4" />
@@ -387,16 +418,16 @@ export default function PostCard({
                   )}
                 </div>
 
-                <div className="text-xs text-muted-foreground flex-shrink-0">
-                  {currentViews} views
+                <div className="text-xs text-muted-foreground flex-shrink-0 pl-1 sm:pl-2 whitespace-nowrap">
+                  Views {currentViews}
                 </div>
               </div>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      <ReportModal
+        
+        {/* Accent sheen */}
+        <div className="pointer-events-none absolute inset-x-0 -top-12 h-24 translate-y-[-8px] bg-gradient-to-b from-white/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+      </Card>      <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
         postId={postId || ""}

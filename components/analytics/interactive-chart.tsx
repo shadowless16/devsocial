@@ -81,19 +81,7 @@ export function InteractiveChart({
           </div>
         </CardHeader>
         <CardContent>
-          <div onClick={() => data && handleDataPointClick(data)}>{children}</div>
-          {selectedDataPoint && (
-            <div className="mt-4 p-3 bg-muted/50 rounded-lg">
-              <div className="text-sm font-medium mb-2">Selected Data Point:</div>
-              <div className="flex flex-wrap gap-2">
-                {Object.entries(selectedDataPoint).map(([key, value]) => (
-                  <Badge key={key} variant="outline">
-                    {key}: {String(value)}
-                  </Badge>
-                ))}
-              </div>
-            </div>
-          )}
+          {children}
         </CardContent>
       </Card>
     </>

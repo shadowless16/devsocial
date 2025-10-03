@@ -28,8 +28,8 @@ export default function AuthenticatedLayout({
   return (
     <TooltipProvider>
       <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full overflow-x-hidden">
-        <div className="mx-auto grid w-full max-w-[120rem] gap-3 md:gap-6 px-3 sm:px-4 py-3 md:py-6 
-          md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr_280px]">
+        <div className="mx-auto grid w-full max-w-[120rem] gap-3 md:gap-6 px-2 sm:px-3 md:px-4 py-3 md:py-6 
+          md:grid-cols-[220px_1fr] lg:grid-cols-[260px_1fr_280px] overflow-x-hidden">
           
           {/* Left Sidebar */}
           <aside className="hidden md:block sticky top-6 self-start overflow-hidden w-[220px] lg:w-[260px]">

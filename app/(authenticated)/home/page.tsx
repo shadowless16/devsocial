@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input"
 import { ImageIcon, Plus, Search, Upload, Loader2 } from "lucide-react"
 import PostCard from "@/components/post-card"
 import StatPills from "@/components/stat-pills"
-import { PostModal } from "@/components/modals/post-modal"
+import { SimplePostModal } from "@/components/modals/simple-post-modal"
 import { PostSkeleton } from "@/components/skeletons/post-skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { getAvatarUrl } from "@/lib/avatar-utils"
@@ -134,7 +134,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="w-full max-w-4xl mx-auto px-3 md:px-6 py-3 md:py-4">
+    <div className="w-full max-w-4xl mx-auto px-3 sm:px-3 md:px-6 py-3 md:py-4 overflow-x-hidden">
       <HeaderBar onCreateClick={() => setShowPostModal(true)} />
       <OfflineIndicator />
       <StatPills />
@@ -196,7 +196,7 @@ export default function HomePage() {
         )}
       </div>
       
-      <PostModal
+      <SimplePostModal
         isOpen={showPostModal}
         onClose={() => setShowPostModal(false)}
         onSubmit={handleCreatePost}

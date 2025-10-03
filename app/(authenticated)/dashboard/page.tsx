@@ -3,7 +3,22 @@
 import { useState, useEffect } from "react"
 import dynamic from "next/dynamic"
 
-import { ActivityChart, XPChart } from '@/components/simple-charts'
+import { InteractiveChart } from '@/components/analytics/interactive-chart'
+import {
+  LineChart,
+  Line,
+  BarChart,
+  Bar,
+  PieChart,
+  Pie,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts"
 import { Activity, MessageSquare, Heart, Trophy, Target, Zap, Wallet } from "lucide-react"
 import { TransactionHistory } from '@/components/transactions/transaction-history'
 import { WalletBalanceDisplay } from '@/components/transactions/wallet-balance-display'
@@ -167,40 +182,42 @@ export default function DashboardPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 mb-4 sm:mb-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-medium">Total XP</CardTitle>
-            <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total XP</CardTitle>
+            <Zap className="h-4 w-4 text-yellow-600" />
           </CardHeader>
-          <CardContent className="pt-1 sm:pt-2">
-            <div className="text-sm sm:text-xl font-bold">{dashboardData.user.points > 999 ? `${(dashboardData.user.points / 1000).toFixed(1)}k` : dashboardData.user.points}</div>
-            <p className="text-[8px] sm:text-xs text-muted-foreground">
-              L{dashboardData.user.level} • #{dashboardData.user.rank}
-            </p>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardData.user.points > 999 ? `${(dashboardData.user.points / 1000).toFixed(1)}k` : dashboardData.user.points}</div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="text-emerald-600">Level {dashboardData.user.level}</span>
+              <span>•</span>
+              <span>Rank #{dashboardData.user.rank}</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-medium">Posts</CardTitle>
-            <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Posts Created</CardTitle>
+            <MessageSquare className="h-4 w-4 text-blue-600" />
           </CardHeader>
-          <CardContent className="pt-1 sm:pt-2">
-            <div className="text-sm sm:text-xl font-bold">{dashboardData.stats.posts.lifetimePosts || dashboardData.stats.posts.totalPosts}</div>
-            <p className="text-[8px] sm:text-xs text-muted-foreground">
-              {dashboardData.stats.posts.avgLikes.toFixed(1)} avg likes
-            </p>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardData.stats.posts.lifetimePosts || dashboardData.stats.posts.totalPosts}</div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="text-emerald-600">{dashboardData.stats.posts.avgLikes.toFixed(1)} avg likes</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-medium">Engagement</CardTitle>
-            <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Engagement</CardTitle>
+            <Heart className="h-4 w-4 text-red-600" />
           </CardHeader>
-          <CardContent className="pt-1 sm:pt-2">
-            <div className="text-sm sm:text-xl font-bold">
+          <CardContent>
+            <div className="text-2xl font-bold">
               {(() => {
                 const lifetimeLikes = dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes
                 const lifetimeComments = dashboardData.stats.posts.lifetimeComments || dashboardData.stats.posts.totalComments
@@ -209,55 +226,89 @@ export default function DashboardPage() {
               })()
               }
             </div>
-            <p className="text-[8px] sm:text-xs text-muted-foreground">
-              {dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes}♥ {dashboardData.stats.posts.lifetimeComments || dashboardData.stats.posts.totalComments}💬
-            </p>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="text-red-500">{dashboardData.stats.posts.lifetimeLikes || dashboardData.stats.posts.totalLikes} likes</span>
+              <span>•</span>
+              <span className="text-blue-500">{dashboardData.stats.posts.lifetimeComments || dashboardData.stats.posts.totalComments} comments</span>
+            </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-1 sm:pb-2">
-            <CardTitle className="text-[10px] sm:text-sm font-medium">Badges</CardTitle>
-            <Trophy className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
+        <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Achievements</CardTitle>
+            <Trophy className="h-4 w-4 text-yellow-600" />
           </CardHeader>
-          <CardContent className="pt-1 sm:pt-2">
-            <div className="text-sm sm:text-xl font-bold">{dashboardData.user.badges.length}</div>
-            <p className="text-[8px] sm:text-xs text-muted-foreground">{dashboardData.achievements.length} recent</p>
+          <CardContent>
+            <div className="text-2xl font-bold">{dashboardData.user.badges.length}</div>
+            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+              <span className="text-emerald-600">{dashboardData.achievements.length} recent</span>
+            </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Charts and Analytics */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-2 sm:gap-3 mb-4 sm:mb-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-6">
         {/* Activity Chart */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Activity className="h-5 w-5 mr-2" />
-              Daily Activity
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full" style={{ minHeight: '200px' }}>
-              <ActivityChart data={activityChartData} />
-            </div>
-          </CardContent>
-        </Card>
+        <InteractiveChart
+          title="Daily Activity"
+          description="Your XP and activity trends over time"
+          data={activityChartData}
+        >
+          <div style={{ width: '100%', height: '300px' }}>
+            <LineChart width={600} height={300} data={activityChartData}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Line type="monotone" dataKey="xp" stroke="#22c55e" strokeWidth={2} name="XP Earned" />
+              <Line type="monotone" dataKey="activities" stroke="#3b82f6" strokeWidth={2} name="Activities" />
+            </LineChart>
+          </div>
+        </InteractiveChart>
 
         {/* XP Breakdown */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Target className="h-5 w-5 mr-2" />
-              XP Sources
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="w-full" style={{ minHeight: '200px' }}>
-              <XPChart data={xpBreakdownData} />
-            </div>
-          </CardContent>
-        </Card>
+        <InteractiveChart
+          title="XP Sources"
+          description="Breakdown of your experience points by activity"
+          data={xpBreakdownData}
+        >
+          <div style={{ width: '100%', height: '300px' }}>
+            {xpBreakdownData.length > 0 ? (
+              <PieChart width={600} height={300}>
+                <Pie
+                  data={xpBreakdownData}
+                  cx={300}
+                  cy={150}
+                  outerRadius={80}
+                  dataKey="value"
+                  label={({ name, value }) => `${name}: ${value}`}
+                >
+                  {xpBreakdownData.map((_, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={[
+                        '#22c55e', 
+                        '#3b82f6', 
+                        '#f59e0b', 
+                        '#8b5cf6', 
+                        '#ef4444'
+                      ][index % 5]} 
+                    />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </PieChart>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                No XP data available
+              </div>
+            )}
+          </div>
+        </InteractiveChart>
       </div>
 
       {/* Tabs for detailed views */}
