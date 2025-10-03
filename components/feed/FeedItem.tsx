@@ -457,8 +457,9 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
             {post.imageUrl.includes('video') || post.imageUrl.match(/\.(mp4|webm|ogg)$/i) ? (
               <video 
                 controls
-                className="w-full max-h-96 object-cover rounded-lg"
+                className="w-full h-auto rounded-lg"
                 preload="metadata"
+                style={{ maxHeight: '70vh' }}
               >
                 <source src={post.imageUrl} type="video/mp4" />
                 <source src={post.imageUrl} type="video/webm" />
@@ -471,8 +472,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 alt="Post image"
                 width={500}
                 height={300}
-                className="w-full h-auto object-cover max-h-96 rounded-lg"
-                unoptimized
+                className="w-full h-auto rounded-lg"
+                style={{ maxHeight: '70vh' }}
               />
             )}
           </div>
@@ -488,8 +489,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                   alt="Post image"
                   width={500}
                   height={300}
-                  className="w-full h-auto object-cover max-h-96 rounded-lg"
-                  unoptimized
+                  className="w-full h-auto rounded-lg"
+                  style={{ maxHeight: '70vh' }}
                   onError={(e) => {
                     console.error('Image failed to load:', post.imageUrls?.[0]);
                     e.currentTarget.style.display = 'none';
@@ -514,8 +515,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                       alt={`Post image ${index + 1}`}
                       width={250}
                       height={200}
-                      className="w-full h-full object-cover rounded-md"
-                      unoptimized
+                      className="w-full h-auto rounded-md"
+                      style={{ maxHeight: '300px' }}
                     />
                   </div>
                 ))}
@@ -531,8 +532,9 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
               <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
                 <video 
                   controls
-                  className="w-full max-h-96 object-cover rounded-lg"
+                  className="w-full h-auto rounded-lg"
                   preload="metadata"
+                  style={{ maxHeight: '70vh' }}
                 >
                   <source src={videoUrl} type="video/mp4" />
                   <source src={videoUrl} type="video/webm" />

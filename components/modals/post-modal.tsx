@@ -559,13 +559,14 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                 </div>
                 
                 {mediaUrls.filter(url => !url.endsWith('.mp4') && !url.endsWith('.webm')).length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {mediaUrls.filter(url => !url.endsWith('.mp4') && !url.endsWith('.webm')).map((url, index) => (
-                      <div key={index} className="relative group aspect-square">
+                      <div key={index} className="relative group">
                         <img 
                           src={url} 
                           alt={`Upload ${index + 1}`} 
-                          className="w-full h-full object-cover rounded-lg"
+                          className="w-full h-auto rounded-lg"
+                          style={{ maxHeight: '40vh' }}
                         />
                         <Button
                           type="button"
@@ -615,7 +616,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
                       <div key={index} className="relative">
                         <video 
                           controls
-                          className="w-full max-h-64 rounded-lg"
+                          className="w-full h-auto rounded-lg"
+                          style={{ maxHeight: '50vh' }}
                         >
                           <source src={url} type="video/mp4" />
                           Your browser does not support the video tag.
@@ -734,5 +736,3 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     </div>
   );
 }
-
-//testing

@@ -10,6 +10,8 @@ const nextConfig = {
     domains: ['res.cloudinary.com'],
     formats: ['image/webp', 'image/avif'], // Allow WebP/AVIF but don't force
     unoptimized: false, // Keep optimization enabled
+    quality: 95, // High quality (default is 75)
+    minimumCacheTTL: 60, // Cache for 1 minute minimum
   },
 
   // Webpack config to handle client-side libraries
