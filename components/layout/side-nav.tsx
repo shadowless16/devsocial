@@ -35,7 +35,7 @@ import {
   BookOpen,
   Database,
 } from "lucide-react"
-import { PostModal } from "@/components/modals/post-modal"
+import { SimplePostModal } from "@/components/modals/simple-post-modal"
 
 import { useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api-client"
@@ -289,7 +289,7 @@ function CreateButton() {
         Create
       </Button>
       
-      <PostModal
+      <SimplePostModal
         isOpen={showPostModal}
         onClose={() => setShowPostModal(false)}
         onSubmit={handleCreatePost}

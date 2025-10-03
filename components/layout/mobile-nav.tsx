@@ -15,7 +15,7 @@ import {
   MessageCircle,
   Menu
 } from "lucide-react"
-import { PostModal } from "@/components/modals/post-modal"
+import { SimplePostModal } from "@/components/modals/simple-post-modal"
 import { MobileMenu } from "@/components/layout/mobile-menu"
 
 interface MobileNavProps {
@@ -30,6 +30,13 @@ const navItems = [
   { icon: Menu, href: "#", label: "Menu", isMenu: true },
 ]
 
+interface CreatePostData {
+  content: string;
+  tags: string[];
+  mediaUrls: string[];
+  isAnonymous: boolean;
+}
+
 export function MobileNav({ className }: MobileNavProps) {
   const pathname = usePathname()
   const [showCreatePost, setShowCreatePost] = useState(false)
@@ -41,6 +48,29 @@ export function MobileNav({ className }: MobileNavProps) {
 
   const handleMenuClick = () => {
     setShowMobileMenu(true)
+  }
+
+  const handleCreatePost = async (postData: CreatePostData) => {
+    try {
+      const response = await fetch('/api/posts', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(postData),
+      })
+      
+      if (response.ok) {
+        const json = await response.json();
+        const createdPost = json?.data?.post || json?.post || json?.data || {}
+        try { window.dispatchEvent(new CustomEvent('post:created', { detail: createdPost })) } catch (e) { console.debug('Failed to dispatch post:created', e) }
+        setShowCreatePost(false)
+      } else {
+        console.error('Failed to create post')
+      }
+    } catch (error) {
+      console.error('Error creating post:', error)
+    }
   }
 
   return (
@@ -117,31 +147,10 @@ export function MobileNav({ className }: MobileNavProps) {
       </nav>
 
       {showCreatePost && (
-        <PostModal
+        <SimplePostModal
           isOpen={showCreatePost}
           onClose={() => setShowCreatePost(false)}
-          onSubmit={async (postData) => {
-            try {
-              const response = await fetch('/api/posts', {
-                method: 'POST',
-                headers: {
-                  'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(postData),
-              })
-              
-              if (response.ok) {
-                const json = await response.json();
-                const createdPost = json?.data?.post || json?.post || json?.data || {}
-                try { window.dispatchEvent(new CustomEvent('post:created', { detail: createdPost })) } catch (e) { console.debug('Failed to dispatch post:created', e) }
-                setShowCreatePost(false)
-              } else {
-                console.error('Failed to create post')
-              }
-            } catch (error) {
-              console.error('Error creating post:', error)
-            }
-          }}
+          onSubmit={handleCreatePost}
         />
       )}
       
