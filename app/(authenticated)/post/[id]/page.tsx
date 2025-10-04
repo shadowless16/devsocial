@@ -2,19 +2,16 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Zap, Send, Trash, Coins, Eye } from "lucide-react"
+import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Send, Trash, Coins, Eye } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
-import { CommentItem } from "@/components/feed/comment-item"
 import { PostContent } from "@/components/shared/PostContent"
 import { PostAIActions } from "@/components/shared/PostAIActions"
-import Image from "next/image"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
@@ -25,84 +22,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import dynamic from 'next/dynamic'
 import { TipModal } from "@/components/modals/tip-modal"
 import { getAvatarUrl } from "@/lib/avatar-utils"
-
-// Dynamically import CommentSection to avoid SSR issues
-const CommentSection = dynamic(
-  () => import('react-comments-section').then((mod) => ({ default: mod.CommentSection })),
-  { 
-    ssr: false,
-    loading: () => <div className="text-center py-4">Loading comments...</div>
-  }
-)
-
-// Mock post data
-const mockPost = {
-  id: "1",
-  author: {
-    username: "alexchen",
-    displayName: "Alex Chen",
-    avatar: "/placeholder.svg?height=40&width=40",
-    level: 12,
-  },
-  content:
-    "Just shipped my first TypeScript project! 🎉 The type safety is incredible. Anyone else making the switch from JavaScript? I've been working on this for weeks and the developer experience is so much better. Here are some key benefits I've noticed:\n\n1. Better IDE support with autocomplete\n2. Catch errors at compile time\n3. Easier refactoring\n4. Better documentation through types\n\nWhat's your experience been like?",
-  imageUrl: "/placeholder.svg?height=300&width=500",
-  tags: ["#typescript", "#javascript", "#webdev"],
-  likesCount: 124,
-  commentsCount: 18,
-  xpAwarded: 25,
-  createdAt: "2 hours ago",
-  isAnonymous: false,
-  isLiked: false,
-}
-
-const mockComments = [
-  {
-    id: "1",
-    author: {
-      username: "sarahcode",
-      displayName: "Sarah Code",
-      avatar: "/placeholder.svg?height=32&width=32",
-      level: 18,
-    },
-    content: "Totally agree! The type safety has saved me so many debugging hours. Welcome to the TypeScript club! 🎉",
-    likesCount: 12,
-    createdAt: "1 hour ago",
-    isLiked: true,
-    replies: [
-      {
-        id: "1-1",
-        author: {
-          username: "alexchen",
-          displayName: "Alex Chen",
-          avatar: "/placeholder.svg?height=32&width=32",
-          level: 12,
-        },
-        content: "Thanks Sarah! Any tips for someone just starting out?",
-        likesCount: 3,
-        createdAt: "45 minutes ago",
-        isLiked: false,
-      },
-    ],
-  },
-  {
-    id: "2",
-    author: {
-      username: "devmike",
-      displayName: "Dev Mike",
-      avatar: "/placeholder.svg?height=32&width=32",
-      level: 15,
-    },
-    content: "I made the switch last year and never looked back. The learning curve is worth it!",
-    likesCount: 8,
-    createdAt: "30 minutes ago",
-    isLiked: false,
-    replies: [],
-  },
-]
 
 interface Post {
   id: string;
@@ -123,6 +44,7 @@ interface Post {
   createdAt: string;
   isAnonymous: boolean;
   isLiked: boolean;
+  viewsCount: number;
 }
 
 interface Comment {
@@ -166,8 +88,6 @@ export default function PostPage() {
         const response = await apiClient.getPost<{ post: any }>(postId)
         if (response.success && response.data) {
           const postData = response.data.post || response.data
-          console.log('Raw post data from API:', postData)
-          console.log('Post author from API:', postData.author)
           setPost({
             id: postData._id || postData.id,
             author: postData.author,
@@ -182,6 +102,7 @@ export default function PostPage() {
             createdAt: postData.createdAt,
             isAnonymous: postData.isAnonymous || false,
             isLiked: postData.isLiked || false,
+            viewsCount: postData.viewsCount || 0,
           })
         } else {
           setError("Post not found")
@@ -214,7 +135,7 @@ export default function PostPage() {
               id: reply._id,
               likesCount: reply.likesCount || reply.likes?.length || 0
             }))
-          })));
+          })))
         }
       } catch (error) {
         console.error("Failed to fetch comments:", error)
@@ -256,7 +177,6 @@ export default function PostPage() {
       const response = await apiClient.createComment<{ comment: any }>(post.id, newComment.trim())
       if (response.success && response.data) {
         const newCommentData = response.data.comment
-        // Add new comment at the end (newest last)
         setComments(prev => [...prev, {
           ...newCommentData,
           id: newCommentData._id,
@@ -274,13 +194,12 @@ export default function PostPage() {
   }
 
   const handleCommentReply = async (parentCommentId: string, content: string) => {
-    if (!post) return;
+    if (!post) return
 
     try {
-      const response = await apiClient.createComment<{ comment: any }>(post.id, content, parentCommentId);
+      const response = await apiClient.createComment<{ comment: any }>(post.id, content, parentCommentId)
       if (response.success && response.data) {
-        // Refresh comments to show the new reply
-        const commentsResponse = await apiClient.getComments<{ comments: any[] }>(post.id);
+        const commentsResponse = await apiClient.getComments<{ comments: any[] }>(post.id)
         if (commentsResponse.success && commentsResponse.data) {
           setComments(commentsResponse.data.comments.map((comment: any) => ({
             ...comment,
@@ -291,17 +210,17 @@ export default function PostPage() {
               id: reply._id,
               likesCount: reply.likesCount || reply.likes?.length || 0
             }))
-          })));
+          })))
         }
       }
     } catch (error) {
-      console.error("Failed to submit reply:", error);
+      console.error("Failed to submit reply:", error)
       toast({
         title: "Failed to submit reply",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   const handleCommentLike = async (commentId: string) => {
     try {
@@ -310,7 +229,6 @@ export default function PostPage() {
         const { liked, likesCount } = response.data
         setComments(prev =>
           prev.map(comment => {
-            // Check if it's the main comment
             if (comment.id === commentId) {
               return {
                 ...comment,
@@ -318,7 +236,6 @@ export default function PostPage() {
                 likesCount: likesCount,
               }
             }
-            // Check if it's a reply within this comment
             if (comment.replies && comment.replies.length > 0) {
               return {
                 ...comment,
@@ -342,20 +259,6 @@ export default function PostPage() {
     }
   }
 
-  const handleCopyCode = (codeContent: string) => {
-    navigator.clipboard.writeText(codeContent).then(() => {
-      toast({
-        title: "Copied to clipboard!",
-        variant: "success",
-      });
-    }).catch(() => {
-      toast({
-        title: "Failed to copy to clipboard",
-        variant: "destructive",
-      });
-    });
-  };
-
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp)
     return date.toLocaleDateString('en-US') + " " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
@@ -366,27 +269,27 @@ export default function PostPage() {
       toast({
         title: "You can only delete your own posts",
         variant: "destructive",
-      });
-      return;
+      })
+      return
     }
 
     try {
-      const response = await apiClient.deletePost(post.id);
+      const response = await apiClient.deletePost(post.id)
       if (response.success) {
         toast({
           title: "Post deleted successfully",
           variant: "success",
-        });
-        router.push('/');
+        })
+        router.push('/')
       }
     } catch (error) {
-      console.error("Failed to delete post:", error);
+      console.error("Failed to delete post:", error)
       toast({
         title: "Failed to delete post",
         variant: "destructive",
-      });
+      })
     }
-  };
+  }
 
   if (loading) {
     return (
@@ -404,7 +307,7 @@ export default function PostPage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
   if (error || !post) {
@@ -425,61 +328,17 @@ export default function PostPage() {
           </CardContent>
         </Card>
       </div>
-    );
+    )
   }
 
-  // Fallback author data for invalid or missing author
   const fallbackAuthor = {
     username: "Unknown",
     displayName: "Unknown User",
     avatar: "/placeholder.svg",
     level: 1,
-  };
+  }
 
-  const author = post.isAnonymous ? fallbackAuthor : (post.author || fallbackAuthor);
-
-  // Transform comments data for react-comments-section
-  const formatCommentsForReactSection = (comments: Comment[]) => {
-    return comments.map((comment) => ({
-      userId: comment.author.username,
-      comId: comment.id,
-      avatarUrl: comment.author.avatar || '/placeholder.svg',
-      userProfile: comment.author.username,
-      fullName: comment.author.displayName,
-      text: comment.content,
-      replies: [], // Add nested replies support if needed
-      timestamp: comment.createdAt,
-    }));
-  };
-
-  const handleNewComment = async (data: any) => {
-    try {
-      setIsSubmitting(true);
-      const response = await apiClient.createComment<{ comment: any }>(post!.id, data.text);
-      if (response.success && response.data) {
-        const newCommentData = response.data.comment;
-        setComments(prev => [...prev, {
-          ...newCommentData,
-          id: newCommentData._id,
-          likesCount: 0,
-          replies: []
-        }]);
-        setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : null);
-        toast({
-          title: "Comment posted successfully!",
-          variant: "success",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to submit comment:", error);
-      toast({
-        title: "Failed to post comment",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
+  const author = post.isAnonymous ? fallbackAuthor : (post.author || fallbackAuthor)
 
   return (
     <div className="w-full min-w-0 max-w-2xl mx-auto px-4 py-4 space-y-4">
@@ -497,9 +356,7 @@ export default function PostPage() {
           {/* Header */}
           <div className="flex items-start gap-3 min-w-0">
             <Avatar className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20">
-              <AvatarImage 
-                src={getAvatarUrl(author.avatar)} 
-              />
+              <AvatarImage src={getAvatarUrl(author.avatar)} />
               <AvatarFallback>
                 {post.isAnonymous
                   ? "?"
@@ -552,8 +409,8 @@ export default function PostPage() {
                     {user && (!post.isAnonymous ? post.author?.username === user.username : true) && (
                       <DropdownMenuItem 
                         onClick={(e) => {
-                          e.stopPropagation();
-                          handleDeletePost();
+                          e.stopPropagation()
+                          handleDeletePost()
                         }}
                         className="text-red-600 focus:text-red-600"
                       >
@@ -567,18 +424,16 @@ export default function PostPage() {
 
               {/* Content */}
               <div className="text-sm leading-relaxed break-words">
-                <PostContent content={post.content} onCopyCode={handleCopyCode} />
+                <PostContent content={post.content} onCopyCode={() => {}} />
               </div>
               
               {/* Media Content */}
               {(post.imageUrls?.length || post.videoUrls?.length) && (
                 <div className="rounded-lg overflow-hidden">
-                  {/* Multiple Images */}
                   {post.imageUrls && post.imageUrls.length > 0 && (
                     <div className={`grid gap-2 ${
                       post.imageUrls.length === 1 ? 'grid-cols-1' :
                       post.imageUrls.length === 2 ? 'grid-cols-2' :
-                      post.imageUrls.length === 3 ? 'grid-cols-2' :
                       'grid-cols-2'
                     }`}>
                       {post.imageUrls.map((imageUrl, index) => (
@@ -586,15 +441,12 @@ export default function PostPage() {
                           key={index}
                           src={imageUrl}
                           alt={`Post image ${index + 1}`} 
-                          className={`w-full h-auto object-cover rounded-md ${
-                            post.imageUrls!.length === 3 && index === 0 ? 'row-span-2' : 'max-h-48'
-                          }`}
+                          className="w-full h-auto object-cover rounded-md max-h-48"
                         />
                       ))}
                     </div>
                   )}
                   
-                  {/* Videos */}
                   {post.videoUrls && post.videoUrls.length > 0 && (
                     <div className="space-y-2">
                       {post.videoUrls.map((videoUrl, index) => (
@@ -605,8 +457,6 @@ export default function PostPage() {
                           preload="metadata"
                         >
                           <source src={videoUrl} type="video/mp4" />
-                          <source src={videoUrl} type="video/webm" />
-                          <source src={videoUrl} type="video/ogg" />
                           Your browser does not support the video tag.
                         </video>
                       ))}
@@ -640,7 +490,6 @@ export default function PostPage() {
           
           {/* Action Buttons */}
           <div className="space-y-3 pt-3 border-t border-gray-100">
-            {/* Main Action Buttons */}
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-1">
                 <Button
@@ -670,7 +519,6 @@ export default function PostPage() {
                 </Button>
               </div>
               
-              {/* Tip Button - Separate from main actions */}
               {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
                 <Button
                   variant="ghost"
@@ -684,7 +532,6 @@ export default function PostPage() {
               )}
             </div>
             
-            {/* Views and Timestamp - Separate row for better mobile layout */}
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
               <div className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
@@ -713,9 +560,7 @@ export default function PostPage() {
                 <CardContent className="p-4">
                   <div className="flex items-start space-x-3">
                     <Avatar className="w-10 h-10 flex-shrink-0">
-                      <AvatarImage 
-                        src={getAvatarUrl(comment.author.avatar)} 
-                      />
+                      <AvatarImage src={getAvatarUrl(comment.author.avatar)} />
                       <AvatarFallback className="bg-emerald-100 text-emerald-700">
                         {(comment.author.displayName || comment.author.username || "U")
                           .split(' ')
@@ -761,15 +606,7 @@ export default function PostPage() {
                             <span>Reply</span>
                           </Button>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-                        >
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
                       </div>
-                      {/* Reply input box */}
                       {replyingTo === comment.id && (
                         <div className="mt-3 space-y-2">
                           <Textarea
@@ -784,8 +621,8 @@ export default function PostPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                setReplyingTo(null);
-                                setReplyText("");
+                                setReplyingTo(null)
+                                setReplyText("")
                               }}
                             >
                               Cancel
@@ -794,9 +631,9 @@ export default function PostPage() {
                               size="sm"
                               onClick={async () => {
                                 if (replyText.trim()) {
-                                  await handleCommentReply(comment.id, replyText);
-                                  setReplyingTo(null);
-                                  setReplyText("");
+                                  await handleCommentReply(comment.id, replyText)
+                                  setReplyingTo(null)
+                                  setReplyText("")
                                 }
                               }}
                               disabled={!replyText.trim()}
@@ -806,115 +643,6 @@ export default function PostPage() {
                               Reply
                             </Button>
                           </div>
-                        </div>
-                      )}
-                      {/* Render nested replies */}
-                      {comment.replies && comment.replies.length > 0 && (
-                        <div className="mt-4 space-y-3">
-                          {comment.replies.map((reply) => (
-                            <div key={reply.id} className="pl-12 border-l-2 border-gray-100">
-                              <div className="flex items-start space-x-3">
-                                <Avatar className="w-8 h-8 flex-shrink-0">
-                                  <AvatarImage 
-                                    src={getAvatarUrl(reply.author.avatar)} 
-                                  />
-                                  <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
-                                    {(reply.author.displayName || reply.author.username || "U")
-                                      .split(' ')
-                                      .map((n) => n[0])
-                                      .join('')}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex-1">
-                                  <div className="flex items-center space-x-2 mb-1">
-                                    <h5 className="font-semibold text-gray-900 text-sm">
-                                      {reply.author.displayName}
-                                    </h5>
-                                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
-                                      L{reply.author.level}
-                                    </Badge>
-                                    <span className="text-xs text-gray-500">@{reply.author.username}</span>
-                                    <span className="text-gray-400">•</span>
-                                    <span className="text-xs text-gray-500">{formatTimestamp(reply.createdAt)}</span>
-                                  </div>
-                                  <p className="text-gray-800 text-sm mb-2 leading-relaxed">{reply.content}</p>
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center space-x-3">
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => handleCommentLike(reply.id)}
-                                        className={`flex items-center space-x-1 text-xs h-7 px-2 rounded-full ${
-                                          reply.isLiked
-                                            ? 'text-red-500 hover:text-red-600 hover:bg-red-50'
-                                            : 'text-gray-500 hover:text-red-500 hover:bg-gray-50'
-                                        }`}
-                                      >
-                                        <Heart className={`w-3 h-3 ${reply.isLiked ? 'fill-current' : ''}`} />
-                                        <span>{reply.likesCount}</span>
-                                      </Button>
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => setReplyingTo(replyingTo === reply.id ? null : reply.id)}
-                                        className="flex items-center space-x-1 text-xs h-7 px-2 rounded-full text-gray-500 hover:text-blue-500 hover:bg-blue-50"
-                                      >
-                                        <MessageCircle className="w-3 h-3" />
-                                        <span>Reply</span>
-                                      </Button>
-                                    </div>
-                                    <Button
-                                      variant="ghost"
-                                      size="sm"
-                                      className="h-7 w-7 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-                                    >
-                                      <MoreHorizontal className="w-3 h-3" />
-                                    </Button>
-                                  </div>
-                                  {/* Reply input box for nested comments */}
-                                  {replyingTo === reply.id && (
-                                    <div className="mt-3 space-y-2">
-                                      <Textarea
-                                        value={replyText}
-                                        onChange={(e) => setReplyText(e.target.value)}
-                                        placeholder="Write a reply..."
-                                        className="min-h-[60px] resize-none border-gray-200 text-sm"
-                                        rows={2}
-                                      />
-                                      <div className="flex justify-end space-x-2">
-                                        <Button
-                                          variant="outline"
-                                          size="sm"
-                                          onClick={() => {
-                                            setReplyingTo(null);
-                                            setReplyText("");
-                                          }}
-                                          className="text-xs"
-                                        >
-                                          Cancel
-                                        </Button>
-                                        <Button
-                                          size="sm"
-                                          onClick={async () => {
-                                            if (replyText.trim()) {
-                                              await handleCommentReply(comment.id, replyText);
-                                              setReplyingTo(null);
-                                              setReplyText("");
-                                            }
-                                          }}
-                                          disabled={!replyText.trim()}
-                                          className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs"
-                                        >
-                                          <Send className="w-3 h-3 mr-1" />
-                                          Reply
-                                        </Button>
-                                      </div>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ))}
                         </div>
                       )}
                     </div>
@@ -930,9 +658,7 @@ export default function PostPage() {
           <CardContent className="p-4">
             <div className="flex items-start space-x-3">
               <Avatar className="w-10 h-10 flex-shrink-0">
-                <AvatarImage 
-                  src={getAvatarUrl(user?.avatar)} 
-                />
+                <AvatarImage src={getAvatarUrl(user?.avatar)} />
                 <AvatarFallback className="bg-emerald-100 text-emerald-700">
                   {(user?.displayName || "U")
                     .split(' ')
@@ -985,11 +711,10 @@ export default function PostPage() {
           currentUserId={user.username}
           currentUserBalance={user.demoWalletBalance || 0}
           onTipSent={() => {
-            console.log('Post author data for tip:', post.author);
             toast({
               title: "Tip sent!",
               description: `Successfully tipped ${post.author?.displayName || post.author?.username}`,
-            });
+            })
           }}
         />
       )}
