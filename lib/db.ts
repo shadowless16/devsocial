@@ -31,6 +31,11 @@ if (!cached) {
   cached = global.mongoose = { conn: null, promise: null }
 }
 
+type CachedConnection = {
+  conn: typeof mongoose | null
+  promise: Promise<typeof mongoose> | null
+}
+
 async function connectDB() {
   // In test environment, if mongoose is already connected, return existing connection
   if (process.env.NODE_ENV === 'test' && mongoose.connection.readyState === 1) {
@@ -57,9 +62,6 @@ async function connectDB() {
     }
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts)
-      .then((mongoose) => {
-        return mongoose
-      })
       .catch(async (error) => {
         cached.promise = null
         console.error('MongoDB connection failed, retrying...', error.message)
