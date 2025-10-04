@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import { connectWithRetry } from '@/lib/connect-with-retry'
 import User from '@/models/User'
 import UserStats from '@/models/UserStats'
 import Referral from '@/models/Referral'
@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json(cached)
     }
   
-    await connectDB()
+    await connectWithRetry()
 
     let leaderboard: any[] = []
 

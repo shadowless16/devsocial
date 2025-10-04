@@ -44,27 +44,40 @@ async function connectDB() {
   if (!cached.promise) {
     const opts = {
       bufferCommands: false,
-      maxPoolSize: 20, // Increased pool size
-      minPoolSize: 2, // Reduced min pool size
-      serverSelectionTimeoutMS: 10000, // Reduced to 10 seconds
-      socketTimeoutMS: 45000, // Increased socket timeout
-      connectTimeoutMS: 10000, // Reduced connection timeout
-      maxIdleTimeMS: 60000, // Increased idle time
+      maxPoolSize: 10,
+      minPoolSize: 1,
+      serverSelectionTimeoutMS: 30000,
+      socketTimeoutMS: 60000,
+      connectTimeoutMS: 30000,
+      maxIdleTimeMS: 300000,
       retryWrites: true,
       retryReads: true,
-      readPreference: 'primaryPreferred' as const, // Allow secondary reads
-      heartbeatFrequencyMS: 30000, // Reduced heartbeat frequency
-      compressors: ['zlib'] as ('none' | 'zlib' | 'snappy' | 'zstd')[], // Enable compression
-      zlibCompressionLevel: 6 as 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+      readPreference: 'primary' as const,
+      heartbeatFrequencyMS: 10000
     }
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts) as any
+    cached.promise = mongoose.connect(MONGODB_URI!, opts)
+      .then((mongoose) => {
+        return { conn: mongoose, promise: null }
+      })
+      .catch(async (error) => {
+        cached.promise = null
+        console.error('MongoDB connection failed, retrying...', error.message)
+        
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        
+        const retryConnection = await mongoose.connect(MONGODB_URI!, opts)
+        return { conn: retryConnection, promise: null }
+      })
   }
 
   try {
-    cached.conn = await cached.promise
+    const result = await cached.promise
+    cached.conn = result.conn
+    console.log('MongoDB connected successfully')
   } catch (e) {
     cached.promise = null
+    console.error('MongoDB connection failed:', e)
     throw e
   }
 

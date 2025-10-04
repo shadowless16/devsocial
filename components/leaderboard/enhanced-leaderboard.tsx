@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -32,15 +32,111 @@ interface LeaderboardEntry {
 }
 
 const leaderboardTypes = [
-  { key: "all-time", label: "All Time", icon: Trophy },
   { key: "weekly", label: "This Week", icon: TrendingUp },
   { key: "monthly", label: "This Month", icon: Medal },
+  { key: "all-time", label: "All Time", icon: Trophy },
   { key: "referrals", label: "Referrals", icon: Users },
   { key: "challenges", label: "Challenges", icon: Target },
 ]
 
+const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStatLabel }: {
+  leaderboard: LeaderboardEntry[]
+  activeTab: string
+  getStatValue: (entry: LeaderboardEntry, type: string) => number
+  getStatLabel: (type: string) => string
+}) => {
+  if (leaderboard.length === 0) {
+    return (
+      <div className="mt-4">
+        <div className="text-center py-6">
+          <Trophy className="w-8 h-8 text-gray-400 mx-auto mb-3" />
+          <p className="text-sm text-gray-500">No data available</p>
+          <p className="text-xs text-gray-400">Be the first to appear!</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div className="mt-3 sm:mt-4">
+      <div className="space-y-1.5 sm:space-y-2">
+        {leaderboard.map((entry, index) => {
+          const position = index + 1
+          return (
+            <div
+              key={entry._id}
+              className={`flex items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border transition-all w-full ${
+                position <= 3
+                  ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
+                  : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+              }`}
+            >
+              {/* Rank */}
+              <div className="flex-shrink-0 w-5 sm:w-6 flex justify-center">
+                {position <= 3 ? (
+                  position === 1 ? <Crown className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" /> :
+                  position === 2 ? <Medal className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" /> :
+                  <Award className="w-3 h-3 sm:w-4 sm:h-4 text-amber-600" />
+                ) : (
+                  <span className="text-[10px] sm:text-xs font-bold text-gray-500">#{position}</span>
+                )}
+              </div>
+
+              {/* Avatar */}
+              <UserLink username={entry.user.username}>
+                <Avatar className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0">
+                  <AvatarImage src={getAvatarUrl(entry.user.avatar) || "/placeholder.svg"} />
+                  <AvatarFallback className="text-[10px] sm:text-xs">
+                    {(entry.user.displayName || entry.user.username || 'U')
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+                  </AvatarFallback>
+                </Avatar>
+              </UserLink>
+
+              {/* User Info */}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1 sm:gap-2">
+                  <UserLink username={entry.user.username}>
+                    <h3 className="font-medium text-[11px] sm:text-xs text-gray-900 truncate">
+                      {entry.user.displayName || entry.user.username}
+                    </h3>
+                  </UserLink>
+                  <Badge variant="outline" className="text-[8px] sm:text-[9px] text-emerald-600 border-emerald-200 px-1 py-0 flex-shrink-0">
+                    L{entry.user.level}
+                  </Badge>
+                </div>
+                <UserLink username={entry.user.username}>
+                  <p className="text-[9px] sm:text-[10px] text-gray-500 truncate">
+                    @{entry.user.username}
+                  </p>
+                </UserLink>
+              </div>
+
+              {/* Stats */}
+              <div className="text-right flex-shrink-0 min-w-0">
+                <div className="flex items-center justify-end gap-0.5 sm:gap-1">
+                  <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 flex-shrink-0" />
+                  <span className="font-bold text-[10px] sm:text-xs text-gray-900">
+                    {getStatValue(entry, activeTab) > 999 
+                      ? `${(getStatValue(entry, activeTab) / 1000).toFixed(1)}k`
+                      : getStatValue(entry, activeTab).toLocaleString()
+                    }
+                  </span>
+                </div>
+                <p className="text-[8px] sm:text-[9px] text-gray-500">{getStatLabel(activeTab)}</p>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+})
+
 export function EnhancedLeaderboard() {
-  const [activeTab, setActiveTab] = useState("all-time")
+  const [activeTab, setActiveTab] = useState("weekly")
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -57,7 +153,7 @@ export function EnhancedLeaderboard() {
     }
   }, [realtimeData])
 
-  const fetchLeaderboard = async (type: string) => {
+  const fetchLeaderboard = useCallback(async (type: string) => {
     setLoading(true)
     try {
       const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
@@ -70,7 +166,7 @@ export function EnhancedLeaderboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
   const getRankIcon = (position: number) => {
     switch (position) {
@@ -93,7 +189,7 @@ export function EnhancedLeaderboard() {
     return "bg-gray-100 text-gray-700"
   }
 
-  const getStatLabel = (type: string) => {
+  const getStatLabel = useCallback((type: string) => {
     switch (type) {
       case "referrals":
         return "Referrals"
@@ -102,9 +198,9 @@ export function EnhancedLeaderboard() {
       default:
         return "XP"
     }
-  }
+  }, [])
 
-  const getStatValue = (entry: LeaderboardEntry, type: string) => {
+  const getStatValue = useCallback((entry: LeaderboardEntry, type: string) => {
     switch (type) {
       case "referrals":
         return entry.referralCount || 0
@@ -113,34 +209,35 @@ export function EnhancedLeaderboard() {
       default:
         return entry.totalXP
     }
-  }
+  }, [])
 
   if (loading) {
     return <LeaderboardSkeleton />
   }
 
   return (
-    <Card className="w-full">
-      <CardHeader>
+    <Card className="w-full border-0 shadow-sm">
+      <CardHeader className="pb-2 sm:pb-4">
         <div className="flex items-center justify-between">
           <div className="min-w-0 flex-1">
-            <CardTitle className="flex items-center space-x-2 truncate">
+            <CardTitle className="flex items-center gap-1.5 sm:gap-2">
               <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-500 flex-shrink-0" />
-              <span className="text-base sm:text-lg truncate">Leaderboard</span>
+              <span className="text-sm sm:text-base md:text-lg font-bold">Leaderboard</span>
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm truncate">
+            <CardDescription className="text-[10px] sm:text-xs md:text-sm mt-0.5">
               <span className="hidden sm:inline">Top performers in the DevSocial community</span>
               <span className="sm:hidden">Top performers</span>
-              {isConnected && <span className="text-green-500 ml-2">• Live</span>}
+              {isConnected && <span className="text-green-500 ml-1 sm:ml-2">• Live</span>}
             </CardDescription>
           </div>
         </div>
       </CardHeader>
 
-      <CardContent className="px-2 sm:px-6">
+      <CardContent className="px-3 sm:px-4 md:px-6 pb-4">
         <div className="w-full">
-          <div className="flex overflow-x-auto scrollbar-hide mb-4">
-            <div className="flex space-x-1 min-w-max">
+          {/* Mobile-optimized tabs */}
+          <div className="overflow-x-auto scrollbar-hide mb-3 sm:mb-4">
+            <div className="flex gap-1 sm:gap-2 min-w-max pb-1">
               {leaderboardTypes.map((type) => {
                 const Icon = type.icon
                 const isActive = activeTab === type.key
@@ -148,101 +245,32 @@ export function EnhancedLeaderboard() {
                   <button
                     key={type.key}
                     onClick={() => setActiveTab(type.key)}
-                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg text-xs font-medium transition-colors whitespace-nowrap ${
+                    className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${
                       isActive 
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' 
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 shadow-sm' 
                         : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                     }`}
                   >
-                    <Icon className="w-3 h-3" />
+                    <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
                     <span className="hidden sm:inline">{type.label}</span>
-                    <span className="sm:hidden">{type.key === 'all-time' ? 'All' : type.key === 'weekly' ? 'Week' : type.key === 'monthly' ? 'Month' : type.key === 'referrals' ? 'Refs' : 'Quest'}</span>
+                    <span className="sm:hidden">
+                      {type.key === 'weekly' ? 'Week' : 
+                       type.key === 'monthly' ? 'Month' : 
+                       type.key === 'all-time' ? 'All' : 
+                       type.key === 'referrals' ? 'Refs' : 'Quest'}
+                    </span>
                   </button>
                 )
               })}
             </div>
           </div>
 
-          {activeTab && (
-            <div className="mt-4">
-              {leaderboard.length === 0 ? (
-                <div className="text-center py-6">
-                  <Trophy className="w-8 h-8 text-gray-400 mx-auto mb-3" />
-                  <p className="text-sm text-gray-500">No data available</p>
-                  <p className="text-xs text-gray-400">Be the first to appear!</p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {leaderboard.map((entry, index) => {
-                    const position = index + 1
-                    return (
-                      <div
-                        key={entry._id}
-                        className={`flex items-center space-x-2 p-2 rounded-lg border transition-all w-full ${
-                          position <= 3
-                            ? "bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-200 dark:from-yellow-900/20 dark:to-amber-900/20 dark:border-yellow-700/30"
-                            : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
-                        }`}
-                      >
-                        {/* Rank */}
-                        <div className="flex-shrink-0 w-6">
-                          {position <= 3 ? (
-                            position === 1 ? <Crown className="w-4 h-4 text-yellow-500" /> :
-                            position === 2 ? <Medal className="w-4 h-4 text-gray-400" /> :
-                            <Award className="w-4 h-4 text-amber-600" />
-                          ) : (
-                            <span className="text-xs font-bold text-gray-500">#{position}</span>
-                          )}
-                        </div>
-
-                        {/* Avatar */}
-                        <UserLink username={entry.user.username}>
-                          <Avatar className="w-8 h-8">
-                            <AvatarImage src={getAvatarUrl(entry.user.avatar) || "/placeholder.svg"} />
-                            <AvatarFallback className="text-xs">
-                              {(entry.user.displayName || entry.user.username || 'U')
-                                .split(" ")
-                                .map((n) => n[0])
-                                .join("")}
-                            </AvatarFallback>
-                          </Avatar>
-                        </UserLink>
-
-                        {/* User Info */}
-                        <div className="flex-1 min-w-0 overflow-hidden">
-                          <div className="flex items-center space-x-1 overflow-hidden">
-                            <UserLink username={entry.user.username}>
-                              <h3 className="font-medium text-xs text-gray-900 truncate max-w-[80px]">{entry.user.displayName || entry.user.username}</h3>
-                            </UserLink>
-                            <Badge variant="outline" className="text-[9px] text-emerald-600 border-emerald-200 px-1 py-0 flex-shrink-0">
-                              L{entry.user.level}
-                            </Badge>
-                          </div>
-                          <UserLink username={entry.user.username}>
-                            <p className="text-[10px] text-gray-500 truncate max-w-[80px]">@{entry.user.username}</p>
-                          </UserLink>
-                        </div>
-
-                        {/* Stats */}
-                        <div className="text-right flex-shrink-0">
-                          <div className="flex items-center space-x-1">
-                            <Zap className="w-3 h-3 text-yellow-500 flex-shrink-0" />
-                            <span className="font-bold text-xs text-gray-900 truncate">
-                              {getStatValue(entry, activeTab) > 999 
-                                ? `${(getStatValue(entry, activeTab) / 1000).toFixed(1)}k`
-                                : getStatValue(entry, activeTab)
-                              }
-                            </span>
-                          </div>
-                          <p className="text-[9px] text-gray-500 truncate">{getStatLabel(activeTab)}</p>
-                        </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
-          )}
+          <LeaderboardContent 
+            leaderboard={leaderboard} 
+            activeTab={activeTab} 
+            getStatValue={getStatValue}
+            getStatLabel={getStatLabel}
+          />
         </div>
       </CardContent>
     </Card>

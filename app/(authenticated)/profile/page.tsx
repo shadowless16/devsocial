@@ -1,224 +1,359 @@
 "use client"
 
 import React, { useState, useEffect } from 'react'
-import { User, Activity, TrendingUp, Shield, Wallet } from 'lucide-react'
-import { TransactionHistory } from '@/components/transactions/transaction-history'
-import { WalletBalanceDisplay } from '@/components/transactions/wallet-balance-display'
+import { MapPin, Calendar, Edit2, Trophy, Target, Users, MessageCircle } from 'lucide-react'
 import { useAuth } from '@/contexts/app-context'
 import { useWebSocket } from '@/contexts/websocket-context'
-import ProfileHeader from '@/components/profile/ProfileHeader'
-import ProfileStats from '@/components/profile/ProfileStats'
-import ActivityFeed from '@/components/profile/ActivityFeed'
-import SkillProgress from '@/components/profile/SkillProgress'
-import PrivacySettings from '@/components/profile/PrivacySettings'
 import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { FollowStats } from '@/components/shared/FollowStats'
+import { useRouter } from 'next/navigation'
+import dynamic from 'next/dynamic'
+
+const EditProfileModal = dynamic(() => import('@/components/modals/edit-profile-modal'), {
+  ssr: false
+})
+
+const SmartAvatar = dynamic(() => import('@/components/ui/smart-avatar').then(mod => ({ default: mod.SmartAvatar })), {
+  ssr: false,
+  loading: () => (
+    <Avatar className="w-20 h-20 border-4 border-white shadow-lg">
+      <AvatarFallback className="text-xl">...</AvatarFallback>
+    </Avatar>
+  )
+})
 
 export default function MyProfile() {
   const { user, loading: authLoading } = useAuth()
   const { socket } = useWebSocket()
-  const [activeTab, setActiveTab] = useState('overview')
+  const router = useRouter()
+  const [activeTab, setActiveTab] = useState('posts')
   const [profileData, setProfileData] = useState<any>(null)
-  const [statsData, setStatsData] = useState<any>(null)
-  const [activitiesData, setActivitiesData] = useState<any[]>([])
+  const [showEditModal, setShowEditModal] = useState(false)
+  const [userPosts, setUserPosts] = useState<any[]>([])
+  const [userStats, setUserStats] = useState<any>(null)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    if (authLoading) {
-      // Don't do anything while auth is loading.
-      // The loading skeleton will be shown.
-      return;
-    }
-    if (!user) {
-      // If the user is not logged in, we shouldn't be fetching data.
-      // The component will render a "please log in" message.
-      setProfileData(null);
-      setStatsData(null);
-      setActivitiesData([]);
-      return;
-    }
+    if (authLoading || !user) return
 
-    const fetchPageData = async () => {
+    const fetchProfileData = async () => {
+      setIsLoading(true)
       try {
-        // Fetch fresh user data to get latest follower counts etc.
-        const profileResponse = await fetch('/api/users/profile');
-        let userForProfile = user; // Fallback to user from auth context
+        const [profileRes, postsRes, statsRes] = await Promise.all([
+          fetch('/api/users/profile'),
+          fetch('/api/posts?limit=50'),
+          fetch('/api/profile/stats')
+        ])
 
-        if (profileResponse.ok) {
-          const profileResult = await profileResponse.json();
-          if (profileResult.success) {
-            userForProfile = profileResult.data.user;
+        if (profileRes.ok) {
+          const { data } = await profileRes.json()
+          setProfileData({
+            ...data.user,
+            name: data.user?.displayName || data.user?.username || "User",
+            joinDate: new Date(data.user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+          })
+        }
+
+        if (postsRes.ok) {
+          const response = await postsRes.json()
+          
+          if (response.success && response.data?.posts) {
+            const userSpecificPosts = response.data.posts.filter((post: any) => {
+              const authorId = post.author?.id || post.author?._id
+              const userId = user.id || (user as any)._id
+              return authorId === userId
+            })
+            setUserPosts(userSpecificPosts)
           }
         }
 
-        // Try to fetch an authoritative follower count from the followers endpoint
-        let authoritativeFollowers = (userForProfile as any)?.followersCount || 0;
-        try {
-          const username = userForProfile?.username;
-          if (username) {
-            const followersResp = await fetch(`/api/users/${encodeURIComponent(username)}/followers?limit=1`);
-            if (followersResp.ok) {
-              const followersJson = await followersResp.json();
-              const total = followersJson?.data?.pagination?.totalCount;
-              if (typeof total === 'number') authoritativeFollowers = total;
-            }
-          }
-        } catch (err) {
-          console.warn('Could not fetch authoritative followers count:', err);
+        if (statsRes.ok) {
+          const { stats } = await statsRes.json()
+          setUserStats(stats)
         }
-
-        const formattedProfileData = {
-          name: userForProfile?.displayName || userForProfile?.username || "User",
-          title: "Full Stack Developer",
-          location: userForProfile?.location || "Unknown",
-          joinDate: new Date((userForProfile as any)?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }),
-          bio: userForProfile?.bio || `Passionate developer building amazing applications and contributing to the community.`,
-          avatar: userForProfile?.avatar || "/placeholder.svg",
-          techStack: (userForProfile as any)?.techStack || ["JavaScript", "React", "Node.js", "TypeScript"],
-          socialLinks: [
-            { platform: "GitHub", icon: "Github", url: (userForProfile as any)?.githubUsername ? `https://github.com/${(userForProfile as any).githubUsername}` : "#" },
-            { platform: "LinkedIn", icon: "Linkedin", url: (userForProfile as any)?.linkedinUrl || "#" },
-            { platform: "Portfolio", icon: "Globe", url: (userForProfile as any)?.portfolioUrl || "#" }
-          ].filter(link => link.url !== "#"),
-          userId: (userForProfile as any)?._id || (userForProfile as any)?.id,
-          username: userForProfile?.username,
-          // Use authoritative followers count when available to avoid stale DB field
-          followersCount: authoritativeFollowers || 0,
-          followingCount: (userForProfile as any)?.followingCount || 0,
-          isFollowing: false,
-          xp: (userForProfile as any)?.points || 0,
-          level: (userForProfile as any)?.level || 1,
-          badges: (userForProfile as any)?.badges || []
-        };
-        setProfileData(formattedProfileData);
-
-        // Fetch additional data like stats and activities in parallel
-        const [statsResponse, activitiesResponse] = await Promise.all([
-          fetch('/api/profile/stats'),
-          fetch('/api/profile/activity?limit=10')
-        ]);
-
-        if (statsResponse.ok) {
-          const { stats } = await statsResponse.json()
-          setStatsData(stats)
-        }
-
-        if (activitiesResponse.ok) {
-          const { activities } = await activitiesResponse.json()
-          setActivitiesData(activities)
-        }
-
       } catch (error) {
-        console.error('Error fetching profile page data:', error)
+        console.error('Error fetching profile data:', error)
+      } finally {
+        setIsLoading(false)
       }
     }
 
-    fetchPageData()
+    fetchProfileData()
   }, [user, authLoading])
 
-  // Listen for real-time updates
-  useEffect(() => {
-    if (!socket || !user) return
-
-    const handleNewActivity = (activity: any) => {
-      setActivitiesData(prev => [activity, ...prev.slice(0, 19)])
-    }
-
-    const handleXPUpdate = (data: any) => {
-      setProfileData((prev: any) => prev ? { ...prev, xp: data.newXP } : prev)
-      setStatsData((prev: any) => prev ? { ...prev, totalXP: data.newXP } : prev)
-    }
-
-    socket.on('activity:new', handleNewActivity)
-    socket.on('xp:updated', handleXPUpdate)
-
-    return () => {
-      socket.off('activity:new', handleNewActivity)
-      socket.off('xp:updated', handleXPUpdate)
-    }
-  }, [socket, user])
-
-  const handlePrivacySettingsChange = (newSettings: any) => {
-    console.log('Privacy settings updated:', newSettings)
+  const handlePostClick = (postId: string) => {
+    router.push(`/post/${postId}`)
   }
 
-  const tabOptions = [
-    { id: 'overview', label: 'Overview', icon: User },
-    { id: 'activity', label: 'Activity', icon: Activity },
-    { id: 'skills', label: 'Skills', icon: TrendingUp },
-    { id: 'wallet', label: 'Wallet', icon: Wallet },
-    { id: 'privacy', label: 'Privacy', icon: Shield }
+  const tabs = [
+    { id: 'posts', label: 'Posts', count: userPosts.length },
+    { id: 'media', label: 'Media', count: userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length },
+    { id: 'likes', label: 'Likes', count: userStats?.totalLikes || 0 }
   ]
 
-  if (authLoading) {
+  if (authLoading || isLoading) {
     return <ProfileSkeleton />
   }
 
-  if (!user || !profileData) {
+  if (!user) {
     return (
-      <div className="flex flex-col items-center justify-center h-full text-center">
-        <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">
+      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
+        <p className="text-lg text-muted-foreground mb-4">
           Please log in to view your profile.
         </p>
         <Button onClick={() => window.location.href = '/auth/login'}>
           Go to Login
         </Button>
       </div>
-    );
+    )
   }
 
   return (
-    <div className="w-full max-w-full py-4 sm:py-6 px-1 sm:px-4 overflow-hidden">
-      <ProfileHeader 
-        profile={profileData} 
-        onEdit={() => {}} 
-        isOwnProfile={true} 
-        setProfileData={setProfileData}
-      />
-      
-      <div className="mt-6">
-        <div className="border-b border-gray-200 dark:border-gray-700">
-          <nav className="-mb-px flex space-x-6" aria-label="Tabs">
-            {tabOptions.map((tab) => (
+    <div className="w-full max-w-4xl mx-auto">
+      {/* Cover Photo Area */}
+      <div className="h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+        <div className="absolute inset-0 bg-black/20" />
+      </div>
+
+      {/* Profile Info */}
+      <div className="px-4 pb-4">
+        {/* Avatar and Edit Button */}
+        <div className="flex justify-between items-start -mt-16 mb-4">
+          <SmartAvatar 
+            src={profileData?.avatar} 
+            alt={profileData?.name || 'User'}
+            fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+            className="w-32 h-32 border-4 border-white shadow-xl"
+            size={128}
+          />
+          <Button 
+            variant="outline" 
+            className="mt-16 bg-white hover:bg-gray-50"
+            onClick={() => setShowEditModal(true)}
+          >
+            <Edit2 size={16} className="mr-2" />
+            Edit profile
+          </Button>
+        </div>
+
+        {/* Name and Bio */}
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-foreground mb-1">
+            {profileData?.name || user?.displayName || user?.username || 'User'}
+          </h1>
+          <p className="text-muted-foreground mb-3">
+            @{profileData?.username || user?.username}
+          </p>
+          {profileData?.bio && (
+            <p className="text-foreground mb-3 leading-relaxed">
+              {profileData.bio}
+            </p>
+          )}
+          
+          {/* Location and Join Date */}
+          <div className="flex items-center gap-4 text-muted-foreground text-sm mb-3">
+            {profileData?.location && (
+              <div className="flex items-center gap-1">
+                <MapPin size={16} />
+                <span>{profileData.location}</span>
+              </div>
+            )}
+            <div className="flex items-center gap-1">
+              <Calendar size={16} />
+              <span>Joined {profileData?.joinDate || 'Recently'}</span>
+            </div>
+          </div>
+
+          {/* Tech Stack */}
+          {profileData?.techStack && profileData.techStack.length > 0 && (
+            <div className="flex flex-wrap gap-2 mb-4">
+              {profileData.techStack.slice(0, 5).map((tech: string, index: number) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {tech}
+                </Badge>
+              ))}
+              {profileData.techStack.length > 5 && (
+                <Badge variant="outline" className="text-xs">
+                  +{profileData.techStack.length - 5} more
+                </Badge>
+              )}
+            </div>
+          )}
+
+          {/* Stats Row */}
+          <div className="flex items-center gap-6 mb-4">
+            {profileData?.userId && profileData?.username && (
+              <FollowStats
+                userId={profileData.userId}
+                username={profileData.username}
+                initialFollowersCount={profileData.followersCount || 0}
+                initialFollowingCount={profileData.followingCount || 0}
+                className="text-sm"
+              />
+            )}
+            
+            {/* XP and Level */}
+            <div className="flex items-center gap-4">
+              {profileData?.points && (
+                <div className="flex items-center gap-1">
+                  <Trophy size={16} className="text-yellow-500" />
+                  <span className="font-semibold">{profileData.points}</span>
+                  <span className="text-muted-foreground text-sm">XP</span>
+                </div>
+              )}
+              {profileData?.level && (
+                <Badge variant="default" className="bg-blue-500">
+                  Level {profileData.level}
+                </Badge>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="border-b border-border">
+          <nav className="flex">
+            {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${
+                className={`flex-1 py-4 px-1 text-center font-medium text-sm transition-colors ${
                   activeTab === tab.id
-                    ? 'border-indigo-500 text-indigo-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-200 dark:hover:border-gray-600'
+                    ? 'text-foreground border-b-2 border-primary'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <tab.icon className="inline-block w-5 h-5 mr-2" />
                 {tab.label}
+                {tab.count > 0 && (
+                  <span className="ml-1 text-xs text-muted-foreground">
+                    ({tab.count})
+                  </span>
+                )}
               </button>
             ))}
           </nav>
         </div>
+
+        {/* Tab Content */}
+        <div className="mt-6">
+          {activeTab === 'posts' && (
+            <div className="space-y-4">
+              {userPosts.length > 0 ? (
+                userPosts.map((post) => (
+                  <div 
+                    key={post._id || post.id} 
+                    className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                    onClick={() => handlePostClick(post._id || post.id)}
+                  >
+                    <div className="flex items-start gap-3">
+                      <SmartAvatar 
+                        src={profileData?.avatar} 
+                        alt={profileData?.name || 'User'}
+                        fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                        className="w-10 h-10"
+                        size={40}
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <span className="font-semibold">{profileData?.name || 'User'}</span>
+                          <span className="text-muted-foreground text-sm">@{profileData?.username || 'user'}</span>
+                          <span className="text-muted-foreground text-sm">·</span>
+                          <span className="text-muted-foreground text-sm">
+                            {new Date(post.createdAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        <p className="text-foreground mb-3">{post.content}</p>
+                        
+                        {/* Media Preview */}
+                        {(post.imageUrl || post.imageUrls?.length > 0) && (
+                          <div className="mb-3">
+                            <img 
+                              src={post.imageUrl || post.imageUrls?.[0]} 
+                              alt="Post media" 
+                              className="w-full max-w-md h-32 object-cover rounded-lg"
+                            />
+                          </div>
+                        )}
+                        
+                        <div className="flex items-center gap-6 text-muted-foreground text-sm">
+                          <div className="flex items-center gap-1">
+                            <MessageCircle size={16} />
+                            <span>{post.commentsCount || 0}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Trophy size={16} />
+                            <span>{post.likesCount || 0}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-12">
+                  <MessageCircle size={48} className="mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No posts yet</h3>
+                  <p className="text-muted-foreground">Start sharing your thoughts with the community!</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'media' && (
+            <div className="space-y-4">
+              {userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length > 0 ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                  {userPosts
+                    .filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length)
+                    .map((post) => (
+                      <div 
+                        key={post._id || post.id}
+                        className="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => handlePostClick(post._id || post.id)}
+                      >
+                        <img 
+                          src={post.imageUrl || post.imageUrls?.[0]} 
+                          alt="Media post" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ))
+                  }
+                </div>
+              ) : (
+                <div className="text-center py-12">
+                  <Target size={48} className="mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">No media yet</h3>
+                  <p className="text-muted-foreground">Photos and videos you share will appear here.</p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {activeTab === 'likes' && (
+            <div className="text-center py-12">
+              <Trophy size={48} className="mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No likes yet</h3>
+              <p className="text-muted-foreground">Posts you like will appear here.</p>
+            </div>
+          )}
+        </div>
       </div>
 
-      <div className="mt-6">
-        {activeTab === 'overview' && (
-          <div className="flex flex-col gap-6">
-            <ProfileStats stats={statsData} />
-            <ActivityFeed activities={activitiesData} />
-          </div>
-        )}
-        {activeTab === 'activity' && <ActivityFeed activities={activitiesData} />}
-        {/* The skillsData and privacySettings are not being fetched from the API, so I'm removing them for now. */}
-        {/* {activeTab === 'skills' && skillsData && <SkillProgress skills={skillsData} />} */}
-        {activeTab === 'wallet' && (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <WalletBalanceDisplay />
-            <TransactionHistory />
-          </div>
-        )}
-        {/* {activeTab === 'privacy' && (
-          <PrivacySettings
-            settings={privacySettings}
-            onSettingsChange={handlePrivacySettingsChange}
-          />
-        )} */}
-      </div>
+      {showEditModal && profileData && (
+        <EditProfileModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          profile={profileData}
+          onSave={(data) => {
+            setProfileData((prev: any) => ({ ...prev, ...data }))
+            setShowEditModal(false)
+          }}
+        />
+      )}
     </div>
   )
 }

@@ -4,11 +4,11 @@
 import React, { useState, useRef } from "react";
 import { X, ImageIcon, Video, Hash, Smile, Code } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
+import { MentionInput } from "@/components/ui/mention-input";
 
 interface SimplePostModalProps {
   isOpen: boolean;
@@ -232,12 +232,11 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         <form onSubmit={handleSubmit} className="p-4">
           {/* Content Input */}
           <div className="mb-4">
-            <Textarea
+            <MentionInput
               placeholder="What's on your mind?"
               value={content}
-              onChange={(e) => handleContentChange(e.target.value)}
+              onChange={handleContentChange}
               className="min-h-[120px] resize-none border-0 text-lg placeholder:text-gray-500 focus-visible:ring-0 p-0"
-              maxLength={maxCharacters}
             />
             
             {/* Character Counter */}
@@ -402,12 +401,14 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                       className="fixed inset-0 z-40" 
                       onClick={() => setShowEmojiPicker(false)}
                     />
-                    <EmojiPicker
-                      onEmojiSelect={(emoji) => {
-                        setContent(prev => prev + emoji);
-                      }}
-                      onClose={() => setShowEmojiPicker(false)}
-                    />
+                    <div className="absolute bottom-12 left-0 z-50">
+                      <EmojiPicker
+                        onEmojiSelect={(emoji) => {
+                          setContent(prev => prev + emoji);
+                        }}
+                        onClose={() => setShowEmojiPicker(false)}
+                      />
+                    </div>
                   </>
                 )}
               </div>

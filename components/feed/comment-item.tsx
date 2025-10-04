@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatTimeAgo } from "@/utils/formatDate";
+import { EnhancedCommentInput } from "@/components/ui/enhanced-comment-input";
 
 interface Comment {
   id: string;
@@ -117,37 +118,16 @@ export function CommentItem({ comment, onLike, onReply, isReply = false, depth =
             </div>
 
             {showReplyInput && (
-              <div className="mt-3 flex items-start space-x-2">
-                <textarea
-                  className="flex-1 p-2 text-sm border border-gray-300 rounded-md resize-none focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Write a reply..."
-                  value={replyContent}
-                  onChange={(e) => setReplyContent(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      if (onReply && replyContent.trim()) {
-                        onReply(comment.id, replyContent.trim());
-                        setReplyContent("");
-                        setShowReplyInput(false);
-                      }
-                    }
-                  }}
-                  rows={2}
-                />
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (onReply && replyContent.trim()) {
-                      onReply(comment.id, replyContent.trim());
-                      setReplyContent("");
+              <div className="mt-3">
+                <EnhancedCommentInput
+                  placeholder={`Reply to @${comment.author.username}...`}
+                  onSubmit={(content) => {
+                    if (onReply) {
+                      onReply(comment.id, content);
                       setShowReplyInput(false);
                     }
                   }}
-                  disabled={!replyContent.trim()}
-                >
-                  Reply
-                </Button>
+                />
               </div>
             )}
 

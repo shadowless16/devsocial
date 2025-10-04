@@ -105,3 +105,11 @@ ngrok.exe
 # Development scripts (local only)
 dev-scripts/
 scripts/
+
+/scripts
+
+/__test__
+
+/.amazonq
+
+/test_documentation

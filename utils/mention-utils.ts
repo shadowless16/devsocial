@@ -18,12 +18,18 @@ export async function processMentions(
   await connectDB()
   
   const usernames = extractMentions(content)
-  if (usernames.length === 0) return
+  if (usernames.length === 0) return { mentions: [], mentionIds: [] }
+
+  const mentions: string[] = []
+  const mentionIds: string[] = []
 
   for (const username of usernames) {
     try {
       const mentionedUser = await User.findOne({ username })
       if (!mentionedUser || mentionedUser._id.toString() === mentionerId) continue
+
+      mentions.push(username)
+      mentionIds.push(mentionedUser._id.toString())
 
       // Create mention record
       await UserMention.create({
@@ -47,4 +53,6 @@ export async function processMentions(
       console.error(`Error processing mention for ${username}:`, error)
     }
   }
+
+  return { mentions, mentionIds }
 }

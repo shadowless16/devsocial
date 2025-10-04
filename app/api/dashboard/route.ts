@@ -11,13 +11,13 @@ import Comment from "@/models/Comment"
 import Activity from "@/models/Activity"
 import Notification from "@/models/Notification"
 import XPLog from "@/models/XPLog"
-import connectDB from "@/lib/db"
+import { connectWithRetry } from "@/lib/connect-with-retry"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 
 export async function GET(request: NextRequest) {
   try {
-    await connectDB()
+    await connectWithRetry()
 
     const session = await getServerSession(authOptions)
     if (!session?.user?.id) {

@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Textarea } from "@/components/ui/textarea"
 import { PostContent } from "@/components/shared/PostContent"
 import { PostAIActions } from "@/components/shared/PostAIActions"
+import { EnhancedCommentInput } from "@/components/ui/enhanced-comment-input"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
@@ -341,7 +342,7 @@ export default function PostPage() {
   const author = post.isAnonymous ? fallbackAuthor : (post.author || fallbackAuthor)
 
   return (
-    <div className="w-full min-w-0 max-w-2xl mx-auto px-4 py-4 space-y-4">
+    <div className="w-full min-w-0 max-w-4xl mx-auto px-4 py-4 space-y-4">
       {/* Back Button */}
       <div>
         <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2">
@@ -394,8 +395,6 @@ export default function PostPage() {
                         ? "Anonymous User"
                         : `@${author.username}`}
                     </span>
-                    <span className="flex-shrink-0">•</span>
-                    <span className="flex-shrink-0">{formatTimestamp(post.createdAt)}</span>
                   </div>
                 </div>
                 
@@ -608,41 +607,14 @@ export default function PostPage() {
                         </div>
                       </div>
                       {replyingTo === comment.id && (
-                        <div className="mt-3 space-y-2">
-                          <Textarea
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            placeholder="Write a reply..."
-                            className="min-h-[80px] resize-none border-gray-200"
-                            rows={3}
+                        <div className="mt-3">
+                          <EnhancedCommentInput
+                            placeholder={`Reply to @${comment.author.username}...`}
+                            onSubmit={async (content) => {
+                              await handleCommentReply(comment.id, content)
+                              setReplyingTo(null)
+                            }}
                           />
-                          <div className="flex justify-end space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                setReplyingTo(null)
-                                setReplyText("")
-                              }}
-                            >
-                              Cancel
-                            </Button>
-                            <Button
-                              size="sm"
-                              onClick={async () => {
-                                if (replyText.trim()) {
-                                  await handleCommentReply(comment.id, replyText)
-                                  setReplyingTo(null)
-                                  setReplyText("")
-                                }
-                              }}
-                              disabled={!replyText.trim()}
-                              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                            >
-                              <Send className="w-3 h-3 mr-1" />
-                              Reply
-                            </Button>
-                          </div>
                         </div>
                       )}
                     </div>
@@ -667,34 +639,34 @@ export default function PostPage() {
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <form onSubmit={handleCommentSubmit}>
-                  <Textarea
-                    placeholder="Write a comment..."
-                    value={newComment}
-                    onChange={(e) => setNewComment(e.target.value)}
-                    className="min-h-[100px] resize-none border-gray-200 mb-3"
-                    rows={4}
-                  />
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs text-gray-500">
-                      {newComment.length}/500 characters
-                    </span>
-                    <Button
-                      type="submit"
-                      disabled={!newComment.trim() || isSubmitting}
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                          Posting...
-                        </>
-                      ) : (
-                        'Post Comment'
-                      )}
-                    </Button>
-                  </div>
-                </form>
+                <EnhancedCommentInput
+                  placeholder="Write a comment..."
+                  onSubmit={async (content) => {
+                    setIsSubmitting(true)
+                    try {
+                      const response = await apiClient.createComment<{ comment: any }>(post.id, content)
+                      if (response.success && response.data) {
+                        const newCommentData = response.data.comment
+                        setComments(prev => [...prev, {
+                          ...newCommentData,
+                          id: newCommentData._id,
+                          likesCount: 0,
+                          replies: []
+                        }])
+                        setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : null)
+                      }
+                    } catch (error) {
+                      console.error("Failed to submit comment:", error)
+                      toast({
+                        title: "Failed to post comment",
+                        variant: "destructive",
+                      })
+                    } finally {
+                      setIsSubmitting(false)
+                    }
+                  }}
+                  disabled={isSubmitting}
+                />
               </div>
             </div>
           </CardContent>

@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import User, { IUser } from "@/models/User";
-import connectDB from "@/lib/db";
+import { connectWithRetry } from "@/lib/connect-with-retry";
 import { successResponse, errorResponse } from "@/utils/response";
 import logger from "@/lib/logger";
 
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
     logger.info('Profile API called, attempting DB connection');
     
     try {
-      await connectDB();
+      await connectWithRetry();
       logger.info('Database connected successfully');
     } catch (dbError: any) {
       logger.error('Database connection failed:', dbError.message);
@@ -78,7 +78,7 @@ export async function GET(req: NextRequest) {
 // --- PUT Handler ---
 export async function PUT(req: NextRequest) {
   try {
-    await connectDB();
+    await connectWithRetry();
     
     const session = await getServerSession(authOptions);
     if (!session || !session.user?.id) {

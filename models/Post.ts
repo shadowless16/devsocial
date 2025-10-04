@@ -10,6 +10,8 @@ export interface IPost extends Document {
   videoUrls?: string[]
   tags: string[]
   tagIds: mongoose.Types.ObjectId[]
+  mentions: string[]
+  mentionIds: mongoose.Types.ObjectId[]
   likesCount: number
   commentsCount: number
   viewsCount: number
@@ -74,6 +76,18 @@ const PostSchema = new Schema<IPost>(
       {
         type: Schema.Types.ObjectId,
         ref: "Tag",
+      },
+    ],
+    mentions: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    mentionIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
       },
     ],
     likesCount: {

@@ -1,6 +1,6 @@
 // app/api/posts/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/db";
+import { connectWithRetry } from "@/lib/connect-with-retry";
 import Post from "@/models/Post";
 import User from "@/models/User";
 import { getServerSession } from "next-auth";
@@ -49,7 +49,7 @@ export async function GET(req: NextRequest) {
       }
     }
 
-    await connectDB();
+    await connectWithRetry();
 
     // Get current user ID if authenticated
     let currentUserId = null;
@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
       ), { status: 400 });
     }
 
-    await connectDB();
+    await connectWithRetry();
 
     // Verify author exists
     const author = await User.findById(authorId);
@@ -218,11 +218,16 @@ export async function POST(req: NextRequest) {
       tagIds = await findOrCreateTags(uniqueTags, authorId);
     }
 
+    // Process mentions before creating post
+    const { mentions, mentionIds } = await processMentions(content, '', authorId);
+
     const newPost = await Post.create({
       content,
       author: authorId,
       tags: uniqueTags,
       tagIds,
+      mentions,
+      mentionIds,
       imageUrl: imageUrl || null,
       imageUrls: imageUrls || [],
       videoUrls: videoUrls || [],
@@ -274,8 +279,10 @@ export async function POST(req: NextRequest) {
       xpAwarded: postData.xpAwarded || 0,
     };
 
-    // Process mentions in the post content
-    await processMentions(content, newPost._id.toString(), authorId);
+    // Update mentions with actual post ID
+    if (mentions.length > 0) {
+      await processMentions(content, newPost._id.toString(), authorId);
+    }
 
     // Create an Activity record so the user's profile activity shows this post
     try {
