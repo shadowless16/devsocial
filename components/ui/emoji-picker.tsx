@@ -72,7 +72,9 @@ export function EmojiPicker({ onEmojiSelect, onClose }: EmojiPickerProps) {
     : emojiCategories[selectedCategory as keyof typeof emojiCategories] || [];
 
   return (
-    <div className="emoji-picker absolute bottom-12 left-0 w-80 max-w-[95vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[60]">
+    <div className="emoji-picker w-80 max-w-[95vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-xl z-[60] 
+      sm:absolute sm:bottom-12 sm:left-0 
+      fixed bottom-4 left-1/2 transform -translate-x-1/2 sm:transform-none sm:translate-x-0">
       <div className="p-3 border-b border-gray-200 dark:border-gray-700">
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />

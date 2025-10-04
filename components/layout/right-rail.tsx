@@ -118,11 +118,13 @@ function Trends() {
 function TopDevs() {
   const [topDevelopers, setTopDevelopers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [currentView, setCurrentView] = useState<'all-time' | 'weekly'>('all-time')
 
   useEffect(() => {
     const fetchLeaderboard = async () => {
       try {
-        const response = await apiClient.getLeaderboard({ limit: "3", type: "all-time" })
+        setLoading(true)
+        const response = await apiClient.getLeaderboard({ limit: "3", type: currentView })
         if (response.success && response.data) {
           const lb = (response.data as any).leaderboard || []
           console.debug("[RightRail] leaderboard response:", lb)
@@ -135,12 +137,33 @@ function TopDevs() {
       }
     }
     fetchLeaderboard()
+  }, [currentView])
+
+  // Auto-slide every 4 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentView(prev => prev === 'all-time' ? 'weekly' : 'all-time')
+    }, 7000)
+
+    return () => clearInterval(interval)
   }, [])
+
+  const toggleView = () => {
+    setCurrentView(prev => prev === 'all-time' ? 'weekly' : 'all-time')
+  }
 
   return (
     <Card className="border-0 ring-1 ring-black/5">
       <CardHeader className="pb-1">
-        <div className="text-xs font-semibold">Top Developers</div>
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-semibold">Top Developers</div>
+          <button
+            onClick={toggleView}
+            className="text-[10px] text-emerald-600 hover:text-emerald-700 font-medium transition-colors"
+          >
+            {currentView === 'all-time' ? 'All Time' : 'Weekly'}
+          </button>
+        </div>
       </CardHeader>
       <CardContent className="grid gap-2">
         {loading ? (

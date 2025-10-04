@@ -3,8 +3,10 @@ import mongoose, { Schema, type Document } from "mongoose"
 export interface IComment extends Document {
   author: mongoose.Types.ObjectId
   post: mongoose.Types.ObjectId
-  parentComment?: mongoose.Types.ObjectId // Add this field
+  parentComment?: mongoose.Types.ObjectId
   content: string
+  mentions: string[]
+  mentionIds: mongoose.Types.ObjectId[]
   likes: mongoose.Types.ObjectId[]
   likesCount: number
   createdAt: Date
@@ -32,6 +34,18 @@ const CommentSchema = new Schema<IComment>(
       required: true,
       maxlength: 500,
     },
+    mentions: [
+      {
+        type: String,
+        trim: true,
+      },
+    ],
+    mentionIds: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "User",
+      },
+    ],
     likes: [
       {
         type: Schema.Types.ObjectId,

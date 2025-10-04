@@ -62,17 +62,24 @@ export async function POST(req: NextRequest) {
       return errorResponse("Post not found.", 404);
     }
 
+    // Process mentions before creating comment
+    const { mentions, mentionIds } = await processMentions(content, postId, authorId);
+
     const newComment = await Comment.create({
       content,
       author: authorId,
       post: postId,
+      mentions,
+      mentionIds,
     });
 
     post.commentsCount = (post.commentsCount || 0) + 1;
     await post.save();
 
-    // Process mentions in the comment content
-    await processMentions(content, postId, authorId, newComment._id.toString());
+    // Process mentions with actual comment ID
+    if (mentions.length > 0) {
+      await processMentions(content, postId, authorId, newComment._id.toString());
+    }
 
     await awardXP(authorId, "comment_creation");
 

@@ -136,12 +136,14 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
       />
       
       {showSuggestions && suggestions.length > 0 && (
-        <div className="absolute z-50 w-full mt-1 bg-white border rounded-md shadow-lg max-h-48 overflow-y-auto">
+        <div className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-48 overflow-y-auto">
           {suggestions.map((user, index) => (
             <div
               key={user.username}
               className={`px-3 py-2 cursor-pointer flex items-center gap-2 ${
-                index === selectedIndex ? "bg-blue-50 border-l-2 border-blue-500" : "hover:bg-gray-50"
+                index === selectedIndex 
+                  ? "bg-blue-50 dark:bg-blue-900/20 border-l-2 border-blue-500" 
+                  : "hover:bg-gray-50 dark:hover:bg-gray-700"
               }`}
               onMouseDown={(e) => {
                 e.preventDefault()
@@ -157,9 +159,9 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
                 }}
               />
               <div className="flex-1">
-                <div className="font-medium text-sm">@{user.username}</div>
+                <div className="font-medium text-sm text-gray-900 dark:text-white">@{user.username}</div>
                 {user.displayName && (
-                  <div className="text-xs text-gray-500">{user.displayName}</div>
+                  <div className="text-xs text-gray-500 dark:text-gray-400">{user.displayName}</div>
                 )}
               </div>
             </div>

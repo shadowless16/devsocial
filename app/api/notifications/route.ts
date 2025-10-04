@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { connectWithRetry } from '@/lib/connect-with-retry'
 import Notification from '@/models/Notification'
 import { cache } from '@/lib/cache'
 
@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
       }
     }
 
-    await connectDB()
+    await connectWithRetry()
 
     const query: any = { recipient: session.user.id }
     if (unreadOnly) {
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    await connectDB()
+    await connectWithRetry()
 
     const { recipient, type, title, message, relatedPost, relatedProject, actionUrl } = await request.json()
 

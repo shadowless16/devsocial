@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Flag, Coins, Eye } from "lucide-react"
+import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Flag, Coins, Eye, Bookmark } from "lucide-react"
 import { PostContent } from "@/components/shared/PostContent"
 import { useToast } from "@/hooks/use-toast"
 import { ReportModal } from "@/components/modals/report-modal"
@@ -25,6 +25,7 @@ interface PostCardProps {
   content?: string
   views?: number
   liked?: boolean
+  bookmarked?: boolean
   timestamp?: string
   avatar?: string
   postId?: string
@@ -44,6 +45,7 @@ interface PostCardProps {
   onDelete?: (postId: string) => void
   onLike?: (postId: string) => void
   onComment?: (postId: string) => void
+  onBookmark?: (postId: string) => void
   onClick?: (postId: string) => void
 }
 
@@ -55,6 +57,7 @@ export default function PostCard({
   content = "lol",
   views = 1,
   liked = false,
+  bookmarked = false,
   timestamp = "2025-08-08T15:06:37.356Z",
   avatar,
   postId,
@@ -70,11 +73,13 @@ export default function PostCard({
   onDelete,
   onLike,
   onComment,
+  onBookmark,
   onClick
 }: PostCardProps) {
   const { toast } = useToast()
   const { user } = useAuth()
   const [isLiked, setIsLiked] = useState(liked)
+  const [isBookmarked, setIsBookmarked] = useState(bookmarked)
   const [currentLikesCount, setCurrentLikesCount] = useState(likesCount)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showTipModal, setShowTipModal] = useState(false)
@@ -83,9 +88,10 @@ export default function PostCard({
   
   useEffect(() => {
     setIsLiked(liked)
+    setIsBookmarked(bookmarked)
     setCurrentLikesCount(likesCount)
     setCurrentViews(views)
-  }, [liked, likesCount, views])
+  }, [liked, bookmarked, likesCount, views])
 
   // Track view when component mounts
   useEffect(() => {
@@ -146,6 +152,27 @@ export default function PostCard({
     } catch (error) {
       setIsLiked(previousLiked)
       setCurrentLikesCount(previousCount)
+    }
+  }
+
+  const handleBookmark = async () => {
+    if (!postId || !onBookmark) return
+    
+    const previousBookmarked = isBookmarked
+    setIsBookmarked(!previousBookmarked)
+    
+    try {
+      await onBookmark(postId)
+      toast({
+        title: isBookmarked ? "Bookmark removed" : "Post bookmarked",
+        description: isBookmarked ? "Removed from your bookmarks" : "Added to your bookmarks",
+      })
+    } catch (error) {
+      setIsBookmarked(previousBookmarked)
+      toast({
+        title: "Failed to bookmark",
+        variant: "destructive",
+      })
     }
   }
 
@@ -237,10 +264,33 @@ export default function PostCard({
                       <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuItem 
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleBookmark()
+                      }}
+                    >
+                      <Bookmark className="h-4 w-4 mr-2" />
+                      {isBookmarked ? 'Remove bookmark' : 'Bookmark'}
+                    </DropdownMenuItem>
+                    {user && authorId && user.id !== authorId && (
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setShowTipModal(true)
+                        }}
+                      >
+                        <Coins className="h-4 w-4 mr-2" />
+                        Tip author
+                      </DropdownMenuItem>
+                    )}
                     {currentUserId === authorId ? (
                       <DropdownMenuItem 
-                        onClick={() => postId && onDelete?.(postId)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          postId && onDelete?.(postId)
+                        }}
                         className="text-red-600 focus:text-red-600"
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
@@ -248,7 +298,10 @@ export default function PostCard({
                       </DropdownMenuItem>
                     ) : (
                       <DropdownMenuItem 
-                        onClick={() => setShowReportModal(true)}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setShowReportModal(true)
+                        }}
                         className="text-red-600 focus:text-red-600"
                       >
                         <Flag className="h-4 w-4 mr-2" />
@@ -272,8 +325,8 @@ export default function PostCard({
                 <PostContent content={content || ""} onCopyCode={handleCopyCode} />
               </div>
 
-              {/* Media Display */}
-              <div className="w-full" onClick={(e) => {
+              {/* Media Display - Fixed aspect ratio */}
+              <div className="w-full max-w-lg" onClick={(e) => {
                   if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
                     return;
                   }
@@ -284,7 +337,7 @@ export default function PostCard({
                     <img
                       src={imageUrl}
                       alt="Post image"
-                      className="w-full h-auto object-cover max-h-60 rounded-lg"
+                      className="w-full h-auto object-cover max-h-96 rounded-lg"
                     />
                   </div>
                 )}
@@ -296,7 +349,7 @@ export default function PostCard({
                         <img
                           src={imageUrls[0]}
                           alt="Post image"
-                          className="w-full h-auto object-cover max-h-60 rounded-lg"
+                          className="w-full h-auto object-cover max-h-96 rounded-lg"
                         />
                       </div>
                     ) : (
@@ -336,7 +389,7 @@ export default function PostCard({
                       <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
                         <video 
                           controls
-                          className="w-full max-h-60 object-cover rounded-lg"
+                          className="w-full max-h-96 object-cover rounded-lg"
                           preload="metadata"
                         >
                           <source src={videoUrl} type="video/mp4" />
@@ -350,69 +403,50 @@ export default function PostCard({
                 )}
               </div>
 
-
           
           {/* Actions Footer */}
-          <div className="space-y-3 pt-3 border-t border-gray-100">
-            {/* Main Action Buttons */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className={`h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
-                    isLiked ? "text-red-500" : ""
-                  }`}
-                  onClick={handleLike}
-                >
-                  <Heart className={`h-4 w-4 transition ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
-                  <span className="text-sm font-medium">{currentLikesCount}</span>
-                </Button>
+          <div className="pt-3 border-t border-gray-100">
+            {/* Action Buttons */}
+            <div className="flex items-center gap-2 mb-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className={`h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
+                  isLiked ? "text-red-500" : ""
+                }`}
+                onClick={handleLike}
+              >
+                <Heart className={`h-4 w-4 transition ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                <span className="text-sm font-medium">{currentLikesCount}</span>
+              </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-blue-500"
-                  onClick={() => postId && onComment?.(postId)}
-                >
-                  <MessageCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">{commentsCount}</span>
-                </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-blue-500"
+                onClick={() => postId && onComment?.(postId)}
+              >
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">{commentsCount}</span>
+              </Button>
 
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-green-500"
-                  onClick={handleShare}
-                >
-                  <Share className="h-4 w-4" />
-                  <span className="text-sm font-medium hidden sm:inline">Share</span>
-                </Button>
-              </div>
-              
-              {/* Tip Button - Separate from main actions */}
-              {user && authorId && user.id !== authorId && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600 border border-yellow-200 hover:border-yellow-300"
-                  onClick={() => setShowTipModal(true)}
-                >
-                  <Coins className="h-4 w-4" />
-                  <span className="text-sm font-medium">Tip</span>
-                </Button>
-              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 gap-1 rounded-full px-2 text-muted-foreground hover:text-green-500"
+                onClick={handleShare}
+              >
+                <Share className="h-4 w-4" />
+              </Button>
             </div>
             
-            {/* Views Counter - Separate row for better mobile layout */}
-            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+            {/* Views and Time - Separate row */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
                 <span>{currentViews} views</span>
               </div>
-              <div className="text-xs text-muted-foreground">
-                {formatTimeAgo(timestamp)}
-              </div>
+              <span>{formatTimeAgo(timestamp)}</span>
             </div>
           </div>
             </div>
@@ -421,7 +455,9 @@ export default function PostCard({
         {/* Accent sheen */}
         <div className="pointer-events-none absolute inset-x-0 -top-12 h-24 translate-y-[-8px] bg-gradient-to-b from-white/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
         </CardContent>
-      </Card>      <ReportModal
+      </Card>      
+      
+      <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
         postId={postId || ""}
