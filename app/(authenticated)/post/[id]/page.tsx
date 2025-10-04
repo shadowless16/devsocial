@@ -5,7 +5,7 @@ import type React from "react"
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Zap, Send, Trash, Coins } from "lucide-react"
+import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Zap, Send, Trash, Coins, Eye } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -482,228 +482,223 @@ export default function PostPage() {
   };
 
   return (
-    <div className="w-full py-4 lg:py-6 px-2 sm:px-4">
+    <div className="w-full min-w-0 max-w-2xl mx-auto px-4 py-4 space-y-4">
       {/* Back Button */}
-      <div className="mb-4">
-        <Button variant="ghost" onClick={() => router.back()} className="flex items-center space-x-2">
+      <div>
+        <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2">
           <ArrowLeft className="w-4 h-4" />
           <span>Back to Feed</span>
         </Button>
       </div>
 
       {/* Post */}
-      <Card className="mb-6">
-        <CardContent className="p-3 sm:p-4 lg:p-6">
+      <Card className="w-full min-w-0 border-0 ring-1 ring-black/5">
+        <CardContent className="p-4 space-y-4">
           {/* Header */}
-          <div className="flex items-start justify-between mb-4">
-            <div className="flex items-center space-x-3">
-              <Avatar className="w-10 h-10 lg:w-12 lg:h-12">
-                <AvatarImage 
-                  src={getAvatarUrl(author.avatar)} 
-                />
-                <AvatarFallback>
-                  {post.isAnonymous
-                    ? "?"
-                    : (author.displayName || author.username || "A")
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="font-semibold text-gray-900 text-base lg:text-lg">
-                    {post.isAnonymous ? "Anonymous" : author.displayName}
-                  </h3>
-                  {!post.isAnonymous && (
-                    <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200">
-                      L{author.level}
+          <div className="flex items-start gap-3 min-w-0">
+            <Avatar className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20">
+              <AvatarImage 
+                src={getAvatarUrl(author.avatar)} 
+              />
+              <AvatarFallback>
+                {post.isAnonymous
+                  ? "?"
+                  : (author.displayName || author.username || "A")
+                      .split(" ")
+                      .map((n) => n[0])
+                      .join("")}
+              </AvatarFallback>
+            </Avatar>
+            
+            <div className="flex-1 min-w-0 space-y-2">
+              <div className="flex items-start justify-between min-w-0">
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <h3 className="font-semibold text-gray-900 text-base truncate">
+                      {post.isAnonymous ? "Anonymous" : author.displayName}
+                    </h3>
+                    {!post.isAnonymous && (
+                      <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 flex-shrink-0">
+                        L{author.level}
+                      </Badge>
+                    )}
+                    {post.isAnonymous && (
+                      <Badge variant="outline" className="text-xs text-gray-500 border-gray-300 flex-shrink-0">
+                        Anonymous
+                      </Badge>
+                    )}
+                    <Badge className="bg-yellow-50 text-yellow-700 text-xs px-2 py-0 h-5 flex-shrink-0">
+                      +{post.xpAwarded} XP
                     </Badge>
-                  )}
-                  {post.isAnonymous && (
-                    <Badge variant="outline" className="text-xs text-gray-500 border-gray-300">
-                      Anonymous
-                    </Badge>
-                  )}
-                </div>
-                <div className="flex items-center space-x-2 text-sm text-gray-500">
-                  <span>
-                    {post.isAnonymous
-                      ? "Anonymous User"
-                      : `@${author.username}`}
-                  </span>
-                  <span>•</span>
-                  <span>{formatTimestamp(post.createdAt)}</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex items-center space-x-2">
-              <div className="flex items-center space-x-1 bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium">
-                <Zap className="w-3 h-3" />
-                <span>+{post.xpAwarded} XP</span>
-              </div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                  >
-                    <MoreHorizontal className="w-4 h-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48" align="end">
-                  {user && (!post.isAnonymous ? post.author?.username === user.username : true) && (
-                    <DropdownMenuItem 
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeletePost();
-                      }}
-                      className="text-red-600 focus:text-red-600"
-                    >
-                      <Trash className="w-4 h-4 mr-2" />
-                      Delete Post
-                    </DropdownMenuItem>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Content */}
-          <div className="mb-4">
-            <PostContent content={post.content} onCopyCode={handleCopyCode} />
-
-{/* Multiple Images */}
-            {post.imageUrls && post.imageUrls.length > 0 && (
-              <div className="mt-4 space-y-2">
-                {post.imageUrls.length === 1 ? (
-                  <div className="rounded-lg overflow-hidden">
-                    <Image
-                      src={post.imageUrls[0]}
-                      alt="Post image"
-                      width={500}
-                      height={300}
-                      className="w-full h-auto object-cover max-h-96"
-                    />
                   </div>
-                ) : (
-                  <div className={`grid gap-2 rounded-lg overflow-hidden ${
-                    post.imageUrls.length === 2 ? 'grid-cols-2' :
-                    post.imageUrls.length === 3 ? 'grid-cols-2' :
-                    'grid-cols-2'
-                  }`}>
-                    {post.imageUrls.map((imageUrl, index) => (
-                      <div 
-                        key={index} 
-                        className={`relative ${
-                          post.imageUrls!.length === 3 && index === 0 ? 'row-span-2' : ''
-                        }`}
+                  <div className="flex items-center gap-1 text-sm text-gray-500">
+                    <span className="truncate">
+                      {post.isAnonymous
+                        ? "Anonymous User"
+                        : `@${author.username}`}
+                    </span>
+                    <span className="flex-shrink-0">•</span>
+                    <span className="flex-shrink-0">{formatTimestamp(post.createdAt)}</span>
+                  </div>
+                </div>
+                
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 flex-shrink-0">
+                      <MoreHorizontal className="w-4 h-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    {user && (!post.isAnonymous ? post.author?.username === user.username : true) && (
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeletePost();
+                        }}
+                        className="text-red-600 focus:text-red-600"
                       >
-                        <Image
+                        <Trash className="w-4 h-4 mr-2" />
+                        Delete Post
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+
+              {/* Content */}
+              <div className="text-sm leading-relaxed break-words">
+                <PostContent content={post.content} onCopyCode={handleCopyCode} />
+              </div>
+              
+              {/* Media Content */}
+              {(post.imageUrls?.length || post.videoUrls?.length) && (
+                <div className="rounded-lg overflow-hidden">
+                  {/* Multiple Images */}
+                  {post.imageUrls && post.imageUrls.length > 0 && (
+                    <div className={`grid gap-2 ${
+                      post.imageUrls.length === 1 ? 'grid-cols-1' :
+                      post.imageUrls.length === 2 ? 'grid-cols-2' :
+                      post.imageUrls.length === 3 ? 'grid-cols-2' :
+                      'grid-cols-2'
+                    }`}>
+                      {post.imageUrls.map((imageUrl, index) => (
+                        <img 
+                          key={index}
                           src={imageUrl}
-                          alt={`Post image ${index + 1}`}
-                          width={250}
-                          height={200}
-                          className="w-full h-full object-cover rounded-md"
+                          alt={`Post image ${index + 1}`} 
+                          className={`w-full h-auto object-cover rounded-md ${
+                            post.imageUrls!.length === 3 && index === 0 ? 'row-span-2' : 'max-h-48'
+                          }`}
                         />
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Videos */}
+                  {post.videoUrls && post.videoUrls.length > 0 && (
+                    <div className="space-y-2">
+                      {post.videoUrls.map((videoUrl, index) => (
+                        <video 
+                          key={index}
+                          controls 
+                          className="w-full h-auto max-h-96 rounded-lg"
+                          preload="metadata"
+                        >
+                          <source src={videoUrl} type="video/mp4" />
+                          <source src={videoUrl} type="video/webm" />
+                          <source src={videoUrl} type="video/ogg" />
+                          Your browser does not support the video tag.
+                        </video>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
-            {/* Videos */}
-            {post.videoUrls && post.videoUrls.length > 0 && (
-              <div className="mt-3 space-y-2">
-                {post.videoUrls.map((videoUrl, index) => (
-                  <div key={index} className="rounded-lg overflow-hidden">
-                    <video 
-                      controls
-                      className="w-full max-h-96 object-cover"
-                      preload="metadata"
+              {/* Tags */}
+              {post.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <Badge
+                      key={tag}
+                      variant="outline"
+                      className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer"
                     >
-                      <source src={videoUrl} type="video/mp4" />
-                      <source src={videoUrl} type="video/webm" />
-                      <source src={videoUrl} type="video/ogg" />
-                      Your browser does not support the video tag.
-                    </video>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Tags */}
-          {post.tags.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-4">
-              {post.tags.map((tag) => (
-                <Badge
-                  key={tag}
-                  variant="outline"
-                  className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer"
-                >
-                  {tag}
-                </Badge>
-              ))}
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
+              {/* AI Actions */}
+              <PostAIActions 
+                postContent={post.content} 
+                postId={post.id}
+              />
             </div>
-          )}
-
-          {/* AI Actions */}
-          <div className="mb-4">
-            <PostAIActions 
-              postContent={post.content} 
-              postId={post.id}
-            />
           </div>
-
-          {/* Actions */}
-          <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-          <div className="flex items-center space-x-3 sm:space-x-6">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleLike}
-                className={`flex items-center space-x-2 ${
-                  post.isLiked ? "text-red-500 hover:text-red-600" : "text-gray-500 hover:text-red-500"
-                }`}
-              >
-                <Heart className={`w-4 h-4 ${post.isLiked ? "fill-current" : ""}`} />
-                <span>{post.likesCount}</span>
-              </Button>
-
-              <div className="flex items-center space-x-2 text-gray-500">
-                <MessageCircle className="w-4 h-4" />
-                <span>{post.commentsCount}</span>
+          
+          {/* Action Buttons */}
+          <div className="space-y-3 pt-3 border-t border-gray-100">
+            {/* Main Action Buttons */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleLike}
+                  className={`h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
+                    post.isLiked ? "text-red-500" : ""
+                  }`}
+                >
+                  <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                  <span className="text-sm font-medium">{post.likesCount}</span>
+                </Button>
+                
+                <div className="flex items-center gap-2 h-9 px-3 rounded-full text-muted-foreground">
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium">{post.commentsCount}</span>
+                </div>
+                
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-green-500"
+                >
+                  <Share className="h-4 w-4" />
+                  <span className="text-sm font-medium hidden sm:inline">Share</span>
+                </Button>
               </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                className="flex items-center space-x-2 text-gray-500 hover:text-green-500"
-              >
-                <Share className="w-4 h-4" />
-                <span>Share</span>
-              </Button>
-
+              
+              {/* Tip Button - Separate from main actions */}
               {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="flex items-center space-x-2 text-gray-500 hover:text-yellow-600"
+                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600 border border-yellow-200 hover:border-yellow-300"
                   onClick={() => setShowTipModal(true)}
                 >
-                  <Coins className="w-4 h-4" />
-                  <span>Tip</span>
+                  <Coins className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tip</span>
                 </Button>
               )}
+            </div>
+            
+            {/* Views and Timestamp - Separate row for better mobile layout */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+              <div className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                <span>Views: {post.viewsCount || 0}</span>
+              </div>
+              <div className="text-xs text-muted-foreground">
+                {formatTimestamp(post.createdAt)}
+              </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Comments with React Comments Section */}
+      {/* Comments Section */}
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-900">Comments ({comments.length})</h3>
         {loadingComments ? (

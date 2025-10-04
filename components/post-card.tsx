@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Flag, Coins } from "lucide-react"
+import { Heart, MessageCircle, Share, MoreHorizontal, Trash2, Flag, Coins, Eye } from "lucide-react"
 import { PostContent } from "@/components/shared/PostContent"
 import { useToast } from "@/hooks/use-toast"
 import { ReportModal } from "@/components/modals/report-modal"
@@ -173,66 +173,54 @@ export default function PostCard({
 
   return (
     <>
-<Card className="group relative border-0 p-3 sm:p-4 ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-[280px] sm:w-full box-border overflow-hidden">
-        <div 
-          className="flex items-start gap-2 sm:gap-3 w-full min-w-0"
-        >
+      <Card className="group relative w-full min-w-0 max-w-full border-0 ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer overflow-hidden">
+        <CardContent className="p-3 space-y-3">
+          {/* Header Section */}
+          <div className="flex items-start gap-3 min-w-0">
             {/* Avatar */}
             <div 
-              className="cursor-pointer hover:ring-primary/20 transition-all flex-shrink-0"
+              className="flex-shrink-0 cursor-pointer hover:ring-primary/20 transition-all"
               onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
             >
-              <Avatar className="h-8 w-8 sm:h-10 sm:w-10 ring-1 ring-primary/20">
+              <Avatar className="h-12 w-12 ring-1 ring-primary/20">
                 <AvatarImage 
                   src={getAvatarUrl(avatar)} 
                   alt={author}
                 />
-                <AvatarFallback className="text-xs">
+                <AvatarFallback className="text-sm">
                   {author?.split(' ').map(n => n[0]).join('')}
                 </AvatarFallback>
               </Avatar>
             </div>
             
-            {/* Content */}
-            <div className="flex-1 min-w-0 w-full">
-              {/* Header */}
-              <div 
-                className="flex items-start justify-between mb-2 w-full min-w-0"
-                onClick={(e) => {
-                  if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
-                    return;
-                  }
-                  postId && onClick?.(postId)
-                }}
-              >
-                <div className="flex flex-col gap-1 min-w-0 flex-1 mr-2">
-                  <div className="flex items-center gap-1 sm:gap-2 min-w-0 flex-wrap">
+            {/* User Info & Content */}
+            <div className="flex-1 min-w-0 space-y-2">
+              {/* User Details */}
+              <div className="flex items-start justify-between min-w-0">
+                <div className="flex-1 min-w-0 space-y-1">
+                  <div className="flex items-center gap-2 min-w-0">
                     <span 
-                      className="font-medium text-sm cursor-pointer hover:text-primary transition-colors truncate max-w-[100px] sm:max-w-[140px]"
+                      className="font-medium text-base cursor-pointer hover:text-primary transition-colors truncate"
                       onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
                     >
                       {author}
                     </span>
-                    <div className="flex items-center gap-1 flex-shrink-0">
-                      <Badge variant="secondary" className="text-xs px-1.5 py-0 h-5">
-                        {level}
+                    <Badge variant="secondary" className="text-sm px-2 py-0 h-6 flex-shrink-0">
+                      {level}
+                    </Badge>
+                    {xpDelta > 0 && (
+                      <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-sm px-2 py-0 h-6 flex-shrink-0">
+                        +{xpDelta}
                       </Badge>
-                      {xpDelta > 0 && (
-                        <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-xs px-1.5 py-0 h-5">
-                          +{xpDelta}
-                        </Badge>
-                      )}
-                    </div>
+                    )}
                   </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground flex-wrap">
+                  <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     <span 
-                      className="cursor-pointer hover:text-primary transition-colors truncate max-w-[80px] sm:max-w-[120px]"
+                      className="cursor-pointer hover:text-primary transition-colors truncate"
                       onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
                     >
                       {handle}
                     </span>
-                    <span className="flex-shrink-0">•</span>
-                    <span className="flex-shrink-0">{formatTimeAgo(timestamp)}</span>
                     {imprintStatus && imprintStatus !== "none" && (
                       <PostMeta 
                         imprintStatus={imprintStatus} 
@@ -245,8 +233,8 @@ export default function PostCard({
                 {/* Dropdown Menu */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="sm" className="h-7 w-7 p-0 flex-shrink-0">
-                      <MoreHorizontal className="h-3.5 w-3.5" />
+                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 flex-shrink-0">
+                      <MoreHorizontal className="h-4 w-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -273,7 +261,7 @@ export default function PostCard({
               
               {/* Post Content */}
               <div 
-                className="text-sm mb-3 w-full break-words whitespace-pre-line overflow-wrap-anywhere"
+                className="text-base mb-3 w-full break-words whitespace-pre-line overflow-wrap-anywhere"
                 onClick={(e) => {
                   if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
                     return;
@@ -296,7 +284,7 @@ export default function PostCard({
                     <img
                       src={imageUrl}
                       alt="Post image"
-                      className="w-full h-auto object-cover max-h-48 sm:max-h-80 rounded-lg"
+                      className="w-full h-auto object-cover max-h-60 rounded-lg"
                     />
                   </div>
                 )}
@@ -308,7 +296,7 @@ export default function PostCard({
                         <img
                           src={imageUrls[0]}
                           alt="Post image"
-                          className="w-full h-auto object-cover max-h-48 sm:max-h-80 rounded-lg"
+                          className="w-full h-auto object-cover max-h-60 rounded-lg"
                         />
                       </div>
                     ) : (
@@ -327,7 +315,7 @@ export default function PostCard({
                             <img
                               src={imageUrl}
                               alt={`Post image ${index + 1}`}
-                              className="w-full h-20 sm:h-32 object-cover rounded-md"
+                              className="w-full h-24 sm:h-32 object-cover rounded-md"
                             />
                             {index === 3 && imageUrls.length > 4 && (
                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
@@ -348,7 +336,7 @@ export default function PostCard({
                       <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
                         <video 
                           controls
-                          className="w-full max-h-48 sm:max-h-80 object-cover rounded-lg"
+                          className="w-full max-h-60 object-cover rounded-lg"
                           preload="metadata"
                         >
                           <source src={videoUrl} type="video/mp4" />
@@ -362,71 +350,77 @@ export default function PostCard({
                 )}
               </div>
 
-              {/* AI Actions */}
-              <div className="mb-3">
-                <PostAIActions 
-                  postContent={content || ""} 
-                  postId={postId || ""}
-                />
+
+          
+          {/* Actions Footer */}
+          <div className="space-y-3 pt-3 border-t border-gray-100">
+            {/* Main Action Buttons */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className={`h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
+                    isLiked ? "text-red-500" : ""
+                  }`}
+                  onClick={handleLike}
+                >
+                  <Heart className={`h-4 w-4 transition ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                  <span className="text-sm font-medium">{currentLikesCount}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-blue-500"
+                  onClick={() => postId && onComment?.(postId)}
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium">{commentsCount}</span>
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-green-500"
+                  onClick={handleShare}
+                >
+                  <Share className="h-4 w-4" />
+                  <span className="text-sm font-medium hidden sm:inline">Share</span>
+                </Button>
               </div>
-
-              {/* Actions Footer */}
-              <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-800">
-                <div className="flex items-center gap-1 sm:gap-2 flex-1 min-w-0">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className={`h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-red-500 flex-shrink-0 ${
-                      isLiked ? "text-red-500" : ""
-                    }`}
-                    onClick={handleLike}
-                  >
-                    <Heart className={`h-4 w-4 transition ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
-                    <span className="text-xs">{currentLikesCount}</span>
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-blue-500 flex-shrink-0"
-                    onClick={() => postId && onComment?.(postId)}
-                  >
-                    <MessageCircle className="h-4 w-4" />
-                    <span className="text-xs">{commentsCount}</span>
-                  </Button>
-
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-green-500 flex-shrink-0"
-                    onClick={handleShare}
-                  >
-                    <Share className="h-4 w-4" />
-                    <span className="text-xs hidden sm:inline">Share</span>
-                  </Button>
-
-                  {user && authorId && user.id !== authorId && (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 gap-1 sm:gap-2 rounded-full px-1 sm:px-2 text-muted-foreground hover:text-yellow-600 flex-shrink-0"
-                      onClick={() => setShowTipModal(true)}
-                    >
-                      <Coins className="h-4 w-4" />
-                      <span className="text-xs hidden sm:inline">Tip</span>
-                    </Button>
-                  )}
-                </div>
-
-                <div className="text-xs text-muted-foreground flex-shrink-0 pl-1 sm:pl-2 whitespace-nowrap">
-                  Views {currentViews}
-                </div>
+              
+              {/* Tip Button - Separate from main actions */}
+              {user && authorId && user.id !== authorId && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600 border border-yellow-200 hover:border-yellow-300"
+                  onClick={() => setShowTipModal(true)}
+                >
+                  <Coins className="h-4 w-4" />
+                  <span className="text-sm font-medium">Tip</span>
+                </Button>
+              )}
+            </div>
+            
+            {/* Views Counter - Separate row for better mobile layout */}
+            <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
+              <div className="flex items-center gap-1">
+                <Eye className="h-3.5 w-3.5" />
+                <span>{currentViews} views</span>
               </div>
+              <div className="text-xs text-muted-foreground">
+                {formatTimeAgo(timestamp)}
+              </div>
+            </div>
+          </div>
             </div>
           </div>
         
         {/* Accent sheen */}
         <div className="pointer-events-none absolute inset-x-0 -top-12 h-24 translate-y-[-8px] bg-gradient-to-b from-white/40 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+        </CardContent>
       </Card>      <ReportModal
         isOpen={showReportModal}
         onClose={() => setShowReportModal(false)}
