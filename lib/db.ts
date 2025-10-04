@@ -58,7 +58,7 @@ async function connectDB() {
 
     cached.promise = mongoose.connect(MONGODB_URI!, opts)
       .then((mongoose) => {
-        return { conn: mongoose, promise: null }
+        return mongoose
       })
       .catch(async (error) => {
         cached.promise = null
@@ -66,14 +66,12 @@ async function connectDB() {
         
         await new Promise(resolve => setTimeout(resolve, 2000))
         
-        const retryConnection = await mongoose.connect(MONGODB_URI!, opts)
-        return { conn: retryConnection, promise: null }
+        return mongoose.connect(MONGODB_URI!, opts)
       })
   }
 
   try {
-    const result = await cached.promise
-    cached.conn = result.conn
+    cached.conn = await cached.promise
     console.log('MongoDB connected successfully')
   } catch (e) {
     cached.promise = null
