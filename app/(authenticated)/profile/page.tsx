@@ -1,7 +1,7 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { MapPin, Calendar, Edit2, Trophy, Target, Users, MessageCircle, Loader2, Heart } from 'lucide-react'
+import { MapPin, Calendar, Edit2, Trophy, Target, Users, MessageCircle, Loader2, Heart, FolderOpen, ListOrdered, Plus, BarChart3 } from 'lucide-react'
 import { useAuth } from '@/contexts/app-context'
 import { useWebSocket } from '@/contexts/websocket-context'
 import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
@@ -122,9 +122,12 @@ export default function MyProfile() {
   }
 
   const tabs = [
-    { id: 'posts', label: 'Posts', count: userPosts.length },
-    { id: 'media', label: 'Media', count: userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length },
-    { id: 'likes', label: 'Likes', count: userStats?.totalLikes || 0 }
+    { id: 'posts', label: 'Posts', count: userPosts.length, icon: MessageCircle },
+    { id: 'media', label: 'Media', count: userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length, icon: Target },
+    { id: 'projects', label: 'Projects', count: 0, icon: FolderOpen },
+    { id: 'missions', label: 'Missions', count: 3, icon: ListOrdered },
+    { id: 'referrals', label: 'Referrals', count: 0, icon: Plus },
+    { id: 'stats', label: 'Stats', count: 0, icon: BarChart3 }
   ]
 
   if (authLoading || isLoading) {
@@ -248,20 +251,21 @@ export default function MyProfile() {
 
         {/* Navigation Tabs */}
         <div className="border-b border-border">
-          <nav className="flex">
+          <nav className="flex overflow-x-auto">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex-1 py-4 px-1 text-center font-medium text-sm transition-colors ${
+                className={`flex items-center gap-2 py-4 px-3 whitespace-nowrap font-medium text-sm transition-colors ${
                   activeTab === tab.id
                     ? 'text-foreground border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
+                <tab.icon size={16} />
                 {tab.label}
                 {tab.count > 0 && (
-                  <span className="ml-1 text-xs text-muted-foreground">
+                  <span className="text-xs text-muted-foreground">
                     ({tab.count})
                   </span>
                 )}
@@ -384,11 +388,148 @@ export default function MyProfile() {
             </div>
           )}
 
-          {activeTab === 'likes' && (
-            <div className="text-center py-12">
-              <Trophy size={48} className="mx-auto text-muted-foreground mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No likes yet</h3>
-              <p className="text-muted-foreground">Posts you like will appear here.</p>
+          {activeTab === 'projects' && (
+            <div className="space-y-4">
+              <div className="text-center py-12">
+                <FolderOpen size={48} className="mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">No projects yet</h3>
+                <p className="text-muted-foreground">Your coding projects and repositories will appear here.</p>
+                <Button className="mt-4" onClick={() => router.push('/projects')}>
+                  <Plus size={16} className="mr-2" />
+                  Add Project
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'missions' && (
+            <div className="space-y-4">
+              <div className="grid gap-4">
+                <div className="border border-border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <ListOrdered size={20} className="text-blue-500" />
+                      <h3 className="font-semibold">Daily Coding Challenge</h3>
+                    </div>
+                    <Badge variant="secondary">In Progress</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Complete 3 coding posts this week</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-muted rounded-full h-2">
+                      <div className="bg-blue-500 h-2 rounded-full" style={{ width: '60%' }}></div>
+                    </div>
+                    <span className="text-xs text-muted-foreground">2/3</span>
+                  </div>
+                </div>
+                
+                <div className="border border-border rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <div className="flex items-center gap-2">
+                      <Trophy size={20} className="text-yellow-500" />
+                      <h3 className="font-semibold">Community Engagement</h3>
+                    </div>
+                    <Badge variant="outline">Completed</Badge>
+                  </div>
+                  <p className="text-sm text-muted-foreground mb-3">Like and comment on 10 posts</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-muted rounded-full h-2">
+                      <div className="bg-green-500 h-2 rounded-full" style={{ width: '100%' }}></div>
+                    </div>
+                    <span className="text-xs text-green-600">10/10</span>
+                  </div>
+                </div>
+                
+                <Button variant="outline" className="w-full" onClick={() => router.push('/missions')}>
+                  View All Missions
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'referrals' && (
+            <div className="space-y-4">
+              <div className="border border-border rounded-lg p-6">
+                <div className="text-center mb-6">
+                  <Plus size={48} className="mx-auto text-muted-foreground mb-4" />
+                  <h3 className="text-lg font-semibold mb-2">Invite Friends</h3>
+                  <p className="text-muted-foreground mb-4">Share DevSocial with friends and earn rewards!</p>
+                </div>
+                
+                <div className="bg-muted rounded-lg p-4 mb-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Your Referral Code</p>
+                      <p className="text-sm text-muted-foreground">Share this code with friends</p>
+                    </div>
+                    <div className="text-right">
+                      <code className="bg-background px-2 py-1 rounded text-sm">{user?.username?.toUpperCase() || 'USER123'}</code>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-primary">0</div>
+                    <div className="text-sm text-muted-foreground">Referrals</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-2xl font-bold text-green-600">0 XP</div>
+                    <div className="text-sm text-muted-foreground">Earned</div>
+                  </div>
+                </div>
+                
+                <Button className="w-full" onClick={() => router.push('/referrals')}>
+                  Manage Referrals
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'stats' && (
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="border border-border rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-blue-500">{userPosts.length}</div>
+                  <div className="text-sm text-muted-foreground">Total Posts</div>
+                </div>
+                <div className="border border-border rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-green-500">{userStats?.totalLikes || 0}</div>
+                  <div className="text-sm text-muted-foreground">Total Likes</div>
+                </div>
+                <div className="border border-border rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-yellow-500">{profileData?.points || 0}</div>
+                  <div className="text-sm text-muted-foreground">XP Points</div>
+                </div>
+                <div className="border border-border rounded-lg p-4 text-center">
+                  <div className="text-2xl font-bold text-purple-500">{profileData?.level || 1}</div>
+                  <div className="text-sm text-muted-foreground">Level</div>
+                </div>
+              </div>
+              
+              <div className="border border-border rounded-lg p-4">
+                <h3 className="font-semibold mb-3">Recent Activity</h3>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span>Posted a new update</span>
+                    <span className="text-muted-foreground ml-auto">2 hours ago</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span>Completed a mission</span>
+                    <span className="text-muted-foreground ml-auto">1 day ago</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span>Gained 50 XP</span>
+                    <span className="text-muted-foreground ml-auto">2 days ago</span>
+                  </div>
+                </div>
+              </div>
+              
+              <Button variant="outline" className="w-full" onClick={() => router.push('/leaderboard')}>
+                View Global Leaderboard
+              </Button>
             </div>
           )}
         </div>
