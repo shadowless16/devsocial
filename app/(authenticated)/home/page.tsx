@@ -248,7 +248,7 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
               {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="flex-1 min-w-0 space-y-3">
+          <div className="flex-1 min-w-0">
             <Input
               onClick={onCreateClick}
               readOnly
@@ -256,19 +256,6 @@ function Compose({ onCreateClick }: { onCreateClick: () => void }) {
               placeholder={"What's on your mind?"}
               className="w-full h-11 rounded-xl border-muted-foreground/20 bg-muted/40 px-4 text-sm shadow-none transition focus-visible:ring-primary cursor-pointer"
             />
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Button size="icon" variant="ghost" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                  <ImageIcon className="h-4 w-4" />
-                  <span className="sr-only">Add image</span>
-                </Button>
-                <Button size="icon" variant="ghost" className="h-9 w-9 text-muted-foreground hover:text-foreground">
-                  <Upload className="h-4 w-4" />
-                  <span className="sr-only">Upload file</span>
-                </Button>
-              </div>
-              <Button onClick={onCreateClick} className="h-9 rounded-lg px-4 text-sm">Post</Button>
-            </div>
           </div>
         </div>
       </CardContent>

@@ -1,7 +1,7 @@
 "use client"
 
-import React, { useState, useEffect } from 'react'
-import { MapPin, Calendar, Edit2, Trophy, Target, Users, MessageCircle } from 'lucide-react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import { MapPin, Calendar, Edit2, Trophy, Target, Users, MessageCircle, Loader2, Heart } from 'lucide-react'
 import { useAuth } from '@/contexts/app-context'
 import { useWebSocket } from '@/contexts/websocket-context'
 import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
@@ -35,54 +35,87 @@ export default function MyProfile() {
   const [userPosts, setUserPosts] = useState<any[]>([])
   const [userStats, setUserStats] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const [page, setPage] = useState(1)
+  const observer = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
     if (authLoading || !user) return
-
-    const fetchProfileData = async () => {
-      setIsLoading(true)
-      try {
-        const [profileRes, postsRes, statsRes] = await Promise.all([
-          fetch('/api/users/profile'),
-          fetch('/api/posts?limit=50'),
-          fetch('/api/profile/stats')
-        ])
-
-        if (profileRes.ok) {
-          const { data } = await profileRes.json()
-          setProfileData({
-            ...data.user,
-            name: data.user?.displayName || data.user?.username || "User",
-            joinDate: new Date(data.user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-          })
-        }
-
-        if (postsRes.ok) {
-          const response = await postsRes.json()
-          
-          if (response.success && response.data?.posts) {
-            const userSpecificPosts = response.data.posts.filter((post: any) => {
-              const authorId = post.author?.id || post.author?._id
-              const userId = user.id || (user as any)._id
-              return authorId === userId
-            })
-            setUserPosts(userSpecificPosts)
-          }
-        }
-
-        if (statsRes.ok) {
-          const { stats } = await statsRes.json()
-          setUserStats(stats)
-        }
-      } catch (error) {
-        console.error('Error fetching profile data:', error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    fetchProfileData()
+    fetchInitialData()
   }, [user, authLoading])
+
+  const fetchInitialData = async () => {
+    setIsLoading(true)
+    try {
+      const [profileRes, statsRes] = await Promise.all([
+        fetch('/api/users/profile'),
+        fetch('/api/profile/stats')
+      ])
+
+      if (profileRes.ok) {
+        const { data } = await profileRes.json()
+        setProfileData({
+          ...data.user,
+          name: data.user?.displayName || data.user?.username || "User",
+          joinDate: new Date(data.user?.createdAt || Date.now()).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+        })
+      }
+
+      if (statsRes.ok) {
+        const { stats } = await statsRes.json()
+        setUserStats(stats)
+      }
+
+      // Fetch initial posts
+      await fetchUserPosts(1, true)
+    } catch (error) {
+      console.error('Error fetching profile data:', error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
+  const fetchUserPosts = async (pageNum: number, reset = false) => {
+    try {
+      if (!reset) {
+        setLoadingMore(true)
+      }
+      
+      const response = await fetch(`/api/posts?limit=10&page=${pageNum}`)
+      
+      if (response.ok) {
+        const result = await response.json()
+        
+        if (result.success && result.data?.posts) {
+          const userSpecificPosts = result.data.posts.filter((post: any) => {
+            const authorId = post.author?.id || post.author?._id
+            const userId = user?.id || (user as any)?._id
+            return authorId === userId
+          })
+          
+          setUserPosts(prev => reset ? userSpecificPosts : [...prev, ...userSpecificPosts])
+          setHasMore(userSpecificPosts.length === 10)
+          setPage(pageNum)
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user posts:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }
+
+  const lastPostElementRef = useCallback((node: HTMLDivElement) => {
+    if (isLoading || loadingMore) return
+    if (observer.current) observer.current.disconnect()
+    observer.current = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting && hasMore) {
+        fetchUserPosts(page + 1)
+      }
+    })
+    if (node) observer.current?.observe(node)
+  }, [isLoading, loadingMore, hasMore, page])
 
   const handlePostClick = (postId: string) => {
     router.push(`/post/${postId}`)
@@ -242,56 +275,74 @@ export default function MyProfile() {
           {activeTab === 'posts' && (
             <div className="space-y-4">
               {userPosts.length > 0 ? (
-                userPosts.map((post) => (
-                  <div 
-                    key={post._id || post.id} 
-                    className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => handlePostClick(post._id || post.id)}
-                  >
-                    <div className="flex items-start gap-3">
-                      <SmartAvatar 
-                        src={profileData?.avatar} 
-                        alt={profileData?.name || 'User'}
-                        fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
-                        className="w-10 h-10"
-                        size={40}
-                      />
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="font-semibold">{profileData?.name || 'User'}</span>
-                          <span className="text-muted-foreground text-sm">@{profileData?.username || 'user'}</span>
-                          <span className="text-muted-foreground text-sm">·</span>
-                          <span className="text-muted-foreground text-sm">
-                            {new Date(post.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-foreground mb-3">{post.content}</p>
-                        
-                        {/* Media Preview */}
-                        {(post.imageUrl || post.imageUrls?.length > 0) && (
-                          <div className="mb-3">
-                            <img 
-                              src={post.imageUrl || post.imageUrls?.[0]} 
-                              alt="Post media" 
-                              className="w-full max-w-md h-32 object-cover rounded-lg"
-                            />
-                          </div>
-                        )}
-                        
-                        <div className="flex items-center gap-6 text-muted-foreground text-sm">
-                          <div className="flex items-center gap-1">
-                            <MessageCircle size={16} />
-                            <span>{post.commentsCount || 0}</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <Trophy size={16} />
-                            <span>{post.likesCount || 0}</span>
+                <>
+                  {userPosts.map((post, index) => {
+                    const isLast = index === userPosts.length - 1
+                    return (
+                      <div 
+                        key={post._id || post.id} 
+                        ref={isLast ? lastPostElementRef : null}
+                        className="border border-border rounded-lg p-4 hover:bg-muted/50 transition-colors cursor-pointer"
+                        onClick={() => handlePostClick(post._id || post.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          <SmartAvatar 
+                            src={profileData?.avatar} 
+                            alt={profileData?.name || 'User'}
+                            fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
+                            className="w-10 h-10"
+                            size={40}
+                          />
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="font-semibold">{profileData?.name || 'User'}</span>
+                              <span className="text-muted-foreground text-sm">@{profileData?.username || 'user'}</span>
+                              <span className="text-muted-foreground text-sm">·</span>
+                              <span className="text-muted-foreground text-sm">
+                                {new Date(post.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                            <p className="text-foreground mb-3">{post.content}</p>
+                            
+                            {/* Media Preview */}
+                            {(post.imageUrl || post.imageUrls?.length > 0) && (
+                              <div className="mb-3">
+                                <img 
+                                  src={post.imageUrl || post.imageUrls?.[0]} 
+                                  alt="Post media" 
+                                  className="w-full max-w-md h-32 object-cover rounded-lg"
+                                />
+                              </div>
+                            )}
+                            
+                            <div className="flex items-center gap-6 text-muted-foreground text-sm">
+                              <div className="flex items-center gap-1">
+                                <MessageCircle size={16} />
+                                <span>{post.commentsCount || 0}</span>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <Heart size={16} />
+                                <span>{post.likesCount || 0}</span>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
+                    )
+                  })}
+                  
+                  {loadingMore && (
+                    <div className="flex justify-center py-4">
+                      <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
-                  </div>
-                ))
+                  )}
+                  
+                  {!hasMore && userPosts.length > 0 && (
+                    <div className="text-center py-4 text-muted-foreground">
+                      You've reached the end of your posts!
+                    </div>
+                  )}
+                </>
               ) : (
                 <div className="text-center py-12">
                   <MessageCircle size={48} className="mx-auto text-muted-foreground mb-4" />
