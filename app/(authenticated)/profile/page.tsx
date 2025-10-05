@@ -82,7 +82,7 @@ export default function MyProfile() {
         setLoadingMore(true)
       }
       
-      const response = await fetch(`/api/posts?limit=10&page=${pageNum}`)
+      const response = await fetch(`/api/posts?limit=50&page=${pageNum}`)
       
       if (response.ok) {
         const result = await response.json()
@@ -94,8 +94,13 @@ export default function MyProfile() {
             return authorId === userId
           })
           
-          setUserPosts(prev => reset ? userSpecificPosts : [...prev, ...userSpecificPosts])
-          setHasMore(userSpecificPosts.length === 10)
+          if (reset) {
+            setUserPosts(userSpecificPosts)
+          } else {
+            setUserPosts(prev => [...prev, ...userSpecificPosts])
+          }
+          
+          setHasMore(result.data.posts.length === 50)
           setPage(pageNum)
         }
       }
@@ -124,8 +129,6 @@ export default function MyProfile() {
   const tabs = [
     { id: 'posts', label: 'Posts', count: userPosts.length, icon: MessageCircle },
     { id: 'media', label: 'Media', count: userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length, icon: Target },
-    { id: 'following', label: 'Following', count: profileData?.followingCount || 0, icon: Users },
-    { id: 'followers', label: 'Followers', count: profileData?.followersCount || 0, icon: Users },
     { id: 'projects', label: 'Projects', count: 0, icon: FolderOpen },
     { id: 'missions', label: 'Missions', count: 3, icon: ListOrdered },
     { id: 'referrals', label: 'Referrals', count: 0, icon: Plus },
@@ -222,32 +225,30 @@ export default function MyProfile() {
           )}
 
           {/* Stats Row */}
-          <div className="flex items-center gap-6 mb-4">
-            {profileData?.userId && profileData?.username && (
-              <FollowStats
-                userId={profileData.userId}
-                username={profileData.username}
-                initialFollowersCount={profileData.followersCount || 0}
-                initialFollowingCount={profileData.followingCount || 0}
-                className="text-sm"
-              />
-            )}
+          <div className="flex items-center gap-6 mb-4 flex-wrap">
+            {/* Following/Followers */}
+            <button className="hover:underline" onClick={() => router.push(`/profile/${profileData?.username}/following`)}>
+              <span className="font-semibold">{profileData?.followingCount || 0}</span>
+              <span className="text-muted-foreground text-sm ml-1">Following</span>
+            </button>
+            <button className="hover:underline" onClick={() => router.push(`/profile/${profileData?.username}/followers`)}>
+              <span className="font-semibold">{profileData?.followersCount || 0}</span>
+              <span className="text-muted-foreground text-sm ml-1">Followers</span>
+            </button>
             
             {/* XP and Level */}
-            <div className="flex items-center gap-4">
-              {profileData?.points && (
-                <div className="flex items-center gap-1">
-                  <Trophy size={16} className="text-yellow-500" />
-                  <span className="font-semibold">{profileData.points}</span>
-                  <span className="text-muted-foreground text-sm">XP</span>
-                </div>
-              )}
-              {profileData?.level && (
-                <Badge variant="default" className="bg-blue-500">
-                  Level {profileData.level}
-                </Badge>
-              )}
-            </div>
+            {profileData?.points && (
+              <div className="flex items-center gap-1">
+                <Trophy size={16} className="text-yellow-500" />
+                <span className="font-semibold">{profileData.points}</span>
+                <span className="text-muted-foreground text-sm">XP</span>
+              </div>
+            )}
+            {profileData?.level && (
+              <Badge variant="default" className="bg-blue-500">
+                Level {profileData.level}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -387,34 +388,6 @@ export default function MyProfile() {
                   <p className="text-muted-foreground">Photos and videos you share will appear here.</p>
                 </div>
               )}
-            </div>
-          )}
-
-          {activeTab === 'following' && (
-            <div className="space-y-4">
-              <div className="text-center py-12">
-                <Users size={48} className="mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Following {profileData?.followingCount || 0} people</h3>
-                <p className="text-muted-foreground mb-4">People you follow will appear here.</p>
-                <Button onClick={() => router.push('/search')}>
-                  <Users size={16} className="mr-2" />
-                  Find People to Follow
-                </Button>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'followers' && (
-            <div className="space-y-4">
-              <div className="text-center py-12">
-                <Users size={48} className="mx-auto text-muted-foreground mb-4" />
-                <h3 className="text-lg font-semibold mb-2">{profileData?.followersCount || 0} followers</h3>
-                <p className="text-muted-foreground mb-4">People who follow you will appear here.</p>
-                <Button onClick={() => router.push('/home')}>
-                  <MessageCircle size={16} className="mr-2" />
-                  Share a Post
-                </Button>
-              </div>
             </div>
           )}
 
