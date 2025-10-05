@@ -57,12 +57,8 @@ const getNavItems = (userRole?: string): NavItem[] => {
     { label: "Communities", icon: MessageSquare, href: "/communities" },
     { label: "Search", icon: Search, href: "/search" },
     { label: "Trending", icon: Compass, href: "/trending" },
-    { label: "Projects", icon: FolderOpen, href: "/projects" },
-    { label: "Missions", icon: ListOrdered, href: "/missions", badge: "3" },
-    { label: "referrals", icon: Plus, href: "/referrals" },
     { label: "Leaderboard", icon: Trophy, href: "/leaderboard" },
-  { label: "Feedback", icon: MessageSquare, href: "/feedback" },
-  { label: "My Profile", icon: User, href: "/profile" },
+    { label: "My Profile", icon: User, href: "/profile" },
   ]
 
   // Add admin/moderator specific items
