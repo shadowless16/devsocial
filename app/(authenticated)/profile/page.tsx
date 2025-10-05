@@ -38,6 +38,10 @@ export default function MyProfile() {
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)
+  const [showFollowModal, setShowFollowModal] = useState(false)
+  const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers')
+  const [followData, setFollowData] = useState<any[]>([])
+  const [loadingFollowData, setLoadingFollowData] = useState(false)
   const observer = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
@@ -124,6 +128,28 @@ export default function MyProfile() {
 
   const handlePostClick = (postId: string) => {
     router.push(`/post/${postId}`)
+  }
+
+  const handleShowFollowModal = async (type: 'followers' | 'following') => {
+    setFollowModalType(type)
+    setShowFollowModal(true)
+    setLoadingFollowData(true)
+    
+    try {
+      const endpoint = type === 'followers' 
+        ? `/api/users/${profileData?.username}/followers`
+        : `/api/users/${profileData?.username}/following`
+      
+      const response = await fetch(endpoint)
+      if (response.ok) {
+        const data = await response.json()
+        setFollowData(data.data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching follow data:', error)
+    } finally {
+      setLoadingFollowData(false)
+    }
   }
 
   const tabs = [
@@ -227,11 +253,11 @@ export default function MyProfile() {
           {/* Stats Row */}
           <div className="flex items-center gap-6 mb-4 flex-wrap">
             {/* Following/Followers */}
-            <button className="hover:underline" onClick={() => router.push(`/profile/${profileData?.username}/following`)}>
+            <button className="hover:underline" onClick={() => handleShowFollowModal('following')}>
               <span className="font-semibold">{profileData?.followingCount || 0}</span>
               <span className="text-muted-foreground text-sm ml-1">Following</span>
             </button>
-            <button className="hover:underline" onClick={() => router.push(`/profile/${profileData?.username}/followers`)}>
+            <button className="hover:underline" onClick={() => handleShowFollowModal('followers')}>
               <span className="font-semibold">{profileData?.followersCount || 0}</span>
               <span className="text-muted-foreground text-sm ml-1">Followers</span>
             </button>
@@ -253,22 +279,23 @@ export default function MyProfile() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-border">
-          <nav className="flex overflow-x-auto">
+        <div className="border-b border-border overflow-x-auto">
+          <nav className="flex min-w-max">
             {tabs.map((tab) => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 py-4 px-3 whitespace-nowrap font-medium text-sm transition-colors ${
+                className={`flex items-center gap-1.5 py-3 px-4 whitespace-nowrap font-medium text-xs sm:text-sm transition-colors ${
                   activeTab === tab.id
                     ? 'text-foreground border-b-2 border-primary'
                     : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
-                <tab.icon size={16} />
-                {tab.label}
+                <tab.icon size={14} className="sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">{tab.label}</span>
+                <span className="sm:hidden">{tab.label.slice(0, 4)}</span>
                 {tab.count > 0 && (
-                  <span className="text-xs text-muted-foreground">
+                  <span className="text-[10px] sm:text-xs text-muted-foreground">
                     ({tab.count})
                   </span>
                 )}
@@ -548,6 +575,54 @@ export default function MyProfile() {
             setShowEditModal(false)
           }}
         />
+      )}
+
+      {/* Follow Modal */}
+      {showFollowModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-background rounded-lg w-full max-w-md max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-border">
+              <h2 className="text-lg font-semibold">
+                {followModalType === 'followers' ? 'Followers' : 'Following'}
+              </h2>
+              <Button variant="ghost" size="sm" onClick={() => setShowFollowModal(false)}>
+                <Edit2 size={16} className="rotate-45" />
+              </Button>
+            </div>
+            <div className="overflow-y-auto max-h-[60vh] p-4">
+              {loadingFollowData ? (
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin" />
+                </div>
+              ) : followData.length > 0 ? (
+                <div className="space-y-3">
+                  {followData.map((person: any) => (
+                    <div key={person._id || person.id} className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={person.avatar} />
+                        <AvatarFallback>{person.displayName?.[0] || person.username?.[0] || 'U'}</AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium truncate">{person.displayName || person.username}</p>
+                        <p className="text-sm text-muted-foreground truncate">@{person.username}</p>
+                      </div>
+                      <Button size="sm" variant="outline" onClick={() => router.push(`/profile/${person.username}`)}>
+                        View
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8">
+                  <Users size={48} className="mx-auto text-muted-foreground mb-2" />
+                  <p className="text-muted-foreground">
+                    {followModalType === 'followers' ? 'No followers yet' : 'Not following anyone yet'}
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
