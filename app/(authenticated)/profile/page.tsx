@@ -124,6 +124,8 @@ export default function MyProfile() {
   const tabs = [
     { id: 'posts', label: 'Posts', count: userPosts.length, icon: MessageCircle },
     { id: 'media', label: 'Media', count: userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length, icon: Target },
+    { id: 'following', label: 'Following', count: profileData?.followingCount || 0, icon: Users },
+    { id: 'followers', label: 'Followers', count: profileData?.followersCount || 0, icon: Users },
     { id: 'projects', label: 'Projects', count: 0, icon: FolderOpen },
     { id: 'missions', label: 'Missions', count: 3, icon: ListOrdered },
     { id: 'referrals', label: 'Referrals', count: 0, icon: Plus },
@@ -385,6 +387,34 @@ export default function MyProfile() {
                   <p className="text-muted-foreground">Photos and videos you share will appear here.</p>
                 </div>
               )}
+            </div>
+          )}
+
+          {activeTab === 'following' && (
+            <div className="space-y-4">
+              <div className="text-center py-12">
+                <Users size={48} className="mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">Following {profileData?.followingCount || 0} people</h3>
+                <p className="text-muted-foreground mb-4">People you follow will appear here.</p>
+                <Button onClick={() => router.push('/search')}>
+                  <Users size={16} className="mr-2" />
+                  Find People to Follow
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {activeTab === 'followers' && (
+            <div className="space-y-4">
+              <div className="text-center py-12">
+                <Users size={48} className="mx-auto text-muted-foreground mb-4" />
+                <h3 className="text-lg font-semibold mb-2">{profileData?.followersCount || 0} followers</h3>
+                <p className="text-muted-foreground mb-4">People who follow you will appear here.</p>
+                <Button onClick={() => router.push('/home')}>
+                  <MessageCircle size={16} className="mr-2" />
+                  Share a Post
+                </Button>
+              </div>
             </div>
           )}
 
