@@ -58,7 +58,7 @@ async function connectDB() {
       heartbeatFrequencyMS: 10000
     }
 
-    cached.promise = mongoose.connect(MONGODB_URI!, opts) as Promise<typeof mongoose>
+    cached.promise = mongoose.connect(MONGODB_URI!, opts)
   }
 
   try {
