@@ -39,11 +39,11 @@ async function connectDB() {
     return mongoose.connection
   }
 
-  if (cached.conn) {
+  if (cached?.conn) {
     return cached.conn
   }
 
-  if (!cached.promise) {
+  if (!cached?.promise) {
     const opts = {
       bufferCommands: false,
       maxPoolSize: 10,
@@ -62,15 +62,15 @@ async function connectDB() {
   }
 
   try {
-    cached.conn = await cached.promise
+    cached!.conn = await cached!.promise
     console.log('MongoDB connected successfully')
   } catch (e) {
-    cached.promise = null
+    cached!.promise = null
     console.error('MongoDB connection failed:', e)
     throw e
   }
 
-  return cached.conn
+  return cached!.conn
 }
 
 export default connectDB
