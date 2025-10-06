@@ -32,19 +32,19 @@ export default function AuthenticatedLayout({
           md:grid-cols-[240px_1fr] lg:grid-cols-[260px_minmax(0,600px)_300px] xl:grid-cols-[280px_minmax(0,650px)_320px] overflow-x-hidden">
           
           {/* Left Sidebar */}
-          <aside className="hidden md:block sticky top-6 self-start overflow-hidden">
+          <aside className="hidden md:block sticky top-6 self-start overflow-y-auto max-h-[calc(100vh-3rem)]">
             <Suspense fallback={<Skeleton className="h-96 w-full" />}>
               <SideNav />
             </Suspense>
           </aside>
 
           {/* Main Feed */}
-          <section aria-label="Feed" className="grid gap-3 md:gap-6 w-full min-w-0 px-0 overflow-hidden mx-auto">
+          <section aria-label="Feed" className="grid gap-3 md:gap-6 w-full min-w-0 px-0 overflow-visible mx-auto">
             {children}
           </section>
 
           {/* Right Sidebar */}
-          <aside className="hidden lg:block sticky top-6 self-start overflow-hidden">
+          <aside className="hidden lg:block sticky top-6 self-start overflow-y-auto max-h-[calc(100vh-3rem)]">
             <Suspense fallback={<Skeleton className="h-96 w-full" />}>
               <RightRail />
             </Suspense>
