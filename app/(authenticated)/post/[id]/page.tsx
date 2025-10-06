@@ -500,15 +500,15 @@ export default function PostPage() {
               )}
 
               {/* Tags */}
-              {post.tags.length > 0 && (
+              {post.tags && post.tags.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {post.tags.map((tag, idx) => (
                     <Badge
-                      key={tag}
+                      key={`${tag}-${idx}`}
                       variant="outline"
                       className="text-emerald-600 border-emerald-200 hover:bg-emerald-50 cursor-pointer"
                     >
-                      {tag}
+                      #{tag.replace(/^#+/, '')}
                     </Badge>
                   ))}
                 </div>
@@ -577,7 +577,7 @@ export default function PostPage() {
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
               <div className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
-                <span>{post.viewsCount || 0}</span>
+                <span>{post.viewsCount || 0} views</span>
               </div>
               <time className="text-xs text-muted-foreground" title={formatFullTimestamp(post.createdAt)}>
                 {formatTimestamp(post.createdAt)}
