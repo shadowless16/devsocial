@@ -28,23 +28,23 @@ export default function AuthenticatedLayout({
   return (
     <TooltipProvider>
       <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full overflow-x-hidden">
-        <div className="mx-auto grid w-full max-w-[120rem] gap-3 md:gap-6 px-2 sm:px-3 md:px-4 py-3 md:py-6 
-          md:grid-cols-[200px_1fr] lg:grid-cols-[220px_1fr_240px] overflow-x-hidden">
+        <div className="mx-auto grid w-full max-w-[1400px] gap-4 md:gap-6 px-4 sm:px-6 md:px-8 lg:px-12 py-3 md:py-6 
+          md:grid-cols-[240px_1fr] lg:grid-cols-[260px_minmax(0,600px)_300px] xl:grid-cols-[280px_minmax(0,650px)_320px] overflow-x-hidden">
           
           {/* Left Sidebar */}
-          <aside className="hidden md:block sticky top-6 self-start overflow-hidden w-[220px] lg:w-[260px]">
+          <aside className="hidden md:block sticky top-6 self-start overflow-hidden">
             <Suspense fallback={<Skeleton className="h-96 w-full" />}>
               <SideNav />
             </Suspense>
           </aside>
 
           {/* Main Feed */}
-          <section aria-label="Feed" className="grid gap-3 md:gap-6 w-full min-w-0 px-0 overflow-hidden">
+          <section aria-label="Feed" className="grid gap-3 md:gap-6 w-full min-w-0 px-0 overflow-hidden mx-auto">
             {children}
           </section>
 
           {/* Right Sidebar */}
-          <aside className="hidden lg:block sticky top-6 self-start overflow-hidden w-[280px]">
+          <aside className="hidden lg:block sticky top-6 self-start overflow-hidden">
             <Suspense fallback={<Skeleton className="h-96 w-full" />}>
               <RightRail />
             </Suspense>
