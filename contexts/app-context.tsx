@@ -9,6 +9,8 @@ export interface User {
   id: string;
   username: string;
   email: string;
+  firstName?: string;
+  lastName?: string;
   bio: string;
   affiliation: string;
   avatar: string;
@@ -306,6 +308,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               id: userData._id?.toString() || userData.id,
               username: userData.username,
               email: userData.email,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
               bio: userData.bio || '',
               affiliation: userData.affiliation || '',
               avatar: userData.avatar || '/placeholder.svg',
