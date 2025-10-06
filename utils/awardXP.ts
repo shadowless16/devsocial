@@ -98,7 +98,7 @@ export async function checkFirstTimeAction(userId: string, type: "post" | "comme
   try {
     // await connectDB() // Remove in tests, connection already exists
 
-    const logType = type === "post" ? "post_creation" : "comment_creation"
+    const logType = type === "post" ? "first_post" : "first_comment"
     const existingLog = await XPLog.findOne({ userId, type: logType })
 
     return !existingLog
