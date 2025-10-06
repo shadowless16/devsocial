@@ -45,9 +45,9 @@ export async function POST(req: NextRequest) {
     });
 
     return NextResponse.json({
+      success: true,
+      url: result.secure_url,
       public_id: result.public_id,
-      secure_url: result.secure_url,
-      url: result.url,
       format: result.format,
       width: result.width,
       height: result.height,
@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error('Avatar upload error:', error);
     return NextResponse.json(
-      { error: 'Upload failed', details: error instanceof Error ? error.message : 'Unknown error' },
+      { success: false, message: 'Upload failed', error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     );
   }

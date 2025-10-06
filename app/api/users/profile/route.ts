@@ -89,7 +89,7 @@ export async function PUT(req: NextRequest) {
     const body = await req.json();
 
     const {
-      displayName, bio, affiliation, location, website, avatar, bannerUrl,
+      firstName, lastName, displayName, bio, affiliation, location, website, avatar, bannerUrl,
       currentPassword, newPassword
     } = body;
 
@@ -111,6 +111,8 @@ export async function PUT(req: NextRequest) {
     };
 
     const updateData: Partial<IUser> = {};
+    if (firstName !== undefined) updateData.firstName = firstName;
+    if (lastName !== undefined) updateData.lastName = lastName;
     if (displayName !== undefined) updateData.displayName = displayName;
     if (bio !== undefined) updateData.bio = bio;
     if (affiliation !== undefined) updateData.affiliation = affiliation;
