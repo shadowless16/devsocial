@@ -6,7 +6,7 @@ import { ReferralSystemFixed } from "./referral-system-fixed"
 // XP values for different actions
 export const XP_VALUES = {
   daily_login: 10,
-  post_creation: 15,
+  post_creation: 20,
   comment_creation: 2.5,
   like_given: 1.5,  // Small XP for likes to prevent spam
   like_received: 3,  // Slightly more XP when receiving likes
