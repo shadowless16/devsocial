@@ -22,6 +22,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const [content, setContent] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   
@@ -117,13 +118,10 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
     if (!files.length) return;
     
     setIsUploading(true);
+    setUploadProgress(0);
+    
     try {
-      const formData = new FormData();
-      Array.from(files).forEach(file => {
-        formData.append('file', file);
-      });
-
-      const uploadPromises = Array.from(files).map(async (file) => {
+      const uploadPromises = Array.from(files).map(async (file, index) => {
         const fileFormData = new FormData();
         fileFormData.append('file', file);
         
@@ -134,11 +132,18 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         
         if (!response.ok) throw new Error('Upload failed');
         const data = await response.json();
-        return data.secure_url;
+        
+        setUploadProgress(((index + 1) / files.length) * 100);
+        return data.secure_url || data.url;
       });
 
       const urls = await Promise.all(uploadPromises);
-      setMediaUrls(prev => [...prev, ...urls].slice(0, 4)); // Max 4 media items
+      setMediaUrls(prev => [...prev, ...urls].slice(0, 4));
+      
+      toast({
+        title: "Upload successful",
+        description: `${urls.length} file(s) uploaded`,
+      });
     } catch (error) {
       toast({
         title: "Upload failed",
@@ -147,6 +152,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       });
     } finally {
       setIsUploading(false);
+      setUploadProgress(0);
     }
   };
 
@@ -170,7 +176,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
 
     const postData = {
       content: content.trim(),
-      mediaUrls,
+      imageUrls: mediaUrls,
       tags,
       isAnonymous: false,
     };
@@ -420,7 +426,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
               disabled={!content.trim() || isUploading || isOverLimit}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 rounded-full"
             >
-              {isUploading ? "Uploading..." : "Post"}
+              {isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Post"}
             </Button>
           </div>
         </form>
