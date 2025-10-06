@@ -63,7 +63,7 @@ function Trends() {
         ) : (
           <>
             {trendingTopics.slice(0, 6).map((topic, index) => (
-              <Link key={topic.tag} href={`/tag/${topic.tag.replace(/^#+/, '')}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
+              <Link key={`${topic.tag}-${index}`} href={`/tag/${topic.tag.replace(/^#+/, '')}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-2">
                   <span className="text-emerald-600 font-medium text-sm">#{topic.tag.replace(/^#+/, '')}</span>
 
