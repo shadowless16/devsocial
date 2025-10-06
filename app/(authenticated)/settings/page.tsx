@@ -30,6 +30,8 @@ const WalletConnect = dynamic(() => import('@/components/wallet-connect').then(m
 // Use the imported 'User' type here.
 type ProfileFormData = Pick<
   User,
+  | "firstName"
+  | "lastName"
   | "displayName"
   | "username"
   | "email"
@@ -66,6 +68,7 @@ export default function SettingsPage() {
   const [affiliations, setAffiliations] = useState<string[]>([]);
   const [loadingAffiliations, setLoadingAffiliations] = useState(true);
   const [loadingTimeout, setLoadingTimeout] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   // Debug logging
   console.log('[Settings Debug]', {
@@ -89,6 +92,8 @@ export default function SettingsPage() {
     if (user) {
       console.log('[Settings] Setting form data with user:', user);
       setFormData({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
         displayName: user.displayName || user.username,
         username: user.username,
         email: user.email,
@@ -134,6 +139,47 @@ export default function SettingsPage() {
     setFormData((prev) => (prev ? { ...prev, [field]: value } : null));
   };
 
+  const handleAvatarUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please upload an image file');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size must be less than 5MB');
+      return;
+    }
+
+    setUploadingAvatar(true);
+    setError(null);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/upload/avatar', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.success && data.url) {
+        setFormData((prev) => (prev ? { ...prev, avatar: data.url } : null));
+        setSuccess('Avatar uploaded successfully!');
+      } else {
+        throw new Error(data.message || 'Upload failed');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to upload avatar');
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
+
    const handleSave = async () => {
     // This guard clause is essential. It stops if formData is null.
     if (!formData) {
@@ -146,15 +192,15 @@ export default function SettingsPage() {
     setSuccess(null);
 
     try {
-      // THE CRITICAL PART:
-      // We are creating a new object called 'payload' directly from the 'formData' state.
-      // There is NO variable named 'data' being used here.
       const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
         displayName: formData.displayName,
         bio: formData.bio,
         affiliation: formData.affiliation,
         location: formData.location,
         website: formData.website,
+        avatar: formData.avatar,
       };
 
       // We pass the 'payload' object to the API client.
@@ -233,12 +279,24 @@ export default function SettingsPage() {
                 <div className="space-y-2">
                     <h3 className="font-semibold text-gray-900">Profile Picture</h3>
                     <p className="text-sm text-gray-600">
-                        Avatar upload will be enabled soon.
+                        Upload a profile picture (max 5MB)
                     </p>
-                    <Button variant="outline" size="sm" disabled>
-                        <Upload className="w-4 h-4 mr-2" />
-                        Upload New
-                    </Button>
+                    <label htmlFor="avatar-upload">
+                      <Button variant="outline" size="sm" disabled={uploadingAvatar} asChild>
+                        <span className="cursor-pointer">
+                          <Upload className="w-4 h-4 mr-2" />
+                          {uploadingAvatar ? 'Uploading...' : 'Upload New'}
+                        </span>
+                      </Button>
+                    </label>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                      disabled={uploadingAvatar}
+                    />
                 </div>
               </div>
 
@@ -246,8 +304,16 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="space-y-2">
+                  <Label htmlFor="firstName">First Name</Label>
+                  <Input id="firstName" value={formData.firstName || ""} onChange={(e) => handleInputChange("firstName", e.target.value)} placeholder="Enter your first name" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input id="lastName" value={formData.lastName || ""} onChange={(e) => handleInputChange("lastName", e.target.value)} placeholder="Enter your last name" />
+                </div>
+                <div className="space-y-2">
                   <Label htmlFor="displayName">Display Name</Label>
-                  <Input id="displayName" value={formData.displayName} onChange={(e) => handleInputChange("displayName", e.target.value)} />
+                  <Input id="displayName" value={formData.displayName} onChange={(e) => handleInputChange("displayName", e.target.value)} placeholder="How you want to be called" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="username">Username</Label>
