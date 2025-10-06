@@ -4,7 +4,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Send, Trash, Coins, Eye } from "lucide-react"
+import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Send, Trash, Coins, Eye, Bookmark, Flag } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -80,6 +80,7 @@ export default function PostPage() {
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
   const [replyText, setReplyText] = useState("")
   const [showTipModal, setShowTipModal] = useState(false)
+  const [isBookmarked, setIsBookmarked] = useState(false)
 
   // Fetch post data
   useEffect(() => {
@@ -262,7 +263,30 @@ export default function PostPage() {
 
   const formatTimestamp = (timestamp: string) => {
     const date = new Date(timestamp)
-    return date.toLocaleDateString('en-US') + " " + date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
+
+    if (diffMins < 1) return 'Just now'
+    if (diffMins < 60) return `${diffMins}m`
+    if (diffHours < 24) return `${diffHours}h`
+    if (diffDays < 7) return `${diffDays}d`
+    
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: date.getFullYear() !== now.getFullYear() ? 'numeric' : undefined })
+  }
+
+  const formatFullTimestamp = (timestamp: string) => {
+    const date = new Date(timestamp)
+    return date.toLocaleString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true,
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    })
   }
 
   const handleDeletePost = async () => {
@@ -405,7 +429,7 @@ export default function PostPage() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    {user && (!post.isAnonymous ? post.author?.username === user.username : true) && (
+                    {user && (!post.isAnonymous ? post.author?.username === user.username : true) ? (
                       <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation()
@@ -415,6 +439,17 @@ export default function PostPage() {
                       >
                         <Trash className="w-4 h-4 mr-2" />
                         Delete Post
+                      </DropdownMenuItem>
+                    ) : (
+                      <DropdownMenuItem 
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          toast({ title: "Report submitted", description: "Thank you for helping keep our community safe" })
+                        }}
+                        className="text-red-600 focus:text-red-600"
+                      >
+                        <Flag className="w-4 h-4 mr-2" />
+                        Report Post
                       </DropdownMenuItem>
                     )}
                   </DropdownMenuContent>
@@ -489,44 +524,52 @@ export default function PostPage() {
           
           {/* Action Buttons */}
           <div className="space-y-3 pt-3 border-t border-gray-100">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleLike}
-                  className={`h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
-                    post.isLiked ? "text-red-500" : ""
-                  }`}
-                >
-                  <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-red-500 text-red-500" : ""}`} />
-                  <span className="text-sm font-medium">{post.likesCount}</span>
-                </Button>
-                
-                <div className="flex items-center gap-2 h-9 px-3 rounded-full text-muted-foreground">
-                  <MessageCircle className="h-4 w-4" />
-                  <span className="text-sm font-medium">{post.commentsCount}</span>
-                </div>
-                
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-green-500"
-                >
-                  <Share className="h-4 w-4" />
-                  <span className="text-sm font-medium hidden sm:inline">Share</span>
-                </Button>
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLike}
+                className={`h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
+                  post.isLiked ? "text-red-500" : ""
+                }`}
+              >
+                <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                <span className="text-sm font-medium">{post.likesCount}</span>
+              </Button>
+              
+              <div className="flex items-center gap-2 h-9 px-3 rounded-full text-muted-foreground">
+                <MessageCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">{post.commentsCount}</span>
               </div>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-green-500"
+              >
+                <Share className="h-4 w-4" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsBookmarked(!isBookmarked)}
+                className={`h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-blue-500 ${
+                  isBookmarked ? "text-blue-500" : ""
+                }`}
+              >
+                <Bookmark className={`h-4 w-4 transition ${isBookmarked ? "fill-blue-500" : ""}`} />
+              </Button>
               
               {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
                 <Button
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="h-9 gap-2 rounded-full px-3 text-muted-foreground hover:text-yellow-600 border border-yellow-200 hover:border-yellow-300"
+                  className="h-9 gap-2 rounded-full px-3 ml-auto border-yellow-200 hover:border-yellow-300 hover:bg-yellow-50"
                   onClick={() => setShowTipModal(true)}
                 >
-                  <Coins className="h-4 w-4" />
-                  <span className="text-sm font-medium">Tip</span>
+                  <Coins className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm font-medium text-yellow-600">Tip</span>
                 </Button>
               )}
             </div>
@@ -534,11 +577,11 @@ export default function PostPage() {
             <div className="flex items-center justify-between text-xs text-muted-foreground pt-1">
               <div className="flex items-center gap-1">
                 <Eye className="h-3.5 w-3.5" />
-                <span>Views: {post.viewsCount || 0}</span>
+                <span>{post.viewsCount || 0}</span>
               </div>
-              <div className="text-xs text-muted-foreground">
+              <time className="text-xs text-muted-foreground" title={formatFullTimestamp(post.createdAt)}>
                 {formatTimestamp(post.createdAt)}
-              </div>
+              </time>
             </div>
           </div>
         </CardContent>
