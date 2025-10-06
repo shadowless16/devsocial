@@ -463,7 +463,7 @@ export default function PostPage() {
               
               {/* Media Content */}
               {(post.imageUrls?.length || post.videoUrls?.length) && (
-                <div className="rounded-lg overflow-hidden">
+                <div className="rounded-lg overflow-hidden border border-border">
                   {post.imageUrls && post.imageUrls.length > 0 && (
                     <div className={`grid gap-2 ${
                       post.imageUrls.length === 1 ? 'grid-cols-1' :
@@ -475,7 +475,7 @@ export default function PostPage() {
                           key={index}
                           src={imageUrl}
                           alt={`Post image ${index + 1}`} 
-                          className="w-full h-auto object-cover rounded-md max-h-48"
+                          className="w-full h-auto object-contain rounded-md"
                         />
                       ))}
                     </div>

@@ -325,19 +325,19 @@ export default function PostCard({
                 <PostContent content={content || ""} onCopyCode={handleCopyCode} />
               </div>
 
-              {/* Media Display - Fixed aspect ratio */}
-              <div className="w-full max-w-lg" onClick={(e) => {
+              {/* Media Display */}
+              <div className="w-full -mx-1" onClick={(e) => {
                   if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
                     return;
                   }
                   postId && onClick?.(postId)
                 }}>
                 {imageUrl && (
-                  <div className="mb-3 rounded-lg overflow-hidden">
+                  <div className="mb-3 rounded-lg overflow-hidden border border-border">
                     <img
                       src={imageUrl}
                       alt="Post image"
-                      className="w-full h-auto object-cover max-h-96 rounded-lg"
+                      className="w-full h-auto object-contain rounded-lg"
                     />
                   </div>
                 )}
@@ -345,15 +345,15 @@ export default function PostCard({
                 {imageUrls && imageUrls.length > 0 && (
                   <div className="mb-3">
                     {imageUrls.length === 1 ? (
-                      <div className="rounded-lg overflow-hidden">
+                      <div className="rounded-lg overflow-hidden border border-border">
                         <img
                           src={imageUrls[0]}
                           alt="Post image"
-                          className="w-full h-auto object-cover max-h-96 rounded-lg"
+                          className="w-full h-auto object-contain rounded-lg"
                         />
                       </div>
                     ) : (
-                      <div className={`grid gap-1 rounded-lg overflow-hidden ${
+                      <div className={`grid gap-2 rounded-lg overflow-hidden ${
                         imageUrls.length === 2 ? 'grid-cols-2' :
                         imageUrls.length === 3 ? 'grid-cols-2' :
                         'grid-cols-2'
@@ -361,14 +361,14 @@ export default function PostCard({
                         {imageUrls.slice(0, 4).map((imageUrl, index) => (
                           <div 
                             key={index} 
-                            className={`relative ${
+                            className={`relative border border-border rounded-lg overflow-hidden ${
                               imageUrls.length === 3 && index === 0 ? 'row-span-2' : ''
                             }`}
                           >
                             <img
                               src={imageUrl}
                               alt={`Post image ${index + 1}`}
-                              className="w-full h-24 sm:h-32 object-cover rounded-md"
+                              className="w-full h-full min-h-[200px] object-cover"
                             />
                             {index === 3 && imageUrls.length > 4 && (
                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
