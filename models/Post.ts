@@ -27,6 +27,24 @@ export interface IPost extends Document {
     retryCount?: number
   } | null
   duplicateOf?: mongoose.Types.ObjectId
+  poll?: {
+    question: string
+    options: Array<{
+      id: string
+      text: string
+      votes: number
+      voters: mongoose.Types.ObjectId[]
+    }>
+    settings: {
+      multipleChoice: boolean
+      maxChoices?: number
+      duration?: number
+      showResults: "always" | "afterVote" | "afterEnd"
+      allowAddOptions: boolean
+    }
+    endsAt?: Date
+    totalVotes: number
+  }
   createdAt: Date
   updatedAt: Date
 }
@@ -129,6 +147,33 @@ const PostSchema = new Schema<IPost>(
     duplicateOf: {
       type: Schema.Types.ObjectId,
       ref: "Post",
+      default: null,
+    },
+    poll: {
+      type: {
+        question: { type: String, required: true },
+        options: [
+          {
+            id: { type: String, required: true },
+            text: { type: String, required: true },
+            votes: { type: Number, default: 0 },
+            voters: [{ type: Schema.Types.ObjectId, ref: "User" }],
+          },
+        ],
+        settings: {
+          multipleChoice: { type: Boolean, default: false },
+          maxChoices: { type: Number, default: 1 },
+          duration: { type: Number },
+          showResults: {
+            type: String,
+            enum: ["always", "afterVote", "afterEnd"],
+            default: "afterVote",
+          },
+          allowAddOptions: { type: Boolean, default: false },
+        },
+        endsAt: { type: Date },
+        totalVotes: { type: Number, default: 0 },
+      },
       default: null,
     },
   },

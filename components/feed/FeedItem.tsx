@@ -32,6 +32,7 @@ import dynamic from 'next/dynamic'
 import { TipModal } from "@/components/modals/tip-modal"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 import { formatTimeAgo } from "@/lib/time-utils"
+import { PollDisplay } from "@/components/poll/poll-display"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -49,7 +50,7 @@ interface Post {
     displayName: string;
     avatar: string;
     level: number;
-  } | null; // Allow author to be null
+  } | null;
   content: string;
   imageUrl?: string | null;
   imageUrls?: string[];
@@ -68,6 +69,23 @@ interface Post {
     topicId?: string;
     seq?: number;
   } | null;
+  poll?: {
+    question: string;
+    options: Array<{
+      id: string;
+      text: string;
+      votes: number;
+      voters: string[];
+    }>;
+    settings: {
+      multipleChoice: boolean;
+      maxChoices: number;
+      showResults: "always" | "afterVote" | "afterEnd";
+      allowAddOptions: boolean;
+    };
+    endsAt?: string;
+    totalVotes: number;
+  };
 }
 
 interface Comment {
@@ -114,6 +132,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
   const [showTipModal, setShowTipModal] = useState(false);
+  const [pollData, setPollData] = useState(post.poll);
   const { toast } = useToast();
   const { user } = useAuth();
   const router = useRouter();
@@ -293,6 +312,37 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
 
   const canDeletePost = user && (!post.isAnonymous ? post.author?.username === user.username : true);
 
+  const handlePollVote = async (optionIds: string[]) => {
+    try {
+      const response = await apiClient.request<any>('/polls/vote', {
+        method: 'POST',
+        body: JSON.stringify({ postId: post.id, optionIds }),
+      });
+      
+      if (response.success && response.data) {
+        setPollData(response.data.poll);
+        toast({
+          title: "Vote recorded!",
+          description: `+${response.data.xpAwarded} XP`,
+          variant: "success",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Failed to vote",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getUserVotes = () => {
+    if (!user || !pollData) return [];
+    return pollData.options
+      .filter((opt) => opt.voters.includes(user.id || user._id))
+      .map((opt) => opt.id);
+  };
+
   // Fallback author data for invalid or missing author
   const fallbackAuthor = {
     username: "Unknown",
@@ -447,9 +497,22 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         </div>
 
         <CardContent className="px-3 pb-0 md:px-6">
-        <div className="text-sm md:text-[15px] leading-6 md:leading-7 mb-3 break-words overflow-wrap-anywhere word-wrap break-word whitespace-pre-wrap">
-          <PostContent content={post.content} onCopyCode={handleCopyCode} />
-        </div>
+        {pollData ? (
+          <div className="mb-4">
+            <PollDisplay
+              poll={pollData}
+              userVotes={getUserVotes()}
+              onVote={handlePollVote}
+              currentUserId={user?.id || user?._id}
+            />
+          </div>
+        ) : null}
+        
+        {post.content && (
+          <div className="text-sm md:text-[15px] leading-6 md:leading-7 mb-3 break-words overflow-wrap-anywhere word-wrap break-word whitespace-pre-wrap">
+            <PostContent content={post.content} onCopyCode={handleCopyCode} />
+          </div>
+        )}
 
         {/* Legacy single image support */}
         {post.imageUrl && (

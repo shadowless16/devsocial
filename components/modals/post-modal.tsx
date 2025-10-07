@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, FormEvent, useEffect } from "react";
-import { X, ImageIcon, Hash, Eye, EyeOff, Video, Upload, Trash2 } from "lucide-react";
+import { X, ImageIcon, Hash, Eye, EyeOff, Video, Upload, Trash2, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MentionInput } from "@/components/ui/mention-input";
@@ -18,6 +18,7 @@ import ReactCrop, { Crop, PixelCrop } from 'react-image-crop';
 import 'react-image-crop/dist/ReactCrop.css';
 import { useToast } from "@/hooks/use-toast";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
+import { PollCreator } from "@/components/poll/poll-creator";
 
 interface PostModalProps {
   isOpen: boolean;
@@ -55,9 +56,11 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [mediaUrls, setMediaUrls] = useState<string[]>([]);
-  const [postType, setPostType] = useState<'normal' | 'code' | 'challenge'>('normal');
+  const [postType, setPostType] = useState<'normal' | 'code' | 'challenge' | 'poll'>('normal');
   const [isUploading, setIsUploading] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [pollData, setPollData] = useState<any>(null);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -309,11 +312,23 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     const postData = {
       content,
       tags,
-      imageUrl: imageUrl || null, // Include the manual image URL if provided
+      imageUrl: imageUrl || null,
       imageUrls: imageUrls.length > 0 ? imageUrls : undefined,
       videoUrls: videoUrls.length > 0 ? videoUrls : undefined,
       isAnonymous,
       postType,
+      poll: pollData ? {
+        question: pollData.question,
+        options: pollData.options.map((opt: any) => ({
+          id: opt.id,
+          text: opt.text,
+          votes: 0,
+          voters: [],
+        })),
+        settings: pollData.settings,
+        endsAt: pollData.settings.duration ? new Date(Date.now() + pollData.settings.duration) : undefined,
+        totalVotes: 0,
+      } : undefined,
     };
     
     // Track mission progress
@@ -344,6 +359,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     setPostType('normal');
     setUploadError(null);
     setIsUploading(false);
+    setShowPollCreator(false);
+    setPollData(null);
     resetCropState();
   };
 
@@ -404,7 +421,83 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-4 space-y-4 sm:space-y-4 pb-6 sm:pb-4">
-          <div className="space-y-2">
+          {!showPollCreator && (
+            <div className="flex gap-2 mb-4">
+              <Button
+                type="button"
+                variant={postType === 'normal' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setPostType('normal');
+                  setShowPollCreator(false);
+                  setPollData(null);
+                }}
+                className="flex-1"
+              >
+                Post
+              </Button>
+              <Button
+                type="button"
+                variant={postType === 'poll' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  setPostType('poll');
+                  setShowPollCreator(true);
+                }}
+                className="flex-1"
+              >
+                <BarChart3 className="w-4 h-4 mr-2" />
+                Poll
+              </Button>
+            </div>
+          )}
+
+          {showPollCreator ? (
+            <PollCreator
+              onPollCreate={(poll) => {
+                setPollData(poll);
+                setShowPollCreator(false);
+              }}
+              onCancel={() => {
+                setShowPollCreator(false);
+                setPostType('normal');
+              }}
+            />
+          ) : pollData ? (
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label>Poll Preview</Label>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setPollData(null);
+                    setShowPollCreator(true);
+                  }}
+                >
+                  Edit Poll
+                </Button>
+              </div>
+              <div className="p-4 bg-muted/50 rounded-lg space-y-2">
+                <p className="font-semibold">{pollData.question}</p>
+                {pollData.options.map((opt: any) => (
+                  <div key={opt.id} className="p-2 bg-background rounded border">
+                    {opt.text}
+                  </div>
+                ))}
+                <div className="flex gap-2 text-xs text-muted-foreground">
+                  {pollData.settings.multipleChoice && (
+                    <span>Multiple choice (max {pollData.settings.maxChoices})</span>
+                  )}
+                  {pollData.settings.duration && (
+                    <span>• Duration: {Math.floor(pollData.settings.duration / 3600000)}h</span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-2">
             <Label htmlFor="content">What's on your mind?</Label>
             <MentionInput
               value={content}
@@ -435,7 +528,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               )}
             </div>
           </div>
+          )}
 
+          {!showPollCreator && (
           <div className="space-y-2">
             <Label htmlFor="image">Image URL (Optional)</Label>
             <div className="flex space-x-2">
@@ -726,11 +821,12 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Button
               type="submit"
               className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-9 px-4"
-              disabled={!content.trim() || isUploading || content.length > 2000}
+              disabled={(postType !== 'poll' && !content.trim()) || isUploading || content.length > 2000 || (postType === 'poll' && !pollData)}
             >
-              {isUploading ? "Uploading..." : content.length > 2000 ? "Too Long" : "Post"}
+              {isUploading ? "Uploading..." : content.length > 2000 ? "Too Long" : postType === 'poll' && !pollData ? "Create Poll First" : "Post"}
             </Button>
           </div>
+          )}
         </form>
       </div>
     </div>

@@ -184,7 +184,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json(errorResponse("Invalid JSON in request body"), { status: 400 });
     }
     
-    const { content, tags, isAnonymous, imageUrl, imageUrls, videoUrls } = body;
+    const { content, tags, isAnonymous, imageUrl, imageUrls, videoUrls, poll } = body;
     const authorId = session.user.id;
 
     if (!content || content.trim().length === 0) {
@@ -235,6 +235,7 @@ export async function POST(req: NextRequest) {
       viewsCount: 0,
       likesCount: 0,
       commentsCount: 0,
+      poll: poll || null,
     });
 
     // Compute contentHash and set imprint status
