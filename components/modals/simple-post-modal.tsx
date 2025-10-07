@@ -487,7 +487,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
             {/* Post Button */}
             <Button
               type="submit"
-              disabled={!content.trim() || isUploading || isOverLimit}
+              disabled={(!content.trim() && !pollData) || isUploading || isOverLimit}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 rounded-full"
             >
               {isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Post"}
