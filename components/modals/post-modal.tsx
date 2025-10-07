@@ -421,7 +421,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
         </div>
 
         <form onSubmit={handleSubmit} className="p-4 sm:p-4 space-y-4 sm:space-y-4 pb-6 sm:pb-4">
-          {!showPollCreator && (
+          {!showPollCreator && !pollData && (
             <div className="flex gap-2 mb-4">
               <Button
                 type="button"

@@ -2,13 +2,14 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import { X, ImageIcon, Video, Hash, Smile, Code } from "lucide-react";
+import { X, ImageIcon, Video, Hash, Smile, Code, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { MentionInput } from "@/components/ui/mention-input";
+import { PollCreator } from "@/components/poll/poll-creator";
 
 interface SimplePostModalProps {
   isOpen: boolean;
@@ -25,6 +26,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const [uploadProgress, setUploadProgress] = useState(0);
   const [tags, setTags] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [showPollCreator, setShowPollCreator] = useState(false);
+  const [pollData, setPollData] = useState<any>(null);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -179,6 +182,18 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       imageUrls: mediaUrls,
       tags,
       isAnonymous: false,
+      poll: pollData ? {
+        question: pollData.question,
+        options: pollData.options.map((opt: any) => ({
+          id: opt.id,
+          text: opt.text,
+          votes: 0,
+          voters: [],
+        })),
+        settings: pollData.settings,
+        endsAt: pollData.settings.duration ? new Date(Date.now() + pollData.settings.duration) : undefined,
+        totalVotes: 0,
+      } : undefined,
     };
 
     try {
@@ -197,6 +212,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       setContent("");
       setMediaUrls([]);
       setTags([]);
+      setPollData(null);
+      setShowPollCreator(false);
       onClose();
       
       toast({
@@ -236,6 +253,40 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         </div>
 
         <form onSubmit={handleSubmit} className="p-4">
+          {/* Poll Creator */}
+          {showPollCreator ? (
+            <PollCreator
+              onPollCreate={(poll) => {
+                setPollData(poll);
+                setShowPollCreator(false);
+              }}
+              onCancel={() => setShowPollCreator(false)}
+            />
+          ) : pollData ? (
+            <div className="mb-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="font-semibold text-sm">Poll Preview</h3>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setPollData(null);
+                    setShowPollCreator(true);
+                  }}
+                >
+                  Edit
+                </Button>
+              </div>
+              <p className="font-medium mb-2">{pollData.question}</p>
+              {pollData.options.map((opt: any) => (
+                <div key={opt.id} className="p-2 bg-white dark:bg-gray-800 rounded mb-1 text-sm">
+                  {opt.text}
+                </div>
+              ))}
+            </div>
+          ) : (
+          <>
           {/* Content Input */}
           <div className="mb-4">
             <MentionInput
@@ -305,6 +356,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 </Badge>
               ))}
             </div>
+          )}
+          </>
           )}
 
           {/* Bottom Actions */}
@@ -389,6 +442,17 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 className="h-9 w-9 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600"
               >
                 <Code className="h-4 w-4" />
+              </Button>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowPollCreator(true)}
+                disabled={showPollCreator || pollData}
+                className="h-9 w-9 p-0 rounded-full hover:bg-indigo-50 hover:text-indigo-600"
+              >
+                <BarChart3 className="h-4 w-4" />
               </Button>
 
               <div className="relative">
