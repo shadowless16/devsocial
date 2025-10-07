@@ -168,17 +168,17 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!content.trim()) {
+    if (!content.trim() && !pollData) {
       toast({
         title: "Content required",
-        description: "Please write something before posting.",
+        description: "Please write something or create a poll before posting.",
         variant: "destructive",
       });
       return;
     }
 
     const postData = {
-      content: content.trim(),
+      content: content.trim() || (pollData ? pollData.question : ''),
       imageUrls: mediaUrls,
       tags,
       isAnonymous: false,
