@@ -814,6 +814,8 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
 
+          )}
+
           <div className="flex justify-end pt-4 border-t border-border gap-2">
             <Button type="button" variant="outline" onClick={onClose} className="text-sm h-9 px-4">
               Cancel
@@ -826,7 +828,6 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
               {isUploading ? "Uploading..." : content.length > 2000 ? "Too Long" : postType === 'poll' && !pollData ? "Create Poll First" : "Post"}
             </Button>
           </div>
-          )}
         </form>
       </div>
     </div>
