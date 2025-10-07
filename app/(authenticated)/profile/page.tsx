@@ -284,28 +284,30 @@ export default function MyProfile() {
         </div>
 
         {/* Navigation Tabs */}
-        <div className="border-b border-border -mx-4 px-4 overflow-x-auto scrollbar-hide scroll-smooth">
-          <nav className="flex gap-0.5 sm:gap-1 min-w-max">
-            {tabs.map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex flex-col sm:flex-row items-center justify-center gap-0.5 sm:gap-1.5 py-2.5 sm:py-3 px-2.5 sm:px-4 whitespace-nowrap font-medium text-xs sm:text-sm transition-all min-w-[65px] sm:min-w-0 rounded-t-md ${
-                  activeTab === tab.id
-                    ? 'text-foreground border-b-2 border-primary bg-primary/5'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-muted/50'
-                }`}
-              >
-                <tab.icon size={16} className="sm:w-4 sm:h-4 flex-shrink-0" />
-                <span className="text-[10px] sm:text-sm leading-tight text-center">{tab.label}</span>
-                {tab.count > 0 && (
-                  <span className="text-[9px] sm:text-xs text-muted-foreground hidden sm:inline">
-                    ({tab.count})
-                  </span>
-                )}
-              </button>
-            ))}
-          </nav>
+        <div className="border-b border-border -mx-3 sm:-mx-4">
+          <div className="overflow-x-auto scrollbar-hide px-3 sm:px-4">
+            <nav className="flex gap-1 min-w-max">
+              {tabs.map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`flex flex-col items-center justify-center gap-1 py-3 px-4 whitespace-nowrap font-medium text-xs transition-all min-w-[80px] ${
+                    activeTab === tab.id
+                      ? 'text-foreground border-b-2 border-primary'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  <tab.icon size={18} className="flex-shrink-0" />
+                  <span className="text-[11px] leading-tight">{tab.label}</span>
+                  {tab.count > 0 && (
+                    <span className="text-[10px] text-muted-foreground">
+                      {tab.count}
+                    </span>
+                  )}
+                </button>
+              ))}
+            </nav>
+          </div>
         </div>
 
         {/* Tab Content */}
@@ -344,11 +346,11 @@ export default function MyProfile() {
                             
                             {/* Media Preview */}
                             {(post.imageUrl || post.imageUrls?.length > 0) && (
-                              <div className="mb-2 sm:mb-3">
+                              <div className="mb-2 sm:mb-3 -mx-3 sm:mx-0">
                                 <img 
                                   src={post.imageUrl || post.imageUrls?.[0]} 
                                   alt="Post media" 
-                                  className="w-full h-32 sm:h-40 object-cover rounded-lg"
+                                  className="w-full h-auto object-contain rounded-none sm:rounded-lg"
                                 />
                               </div>
                             )}
