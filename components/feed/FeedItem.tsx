@@ -339,7 +339,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
   const getUserVotes = () => {
     if (!user || !pollData) return [];
     return pollData.options
-      .filter((opt) => opt.voters.includes(user.id || user._id))
+      .filter((opt) => opt.voters.includes(user.id as string))
       .map((opt) => opt.id);
   };
 
@@ -503,7 +503,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
               poll={pollData}
               userVotes={getUserVotes()}
               onVote={handlePollVote}
-              currentUserId={user?.id || user?._id}
+              currentUserId={user?.id as string}
             />
           </div>
         ) : null}
