@@ -27,27 +27,30 @@ export default function AuthenticatedLayout({
   
   return (
     <TooltipProvider>
-      <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full overflow-x-hidden">
-        <div className="mx-auto grid w-full max-w-[1400px] gap-4 md:gap-6 px-4 sm:px-6 md:px-8 lg:px-12 py-3 md:py-6 
-          md:grid-cols-[240px_1fr] lg:grid-cols-[260px_minmax(0,600px)_300px] xl:grid-cols-[280px_minmax(0,650px)_320px] overflow-x-hidden">
+      <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full">
+        <div className="mx-auto flex w-full max-w-[1400px] gap-4 md:gap-6 px-4 sm:px-6 md:px-8 lg:px-12 py-3 md:py-6">
           
           {/* Left Sidebar */}
-          <aside className="hidden md:block sticky top-6 self-start overflow-y-auto max-h-[calc(100vh-3rem)]">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <SideNav />
-            </Suspense>
+          <aside className="hidden md:block w-[240px] lg:w-[260px] xl:w-[280px] flex-shrink-0">
+            <div className="sticky top-6 overflow-y-auto max-h-[calc(100vh-3rem)]">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <SideNav />
+              </Suspense>
+            </div>
           </aside>
 
           {/* Main Feed */}
-          <section aria-label="Feed" className="grid gap-3 md:gap-6 w-full min-w-0 px-0 overflow-visible mx-auto">
+          <section aria-label="Feed" className="flex-1 max-w-[600px] lg:max-w-[600px] xl:max-w-[650px] mx-auto w-full">
             {children}
           </section>
 
           {/* Right Sidebar */}
-          <aside className="hidden lg:block sticky top-6 self-start overflow-y-auto max-h-[calc(100vh-3rem)]">
-            <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-              <RightRail />
-            </Suspense>
+          <aside className="hidden lg:block w-[300px] xl:w-[320px] flex-shrink-0">
+            <div className="sticky top-6 overflow-y-auto max-h-[calc(100vh-3rem)]">
+              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
+                <RightRail />
+              </Suspense>
+            </div>
           </aside>
         </div>
         <MobileNav />
