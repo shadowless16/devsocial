@@ -531,6 +531,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
           )}
 
           {!showPollCreator && (
+          <>
           <div className="space-y-2">
             <Label htmlFor="image">Image URL (Optional)</Label>
             <div className="flex space-x-2">
@@ -813,7 +814,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             </div>
             <Switch id="anonymous" checked={isAnonymous} onCheckedChange={setIsAnonymous} />
           </div>
-
+          </>
           )}
 
           <div className="flex justify-end pt-4 border-t border-border gap-2">
