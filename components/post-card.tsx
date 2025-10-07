@@ -16,6 +16,8 @@ import { PostMeta } from "@/components/shared/PostMeta"
 import { PostAIActions } from "@/components/shared/PostAIActions"
 import { useAuth } from "@/contexts/app-context"
 import { getAvatarUrl } from "@/lib/avatar-utils"
+import { PollDisplay } from "@/components/poll/poll-display"
+import { apiClient } from "@/lib/api-client"
 
 interface PostCardProps {
   author?: string
@@ -47,6 +49,23 @@ interface PostCardProps {
   onComment?: (postId: string) => void
   onBookmark?: (postId: string) => void
   onClick?: (postId: string) => void
+  poll?: {
+    question: string
+    options: Array<{
+      id: string
+      text: string
+      votes: number
+      voters: string[]
+    }>
+    settings: {
+      multipleChoice: boolean
+      maxChoices: number
+      showResults: "always" | "afterVote" | "afterEnd"
+      allowAddOptions: boolean
+    }
+    endsAt?: string
+    totalVotes: number
+  }
 }
 
 export default function PostCard({
@@ -74,7 +93,8 @@ export default function PostCard({
   onLike,
   onComment,
   onBookmark,
-  onClick
+  onClick,
+  poll
 }: PostCardProps) {
   const { toast } = useToast()
   const { user } = useAuth()
@@ -85,6 +105,7 @@ export default function PostCard({
   const [showTipModal, setShowTipModal] = useState(false)
   const [currentViews, setCurrentViews] = useState(views)
   const viewTracked = useRef(false)
+  const [pollData, setPollData] = useState(poll)
   
   useEffect(() => {
     setIsLiked(liked)
@@ -312,7 +333,40 @@ export default function PostCard({
                 </DropdownMenu>
               </div>
               
+              {/* Poll Display */}
+              {pollData && (
+                <div className="mb-4">
+                  <PollDisplay
+                    poll={pollData}
+                    userVotes={pollData.options.filter(opt => opt.voters.includes(user?.id || '')).map(opt => opt.id)}
+                    onVote={async (optionIds) => {
+                      try {
+                        const response = await apiClient.request<any>('/polls/vote', {
+                          method: 'POST',
+                          body: JSON.stringify({ postId, optionIds }),
+                        })
+                        if (response.success && response.data) {
+                          setPollData(response.data.poll)
+                          toast({
+                            title: "Vote recorded!",
+                            description: `+${response.data.xpAwarded} XP`,
+                          })
+                        }
+                      } catch (error: any) {
+                        toast({
+                          title: "Failed to vote",
+                          description: error.message,
+                          variant: "destructive",
+                        })
+                      }
+                    }}
+                    currentUserId={user?.id}
+                  />
+                </div>
+              )}
+
               {/* Post Content */}
+              {content && (
               <div 
                 className="text-base mb-3 w-full break-words whitespace-pre-line overflow-wrap-anywhere"
                 onClick={(e) => {
@@ -324,6 +378,7 @@ export default function PostCard({
               >
                 <PostContent content={content || ""} onCopyCode={handleCopyCode} />
               </div>
+              )}
 
               {/* Media Display */}
               <div className="w-full -mx-1" onClick={(e) => {
