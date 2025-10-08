@@ -174,6 +174,7 @@ export default function HomePage() {
                   imageUrl={post.imageUrl}
                   imageUrls={post.imageUrls}
                   videoUrls={post.videoUrls}
+                  poll={post.poll}
                   onDelete={handleDeletePost}
                   onLike={handleLikePost}
                   onComment={handleCommentPost}
