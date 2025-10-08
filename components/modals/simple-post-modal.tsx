@@ -178,7 +178,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
     }
 
     const postData = {
-      content: content.trim() || (pollData ? pollData.question : ''),
+      content: content.trim(),
       imageUrls: mediaUrls,
       tags,
       isAnonymous: false,

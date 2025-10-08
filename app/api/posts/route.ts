@@ -187,7 +187,8 @@ export async function POST(req: NextRequest) {
     const { content, tags, isAnonymous, imageUrl, imageUrls, videoUrls, poll } = body;
     const authorId = session.user.id;
 
-    if (!content || content.trim().length === 0) {
+    // Allow empty content if poll exists
+    if ((!content || content.trim().length === 0) && !poll) {
       return NextResponse.json(errorResponse("Post content cannot be empty."), { status: 400 });
     }
 
