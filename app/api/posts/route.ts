@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
           ? { isGenerated: true }
           : {}
       })
-      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded')
+      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded poll')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
