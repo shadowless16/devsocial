@@ -223,7 +223,7 @@ export async function POST(req: NextRequest) {
     const { mentions, mentionIds } = await processMentions(content, '', authorId);
 
     const newPost = await Post.create({
-      content,
+      content: content || '',
       author: authorId,
       tags: uniqueTags,
       tagIds,

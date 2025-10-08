@@ -67,8 +67,11 @@ const PostSchema = new Schema<IPost>(
     },
     content: {
       type: String,
-      required: true,
+      required: function(this: IPost) {
+        return !this.poll; // Content required only if no poll
+      },
       maxlength: 2000,
+      default: '',
     },
     imageUrl: {
       type: String,
