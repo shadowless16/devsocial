@@ -352,15 +352,30 @@ export default function MyProfile() {
                             <p className="text-foreground text-sm sm:text-base mb-2 sm:mb-3 break-words">{post.content}</p>
                             
                             {/* Media Preview */}
-                            {(post.imageUrl || post.imageUrls?.length > 0) && (
-                              <div className="mb-2 sm:mb-3 -mx-3 sm:mx-0">
-                                <img 
-                                  src={post.imageUrl || post.imageUrls?.[0]} 
-                                  alt="Post media" 
-                                  className="w-full h-auto object-contain rounded-none sm:rounded-lg"
-                                />
-                              </div>
-                            )}
+                            {(post.imageUrl || post.imageUrls?.length > 0 || post.videoUrls?.length > 0) && (() => {
+                              const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url) || url.includes('video')
+                              const mediaUrl = post.videoUrls?.[0] || post.imageUrl || post.imageUrls?.[0]
+                              const isVideoMedia = mediaUrl && isVideo(mediaUrl)
+                              
+                              return (
+                                <div className="mb-2 sm:mb-3 -mx-3 sm:mx-0">
+                                  {isVideoMedia ? (
+                                    <video 
+                                      controls
+                                      src={mediaUrl}
+                                      className="w-full h-auto object-contain rounded-none sm:rounded-lg max-h-[400px]"
+                                      preload="metadata"
+                                    />
+                                  ) : (
+                                    <img 
+                                      src={mediaUrl} 
+                                      alt="Post media" 
+                                      className="w-full h-auto object-contain rounded-none sm:rounded-lg"
+                                    />
+                                  )}
+                                </div>
+                              )
+                            })()}
                             
                             <div className="flex items-center gap-4 sm:gap-6 text-muted-foreground text-xs sm:text-sm">
                               <div className="flex items-center gap-1">
@@ -406,19 +421,33 @@ export default function MyProfile() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                   {userPosts
                     .filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length)
-                    .map((post) => (
-                      <div 
-                        key={post._id || post.id}
-                        className="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
-                        onClick={() => handlePostClick(post._id || post.id)}
-                      >
-                        <img 
-                          src={post.imageUrl || post.imageUrls?.[0]} 
-                          alt="Media post" 
-                          className="w-full h-full object-cover"
-                        />
-                      </div>
-                    ))
+                    .map((post) => {
+                      const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url) || url.includes('video')
+                      const mediaUrl = post.videoUrls?.[0] || post.imageUrl || post.imageUrls?.[0]
+                      const isVideoMedia = mediaUrl && isVideo(mediaUrl)
+                      
+                      return (
+                        <div 
+                          key={post._id || post.id}
+                          className="aspect-square bg-muted rounded-lg overflow-hidden cursor-pointer hover:opacity-80 transition-opacity"
+                          onClick={() => handlePostClick(post._id || post.id)}
+                        >
+                          {isVideoMedia ? (
+                            <video 
+                              src={mediaUrl}
+                              className="w-full h-full object-cover"
+                              preload="metadata"
+                            />
+                          ) : (
+                            <img 
+                              src={mediaUrl} 
+                              alt="Media post" 
+                              className="w-full h-full object-cover"
+                            />
+                          )}
+                        </div>
+                      )
+                    })
                   }
                 </div>
               ) : (

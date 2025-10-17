@@ -513,42 +513,55 @@ export default function PostPage() {
               </div>
               
               {/* Media Content */}
-              {(post.imageUrls?.length || post.videoUrls?.length) && (
-                <div className="rounded-lg overflow-hidden border border-border">
-                  {post.imageUrls && post.imageUrls.length > 0 && (
-                    <div className={`grid gap-2 ${
-                      post.imageUrls.length === 1 ? 'grid-cols-1' :
-                      post.imageUrls.length === 2 ? 'grid-cols-2' :
-                      'grid-cols-2'
-                    }`}>
-                      {post.imageUrls.map((imageUrl, index) => (
-                        <img 
-                          key={index}
-                          src={imageUrl}
-                          alt={`Post image ${index + 1}`} 
-                          className="w-full h-auto object-contain rounded-md"
-                        />
-                      ))}
-                    </div>
-                  )}
-                  
-                  {post.videoUrls && post.videoUrls.length > 0 && (
-                    <div className="space-y-2">
-                      {post.videoUrls.map((videoUrl, index) => (
-                        <video 
-                          key={index}
-                          controls 
-                          className="w-full h-auto max-h-96 rounded-lg"
-                          preload="metadata"
-                        >
-                          <source src={videoUrl} type="video/mp4" />
-                          Your browser does not support the video tag.
-                        </video>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              )}
+              {(() => {
+                const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url) || url.includes('video')
+                const imageUrl = post.imageUrl
+                const imageUrls = post.imageUrls || []
+                const videoUrls = post.videoUrls || []
+                const allMedia = [...(imageUrl ? [imageUrl] : []), ...imageUrls]
+                const images = allMedia.filter(url => !isVideo(url))
+                const videos = [...allMedia.filter(url => isVideo(url)), ...videoUrls]
+                
+                if (images.length === 0 && videos.length === 0) return null
+                
+                return (
+                  <div className="rounded-lg overflow-hidden border border-border">
+                    {images.length > 0 && (
+                      <div className={`grid gap-2 ${
+                        images.length === 1 ? 'grid-cols-1' :
+                        images.length === 2 ? 'grid-cols-2' :
+                        'grid-cols-2'
+                      }`}>
+                        {images.map((url, index) => (
+                          <img 
+                            key={index}
+                            src={url}
+                            alt={`Post image ${index + 1}`} 
+                            className="w-full h-auto object-contain rounded-md"
+                          />
+                        ))}
+                      </div>
+                    )}
+                    
+                    {videos.length > 0 && (
+                      <div className="space-y-2">
+                        {videos.map((url, index) => (
+                          <video 
+                            key={index}
+                            controls 
+                            className="w-full h-auto max-h-[500px] rounded-lg"
+                            preload="metadata"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <source src={url} type="video/mp4" />
+                            Your browser does not support the video tag.
+                          </video>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )
+              })()}
 
               {/* Tags */}
               {post.tags && post.tags.length > 0 && (

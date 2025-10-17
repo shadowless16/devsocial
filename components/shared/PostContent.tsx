@@ -7,7 +7,7 @@ import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 // @ts-ignore
 import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
-import { Copy } from "lucide-react";
+import { Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MentionText } from "@/components/ui/mention-text";
 
@@ -35,6 +35,12 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
         });
       });
     }
+  };
+
+  // Auto-detect URLs in plain text and convert to markdown links
+  const processContent = (text: string) => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(urlRegex, (url) => `[${url}](${url})`);
   };
 
   return (
@@ -93,12 +99,25 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
           );
         },
         p({ children }) {
-          // Convert children to string and check for mentions
           const textContent = React.Children.toArray(children).join('');
           return (
             <p className="text-gray-900 leading-relaxed mb-4 break-words overflow-wrap-anywhere whitespace-pre-wrap">
               <MentionText text={textContent} />
             </p>
+          );
+        },
+        a({ href, children }) {
+          return (
+            <a 
+              href={href} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-700 underline inline-flex items-center gap-1"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {children}
+              <ExternalLink className="w-3 h-3" />
+            </a>
           );
         },
         h1({ children }) {
@@ -128,7 +147,7 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
         },
       }}
     >
-      {content}
+      {processContent(content)}
     </ReactMarkdown>
   );
 }
