@@ -185,6 +185,13 @@ export default function MyProfile() {
     <div className="w-full max-w-4xl mx-auto">
       {/* Cover Photo Area */}
       <div className="h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative">
+        {profileData?.bannerUrl && (
+          <img 
+            src={profileData.bannerUrl} 
+            alt="Profile banner" 
+            className="w-full h-full object-cover"
+          />
+        )}
         <div className="absolute inset-0 bg-black/20" />
       </div>
 
@@ -577,7 +584,13 @@ export default function MyProfile() {
           onClose={() => setShowEditModal(false)}
           profile={profileData}
           onSave={(data) => {
-            setProfileData((prev: any) => ({ ...prev, ...data }))
+            setProfileData((prev: any) => ({ 
+              ...prev, 
+              ...data,
+              name: data.displayName || prev.name,
+              avatar: data.avatar || prev.avatar,
+              bannerUrl: data.bannerUrl || prev.bannerUrl
+            }))
             setShowEditModal(false)
           }}
         />

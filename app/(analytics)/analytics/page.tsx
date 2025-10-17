@@ -97,10 +97,12 @@ const peakHoursData = [
 ]
 
 export default function AnalyticsPage() {
+  const { user } = useAuth()
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const [lastRefresh, setLastRefresh] = useState<Date>(new Date())
   const [useSampleData, setUseSampleData] = useState<boolean>(false)
+  const isAdmin = user?.role === 'admin'
 
   // Fetch analytics overview data
   const fetchAnalyticsData = async (): Promise<void> => {
@@ -196,9 +198,6 @@ export default function AnalyticsPage() {
   const summary = displayData?.summary || {}
   const trends = displayData?.trends || {}
   const demographics = displayData?.demographics || {}
-
-  const { user } = useAuth()
-  const isAdmin = user?.role === 'admin'
 
   return (
     <div className="space-y-6">
