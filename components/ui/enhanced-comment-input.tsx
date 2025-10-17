@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { MentionInput } from "@/components/ui/mention-input";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
-import { Smile, Code } from "lucide-react";
+import EmojiPicker from "emoji-picker-react";
+import { Smile, Code, Image, X } from "lucide-react";
 
 interface EnhancedCommentInputProps {
   placeholder?: string;
-  onSubmit: (content: string) => void;
+  onSubmit: (content: string, imageUrl?: string) => void;
   disabled?: boolean;
 }
 
@@ -19,6 +19,9 @@ export function EnhancedCommentInput({
 }: EnhancedCommentInputProps) {
   const [content, setContent] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto code detection
   const detectCodeContent = (text: string): { isCode: boolean; language?: string } => {
@@ -68,9 +71,40 @@ export function EnhancedCommentInput({
   };
 
   const handleSubmit = () => {
-    if (!content.trim() || disabled) return;
-    onSubmit(content.trim());
+    if ((!content.trim() && !imagePreview) || disabled) return;
+    onSubmit(content.trim(), imagePreview || undefined);
     setContent("");
+    setImagePreview(null);
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    setUploading(true);
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setImagePreview(data.url);
+      }
+    } catch (error) {
+      console.error('Upload failed:', error);
+    } finally {
+      setUploading(false);
+    }
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
@@ -97,8 +131,24 @@ export function EnhancedCommentInput({
           placeholder={placeholder}
           value={content}
           onChange={setContent}
-          className="min-h-[80px] resize-none text-sm pr-20"
+          className="min-h-[80px] resize-none text-sm pr-28"
         />
+        
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="relative mt-2 inline-block">
+            <img src={imagePreview} alt="Preview" className="max-h-32 rounded-lg" />
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => setImagePreview(null)}
+              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-red-500 hover:bg-red-600 text-white"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        )}
         
         {/* Action buttons */}
         <div className="absolute bottom-2 right-2 flex items-center gap-1">
@@ -120,15 +170,26 @@ export function EnhancedCommentInput({
                 />
                 <div className="absolute bottom-8 right-0 z-50">
                   <EmojiPicker
-                    onEmojiSelect={(emoji) => {
-                      setContent(prev => prev + emoji);
+                    onEmojiClick={(emojiData) => {
+                      setContent(prev => prev + emojiData.emoji);
+                      setShowEmojiPicker(false);
                     }}
-                    onClose={() => setShowEmojiPicker(false)}
                   />
                 </div>
               </>
             )}
           </div>
+
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            className="h-7 w-7 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600"
+          >
+            <Image className="h-3 w-3" />
+          </Button>
 
           <Button
             type="button"
@@ -140,6 +201,14 @@ export function EnhancedCommentInput({
             <Code className="h-3 w-3" />
           </Button>
         </div>
+        
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleImageUpload}
+          className="hidden"
+        />
       </div>
 
       <div className="flex justify-between items-center">

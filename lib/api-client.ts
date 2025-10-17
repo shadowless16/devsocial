@@ -452,10 +452,10 @@ class ApiClient {
     return this.request<T>(`/comments/${postId}?${query}`, { method: "GET" });
   }
 
-  public createComment<T>(postId: string, content: string, parentCommentId?: string): Promise<ApiResponse<T>> {
+  public createComment<T>(postId: string, content: string, parentCommentId?: string, imageUrl?: string): Promise<ApiResponse<T>> {
     return this.request<T>(`/comments/${postId}`, {
       method: "POST",
-      body: JSON.stringify({ content, parentCommentId })
+      body: JSON.stringify({ content, parentCommentId, imageUrl })
     });
   }
 

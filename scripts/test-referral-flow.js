@@ -1,91 +1,91 @@
-const path = require('path');
-const { MongoClient } = require('mongodb');
-
-// Simple database connection
-async function connectDB() {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/devsocial';
-  const client = new MongoClient(uri);
-  await client.connect();
-  return client.db();
-}
+/**
+ * Test Referral Flow - Ensures referrals work correctly
+ */
+const mongoose = require('mongoose');
+require('dotenv').config({ path: '.env.local' });
 
 async function testReferralFlow() {
-  let client;
   try {
-    console.log("=== Testing Referral Flow ===");
-    
-    const db = await connectDB();
-    
-    // 1. Find a user with a referral code
-    const referrerUser = await db.collection('users').findOne({ 
-      referralCode: { $exists: true, $ne: null } 
+    await mongoose.connect(process.env.MONGODB_URI);
+    console.log('Connected to MongoDB\n');
+
+    const db = mongoose.connection.db;
+    const usersCollection = db.collection('users');
+    const referralsCollection = db.collection('referrals');
+
+    console.log('=== REFERRAL SYSTEM HEALTH CHECK ===\n');
+
+    // 1. Check all users have referral codes
+    const usersWithoutCode = await usersCollection.countDocuments({
+      referralCode: { $exists: false }
     });
-    
-    if (!referrerUser) {
-      console.log("No users with referral codes found");
-      return;
+    console.log(`✅ Users without referral code: ${usersWithoutCode} (should be 0)`);
+
+    // 2. Check referrals collection integrity
+    const totalReferrals = await referralsCollection.countDocuments();
+    const referralsWithCode = await referralsCollection.countDocuments({
+      referralCode: { $exists: true, $ne: '' }
+    });
+    console.log(`✅ Total referrals: ${totalReferrals}`);
+    console.log(`✅ Referrals with code: ${referralsWithCode} (should match total)`);
+
+    // 3. Check for orphaned referrals (referrer doesn't exist)
+    const allReferrals = await referralsCollection.find().toArray();
+    let orphanedCount = 0;
+    for (const ref of allReferrals) {
+      const referrerExists = await usersCollection.findOne({ _id: ref.referrer });
+      if (!referrerExists) {
+        orphanedCount++;
+        console.log(`⚠️  Orphaned referral: ${ref._id} (referrer not found)`);
+      }
     }
-    
-    console.log(`Found referrer: ${referrerUser.username} with code: ${referrerUser.referralCode}`);
-    
-    // 2. Check existing referrals for this user
-    const existingReferrals = await db.collection('referrals').find({ 
-      referrer: referrerUser._id 
+    console.log(`✅ Orphaned referrals: ${orphanedCount} (should be 0)`);
+
+    // 4. Check users.referrer field matches referrals collection
+    const usersWithReferrer = await usersCollection.find({
+      referrer: { $exists: true, $ne: '', $ne: null }
     }).toArray();
-    
-    console.log(`\nExisting referrals for ${referrerUser.username}:`);
-    
-    for (let i = 0; i < existingReferrals.length; i++) {
-      const ref = existingReferrals[i];
-      const referred = await db.collection('users').findOne({ _id: ref.referred });
-      
-      console.log(`${i + 1}. ${referred?.username || 'Unknown'} - Status: ${ref.status}`);
-      console.log(`   Registration Source: ${referred?.registrationSource || 'Unknown'}`);
-      console.log(`   Referrer Field: "${referred?.referrer || ''}"`);
-      console.log(`   Created: ${ref.createdAt}`);
-      console.log(`   Completed: ${ref.completedAt || 'Not completed'}`);
-      console.log(`   ---`);
+
+    let mismatchCount = 0;
+    for (const user of usersWithReferrer) {
+      const referralExists = await referralsCollection.findOne({ referred: user._id });
+      if (!referralExists) {
+        mismatchCount++;
+        console.log(`⚠️  User ${user.username} has referrer "${user.referrer}" but no referral record`);
+      }
     }
-    
-    // 3. Check for users who might have been referred but don't show up
-    const usersWithDirectRegistration = await db.collection('users').find({
-      registrationSource: 'direct',
-      referrer: '',
-      createdAt: { $gte: new Date('2024-01-01') }
-    }).limit(10).toArray();
-    
-    console.log(`\nUsers with direct registration (might be missing referrals):`);
-    usersWithDirectRegistration.forEach((user, index) => {
-      console.log(`${index + 1}. ${user.username} - Created: ${user.createdAt}`);
-    });
-    
-    // 4. Test the referral link format
-    const referralLink = `${process.env.NEXTAUTH_URL || 'http://localhost:3000'}/auth/signup?ref=${referrerUser.referralCode}`;
-    console.log(`\nReferral link format: ${referralLink}`);
-    
-    // 5. Basic referral stats
-    const totalReferrals = existingReferrals.length;
-    const completedReferrals = existingReferrals.filter(ref => ref.status === 'completed').length;
-    
-    console.log(`\nReferral stats for ${referrerUser.username}:`);
-    console.log(`  Total referrals: ${totalReferrals}`);
-    console.log(`  Completed referrals: ${completedReferrals}`);
-    console.log(`  Pending referrals: ${totalReferrals - completedReferrals}`);
-    
+    console.log(`✅ Users with referrer but no referral record: ${mismatchCount} (should be 0)`);
+
+    // 5. Verify referral codes match user profiles
+    const referralCodes = await referralsCollection.distinct('referralCode');
+    let codeMismatchCount = 0;
+    for (const code of referralCodes) {
+      const userWithCode = await usersCollection.findOne({ referralCode: code });
+      if (!userWithCode) {
+        codeMismatchCount++;
+        console.log(`⚠️  Referral code "${code}" doesn't match any user`);
+      }
+    }
+    console.log(`✅ Referral codes without matching user: ${codeMismatchCount} (should be 0)`);
+
+    console.log('\n=== SUMMARY ===');
+    const allGood = usersWithoutCode === 0 && 
+                    referralsWithCode === totalReferrals && 
+                    orphanedCount === 0 && 
+                    mismatchCount === 0 && 
+                    codeMismatchCount === 0;
+
+    if (allGood) {
+      console.log('🎉 ALL CHECKS PASSED! Referral system is healthy.');
+    } else {
+      console.log('⚠️  ISSUES DETECTED! Run sync-missing-referrals.js to fix.');
+    }
+
   } catch (error) {
-    console.error("Error testing referral flow:", error);
+    console.error('Test failed:', error);
   } finally {
-    if (client) {
-      await client.close();
-    }
+    await mongoose.disconnect();
   }
 }
 
-// Run the test
-testReferralFlow().then(() => {
-  console.log("\nTest completed");
-  process.exit(0);
-}).catch((error) => {
-  console.error("Test failed:", error);
-  process.exit(1);
-});
+testReferralFlow();

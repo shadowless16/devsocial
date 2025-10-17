@@ -35,7 +35,7 @@ export class ReferralSystemFixed {
     }
   }
 
-  static async createReferral(referrerId: string, referredUserId: string, referralCode?: string): Promise<any> {
+  static async createReferral(referrerId: string, referredUserId: string, referralCode: string): Promise<any> {
     await connectDB()
 
     // Prevent self-referral
@@ -55,8 +55,8 @@ export class ReferralSystemFixed {
       throw new Error("Referral already exists for this user")
     }
 
-    // Use provided code or get referrer's code
-    const finalReferralCode = referralCode || await this.getReferralCode(referrerId)
+    // ALWAYS use the provided referral code (the one from the signup link)
+    const finalReferralCode = referralCode
 
     // Create referral with 30-day expiration
     const expiresAt = new Date()
@@ -92,19 +92,8 @@ export class ReferralSystemFixed {
         const user = await User.findById(userId)
         if (!user) continue
 
-        // Ensure UserStats exists
-        let userStats = await UserStats.findOne({ user: userId })
-        if (!userStats) {
-          userStats = await UserStats.create({
-            user: userId,
-            totalPosts: 0,
-            totalXP: user.points || 0,
-            totalReferrals: 0
-          })
-        }
-
-        // More lenient completion criteria: user has at least 25 XP (reduced from 50)
-        const hasMinimumActivity = userStats.totalXP >= 25
+        // Check user.points directly (more reliable than UserStats)
+        const hasMinimumActivity = user.points >= 25
 
         if (hasMinimumActivity) {
           // Mark referral as completed
@@ -124,7 +113,7 @@ export class ReferralSystemFixed {
             { upsert: true }
           )
 
-          console.log(`Referral completed: ${referral._id}`)
+          console.log(`✅ Referral completed: ${user.username} (${user.points} XP)`)
         }
       } catch (error) {
         console.error(`Error processing referral completion for ${userId}:`, error)
@@ -138,16 +127,23 @@ export class ReferralSystemFixed {
       
       const validation = await this.validateReferralCode(referralCode)
       if (!validation.valid || !validation.referrer) {
-        console.log(`Invalid referral code: ${referralCode}`)
+        console.log(`❌ Invalid referral code: ${referralCode}`)
         return false
       }
 
-      // Create the referral
+      // CRITICAL: Check if referral already exists
+      const existingReferral = await Referral.findOne({ referred: newUserId })
+      if (existingReferral) {
+        console.log(`⚠️ Referral already exists for user ${newUserId}`)
+        return true
+      }
+
+      // Create the referral using the exact code from signup
       await this.createReferral(validation.referrer.id, newUserId, referralCode)
-      console.log(`Referral created: ${validation.referrer.username} -> new user ${newUserId}`)
+      console.log(`✅ Referral created: ${validation.referrer.username} -> new user ${newUserId} with code ${referralCode}`)
       return true
     } catch (error) {
-      console.error("Error processing referral from signup:", error)
+      console.error("❌ Error processing referral from signup:", error)
       return false
     }
   }
@@ -212,18 +208,8 @@ export class ReferralSystemFixed {
         const referredUser = await User.findById(referral.referred._id)
         if (!referredUser) continue
 
-        let userStats = await UserStats.findOne({ user: referral.referred._id })
-        if (!userStats) {
-          userStats = await UserStats.create({
-            user: referral.referred._id,
-            totalPosts: 0,
-            totalXP: referredUser.points || 0,
-            totalReferrals: 0
-          })
-        }
-
-        // Check completion criteria: at least 25 XP
-        if (userStats.totalXP >= 25) {
+        // Check user.points directly (more reliable)
+        if (referredUser.points >= 25) {
           referral.status = "completed"
           referral.completedAt = new Date()
           referral.rewardsClaimed = true
@@ -237,6 +223,8 @@ export class ReferralSystemFixed {
             { $inc: { totalReferrals: 1 } },
             { upsert: true }
           )
+          
+          console.log(`✅ Referral completed: ${referredUser.username} (${referredUser.points} XP)`)
         }
       } catch (error) {
         console.error(`Error processing referral ${referral._id}:`, error)

@@ -10,6 +10,7 @@ import { useMissionTracker } from "@/hooks/use-mission-tracker";
 import { EmojiPicker } from "@/components/ui/emoji-picker";
 import { MentionInput } from "@/components/ui/mention-input";
 import { PollCreator } from "@/components/poll/poll-creator";
+import { LinkPreviewCard } from "@/components/ui/link-preview-card";
 
 interface SimplePostModalProps {
   isOpen: boolean;
@@ -29,6 +30,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [pollData, setPollData] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [linkPreview, setLinkPreview] = useState<any>(null);
+  const [isFetchingPreview, setIsFetchingPreview] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -87,6 +90,36 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
     return text;
   };
 
+  // Detect URLs
+  const detectUrl = (text: string): string | null => {
+    const urlRegex = /(https?:\/\/[^\s]+)/g
+    const match = text.match(urlRegex)
+    return match ? match[0] : null
+  }
+
+  // Fetch link preview
+  const fetchLinkPreview = async (url: string) => {
+    if (isFetchingPreview || linkPreview) return
+    
+    setIsFetchingPreview(true)
+    try {
+      const response = await fetch('/api/link-preview', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        setLinkPreview(data)
+      }
+    } catch (error) {
+      console.error('Failed to fetch link preview:', error)
+    } finally {
+      setIsFetchingPreview(false)
+    }
+  }
+
   // Handle content change with auto-formatting and tag extraction
   const handleContentChange = (newContent: string) => {
     setContent(newContent);
@@ -115,6 +148,12 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       const extractedTags = extractHashtags(newContent);
       setTags(extractedTags.slice(0, 5));
     }, 500);
+    
+    // Detect and fetch link preview
+    const url = detectUrl(newContent)
+    if (url && !linkPreview && !isFetchingPreview) {
+      fetchLinkPreview(url)
+    }
   };
 
   // Handle file upload
@@ -187,6 +226,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       imageUrls: mediaUrls,
       tags,
       isAnonymous: false,
+      linkPreview: linkPreview || undefined,
       poll: pollData ? {
         question: pollData.question,
         options: pollData.options.map((opt: any) => ({
@@ -217,6 +257,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       setTags([]);
       setPollData(null);
       setShowPollCreator(false);
+      setLinkPreview(null);
+      setIsFetchingPreview(false);
       onClose();
       
       // Submit after closing modal
@@ -352,6 +394,27 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                   </Button>
                 </div>
               ))}
+            </div>
+          )}
+
+          {/* Link Preview */}
+          {linkPreview && (
+            <div className="mb-4">
+              <LinkPreviewCard
+                title={linkPreview.title}
+                description={linkPreview.description}
+                image={linkPreview.image}
+                url={linkPreview.url}
+                siteName={linkPreview.siteName}
+                onRemove={() => setLinkPreview(null)}
+              />
+            </div>
+          )}
+
+          {isFetchingPreview && (
+            <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
+              Loading link preview...
             </div>
           )}
 
