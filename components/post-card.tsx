@@ -394,18 +394,19 @@ export default function PostCard({
 
               {/* Media Display */}
               <div className="w-full -mx-1" onClick={(e) => {
-                  if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
+                  if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button') || e.target.closest('video'))) {
                     return;
                   }
                   postId && onClick?.(postId)
                 }}>
                 {imageUrl && (
                   <div className="mb-3 rounded-lg overflow-hidden border border-border">
-                    {imageUrl.match(/\.(mp4|webm|ogg)$/i) || imageUrl.includes('video') ? (
+                    {(imageUrl.match(/\.(mp4|webm|ogg|mov|avi|mkv)$/i) || imageUrl.includes('video') || imageUrl.includes('.mp4')) ? (
                       <video 
                         controls
-                        className="w-full h-auto rounded-lg"
+                        className="w-full h-auto rounded-lg max-h-[500px]"
                         preload="metadata"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <source src={imageUrl} type="video/mp4" />
                         <source src={imageUrl} type="video/webm" />
@@ -466,11 +467,12 @@ export default function PostCard({
                 {videoUrls && videoUrls.length > 0 && (
                   <div className="mb-3">
                     {videoUrls.map((videoUrl, index) => (
-                      <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0">
+                      <div key={index} className="rounded-lg overflow-hidden mb-2 last:mb-0 border border-border">
                         <video 
                           controls
-                          className="w-full max-h-96 object-cover rounded-lg"
+                          className="w-full max-h-[500px] object-contain rounded-lg"
                           preload="metadata"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <source src={videoUrl} type="video/mp4" />
                           <source src={videoUrl} type="video/webm" />
