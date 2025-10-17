@@ -748,10 +748,10 @@ export default function PostPage() {
               <div className="flex-1">
                 <EnhancedCommentInput
                   placeholder="Write a comment..."
-                  onSubmit={async (content) => {
+                  onSubmit={async (content, imageUrl) => {
                     setIsSubmitting(true)
                     try {
-                      const response = await apiClient.createComment<{ comment: any }>(post.id, content)
+                      const response = await apiClient.createComment<{ comment: any }>(post.id, content, undefined, imageUrl)
                       if (response.success && response.data) {
                         const newCommentData = response.data.comment
                         setComments(prev => [...prev, {

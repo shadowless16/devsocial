@@ -14,17 +14,21 @@ export async function POST(request: NextRequest) {
     }
 
     const userId = authResult.user!.id
-    const { referredUserId } = await request.json()
+    const { referredUserId, referralCode } = await request.json()
 
     if (!referredUserId) {
       return NextResponse.json({ success: false, message: "Referred user ID is required" }, { status: 400 })
+    }
+
+    if (!referralCode) {
+      return NextResponse.json({ success: false, message: "Referral code is required" }, { status: 400 })
     }
 
     if (userId === referredUserId) {
       return NextResponse.json({ success: false, message: "Cannot refer yourself" }, { status: 400 })
     }
 
-    const referral = await ReferralSystemFixed.createReferral(userId, referredUserId)
+    const referral = await ReferralSystemFixed.createReferral(userId, referredUserId, referralCode)
 
     return NextResponse.json({ success: true, data: { referral } }, { status: 201 })
   } catch (error: any) {

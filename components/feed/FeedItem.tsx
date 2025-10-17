@@ -33,6 +33,7 @@ import { TipModal } from "@/components/modals/tip-modal"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 import { formatTimeAgo } from "@/lib/time-utils"
 import { PollDisplay } from "@/components/poll/poll-display"
+import { LinkPreviewCard } from "@/components/ui/link-preview-card"
 
 // Dynamically import CommentSection to avoid SSR issues
 const CommentSection = dynamic(
@@ -86,6 +87,13 @@ interface Post {
     };
     endsAt?: string;
     totalVotes: number;
+  };
+  linkPreview?: {
+    title: string;
+    description: string;
+    image?: string;
+    url: string;
+    siteName: string;
   };
 }
 
@@ -619,6 +627,26 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 </video>
               </div>
             ))}
+          </div>
+        )}
+
+        {post.linkPreview && (
+          <div className="mb-3">
+            <a 
+              href={post.linkPreview.url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <LinkPreviewCard
+                title={post.linkPreview.title}
+                description={post.linkPreview.description}
+                image={post.linkPreview.image}
+                url={post.linkPreview.url}
+                siteName={post.linkPreview.siteName}
+                onRemove={() => {}}
+              />
+            </a>
           </div>
         )}
 

@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { ArrowLeft, Users, MessageSquare, Plus } from "lucide-react"
 import { useAuth } from "@/contexts/app-context"
-import { PostModal } from "@/components/modals/post-modal"
+import { SimplePostModal } from "@/components/modals/simple-post-modal"
 import { FeedItem } from "@/components/feed/FeedItem"
 
 export default function CommunityPage() {
@@ -348,7 +348,7 @@ export default function CommunityPage() {
           </div>
         </div>
 
-        <PostModal
+        <SimplePostModal
           isOpen={showPostModal}
           onClose={() => setShowPostModal(false)}
           onSubmit={handleCreatePost}

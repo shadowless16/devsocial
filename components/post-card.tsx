@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/app-context"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 import { PollDisplay } from "@/components/poll/poll-display"
 import { apiClient } from "@/lib/api-client"
+import { LinkPreviewCard } from "@/components/ui/link-preview-card"
 
 interface PostCardProps {
   author?: string
@@ -50,6 +51,13 @@ interface PostCardProps {
   onComment?: (postId: string) => void
   onBookmark?: (postId: string) => void
   onClick?: (postId: string) => void
+  linkPreview?: {
+    title: string
+    description: string
+    image?: string
+    url: string
+    siteName: string
+  }
   poll?: {
     question: string
     options: Array<{
@@ -96,6 +104,7 @@ export default function PostCard({
   onComment,
   onBookmark,
   onClick,
+  linkPreview,
   poll
 }: PostCardProps) {
   const { toast } = useToast()
@@ -377,6 +386,27 @@ export default function PostCard({
                 </div>
               )}
 
+              {/* Link Preview */}
+              {linkPreview && (
+                <div className="mb-3">
+                  <a 
+                    href={linkPreview.url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <LinkPreviewCard
+                      title={linkPreview.title}
+                      description={linkPreview.description}
+                      image={linkPreview.image}
+                      url={linkPreview.url}
+                      siteName={linkPreview.siteName}
+                      onRemove={() => {}}
+                    />
+                  </a>
+                </div>
+              )}
+
               {/* Post Content */}
               {content && (
               <div 
@@ -391,6 +421,8 @@ export default function PostCard({
                 <PostContent content={content || ""} onCopyCode={handleCopyCode} />
               </div>
               )}
+
+
 
               {/* Media Display */}
               <div className="w-full -mx-1" onClick={(e) => {
