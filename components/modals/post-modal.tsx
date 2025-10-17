@@ -61,6 +61,7 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [pollData, setPollData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const imageInputRef = useRef<HTMLInputElement>(null);
   const videoInputRef = useRef<HTMLInputElement>(null);
@@ -303,7 +304,11 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
   if (!isOpen) return null;
 
   const handleSubmit = (event: FormEvent) => {
-    event.preventDefault(); // Prevent page refresh
+    event.preventDefault();
+    
+    if (isSubmitting) return;
+    
+    setIsSubmitting(true);
     
     // Separate images and videos from mediaUrls
     const imageUrls = mediaUrls.filter(url => !url.endsWith('.mp4') && !url.endsWith('.webm') && !url.endsWith('.mov') && !url.endsWith('.avi'));
@@ -346,7 +351,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
     });
     
     onSubmit(postData);
+    onClose();
     resetForm();
+    setIsSubmitting(false);
   };
 
   const resetForm = () => {
@@ -824,9 +831,9 @@ export function PostModal({ isOpen, onClose, onSubmit }: PostModalProps) {
             <Button
               type="submit"
               className="bg-emerald-600 hover:bg-emerald-700 text-white text-sm h-9 px-4"
-              disabled={(postType !== 'poll' && !content.trim()) || isUploading || content.length > 2000 || (postType === 'poll' && !pollData)}
+              disabled={(postType !== 'poll' && !content.trim()) || isUploading || isSubmitting || content.length > 2000 || (postType === 'poll' && !pollData)}
             >
-              {isUploading ? "Uploading..." : content.length > 2000 ? "Too Long" : postType === 'poll' && !pollData ? "Create Poll First" : "Post"}
+              {isSubmitting ? "Posting..." : isUploading ? "Uploading..." : content.length > 2000 ? "Too Long" : postType === 'poll' && !pollData ? "Create Poll First" : "Post"}
             </Button>
           </div>
         </form>

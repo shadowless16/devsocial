@@ -28,6 +28,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
   const [pollData, setPollData] = useState<any>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -168,6 +169,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    if (isSubmitting) return;
+    
     if (!content.trim() && !pollData) {
       toast({
         title: "Content required",
@@ -176,6 +179,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       });
       return;
     }
+
+    setIsSubmitting(true);
 
     const postData = {
       content: content.trim(),
@@ -197,8 +202,6 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
     };
 
     try {
-      await onSubmit(postData);
-      
       // Track missions
       await trackPost();
       if (content.includes('```')) {
@@ -208,13 +211,16 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         await trackHashtagUsage();
       }
 
-      // Reset form
+      // Reset form and close modal immediately
       setContent("");
       setMediaUrls([]);
       setTags([]);
       setPollData(null);
       setShowPollCreator(false);
       onClose();
+      
+      // Submit after closing modal
+      await onSubmit(postData);
       
       toast({
         title: "Posted successfully!",
@@ -226,6 +232,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         description: "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -487,10 +495,10 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
             {/* Post Button */}
             <Button
               type="submit"
-              disabled={(!content.trim() && !pollData) || isUploading || isOverLimit}
+              disabled={(!content.trim() && !pollData) || isUploading || isSubmitting || isOverLimit}
               className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 rounded-full"
             >
-              {isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Post"}
+              {isSubmitting ? "Posting..." : isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Post"}
             </Button>
           </div>
         </form>

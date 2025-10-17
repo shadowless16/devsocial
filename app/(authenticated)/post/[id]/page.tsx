@@ -25,6 +25,7 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { TipModal } from "@/components/modals/tip-modal"
 import { getAvatarUrl } from "@/lib/avatar-utils"
+import { PollDisplay } from "@/components/poll/poll-display"
 
 interface Post {
   id: string;
@@ -46,6 +47,23 @@ interface Post {
   isAnonymous: boolean;
   isLiked: boolean;
   viewsCount: number;
+  poll?: {
+    question: string;
+    options: Array<{
+      id: string;
+      text: string;
+      votes: number;
+      voters: string[];
+    }>;
+    settings: {
+      multipleChoice: boolean;
+      maxChoices: number;
+      showResults: "always" | "afterVote" | "afterEnd";
+      allowAddOptions: boolean;
+    };
+    endsAt?: string;
+    totalVotes: number;
+  };
 }
 
 interface Comment {
@@ -105,6 +123,7 @@ export default function PostPage() {
             isAnonymous: postData.isAnonymous || false,
             isLiked: postData.isLiked || false,
             viewsCount: postData.viewsCount || 0,
+            poll: postData.poll || undefined,
           })
         } else {
           setError("Post not found")
@@ -455,6 +474,38 @@ export default function PostPage() {
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
+
+              {/* Poll Display */}
+              {post.poll && (
+                <div className="mb-4">
+                  <PollDisplay
+                    poll={post.poll}
+                    userVotes={post.poll.options.filter(opt => opt.voters.includes(user?.id || '')).map(opt => opt.id)}
+                    onVote={async (optionIds) => {
+                      try {
+                        const response = await apiClient.request<any>('/polls/vote', {
+                          method: 'POST',
+                          body: JSON.stringify({ postId: post.id, optionIds }),
+                        })
+                        if (response.success && response.data) {
+                          setPost(prev => prev ? { ...prev, poll: response.data.poll } : null)
+                          toast({
+                            title: "Vote recorded!",
+                            description: `+${response.data.xpAwarded} XP`,
+                          })
+                        }
+                      } catch (error: any) {
+                        toast({
+                          title: "Failed to vote",
+                          description: error.message,
+                          variant: "destructive",
+                        })
+                      }
+                    }}
+                    currentUserId={user?.id}
+                  />
+                </div>
+              )}
 
               {/* Content */}
               <div className="text-sm leading-relaxed break-words">
