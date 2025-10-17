@@ -24,8 +24,18 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Analyze query with Gemini AI
-    const analysis = await analyzeSearchQuery(query.trim())
+    // Analyze query with Gemini AI (with fallback)
+    let analysis
+    try {
+      analysis = await analyzeSearchQuery(query.trim())
+    } catch (error) {
+      console.warn('AI query analysis failed, using basic search:', error)
+      analysis = {
+        intent: query.trim(),
+        keywords: query.trim().split(' ').filter(Boolean),
+        expandedQuery: query.trim()
+      }
+    }
     
     // Build search regex from expanded query
     const searchTerms = [
@@ -60,8 +70,14 @@ export async function GET(request: NextRequest) {
         .sort({ createdAt: -1 })
         .limit(50)
 
-      // Rank posts with AI
-      const rankedPosts = await rankSearchResults(query, posts)
+      // Rank posts with AI (with fallback)
+      let rankedPosts
+      try {
+        rankedPosts = await rankSearchResults(query, posts)
+      } catch (error) {
+        console.warn('AI ranking failed, using default order:', error)
+        rankedPosts = posts
+      }
       
       results.posts = rankedPosts
         .slice(type === "posts" ? skip : 0, type === "posts" ? skip + limit : 10)
@@ -86,7 +102,13 @@ export async function GET(request: NextRequest) {
         .select("username displayName avatar level points bio skills")
         .limit(50)
 
-      const rankedUsers = await rankSearchResults(query, users)
+      let rankedUsers
+      try {
+        rankedUsers = await rankSearchResults(query, users)
+      } catch (error) {
+        console.warn('AI user ranking failed, using default order:', error)
+        rankedUsers = users
+      }
       
       results.users = rankedUsers
         .slice(type === "users" ? skip : 0, type === "users" ? skip + limit : 10)
@@ -113,8 +135,14 @@ export async function GET(request: NextRequest) {
       }))
     }
 
-    // Generate AI summary
-    const summary = await generateSearchSummary(query, results)
+    // Generate AI summary (with fallback)
+    let summary = ''
+    try {
+      summary = await generateSearchSummary(query, results)
+    } catch (error) {
+      console.warn('AI summary generation failed:', error)
+      summary = `Found ${results.posts.length} posts, ${results.users.length} users, and ${results.tags.length} tags.`
+    }
 
     return NextResponse.json({
       success: true,
