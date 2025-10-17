@@ -80,6 +80,15 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
 
+  // Read query from URL on mount
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get('q')
+    if (q) {
+      setSearchQuery(q)
+    }
+  }, [])
+
   const performSearch = async (query: string, type: string = "all") => {
     if (!query.trim()) {
       setSearchResults({ posts: [], users: [], tags: [] })
