@@ -3,6 +3,7 @@
 
 import React, { useState, useRef } from "react";
 import { X, ImageIcon, Video, Hash, Smile, Code, BarChart3 } from "lucide-react";
+import { VoiceRecorder } from "@/components/ui/voice-recorder";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -475,6 +476,12 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
               >
                 <Video className="h-4 w-4" />
               </Button>
+
+              <VoiceRecorder
+                onTranscription={(text) => {
+                  setContent(prev => prev ? `${prev}\n\n${text}` : text);
+                }}
+              />
 
               <Button
                 type="button"
