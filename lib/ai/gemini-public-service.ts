@@ -167,10 +167,16 @@ Format: ["keyword1", "keyword2", ...]`
 
   async summarizeSearchResults(query: string, results: any[]): Promise<string> {
     try {
+      if (!results || results.length === 0) return ''
+      
       const model = this.genAI.getGenerativeModel({ model: this.model })
-      const resultsText = results.slice(0, 5).map((r, i) => 
-        `${i + 1}. ${r.content.substring(0, 200)}...`
-      ).join('\n\n')
+      const resultsText = results.slice(0, 5)
+        .filter(r => r?.content)
+        .map((r, i) => 
+          `${i + 1}. ${r.content.substring(0, 200)}...`
+        ).join('\n\n')
+      
+      if (!resultsText) return ''
       
       const prompt = `User searched for: "${query}"
 
@@ -182,17 +188,25 @@ Provide a brief 2-3 sentence summary of what these results are about and how the
       const result = await model.generateContent(prompt)
       const response = await result.response
       return response.text().trim()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Gemini search summary failed:', error)
+      if (error?.status === 429) {
+        return 'AI summary temporarily unavailable due to rate limits. Please try again in a moment.'
+      }
       return ''
     }
   }
 
   async semanticSearch(query: string, posts: any[]): Promise<any[]> {
     try {
+      if (!posts || posts.length === 0) return []
+      
+      const validPosts = posts.filter(p => p?.content)
+      if (validPosts.length === 0) return posts
+      
       const model = this.genAI.getGenerativeModel({ model: this.model })
       
-      const postsText = posts.map((p, i) => 
+      const postsText = validPosts.map((p, i) => 
         `[${i}] ${p.content.substring(0, 300)}`
       ).join('\n\n')
       
@@ -217,12 +231,15 @@ Include only relevant posts (minimum 3/10 relevance).`
       const jsonMatch = text.match(/\[[\s\S]*?\]/)
       if (jsonMatch) {
         const indices = JSON.parse(jsonMatch[0])
-        return indices.map((i: number) => posts[i]).filter(Boolean)
+        return indices.map((i: number) => validPosts[i]).filter(Boolean)
       }
       
-      return posts
-    } catch (error) {
+      return validPosts
+    } catch (error: any) {
       console.error('Gemini semantic search failed:', error)
+      if (error?.status === 429) {
+        console.warn('Gemini rate limit exceeded, returning posts without AI ranking')
+      }
       return posts
     }
   }

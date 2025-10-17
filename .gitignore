@@ -113,3 +113,5 @@ scripts/
 /.amazonq
 
 /test_documentation
+
+/db-exports

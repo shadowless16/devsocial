@@ -85,14 +85,23 @@ export default function SearchPage() {
   const [smartSearch, setSmartSearch] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
   const [aiInsights, setAiInsights] = useState<any>(null)
+  const [trendingData, setTrendingData] = useState<any>(null)
 
-  // Read query from URL on mount
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const q = params.get('q')
     if (q) {
       setSearchQuery(q)
     }
+    
+    // Fetch trending data
+    apiClient.request('/search/trending', { method: 'GET' })
+      .then(res => {
+        if (res.success && res.data) {
+          setTrendingData(res.data)
+        }
+      })
+      .catch(err => console.error('Failed to fetch trending data:', err))
   }, [])
 
   const performSearch = async (query: string, type: string = "all") => {
@@ -206,7 +215,7 @@ export default function SearchPage() {
       {/* Header */}
       <div className="text-center mb-6 md:mb-8">
         <div className="flex items-center justify-center mb-3 md:mb-4">
-          <div className="bg-gradient-to-r from-blue-400 to-purple-500 p-2 md:p-3 rounded-full">
+          <div className="bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 p-2 md:p-3 rounded-full shadow-lg">
             <Search className="w-6 h-6 md:w-8 md:h-8 text-white" />
           </div>
         </div>
@@ -277,10 +286,10 @@ export default function SearchPage() {
 
       {/* AI Summary */}
       {smartSearch && aiSummary && (
-        <Card className="mb-4 md:mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+        <Card className="mb-4 md:mb-6 bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 border-violet-200 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
-              <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+              <div className="p-2 bg-gradient-to-br from-violet-500 via-purple-500 to-fuchsia-500 rounded-lg shadow-md">
                 <Sparkles className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -305,8 +314,20 @@ export default function SearchPage() {
         </Card>
       )}
 
+      {/* Loading State */}
+      {isSearching && !initialLoad && (
+        <Card className="mb-6">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-center gap-3">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+              <span className="text-gray-600">Searching{smartSearch ? ' with AI' : ''}...</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search Results */}
-      {hasSearched && (
+      {hasSearched && !isSearching && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="grid w-full grid-cols-4 h-auto">
             <TabsTrigger value="all" className="text-xs md:text-sm px-1 md:px-3 py-2">All ({totalResults})</TabsTrigger>
@@ -592,7 +613,7 @@ export default function SearchPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-orange-500 via-red-500 to-pink-500 rounded-lg shadow-md">
                   <Search className="w-5 h-5 text-white" />
                 </div>
                 Trending Searches
@@ -600,7 +621,7 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {['Next.js', 'TypeScript', 'React', 'AI/ML', 'Web3', 'DevOps'].map((term, i) => (
+                {(trendingData?.trending || ['Next.js', 'TypeScript', 'React', 'AI/ML', 'Web3', 'DevOps']).map((term: string, i: number) => (
                   <button
                     key={term}
                     onClick={() => setSearchQuery(term)}
@@ -618,7 +639,7 @@ export default function SearchPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <div className="p-2 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500 rounded-lg shadow-md">
                   <Hash className="w-5 h-5 text-white" />
                 </div>
                 Popular Topics
@@ -626,16 +647,7 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {[
-                  { tag: 'javascript', count: '2.5k' },
-                  { tag: 'react', count: '1.8k' },
-                  { tag: 'python', count: '1.5k' },
-                  { tag: 'webdev', count: '1.2k' },
-                  { tag: 'nodejs', count: '980' },
-                  { tag: 'css', count: '850' },
-                  { tag: 'typescript', count: '720' },
-                  { tag: 'docker', count: '650' },
-                ].map((topic) => (
+                {(trendingData?.topics || []).map((topic: any) => (
                   <Badge
                     key={topic.tag}
                     variant="outline"
@@ -643,7 +655,7 @@ export default function SearchPage() {
                     onClick={() => setSearchQuery(topic.tag)}
                   >
                     #{topic.tag}
-                    <span className="ml-2 text-xs opacity-70">{topic.count}</span>
+                    <span className="ml-2 text-xs opacity-70">{topic.count > 1000 ? `${(topic.count/1000).toFixed(1)}k` : topic.count}</span>
                   </Badge>
                 ))}
               </div>
@@ -654,7 +666,7 @@ export default function SearchPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-purple-500 via-pink-500 to-rose-500 rounded-lg shadow-md">
                   <FileText className="w-5 h-5 text-white" />
                 </div>
                 Explore by Category
@@ -690,7 +702,7 @@ export default function SearchPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2 text-lg">
-                <div className="p-2 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg">
+                <div className="p-2 bg-gradient-to-br from-emerald-500 via-teal-500 to-green-500 rounded-lg shadow-md">
                   <User className="w-5 h-5 text-white" />
                 </div>
                 Developers to Follow
@@ -698,11 +710,7 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {[
-                  { name: 'Sarah Chen', username: 'sarahdev', level: 15, bio: 'Full-stack developer | React enthusiast' },
-                  { name: 'Mike Johnson', username: 'mikecodes', level: 12, bio: 'Backend engineer | Python & Go' },
-                  { name: 'Alex Kumar', username: 'alexk', level: 18, bio: 'DevOps specialist | Cloud architect' },
-                ].map((dev) => (
+                {(trendingData?.users || []).map((dev: any) => (
                   <div
                     key={dev.username}
                     className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer"
@@ -710,15 +718,16 @@ export default function SearchPage() {
                   >
                     <div className="flex items-center gap-3">
                       <Avatar className="w-10 h-10">
-                        <AvatarFallback>{dev.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        <AvatarImage src={dev.avatar} />
+                        <AvatarFallback>{(dev.displayName || dev.username).split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
                       </Avatar>
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-semibold text-sm">{dev.name}</span>
+                          <span className="font-semibold text-sm">{dev.displayName}</span>
                           <Badge variant="outline" className="text-xs">L{dev.level}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground">@{dev.username}</p>
-                        <p className="text-xs text-muted-foreground mt-1">{dev.bio}</p>
+                        {dev.bio && <p className="text-xs text-muted-foreground mt-1">{dev.bio}</p>}
                       </div>
                     </div>
                     <Button size="sm" variant="outline">View</Button>
