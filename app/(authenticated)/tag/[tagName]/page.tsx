@@ -113,6 +113,7 @@ export default function TagPage() {
               imageUrls={[]}
               videoUrls={[]}
               authorId={post.author.username}
+              onClick={(postId) => window.location.href = `/post/${postId}`}
             />
           ))
         )}
