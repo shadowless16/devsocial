@@ -66,7 +66,7 @@ export async function GET(req: NextRequest) {
     const posts = await Post.find()
       .populate({
         path: 'author',
-        select: 'username firstName lastName avatar level isGenerated',
+        select: 'username firstName lastName avatar level role isGenerated',
         match: dataMode === 'real' 
           ? { isGenerated: { $ne: true } }
           : dataMode === 'generated'
@@ -253,7 +253,7 @@ export async function POST(req: NextRequest) {
     });
 
     const populatedPost = await Post.findById(newPost._id)
-      .populate("author", "username firstName lastName avatar level")
+      .populate("author", "username firstName lastName avatar level role")
       .lean();
 
     if (!populatedPost) {
