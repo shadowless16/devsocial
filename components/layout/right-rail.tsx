@@ -30,7 +30,10 @@ function Trends() {
         if (response.success && response.data) {
           const topics = (response.data as any).trendingTopics || []
           console.log("[RightRail] Setting trending topics:", topics)
-          setTrendingTopics(topics)
+          const uniqueTopics = topics.filter((topic: any, index: number, self: any[]) => 
+            index === self.findIndex((t: any) => t.tag === topic.tag)
+          )
+          setTrendingTopics(uniqueTopics)
         } else {
           console.log("[RightRail] No trending data received")
           setTrendingTopics([])
@@ -62,8 +65,8 @@ function Trends() {
           <div className="text-xs text-muted-foreground py-2">No trending topics available</div>
         ) : (
           <>
-            {trendingTopics.slice(0, 6).map((topic, index) => (
-              <Link key={`${topic.tag}-${index}`} href={`/tag/${topic.tag.replace(/^#+/, '')}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
+            {trendingTopics.slice(0, 6).map((topic) => (
+              <Link key={topic.tag} href={`/tag/${topic.tag.replace(/^#+/, '')}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-2">
                   <span className="text-emerald-600 font-medium text-sm">#{topic.tag.replace(/^#+/, '')}</span>
 

@@ -16,6 +16,19 @@ import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
 import { useNotifications } from '@/contexts/notification-context'
 
+function TimeAgo({ timestamp }: { timestamp: string }) {
+  const [time, setTime] = useState(() => formatDistanceToNow(new Date(timestamp), { addSuffix: true }))
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(formatDistanceToNow(new Date(timestamp), { addSuffix: true }))
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [timestamp])
+
+  return <span className="flex-shrink-0">{time}</span>
+}
+
 interface Notification {
   _id: string
   type: string
@@ -37,9 +50,14 @@ export default function NotificationsPage() {
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const { notifications, loading, fetchNotifications, markAsRead, markAsUnread, markAllAsRead } = useNotifications()
   const [filteredNotifications, setFilteredNotifications] = useState(notifications)
+  const [, setTick] = useState(0)
 
   useEffect(() => {
     fetchNotifications()
+    const interval = setInterval(() => {
+      fetchNotifications()
+    }, 1800000)
+    return () => clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -49,6 +67,13 @@ export default function NotificationsPage() {
       setFilteredNotifications(notifications)
     }
   }, [notifications, filter])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTick(t => t + 1)
+    }, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {
@@ -180,9 +205,7 @@ export default function NotificationsPage() {
                           <Badge variant="outline" className="text-xs flex-shrink-0">
                             L{notification.sender.level}
                           </Badge>
-                          <span className="flex-shrink-0">
-                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
-                          </span>
+                          <TimeAgo timestamp={notification.createdAt} />
                         </div>
                       </div>
                       
