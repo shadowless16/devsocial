@@ -401,11 +401,24 @@ export default function PostCard({
                 }}>
                 {imageUrl && (
                   <div className="mb-3 rounded-lg overflow-hidden border border-border">
-                    <img
-                      src={imageUrl}
-                      alt="Post image"
-                      className="w-full h-auto object-contain rounded-lg"
-                    />
+                    {imageUrl.match(/\.(mp4|webm|ogg)$/i) || imageUrl.includes('video') ? (
+                      <video 
+                        controls
+                        className="w-full h-auto rounded-lg"
+                        preload="metadata"
+                      >
+                        <source src={imageUrl} type="video/mp4" />
+                        <source src={imageUrl} type="video/webm" />
+                        <source src={imageUrl} type="video/ogg" />
+                        Your browser does not support the video tag.
+                      </video>
+                    ) : (
+                      <img
+                        src={imageUrl}
+                        alt="Post image"
+                        className="w-full h-auto object-contain rounded-lg"
+                      />
+                    )}
                   </div>
                 )}
 
@@ -471,6 +484,16 @@ export default function PostCard({
               </div>
 
           
+          {/* AI Actions */}
+          {content && (
+            <div className="mb-3">
+              <PostAIActions 
+                postContent={content} 
+                postId={postId || ""}
+              />
+            </div>
+          )}
+
           {/* Actions Footer */}
           <div className="pt-3 border-t border-gray-100">
             {/* Action Buttons */}
