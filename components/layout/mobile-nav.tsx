@@ -17,14 +17,15 @@ import {
 } from "lucide-react"
 import { SimplePostModal } from "@/components/modals/simple-post-modal"
 import { MobileMenu } from "@/components/layout/mobile-menu"
+import { useNotifications } from "@/contexts/notification-context"
 
 interface MobileNavProps {
   className?: string
 }
 
-const navItems = [
+const getNavItems = (unreadCount: number) => [
   { icon: Home, href: "/home", label: "Home" },
-  { icon: MessageCircle, href: "/feedback", label: "Feedback" },
+  { icon: Bell, href: "/notifications", label: "Notifications", badge: unreadCount },
   { icon: Plus, href: "#", label: "Create", isAction: true },
   { icon: User, href: "/profile", label: "Profile" },
   { icon: Menu, href: "#", label: "Menu", isMenu: true },
@@ -39,8 +40,11 @@ interface CreatePostData {
 
 export function MobileNav({ className }: MobileNavProps) {
   const pathname = usePathname()
+  const { unreadCount } = useNotifications()
   const [showCreatePost, setShowCreatePost] = useState(false)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
+  
+  const navItems = getNavItems(unreadCount)
 
   const handleCreateClick = () => {
     setShowCreatePost(true)
@@ -136,6 +140,11 @@ export function MobileNav({ className }: MobileNavProps) {
                         : "text-gray-500 dark:text-gray-400"
                     )} />
                   </div>
+                  {item.badge && item.badge > 0 && (
+                    <div className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-600 rounded-full flex items-center justify-center px-1">
+                      <span className="text-[10px] font-bold text-white">{item.badge > 99 ? '99+' : item.badge}</span>
+                    </div>
+                  )}
                   {isActive && (
                     <div className="absolute -bottom-2 w-1 h-1 bg-emerald-600 rounded-full" />
                   )}

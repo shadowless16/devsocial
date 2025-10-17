@@ -134,7 +134,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="w-full min-w-0 px-4 py-4 space-y-4">
+    <div className="w-full min-w-0 space-y-3 md:space-y-4">
       <HeaderBar onCreateClick={() => setShowPostModal(true)} />
       <OfflineIndicator />
       <StatPills />
