@@ -11,6 +11,7 @@ import { ImageIcon, Plus, Search, Upload, Loader2 } from "lucide-react"
 import PostCard from "@/components/post-card"
 import StatPills from "@/components/stat-pills"
 import { SimplePostModal } from "@/components/modals/simple-post-modal"
+import { SearchModal } from "@/components/modals/search-modal"
 import { PostSkeleton } from "@/components/skeletons/post-skeleton"
 import { useToast } from "@/hooks/use-toast"
 import { getAvatarUrl } from "@/lib/avatar-utils"
@@ -25,10 +26,22 @@ export default function HomePage() {
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)
   const [showPostModal, setShowPostModal] = useState(false)
+  const [showSearchModal, setShowSearchModal] = useState(false)
   const observer = useRef<IntersectionObserver | null>(null)
 
   useEffect(() => {
     fetchPosts(1, true)
+  }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+        e.preventDefault()
+        setShowSearchModal(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
   }, [])
 
   const fetchPosts = async (pageNum: number, reset = false) => {
@@ -135,7 +148,10 @@ export default function HomePage() {
 
   return (
     <div className="w-full min-w-0 space-y-3 md:space-y-4">
-      <HeaderBar onCreateClick={() => setShowPostModal(true)} />
+      <HeaderBar 
+        onCreateClick={() => setShowPostModal(true)} 
+        onSearchClick={() => setShowSearchModal(true)}
+      />
       <OfflineIndicator />
       <StatPills />
       <Compose onCreateClick={() => setShowPostModal(true)} />
@@ -203,11 +219,16 @@ export default function HomePage() {
         onClose={() => setShowPostModal(false)}
         onSubmit={handleCreatePost}
       />
+      
+      <SearchModal
+        isOpen={showSearchModal}
+        onClose={() => setShowSearchModal(false)}
+      />
     </div>
   )
 }
 
-function HeaderBar({ onCreateClick }: { onCreateClick: () => void }) {
+function HeaderBar({ onCreateClick, onSearchClick }: { onCreateClick: () => void; onSearchClick: () => void }) {
   return (
     <div className="flex items-center justify-between gap-2 mb-3 md:mb-4">
       <div className="grid gap-0.5 md:gap-1 flex-1 min-w-0">
@@ -215,14 +236,17 @@ function HeaderBar({ onCreateClick }: { onCreateClick: () => void }) {
         <p className="text-xs text-muted-foreground md:text-sm truncate">{"What's happening in tech today?"}</p>
       </div>
       <div className="flex items-center gap-1 md:hidden flex-shrink-0">
-        <Button variant="outline" size="sm" className="h-9 w-9 p-0">
+        <Button variant="outline" size="sm" className="h-9 w-9 p-0" onClick={onSearchClick}>
           <Search className="h-4 w-4" />
         </Button>
       </div>
       <div className="hidden md:flex items-center gap-2 flex-shrink-0">
-        <Button variant="outline" className="gap-2 bg-transparent">
+        <Button variant="outline" className="gap-2 bg-transparent relative" onClick={onSearchClick}>
           <Search className="h-4 w-4" />
           <span>Search</span>
+          <kbd className="hidden lg:inline-flex h-5 select-none items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium text-muted-foreground ml-2">
+            <span className="text-xs">⌘</span>K
+          </kbd>
         </Button>
         <Button onClick={onCreateClick} className="gap-2">
           <Plus className="h-4 w-4" />
