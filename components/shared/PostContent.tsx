@@ -37,12 +37,6 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
     }
   };
 
-  // Auto-detect URLs in plain text and convert to markdown links
-  const processContent = (text: string) => {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text.replace(urlRegex, (url) => `[${url}](${url})`);
-  };
-
   return (
     <ReactMarkdown
       components={{ 
@@ -147,7 +141,7 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
         },
       }}
     >
-      {processContent(content)}
+      {content}
     </ReactMarkdown>
   );
 }

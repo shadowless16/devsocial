@@ -8,19 +8,30 @@ interface MentionTextProps {
 }
 
 export function MentionText({ text, className = "" }: MentionTextProps) {
-  // Split text by mentions and hashtags and create clickable links
-  // Updated regex to handle hashtags and mentions with better word boundaries
-  const parts = text.split(/(@[a-zA-Z0-9_]+|#[a-zA-Z0-9_]+)/g)
+  const parts = text.split(/(https?:\/\/[^\s]+|@[a-zA-Z0-9_]+|#[a-zA-Z0-9_]+)/g)
   
   return (
     <span className={className}>
       {parts.map((part, index) => {
+        if (part.startsWith('http://') || part.startsWith('https://')) {
+          return (
+            <a
+              key={index}
+              href={part}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-600 hover:text-blue-800 underline"
+              onClick={(e) => e.stopPropagation()}
+            >
+              {part}
+            </a>
+          )
+        }
         if (part.startsWith('@')) {
-          const username = part.substring(1)
           return (
             <Link
               key={index}
-              href={`/profile/${username}`}
+              href={`/profile/${part.substring(1)}`}
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
@@ -29,11 +40,10 @@ export function MentionText({ text, className = "" }: MentionTextProps) {
           )
         }
         if (part.startsWith('#')) {
-          const hashtag = part.substring(1)
           return (
             <Link
               key={index}
-              href={`/tag/${hashtag}`}
+              href={`/tag/${part.substring(1)}`}
               className="text-blue-600 hover:text-blue-800 font-medium hover:underline"
               onClick={(e) => e.stopPropagation()}
             >
