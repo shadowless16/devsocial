@@ -34,6 +34,7 @@ import {
   MessageSquare,
   BookOpen,
   Database,
+  UserCog,
 } from "lucide-react"
 import { SimplePostModal } from "@/components/modals/simple-post-modal"
 
@@ -65,6 +66,7 @@ const getNavItems = (userRole?: string): NavItem[] => {
   if (userRole === 'admin' || userRole === 'moderator') {
     baseNav.splice(-1, 0, { label: "Analytics", icon: BarChart3, href: "/analytics" })
     baseNav.splice(-1, 0, { label: "Moderation", icon: Shield, href: "/moderation" })
+    baseNav.splice(-1, 0, { label: "Admin Roles", icon: UserCog, href: "/admin-roles" })
   }
 
   return baseNav

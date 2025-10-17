@@ -21,6 +21,7 @@ import dynamic from 'next/dynamic';
 import { NotificationSettings } from "./notification-settings";
 import { PrivacySettings } from "./privacy-settings";
 import { AppearanceSettings } from "./appearance-settings";
+import { UserManagement } from "@/components/admin/user-management";
 
 const WalletConnect = dynamic(() => import('@/components/wallet-connect').then(mod => mod.WalletConnect), {
   loading: () => <p>Loading WalletConnect...</p>,
@@ -252,12 +253,15 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-5">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="wallet">Wallet</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
+          {(user?.role === 'admin' || user?.role === 'moderator') && (
+            <TabsTrigger value="users">Users</TabsTrigger>
+          )}
         </TabsList>
 
         <TabsContent value="profile" className="space-y-6 mt-6">
@@ -412,6 +416,12 @@ export default function SettingsPage() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {(user?.role === 'admin' || user?.role === 'moderator') && (
+          <TabsContent value="users" className="space-y-6 mt-6">
+            <UserManagement />
+          </TabsContent>
+        )}
       </Tabs>
 
       <div className="flex justify-end items-center mt-8 space-x-4">
