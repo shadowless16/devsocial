@@ -23,6 +23,7 @@ interface PostCardProps {
   author?: string
   handle?: string
   level?: string
+  authorRole?: string
   xpDelta?: number
   content?: string
   views?: number
@@ -72,6 +73,7 @@ export default function PostCard({
   author = "Akinwumi David",
   handle = "@AkDavid",
   level = "L1",
+  authorRole,
   xpDelta = 20,
   content = "lol",
   views = 1,
@@ -256,6 +258,16 @@ export default function PostCard({
                     <Badge variant="secondary" className="text-sm px-2 py-0 h-6 flex-shrink-0">
                       {level}
                     </Badge>
+                    {authorRole === 'admin' && (
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0 h-6 flex-shrink-0 font-semibold">
+                        ADMIN
+                      </Badge>
+                    )}
+                    {authorRole === 'moderator' && (
+                      <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-2 py-0 h-6 flex-shrink-0 font-semibold">
+                        MOD
+                      </Badge>
+                    )}
                     {xpDelta > 0 && (
                       <Badge className="bg-yellow-50 dark:bg-yellow-900/20 text-yellow-700 dark:text-yellow-400 text-sm px-2 py-0 h-6 flex-shrink-0">
                         +{xpDelta}

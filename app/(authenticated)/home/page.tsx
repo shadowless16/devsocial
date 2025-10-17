@@ -177,6 +177,7 @@ export default function HomePage() {
                   author={post.author?.displayName || post.author?.username}
                   handle={`@${post.author?.username}`}
                   level={`L${post.author?.level || 1}`}
+                  authorRole={post.author?.role}
                   xpDelta={post.xpAwarded}
                   content={post.content}
                   views={post.viewsCount}
