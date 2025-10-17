@@ -30,7 +30,9 @@ import { InteractiveChart } from "@/components/analytics/interactive-chart"
 import { GenerateDataButton } from "@/components/analytics/generate-data-button"
 import { AnalyticsStatus } from "@/components/analytics/analytics-status"
 import { ClientChart } from "@/components/analytics/client-chart"
+import { UserManagement } from "@/components/admin/user-management"
 import { useEffect, useState } from "react"
+import { useAuth } from "@/contexts/app-context"
 
 // Types
 interface AnalyticsData {
@@ -195,10 +197,16 @@ export default function AnalyticsPage() {
   const trends = displayData?.trends || {}
   const demographics = displayData?.demographics || {}
 
+  const { user } = useAuth()
+  const isAdmin = user?.role === 'admin'
+
   return (
     <div className="space-y-6">
       {/* Analytics Status */}
       <AnalyticsStatus />
+      
+      {/* User Management - Admin Only */}
+      {isAdmin && <UserManagement />}
       
       {/* Header */}
       <div className="flex items-center justify-between">
