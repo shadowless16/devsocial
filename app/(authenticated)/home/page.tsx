@@ -93,7 +93,10 @@ export default function HomePage() {
           author: createdPost.author || null,
           isLiked: createdPost.isLiked || false,
           viewsCount: createdPost.viewsCount || 0,
-          createdAt: createdPost.createdAt || new Date().toISOString()
+          createdAt: createdPost.createdAt || new Date().toISOString(),
+          imageUrl: createdPost.imageUrl || null,
+          imageUrls: createdPost.imageUrls || [],
+          videoUrls: createdPost.videoUrls || []
         }
         setPosts(prev => [normalized, ...prev])
         toast({ title: "Success", description: "Post created successfully!" })
