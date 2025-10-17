@@ -6,7 +6,8 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/app-context";
 import type { User } from "@/contexts/app-context";
 import { apiClient } from "@/lib/api-client";
-import { Settings, Save, Upload, User as UserIcon, Bell, Shield, Palette } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
+import { Settings, Save, Upload, User as UserIcon, Bell, Shield, Palette, Sparkles } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
+import { AIUsageSettings } from "./ai-usage";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -253,9 +254,10 @@ export default function SettingsPage() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
+        <TabsList className="grid w-full grid-cols-3 lg:grid-cols-7">
           <TabsTrigger value="profile">Profile</TabsTrigger>
           <TabsTrigger value="wallet">Wallet</TabsTrigger>
+          <TabsTrigger value="ai">AI Usage</TabsTrigger>
           <TabsTrigger value="notifications">Notifications</TabsTrigger>
           <TabsTrigger value="privacy">Privacy</TabsTrigger>
           <TabsTrigger value="appearance">Appearance</TabsTrigger>
@@ -373,6 +375,20 @@ export default function SettingsPage() {
           <div className="flex justify-center">
             <WalletConnect />
           </div>
+        </TabsContent>
+
+        <TabsContent value="ai" className="space-y-6 mt-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Sparkles className="w-5 h-5 mr-2" />
+                AI Features Usage
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <AIUsageSettings />
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="notifications" className="space-y-6 mt-6">

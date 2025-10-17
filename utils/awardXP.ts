@@ -22,6 +22,7 @@ export const XP_VALUES = {
   user_followed: 5,
   challenge_completion: 75,
   daily_challenge: 50,  // Default value, can be overridden
+  quality_content: 0,  // AI-determined bonus (0-50 XP based on quality)
 }
 
 export async function awardXP(

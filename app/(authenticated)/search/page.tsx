@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, Filter, User, Hash, FileText, X } from "lucide-react"
+import { Search, Filter, User, Hash, FileText, X, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -53,6 +53,9 @@ interface SearchResults {
   posts: Post[]
   users: User[]
   tags: Tag[]
+  aiInsights?: {
+    keywords?: string[]
+  }
 }
 
 interface SearchApiResponse {
@@ -79,6 +82,9 @@ export default function SearchPage() {
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
+  const [smartSearch, setSmartSearch] = useState(false)
+  const [aiSummary, setAiSummary] = useState<string | null>(null)
+  const [aiInsights, setAiInsights] = useState<any>(null)
 
   // Read query from URL on mount
   useEffect(() => {
@@ -94,6 +100,8 @@ export default function SearchPage() {
       setSearchResults({ posts: [], users: [], tags: [] })
       setHasSearched(false)
       setInitialLoad(false)
+      setAiSummary(null)
+      setAiInsights(null)
       return
     }
 
@@ -101,14 +109,23 @@ export default function SearchPage() {
     setError(null)
     
     try {
-      const response = await apiClient.request<SearchApiResponse>(
-        `/search?q=${encodeURIComponent(query)}&type=${type}&limit=20`,
+      const endpoint = smartSearch ? '/search/smart' : '/search'
+      const response = await apiClient.request<SearchApiResponse & { aiSummary?: string; aiInsights?: any }>(
+        `${endpoint}?q=${encodeURIComponent(query)}&type=${type}&limit=20`,
         { method: "GET" }
       )
       
       if (response.success && response.data) {
         setSearchResults(response.data.results)
         setHasSearched(true)
+        
+        if (smartSearch && response.data.aiSummary) {
+          setAiSummary(response.data.aiSummary)
+          setAiInsights(response.data.results.aiInsights)
+        } else {
+          setAiSummary(null)
+          setAiInsights(null)
+        }
       } else {
         throw new Error(response.message || "Search failed")
       }
@@ -116,6 +133,8 @@ export default function SearchPage() {
       console.error("Search error:", error)
       setError(error.message || "An error occurred while searching")
       setSearchResults({ posts: [], users: [], tags: [] })
+      setAiSummary(null)
+      setAiInsights(null)
     } finally {
       setIsSearching(false)
       setInitialLoad(false)
@@ -130,11 +149,13 @@ export default function SearchPage() {
         setSearchResults({ posts: [], users: [], tags: [] })
         setHasSearched(false)
         setInitialLoad(false)
+        setAiSummary(null)
+        setAiInsights(null)
       }
     }, 500) // Debounce search by 500ms
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery, activeTab])
+  }, [searchQuery, activeTab, smartSearch])
 
   const handleLike = async (postId: string) => {
     if (!postId || postId === 'undefined') {
@@ -170,6 +191,8 @@ export default function SearchPage() {
     setHasSearched(false)
     setError(null)
     setInitialLoad(false)
+    setAiSummary(null)
+    setAiInsights(null)
   }
 
   const totalResults = searchResults.posts.length + searchResults.users.length + searchResults.tags.length
@@ -216,6 +239,15 @@ export default function SearchPage() {
           {/* Search Filters */}
           <div className="flex items-center justify-between mt-3 md:mt-4 gap-2">
             <div className="flex items-center space-x-1 md:space-x-2">
+              <Button 
+                variant={smartSearch ? "default" : "outline"} 
+                size="sm" 
+                className="text-xs h-8"
+                onClick={() => setSmartSearch(!smartSearch)}
+              >
+                <Sparkles className="w-3 h-3 mr-1" />
+                <span className="hidden sm:inline">Smart Search</span>
+              </Button>
               <Button variant="outline" size="sm" className="text-xs bg-transparent h-8">
                 <Filter className="w-3 h-3 mr-1" />
                 <span className="hidden sm:inline">Filters</span>
@@ -243,6 +275,36 @@ export default function SearchPage() {
         </CardContent>
       </Card>
 
+      {/* AI Summary */}
+      {smartSearch && aiSummary && (
+        <Card className="mb-4 md:mb-6 bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
+                <Sparkles className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+                  AI Summary
+                  <Badge variant="outline" className="text-xs">Powered by Gemini</Badge>
+                </h3>
+                <p className="text-sm text-gray-700">{aiSummary}</p>
+                {aiInsights && (
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <span className="text-xs text-gray-600">Keywords:</span>
+                    {aiInsights.keywords?.map((kw: string) => (
+                      <Badge key={kw} variant="secondary" className="text-xs">
+                        {kw}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Search Results */}
       {hasSearched && (
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -263,8 +325,18 @@ export default function SearchPage() {
                   Posts
                 </h3>
                 <div className="space-y-3 md:space-y-4 overflow-hidden">
-                  {searchResults.posts.slice(0, 3).map((post) => (
+                  {searchResults.posts.slice(0, 3).map((post: any) => (
                     <div key={post._id || post.id} className="w-full overflow-hidden">
+                      {smartSearch && post.relevanceScore && (
+                        <div className="mb-2 flex items-center gap-2">
+                          <Badge variant="outline" className="text-xs">
+                            {post.relevanceScore}% match
+                          </Badge>
+                          {post.aiReason && (
+                            <span className="text-xs text-gray-500">{post.aiReason}</span>
+                          )}
+                        </div>
+                      )}
                       <FeedItem 
                         post={{
                           ...post,
@@ -396,8 +468,18 @@ export default function SearchPage() {
           <TabsContent value="posts" className="mt-6 overflow-hidden">
             {searchResults.posts.length > 0 ? (
               <div className="space-y-4 overflow-hidden">
-                {searchResults.posts.map((post) => (
+                {searchResults.posts.map((post: any) => (
                   <div key={post._id || post.id} className="w-full overflow-hidden">
+                    {smartSearch && post.relevanceScore && (
+                      <div className="mb-2 flex items-center gap-2">
+                        <Badge variant="outline" className="text-xs">
+                          {post.relevanceScore}% match
+                        </Badge>
+                        {post.aiReason && (
+                          <span className="text-xs text-gray-500">{post.aiReason}</span>
+                        )}
+                      </div>
+                    )}
                     <FeedItem 
                       post={{
                         ...post,

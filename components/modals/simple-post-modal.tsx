@@ -4,6 +4,8 @@
 import React, { useState, useRef } from "react";
 import { X, ImageIcon, Video, Hash, Smile, Code, BarChart3 } from "lucide-react";
 import { VoiceRecorder } from "@/components/ui/voice-recorder";
+import { ImageAnalyzer } from "@/components/ui/image-analyzer";
+import { AITextEnhancer } from "@/components/ui/ai-text-enhancer";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
@@ -378,11 +380,19 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                       controls
                     />
                   ) : (
-                    <img
-                      src={url}
-                      alt={`Upload ${index + 1}`}
-                      className="w-full h-32 object-cover"
-                    />
+                    <>
+                      <img
+                        src={url}
+                        alt={`Upload ${index + 1}`}
+                        className="w-full h-32 object-cover"
+                      />
+                      <ImageAnalyzer
+                        imageUrl={url}
+                        onAnalysis={(text) => {
+                          setContent(prev => prev ? `${prev}\n\n${text}` : text);
+                        }}
+                      />
+                    </>
                   )}
                   <Button
                     type="button"
@@ -481,6 +491,11 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 onTranscription={(text) => {
                   setContent(prev => prev ? `${prev}\n\n${text}` : text);
                 }}
+              />
+
+              <AITextEnhancer
+                content={content}
+                onEnhance={(enhanced) => setContent(enhanced)}
               />
 
               <Button

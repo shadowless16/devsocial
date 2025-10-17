@@ -83,26 +83,49 @@ export default function HomePage() {
   }, [loading, loadingMore, hasMore, page])
 
   const handleCreatePost = async (postData: any) => {
+    // Optimistic update - add post immediately
+    const tempId = `temp-${Date.now()}`
+    const optimisticPost = {
+      id: tempId,
+      ...postData,
+      author: user,
+      isLiked: false,
+      likesCount: 0,
+      commentsCount: 0,
+      viewsCount: 0,
+      xpAwarded: 10,
+      createdAt: new Date().toISOString(),
+      imageUrl: postData.imageUrls?.[0] || null,
+      imageUrls: postData.imageUrls || [],
+      videoUrls: postData.videoUrls || []
+    }
+    
+    setPosts(prev => [optimisticPost, ...prev])
+    setShowPostModal(false)
+    toast({ title: "Posted!", description: "Your post is being published..." })
+    
+    // Background save
     try {
       const response = await apiClient.createPost(postData)
       if (response.success && response.data) {
         const createdPost = (response.data as any).post || response.data
         const normalized = {
           ...createdPost,
-          id: createdPost.id || createdPost._id || createdPost.id,
-          author: createdPost.author || null,
-          isLiked: createdPost.isLiked || false,
-          viewsCount: createdPost.viewsCount || 0,
+          id: createdPost.id || createdPost._id,
+          author: createdPost.author || user,
+          isLiked: false,
+          viewsCount: 0,
           createdAt: createdPost.createdAt || new Date().toISOString(),
           imageUrl: createdPost.imageUrl || null,
           imageUrls: createdPost.imageUrls || [],
           videoUrls: createdPost.videoUrls || []
         }
-        setPosts(prev => [normalized, ...prev])
-        toast({ title: "Success", description: "Post created successfully!" })
-        setShowPostModal(false)
+        // Replace temp post with real one
+        setPosts(prev => prev.map(p => p.id === tempId ? normalized : p))
       }
     } catch (error: any) {
+      // Remove optimistic post on error
+      setPosts(prev => prev.filter(p => p.id !== tempId))
       toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
     }
   }
