@@ -259,13 +259,13 @@ export default function PostCard({
                       {level}
                     </Badge>
                     {authorRole === 'admin' && (
-                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-2 py-0 h-6 flex-shrink-0 font-semibold">
-                        ADMIN
+                      <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-xs px-1.5 py-0 h-6 flex-shrink-0 font-semibold">
+                        🛡️
                       </Badge>
                     )}
                     {authorRole === 'moderator' && (
-                      <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-2 py-0 h-6 flex-shrink-0 font-semibold">
-                        MOD
+                      <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs px-1.5 py-0 h-6 flex-shrink-0 font-semibold">
+                        ⭐
                       </Badge>
                     )}
                     {xpDelta > 0 && (
@@ -427,11 +427,25 @@ export default function PostCard({
                   <div className="mb-3">
                     {imageUrls.length === 1 ? (
                       <div className="rounded-lg overflow-hidden border border-border">
-                        <img
-                          src={imageUrls[0]}
-                          alt="Post image"
-                          className="w-full h-auto object-contain rounded-lg"
-                        />
+                        {(imageUrls[0].match(/\.(mp4|webm|ogg|mov)$/i) || imageUrls[0].includes('video')) ? (
+                          <video 
+                            controls
+                            className="w-full h-auto rounded-lg max-h-[500px]"
+                            preload="metadata"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <source src={imageUrls[0]} type="video/mp4" />
+                            <source src={imageUrls[0]} type="video/webm" />
+                            <source src={imageUrls[0]} type="video/ogg" />
+                            Your browser does not support the video tag.
+                          </video>
+                        ) : (
+                          <img
+                            src={imageUrls[0]}
+                            alt="Post image"
+                            className="w-full h-auto object-contain rounded-lg"
+                          />
+                        )}
                       </div>
                     ) : (
                       <div className={`grid gap-2 rounded-lg overflow-hidden ${

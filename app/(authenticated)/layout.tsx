@@ -40,7 +40,7 @@ export default function AuthenticatedLayout({
           </aside>
 
           {/* Main Feed - Scrollable */}
-          <section aria-label="Feed" className="flex-1 max-w-[600px] lg:max-w-[600px] xl:max-w-[650px] mx-auto w-full h-full overflow-y-auto">
+          <section aria-label="Feed" className="flex-1 max-w-[600px] lg:max-w-[600px] xl:max-w-[650px] mx-auto w-full h-full overflow-y-auto scrollbar-hide">
             {children}
           </section>
 

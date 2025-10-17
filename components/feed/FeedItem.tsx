@@ -447,13 +447,13 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                     L{author.level}
                   </Badge>
                   {post.author?.role === 'admin' && (
-                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0 leading-5 flex-shrink-0 font-semibold">
-                      ADMIN
+                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-1.5 py-0 leading-5 flex-shrink-0 font-semibold">
+                      🛡️
                     </Badge>
                   )}
                   {post.author?.role === 'moderator' && (
-                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] px-2 py-0 leading-5 flex-shrink-0 font-semibold">
-                      MOD
+                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] px-1.5 py-0 leading-5 flex-shrink-0 font-semibold">
+                      ⭐
                     </Badge>
                   )}
                 </>
