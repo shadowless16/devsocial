@@ -50,6 +50,7 @@ interface Post {
     displayName: string;
     avatar: string;
     level: number;
+    role?: string;
   } | null;
   content: string;
   imageUrl?: string | null;
@@ -441,9 +442,21 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 </UserLink>
               )}
               {!post.isAnonymous && (
-                <Badge className="rounded-full bg-emerald-50 px-2 py-0 text-[10px] font-semibold leading-5 text-emerald-700 hover:bg-emerald-50 flex-shrink-0">
-                  L{author.level}
-                </Badge>
+                <>
+                  <Badge className="rounded-full bg-emerald-50 px-2 py-0 text-[10px] font-semibold leading-5 text-emerald-700 hover:bg-emerald-50 flex-shrink-0">
+                    L{author.level}
+                  </Badge>
+                  {post.author?.role === 'admin' && (
+                    <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white text-[10px] px-2 py-0 leading-5 flex-shrink-0 font-semibold">
+                      ADMIN
+                    </Badge>
+                  )}
+                  {post.author?.role === 'moderator' && (
+                    <Badge className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-[10px] px-2 py-0 leading-5 flex-shrink-0 font-semibold">
+                      MOD
+                    </Badge>
+                  )}
+                </>
               )}
             </div>
             <div className="flex items-center gap-1 text-xs sm:text-sm text-muted-foreground">
