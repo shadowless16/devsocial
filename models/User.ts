@@ -52,6 +52,8 @@ export interface IUser extends Document {
   walletConnected?: boolean;
   demoWalletBalance: number;
   summaryUsage?: { [key: string]: number }; // Track monthly summary usage
+  transcriptionUsage?: { [key: string]: number }; // Track monthly audio transcription usage
+  imageAnalysisUsage?: { [key: string]: number }; // Track monthly image analysis usage
   aiUsage?: {
     explain?: Array<{ date: Date; contentLength: number }>;
   }; // Track AI feature usage
@@ -255,6 +257,16 @@ const UserSchema = new Schema<IUser>(
       min: 0,
     },
     summaryUsage: {
+      type: Map,
+      of: Number,
+      default: {},
+    },
+    transcriptionUsage: {
+      type: Map,
+      of: Number,
+      default: {},
+    },
+    imageAnalysisUsage: {
       type: Map,
       of: Number,
       default: {},

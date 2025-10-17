@@ -130,7 +130,6 @@ export function CommentItem({ comment, onLike, onReply, isReply = false, depth =
                 />
               </div>
             )}
-
           </div>
         </div>
         </CardContent>
@@ -138,12 +137,12 @@ export function CommentItem({ comment, onLike, onReply, isReply = false, depth =
       
       {/* Render replies */}
       {comment.replies && comment.replies.length > 0 && (
-        <div className="mt-2 space-y-1">
+        <div className="mt-2 space-y-2 pl-4">
           {comment.replies.map((reply) => (
             <CommentItem
               key={reply.id}
               comment={reply}
-              onLike={() => onLike(reply.id)}
+              onLike={onLike}
               onReply={onReply}
               isReply={true}
               depth={depth + 1}
