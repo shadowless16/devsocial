@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { CheckCheck, Bell, MoreHorizontal } from 'lucide-react'
+import { CheckCheck, Bell, MoreHorizontal, Heart, MessageCircle, UserPlus, Star, AtSign, AlertCircle } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,14 +76,15 @@ export default function NotificationsPage() {
   }, [])
 
   const getNotificationIcon = (type: string) => {
+    const iconClass = "h-3 w-3"
     switch (type) {
-      case 'like': return '❤️'
-      case 'comment': return '💬'
-      case 'follow': return '👤'
-      case 'project_like': return '⭐'
-      case 'mention': return '@'
-      case 'system': return '🔔'
-      default: return '📢'
+      case 'like': return <Heart className={`${iconClass} text-red-500 fill-red-500`} />
+      case 'comment': return <MessageCircle className={`${iconClass} text-blue-500`} />
+      case 'follow': return <UserPlus className={`${iconClass} text-green-500`} />
+      case 'project_like': return <Star className={`${iconClass} text-yellow-500 fill-yellow-500`} />
+      case 'mention': return <AtSign className={`${iconClass} text-purple-500`} />
+      case 'system': return <Bell className={`${iconClass} text-gray-500`} />
+      default: return <AlertCircle className={`${iconClass} text-gray-500`} />
     }
   }
 
@@ -179,7 +180,7 @@ export default function NotificationsPage() {
                         {(notification.sender.displayName || notification.sender.username)[0].toUpperCase()}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="absolute -bottom-1 -right-1 text-xs">
+                    <div className="absolute -bottom-1 -right-1 bg-white dark:bg-gray-900 rounded-full p-0.5 border border-gray-200 dark:border-gray-700">
                       {getNotificationIcon(notification.type)}
                     </div>
                   </div>

@@ -285,6 +285,27 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'SET_THEME', payload: theme });
   }, []);
 
+  // Fetch notification count
+  useEffect(() => {
+    if (state.user) {
+      const fetchUnreadCount = async () => {
+        try {
+          const response = await fetch('/api/notifications?unread=true&limit=1')
+          const data = await response.json()
+          if (data.success) {
+            dispatch({ type: 'SET_UNREAD_COUNT', payload: data.data.unreadCount || 0 })
+          }
+        } catch (error) {
+          console.error('Failed to fetch unread count:', error)
+        }
+      }
+      
+      fetchUnreadCount()
+      const interval = setInterval(fetchUnreadCount, 120000)
+      return () => clearInterval(interval)
+    }
+  }, [state.user])
+
   // Load user data when session changes
   useEffect(() => {
     if (status === 'loading') return;

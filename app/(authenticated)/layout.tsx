@@ -28,7 +28,7 @@ export default function AuthenticatedLayout({
   return (
     <TooltipProvider>
       <main className="min-h-[100svh] bg-muted/30 pb-16 md:pb-6 w-full">
-        <div className="mx-auto flex w-full max-w-[1400px] gap-4 md:gap-6 px-4 sm:px-6 md:px-8 lg:px-12 py-3 md:py-6">
+        <div className="mx-auto flex w-full max-w-[1400px] gap-4 md:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 py-2 md:py-4">
           
           {/* Left Sidebar */}
           <aside className="hidden md:block w-[240px] lg:w-[260px] xl:w-[280px] flex-shrink-0">

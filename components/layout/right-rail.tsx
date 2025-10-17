@@ -6,7 +6,7 @@ import { apiClient } from "@/lib/api-client"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Loader2, TrendingUp, Hash } from "lucide-react"
 
 export default function RightRail() {
   return (
@@ -52,7 +52,7 @@ function Trends() {
     <Card className="border-0 ring-1 ring-black/5">
       <CardHeader className="pb-3">
         <div className="flex items-center gap-2">
-          <span className="text-orange-500 text-sm">📈</span>
+          <TrendingUp className="h-4 w-4 text-orange-500" />
           <div className="text-sm font-semibold">Trending Tags</div>
         </div>
       </CardHeader>
@@ -68,42 +68,11 @@ function Trends() {
             {trendingTopics.slice(0, 6).map((topic) => (
               <Link key={topic.tag} href={`/tag/${topic.tag.replace(/^#+/, '')}`} className="flex items-center justify-between py-1 hover:bg-muted/50 rounded px-1 -mx-1 transition-colors cursor-pointer">
                 <div className="flex items-center space-x-2">
-                  <span className="text-emerald-600 font-medium text-sm">#{topic.tag.replace(/^#+/, '')}</span>
-
-                  {/* nicer React-friendly SVG icons instead of emojis */}
-                  {topic.trend === "up" ? (
-                    <svg
-                      className="w-3 h-3 text-green-500"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                      role="img"
-                    >
-                      <title>Trending up</title>
-                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                      <polyline points="17 6 23 6 23 12" />
-                    </svg>
-                  ) : topic.trend === "down" ? (
-                    <svg
-                      className="w-3 h-3 text-red-500 transform rotate-180"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      aria-hidden="true"
-                      role="img"
-                    >
-                      <title>Trending down</title>
-                      <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-                      <polyline points="17 6 23 6 23 12" />
-                    </svg>
-                  ) : null}
+                  <Hash className="h-3 w-3 text-emerald-600" />
+                  <span className="text-emerald-600 font-medium text-sm">{topic.tag.replace(/^#+/, '')}</span>
+                  {topic.trend === "up" && (
+                    <TrendingUp className="w-3 h-3 text-green-500" />
+                  )}
                 </div>
 
                 <div className="text-sm font-semibold text-gray-900">
