@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, X, Hash, User, FileText, Loader2 } from "lucide-react"
+import { Search, X, Hash, User, FileText, Loader2, Sparkles } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -24,6 +25,9 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   const [query, setQuery] = useState("")
   const [results, setResults] = useState<SearchResults>({ posts: [], users: [], tags: [] })
   const [isSearching, setIsSearching] = useState(false)
+  const [smartMode, setSmartMode] = useState(false)
+  const [searchSummary, setSearchSummary] = useState("")
+  const [searchKeywords, setSearchKeywords] = useState<string[]>([])
 
   useEffect(() => {
     if (!isOpen) {
@@ -46,14 +50,36 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
 
   const performSearch = async (searchQuery: string) => {
     setIsSearching(true)
+    setSearchSummary("")
+    setSearchKeywords([])
+    
     try {
-      const response = await apiClient.request<any>(
-        `/search?q=${encodeURIComponent(searchQuery)}&type=all&limit=5`,
-        { method: "GET" }
-      )
-      
-      if (response.success && response.data) {
-        setResults(response.data.results)
+      if (smartMode) {
+        // AI-powered semantic search
+        const response = await apiClient.request<any>(
+          `/search/smart?q=${encodeURIComponent(searchQuery)}`,
+          { method: "GET" }
+        )
+        
+        if (response.success && response.data) {
+          setResults({ 
+            posts: response.data.results || [], 
+            users: [], 
+            tags: [] 
+          })
+          setSearchSummary(response.data.summary || "")
+          setSearchKeywords(response.data.keywords || [])
+        }
+      } else {
+        // Regular keyword search
+        const response = await apiClient.request<any>(
+          `/search?q=${encodeURIComponent(searchQuery)}&type=all&limit=5`,
+          { method: "GET" }
+        )
+        
+        if (response.success && response.data) {
+          setResults(response.data.results)
+        }
       }
     } catch (error) {
       console.error("Search error:", error)
@@ -83,12 +109,12 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-2xl p-0 gap-0">
-        <div className="p-4 border-b">
+        <div className="p-4 border-b space-y-3">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
             <Input
               type="text"
-              placeholder="Search posts, users, or tags..."
+              placeholder={smartMode ? "Ask anything... (AI-powered)" : "Search posts, users, or tags..."}
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="pl-10 pr-10 h-12 text-base border-0 focus-visible:ring-0"
@@ -103,6 +129,34 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
               </button>
             )}
           </div>
+          <div className="flex items-center justify-between">
+            <Button
+              variant={smartMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => setSmartMode(!smartMode)}
+              className="gap-2"
+            >
+              <Sparkles className="w-4 h-4" />
+              {smartMode ? "Smart Search ON" : "Smart Search"}
+            </Button>
+            {searchKeywords.length > 0 && (
+              <div className="flex gap-1 flex-wrap">
+                {searchKeywords.slice(0, 3).map((kw, i) => (
+                  <Badge key={i} variant="secondary" className="text-xs">
+                    {kw}
+                  </Badge>
+                ))}
+              </div>
+            )}
+          </div>
+          {searchSummary && (
+            <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <Sparkles className="w-4 h-4 inline mr-1" />
+                {searchSummary}
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="max-h-[60vh] overflow-y-auto p-4">

@@ -17,6 +17,7 @@ import Activity from '@/models/Activity'
 import Notification from '@/models/Notification'
 import { getWebSocketServer } from '@/lib/websocket'
 import { cache } from '@/lib/cache'
+import { mistralBackgroundService } from '@/lib/ai/mistral-background-service'
 
 // Only import mission models if needed
 let MissionProgress: any = null;
@@ -317,12 +318,53 @@ export async function POST(req: NextRequest) {
       tag.toLowerCase().replace(/[^a-z0-9]/g, '') === todayChallenge.hashtag
     );
 
+    // Mistral AI Quality Analysis (background task)
+    let qualityBonus = 0;
+    let qualityCategory = 'standard';
+    if (content && content.trim().length > 50) {
+      try {
+        const analysis = await mistralBackgroundService.analyzeQuality(content);
+        qualityBonus = analysis.xpBonus;
+        qualityCategory = analysis.category;
+        
+        // Update post with quality metadata
+        await Post.findByIdAndUpdate(newPost._id, {
+          $set: {
+            'metadata.aiQuality': {
+              score: analysis.score,
+              category: analysis.category,
+              reasoning: analysis.reasoning,
+              hasCode: analysis.hasCode,
+              isEducational: analysis.isEducational,
+              analyzedAt: new Date()
+            }
+          }
+        });
+      } catch (aiError) {
+        console.warn('Mistral quality analysis failed:', aiError);
+      }
+    }
+
     // Award XP for post creation
     const isFirstPost = await checkFirstTimeAction(authorId, "post");
     if (isFirstPost) {
       await awardXP(authorId, "first_post", newPost._id.toString());
     } else {
       await awardXP(authorId, "post_creation", newPost._id.toString());
+    }
+    
+    // Award quality bonus XP
+    if (qualityBonus > 0) {
+      await awardXP(authorId, "quality_content", newPost._id.toString(), qualityBonus);
+      
+      // Create activity for quality bonus
+      await Activity.create({
+        user: authorId,
+        type: 'quality_bonus',
+        description: `Earned quality bonus: ${qualityCategory}`,
+        metadata: { postId: newPost._id.toString(), category: qualityCategory, bonus: qualityBonus },
+        xpEarned: qualityBonus,
+      });
     }
 
     // Award bonus XP for daily hashtag participation
