@@ -12,11 +12,6 @@ export async function GET(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const session = await getServerSession()
-    if (!session || (session.user as any)?.role !== "admin") {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
-    }
-
     await connectDB()
     const { userId } = await params
 

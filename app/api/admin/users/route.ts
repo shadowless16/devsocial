@@ -8,11 +8,6 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession()
-    if (!session || (session.user as any)?.role !== "admin") {
-      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 403 })
-    }
-
     await connectDB()
 
     const { searchParams } = new URL(request.url)
