@@ -59,6 +59,9 @@ export default function HomePage() {
       
       if (response.success && response.data) {
         const newPosts = (response.data as any).posts || []
+        console.log('Fetched posts:', newPosts.length, 'posts')
+        console.log('Posts with authors:', newPosts.filter((p: any) => p.author).length)
+        console.log('Posts without authors:', newPosts.filter((p: any) => !p.author).length)
         setPosts(prev => reset ? newPosts : [...prev, ...newPosts])
         setHasMore(newPosts.length === 10)
         setPage(pageNum)
@@ -200,8 +203,8 @@ export default function HomePage() {
               <div key={post.id} ref={isLast ? lastPostElementRef : null} className="w-full min-w-0">
                 <PostCard
                   postId={post.id}
-                  author={post.author?.displayName || post.author?.username}
-                  handle={`@${post.author?.username}`}
+                  author={post.author?.displayName || post.author?.username || 'Unknown'}
+                  handle={`@${post.author?.username || 'unknown'}`}
                   level={`L${post.author?.level || 1}`}
                   authorRole={post.author?.role}
                   xpDelta={post.xpAwarded}
@@ -209,7 +212,7 @@ export default function HomePage() {
                   views={post.viewsCount}
                   liked={post.isLiked}
                   timestamp={post.createdAt}
-                  avatar={post.author?.avatar}
+                  avatar={post.author?.avatar || ''}
                   currentUserId={user?.id}
                   authorId={post.author?.id}
                   likesCount={post.likesCount}
@@ -218,6 +221,7 @@ export default function HomePage() {
                   imageUrls={post.imageUrls}
                   videoUrls={post.videoUrls}
                   poll={post.poll}
+                  linkPreview={post.linkPreview}
                   onDelete={handleDeletePost}
                   onLike={handleLikePost}
                   onComment={handleCommentPost}

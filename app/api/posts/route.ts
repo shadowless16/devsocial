@@ -88,7 +88,13 @@ export async function GET(req: NextRequest) {
       .lean();
 
     // Filter out posts with null authors (safety check)
-    const filteredPosts = posts.filter(post => post.author);
+    const filteredPosts = posts.filter(post => {
+      if (!post.author) {
+        console.log('Filtered out post with null author:', post._id);
+        return false;
+      }
+      return true;
+    });
 
     // Get user likes if authenticated - single optimized query
     let userLikes = new Set();
