@@ -1,7 +1,7 @@
 "use client"
 
 import { useEffect } from 'react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
@@ -79,12 +79,14 @@ export function NotificationList() {
                 }`}
               >
                 <div className="relative">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={notification.sender.avatar} />
-                    <AvatarFallback className="text-xs">
-                      {(notification.sender.displayName || notification.sender.username)[0].toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    user={{
+                      username: notification.sender.username || '',
+                      avatar: notification.sender.avatar,
+                      displayName: notification.sender.displayName
+                    }}
+                    className="h-8 w-8"
+                  />
                   <div className="absolute -bottom-1 -right-1 text-xs">
                     {getNotificationIcon(notification.type)}
                   </div>

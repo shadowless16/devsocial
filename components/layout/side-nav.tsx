@@ -5,8 +5,7 @@ import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { useAuth, useApp } from "@/contexts/app-context"
 import { useUIState } from "@/hooks/use-ui-state"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getAvatarUrl } from "@/lib/avatar-utils"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -160,13 +159,16 @@ export default function SideNav() {
 
       <Card className="border-0 p-2 ring-1 ring-black/5">
         <div className="flex items-center gap-2">
-          <Avatar className="h-6 w-6 ring-1 ring-primary/20">
-            <AvatarImage 
-              src={getAvatarUrl(user?.avatar)}
-              alt={user?.displayName || user?.username}
+          {user && (
+            <UserAvatar 
+              user={{
+                username: user.username || '',
+                avatar: user.avatar,
+                displayName: user.displayName || user.username
+              }}
+              className="h-6 w-6 ring-1 ring-primary/20"
             />
-            <AvatarFallback className="text-xs">{getInitials(user?.displayName || user?.username || 'User')}</AvatarFallback>
-          </Avatar>
+          )}
           <div className="min-w-0">
               <div className="flex items-center gap-1">
               <div className="truncate text-xs font-medium">{user?.displayName || user?.username || 'User'}</div>

@@ -79,9 +79,9 @@ export async function GET(req: NextRequest) {
     const posts = await Post.find(authorFilter)
       .populate({
         path: 'author',
-        select: 'username firstName lastName avatar level role gender isGenerated'
+        select: 'username firstName lastName avatar level role gender isGenerated displayName'
       })
-      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded poll')
+      .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded poll linkPreview')
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -110,9 +110,10 @@ export async function GET(req: NextRequest) {
       author: post.author ? {
         ...post.author,
         id: post.author._id?.toString(),
-        displayName: post.author.firstName && post.author.lastName 
+        displayName: post.author.displayName || (post.author.firstName && post.author.lastName 
           ? `${post.author.firstName} ${post.author.lastName}` 
-          : post.author.username,
+          : post.author.username),
+        gender: post.author.gender,
       } : null,
       createdAt: new Date(post.createdAt).toISOString(),
       tags: post.tags || [],
@@ -261,7 +262,7 @@ export async function POST(req: NextRequest) {
     });
 
     const populatedPost = await Post.findById(newPost._id)
-      .populate("author", "username firstName lastName avatar level role")
+      .populate("author", "username firstName lastName avatar level role gender displayName")
       .lean();
 
     if (!populatedPost) {
@@ -277,9 +278,10 @@ export async function POST(req: NextRequest) {
       author: postAuthor ? {
         ...postAuthor,
         id: postAuthor._id?.toString(),
-        displayName: postAuthor.firstName && postAuthor.lastName 
+        displayName: postAuthor.displayName || (postAuthor.firstName && postAuthor.lastName 
           ? `${postAuthor.firstName} ${postAuthor.lastName}` 
-          : postAuthor.username,
+          : postAuthor.username),
+        gender: postAuthor.gender,
       } : null,
       createdAt: new Date(postData.createdAt).toISOString(),
       tags: postData.tags || [],

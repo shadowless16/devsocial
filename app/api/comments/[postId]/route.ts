@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Get top-level comments (no parent)
     const comments = await Comment.find({ post: postId, parentComment: { $exists: false } })
-      .populate("author", "username displayName avatar level")
+      .populate("author", "username displayName avatar level gender")
       .sort({ createdAt: 1 }) // Changed to ascending (oldest first)
       .skip(skip)
       .limit(limit)
@@ -40,7 +40,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const commentsWithReplies = await Promise.all(
       comments.map(async (comment) => {
         const replies = await Comment.find({ parentComment: comment._id })
-          .populate("author", "username displayName avatar level")
+          .populate("author", "username displayName avatar level gender")
           .sort({ createdAt: 1 }) // Oldest first for replies
         
         return {
@@ -112,7 +112,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
 
     await comment.save()
-    await comment.populate("author", "username displayName avatar level")
+    await comment.populate("author", "username displayName avatar level gender")
 
     // Update post comment count
     await Post.findByIdAndUpdate(postId, { $inc: { commentsCount: 1 } })

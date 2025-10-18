@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -122,10 +122,14 @@ export default function AnalyticsSidebar() {
       {/* Analytics User Info */}
       <Card className="border-0 p-4 ring-1 ring-black/5">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10 ring-1 ring-blue-100">
-            <AvatarImage src="/abstract-geometric-shapes.png" alt="Analytics User" />
-            <AvatarFallback>AU</AvatarFallback>
-          </Avatar>
+          <UserAvatar 
+            user={{
+              username: 'analytics',
+              avatar: '/abstract-geometric-shapes.png',
+              displayName: 'Analytics Team'
+            }}
+            className="h-10 w-10 ring-1 ring-blue-100"
+          />
           <div className="min-w-0">
             <div className="flex items-center gap-2">
               <div className="truncate font-medium">Analytics Team</div>

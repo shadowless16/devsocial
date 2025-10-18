@@ -5,10 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Search, Shield, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { getAvatarUrl } from "@/lib/avatar-utils"
 
 interface User {
   _id: string
@@ -149,10 +148,14 @@ export function UserManagement() {
             {users.map((user) => (
               <div key={user._id} className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage src={getAvatarUrl(user.avatar)} />
-                    <AvatarFallback>{user.displayName?.[0] || user.username[0]}</AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    user={{
+                      username: user.username,
+                      avatar: user.avatar,
+                      displayName: user.displayName
+                    }}
+                    className="h-10 w-10"
+                  />
                   <div>
                     <div className="font-medium">{user.displayName || user.username}</div>
                     <div className="text-sm text-muted-foreground">@{user.username}</div>

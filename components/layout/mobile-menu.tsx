@@ -27,7 +27,7 @@ import {
   UserCog
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
 
 
@@ -112,10 +112,14 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
           {localUser && (
             <div className="p-4 border-b border-gray-200 dark:border-gray-800">
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 ring-2 ring-emerald-100">
-                  <AvatarImage src={localUser.avatar || "/generic-user-avatar.png"} alt={localUser.displayName || localUser.username} />
-                  <AvatarFallback>{(localUser.displayName || localUser.username || "U").charAt(0).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  user={{
+                    username: localUser.username || '',
+                    avatar: localUser.avatar,
+                    displayName: localUser.displayName
+                  }}
+                  className="h-12 w-12 ring-2 ring-emerald-100"
+                />
                 <div className="flex-1 min-w-0">
                   <div className="font-medium text-sm truncate">{localUser.displayName || localUser.username}</div>
                   <div className="flex items-center gap-2 mt-1">
