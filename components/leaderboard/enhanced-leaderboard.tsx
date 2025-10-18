@@ -3,8 +3,7 @@
 import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getAvatarUrl } from "@/lib/avatar-utils"
+import { SmartAvatar } from "@/components/ui/smart-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Trophy, Medal, Award, Users, Zap, Target, TrendingUp, Crown } from "lucide-react"
 import { useRealtimeLeaderboard } from "@/hooks/use-realtime-leaderboard"
@@ -84,15 +83,14 @@ const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStat
 
               {/* Avatar */}
               <UserLink username={entry.user.username}>
-                <Avatar className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0">
-                  <AvatarImage src={getAvatarUrl(entry.user.avatar) || "/placeholder.svg"} />
-                  <AvatarFallback className="text-[10px] sm:text-xs">
-                    {(entry.user.displayName || entry.user.username || 'U')
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
+                <SmartAvatar
+                  src={entry.user.avatar}
+                  username={entry.user.username}
+                  level={entry.user.level}
+                  alt={entry.user.displayName || entry.user.username}
+                  className="w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0"
+                  showLevelFrame={false}
+                />
               </UserLink>
 
               {/* User Info */}

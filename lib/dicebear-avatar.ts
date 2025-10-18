@@ -1,10 +1,23 @@
 import { createAvatar } from '@dicebear/core';
-import { lorelei } from '@dicebear/collection';
+import { avataaars, bigSmile, funEmoji, thumbs } from '@dicebear/collection';
 
-export type AvatarStyle = 'lorelei';
-
-export function generateDiceBearAvatar(seed: string, style: AvatarStyle = 'lorelei'): string {
-  const avatar = createAvatar(lorelei, {
+export function generateDiceBearAvatar(
+  seed: string, 
+  gender?: 'male' | 'female' | 'other'
+): string {
+  const hash = seed.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  
+  let style;
+  if (gender === 'female') {
+    style = hash % 2 === 0 ? bigSmile : avataaars;
+  } else if (gender === 'male') {
+    style = hash % 2 === 0 ? thumbs : avataaars;
+  } else {
+    const styles = [funEmoji, avataaars, bigSmile, thumbs];
+    style = styles[hash % styles.length];
+  }
+  
+  const avatar = createAvatar(style as any, {
     seed,
     size: 128,
   });
@@ -12,6 +25,6 @@ export function generateDiceBearAvatar(seed: string, style: AvatarStyle = 'lorel
   return avatar.toDataUri();
 }
 
-export function getAvatarStyleForUser(username: string): AvatarStyle {
-  return 'lorelei';
+export function getAvatarStyleForUser(username: string): string {
+  return 'avataaars';
 }
