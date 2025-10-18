@@ -63,16 +63,23 @@ export async function GET(req: NextRequest) {
       // Continue without authentication for public posts
     }
 
+    // Build author filter based on dataMode
+    let authorFilter = {};
+    if (dataMode === 'real') {
+      const realUsers = await User.find({ isGenerated: { $ne: true } }).select('_id').lean();
+      const realUserIds = realUsers.map(u => u._id);
+      authorFilter = { author: { $in: realUserIds } };
+    } else if (dataMode === 'generated') {
+      const generatedUsers = await User.find({ isGenerated: true }).select('_id').lean();
+      const generatedUserIds = generatedUsers.map(u => u._id);
+      authorFilter = { author: { $in: generatedUserIds } };
+    }
+
     // Optimized query with proper indexing
-    const posts = await Post.find()
+    const posts = await Post.find(authorFilter)
       .populate({
         path: 'author',
-        select: 'username firstName lastName avatar level role isGenerated',
-        match: dataMode === 'real' 
-          ? { isGenerated: { $ne: true } }
-          : dataMode === 'generated'
-          ? { isGenerated: true }
-          : {}
+        select: 'username firstName lastName avatar level role gender isGenerated'
       })
       .select('content author tags imageUrl imageUrls videoUrls isAnonymous createdAt likesCount commentsCount viewsCount xpAwarded poll')
       .sort({ createdAt: -1 })
@@ -80,7 +87,7 @@ export async function GET(req: NextRequest) {
       .limit(limit)
       .lean();
 
-    // Filter out posts with null authors (due to populate match)
+    // Filter out posts with null authors (safety check)
     const filteredPosts = posts.filter(post => post.author);
 
     // Get user likes if authenticated - single optimized query

@@ -4,7 +4,7 @@
 import type React from "react";
 import { useState } from "react";
 import { Heart, MessageCircle, MoreHorizontal } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -61,15 +61,10 @@ export function CommentItem({ comment, onLike, onReply, isReply = false, depth =
       <Card className={`${backgroundClass} ${cardShadowClass} transition-all duration-200 hover:shadow-lg`}>
         <CardContent className="p-4">
         <div className="flex items-start space-x-3">
-          <Avatar className="w-8 h-8">
-            <AvatarImage src={comment.author.avatar || "/placeholder.svg"} />
-            <AvatarFallback>
-              {comment.author.displayName
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
-            </AvatarFallback>
-          </Avatar>
+          <UserAvatar 
+            user={comment.author}
+            className="w-8 h-8"
+          />
 
           <div className="flex-1">
             <div className="flex items-center space-x-2 mb-1">

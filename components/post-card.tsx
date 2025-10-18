@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -241,15 +241,14 @@ export default function PostCard({
               className="flex-shrink-0 cursor-pointer hover:ring-primary/20 transition-all"
               onClick={(e) => { e.stopPropagation(); window.location.href = `/profile/${handle?.replace('@', '')}`}}
             >
-              <Avatar className="h-12 w-12 ring-1 ring-primary/20">
-                <AvatarImage 
-                  src={getAvatarUrl(avatar)} 
-                  alt={author}
-                />
-                <AvatarFallback className="text-sm">
-                  {author?.split(' ').map(n => n[0]).join('')}
-                </AvatarFallback>
-              </Avatar>
+              <UserAvatar 
+                user={{
+                  username: handle?.replace('@', '') || 'user',
+                  avatar: avatar,
+                  displayName: author
+                }}
+                className="h-12 w-12 ring-1 ring-primary/20"
+              />
             </div>
             
             {/* User Info & Content */}

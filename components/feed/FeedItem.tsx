@@ -5,7 +5,7 @@ import type React from "react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Heart, MessageCircle, Share, MoreHorizontal, Zap, Copy, Trash, Eye, Coins } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -414,27 +414,16 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
       >
         <div className="flex flex-row items-start gap-2 md:gap-3 space-y-0 p-3 md:p-6 overflow-hidden">
         {post.isAnonymous ? (
-          <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
-            <AvatarImage 
-              src={getAvatarUrl(author.avatar)} 
-              alt={`${author.displayName} avatar`} 
-            />
-            <AvatarFallback>?</AvatarFallback>
-          </Avatar>
+          <UserAvatar 
+            user={{ username: 'anonymous', avatar: '', displayName: 'Anonymous' }}
+            className="h-9 w-9 ring-1 ring-emerald-100"
+          />
         ) : (
           <UserLink username={author.username}>
-            <Avatar className="h-9 w-9 ring-1 ring-emerald-100">
-              <AvatarImage 
-                src={getAvatarUrl(author.avatar)} 
-                alt={`${author.displayName} avatar`} 
-              />
-              <AvatarFallback>
-                {(author.displayName || author.username || "A")
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              user={author}
+              className="h-9 w-9 ring-1 ring-emerald-100"
+            />
           </UserLink>
         )}
         <div className="flex-1 min-w-0">
@@ -797,15 +786,10 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                         <CardContent className="p-4">
                           <div className="flex items-start space-x-3">
                             <UserLink username={comment.author.username}>
-                              <Avatar className="w-10 h-10 flex-shrink-0">
-                                <AvatarImage src={comment.author.avatar || '/placeholder.svg'} />
-                                <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                                  {(comment.author.displayName || comment.author.username || 'U')
-                                    .split(' ')
-                                    .map((n) => n[0])
-                                    .join('')}
-                                </AvatarFallback>
-                              </Avatar>
+                              <UserAvatar 
+                                user={comment.author}
+                                className="w-10 h-10 flex-shrink-0"
+                              />
                             </UserLink>
                             <div className="flex-1">
                               <div className="flex items-center space-x-2 mb-2">
@@ -869,17 +853,16 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                 {/* Comment Input */}
                 <div className="bg-white border rounded-lg p-4">
                   <div className="flex items-start space-x-3">
-                    <Avatar className="w-8 h-8 flex-shrink-0">
-                      <AvatarImage 
-                        src={getAvatarUrl(user?.avatar)} 
+                    {user && (
+                      <UserAvatar 
+                        user={{
+                          username: user.username || '',
+                          avatar: user.avatar,
+                          displayName: user.displayName
+                        }}
+                        className="w-8 h-8 flex-shrink-0"
                       />
-                      <AvatarFallback>
-                        {(user?.displayName || user?.username || 'U')
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
+                    )}
                     <div className="flex-1">
                       <Textarea
                         placeholder="Write a comment..."
