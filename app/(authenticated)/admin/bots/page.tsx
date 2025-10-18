@@ -4,18 +4,17 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 
 export default function BotsManagement() {
   const [bots, setBots] = useState([]);
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState('');
+  const [username, setUsername] = useState('');
   const [personality, setPersonality] = useState('friendly');
   const [frequency, setFrequency] = useState(5);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     fetchBots();
-    fetchUsers();
   }, []);
 
   const fetchBots = async () => {
@@ -24,23 +23,20 @@ export default function BotsManagement() {
     if (data.success) setBots(data.bots);
   };
 
-  const fetchUsers = async () => {
-    const res = await fetch('/api/users');
-    const data = await res.json();
-    if (data.success) setUsers(data.users);
-  };
-
   const addBot = async () => {
+    if (!username.trim()) return;
     setLoading(true);
     const res = await fetch('/api/admin/bots', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId: selectedUser, personality, commentFrequency: frequency })
+      body: JSON.stringify({ username: username.trim(), personality, commentFrequency: frequency })
     });
     const data = await res.json();
     if (data.success) {
       fetchBots();
-      setSelectedUser('');
+      setUsername('');
+    } else {
+      alert(data.message || 'Failed to add bot');
     }
     setLoading(false);
   };
@@ -59,16 +55,12 @@ export default function BotsManagement() {
       <Card className="p-6 mb-6">
         <h2 className="text-xl font-semibold mb-4">Add Bot Account</h2>
         <div className="space-y-4">
-          <Select value={selectedUser} onValueChange={setSelectedUser}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select user" />
-            </SelectTrigger>
-            <SelectContent>
-              {users.map((user: any) => (
-                <SelectItem key={user._id} value={user._id}>{user.username}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Input 
+            placeholder="Enter username" 
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full"
+          />
           
           <Select value={personality} onValueChange={setPersonality}>
             <SelectTrigger>
@@ -92,7 +84,7 @@ export default function BotsManagement() {
             max="20"
           />
           
-          <Button onClick={addBot} disabled={loading || !selectedUser}>
+          <Button onClick={addBot} disabled={loading || !username.trim()}>
             Add Bot
           </Button>
         </div>

@@ -16,14 +16,19 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     await dbConnect();
-    const { userId, personality, commentFrequency } = await req.json();
+    const { username, personality, commentFrequency } = await req.json();
     
-    const user = await User.findById(userId);
+    const user = await User.findOne({ username });
     if (!user) {
       return NextResponse.json({ success: false, message: 'User not found' }, { status: 404 });
     }
     
-    const bot = await BotAccount.create({ userId, personality, commentFrequency });
+    const existingBot = await BotAccount.findOne({ userId: user._id });
+    if (existingBot) {
+      return NextResponse.json({ success: false, message: 'User is already a bot' }, { status: 400 });
+    }
+    
+    const bot = await BotAccount.create({ userId: user._id, personality, commentFrequency });
     return NextResponse.json({ success: true, bot });
   } catch (error: any) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 });
