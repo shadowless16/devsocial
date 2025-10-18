@@ -1,6 +1,6 @@
 class RateLimiter {
   private requests: number[] = []
-  private readonly maxRequests = 8 // Stay under 10/min limit
+  private readonly maxRequests = 12 // Stay under 15/min limit for gemini-2.0-flash
   private readonly windowMs = 60000 // 1 minute
 
   canMakeRequest(): boolean {

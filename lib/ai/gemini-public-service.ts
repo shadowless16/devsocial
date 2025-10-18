@@ -17,7 +17,7 @@ import { geminiRateLimiter } from './rate-limiter'
 
 class GeminiPublicService {
   private genAI: GoogleGenerativeAI
-  private model = 'gemini-2.5-flash'
+  private model = 'gemini-2.0-flash'
 
   constructor() {
     const apiKey = process.env.GEMINI_API_KEY
