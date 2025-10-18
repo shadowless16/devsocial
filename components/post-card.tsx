@@ -244,10 +244,11 @@ export default function PostCard({
               <UserAvatar 
                 user={{
                   username: handle?.replace('@', '') || 'user',
-                  avatar: avatar,
+                  avatar: avatar || '',
                   displayName: author
                 }}
                 className="h-12 w-12 ring-1 ring-primary/20"
+                showLevelFrame={false}
               />
             </div>
             
