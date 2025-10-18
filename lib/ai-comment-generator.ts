@@ -16,49 +16,58 @@ interface ReplyOptions {
 
 export async function generateComment({ postContent, personality, existingComments = [] }: CommentOptions): Promise<string> {
   const personalityPrompts = {
-    friendly: 'Be warm, encouraging, and supportive. Use emojis occasionally.',
-    technical: 'Be analytical and technical. Focus on details and accuracy.',
-    casual: 'Be relaxed and conversational. Keep it short and natural.',
-    professional: 'Be polished and respectful. Provide thoughtful insights.'
+    friendly: 'warm and supportive',
+    technical: 'smart and analytical',
+    casual: 'super chill and relaxed',
+    professional: 'respectful and thoughtful'
   };
 
-  const prompt = `You are commenting on a social media post. ${personalityPrompts[personality]}
+  const prompt = `Post: "${postContent}"
 
-Post: "${postContent}"
-
-${existingComments.length > 0 ? `Existing comments: ${existingComments.join(', ')}` : ''}
-
-Generate a natural, engaging comment (1-2 sentences max). Make it feel human and relevant. Don't repeat existing comments.`;
+Write ONE short comment (1 sentence max). Be ${personalityPrompts[personality]}. Write ONLY the comment text - no quotes, no options, no explanations. Just the comment itself.`;
 
   const result = await mistral.chat.complete({
     model: 'mistral-small-latest',
-    messages: [{ role: 'user', content: prompt }]
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.9,
+    maxTokens: 50
   });
   
   const content = result.choices?.[0]?.message?.content;
-  return typeof content === 'string' ? content.trim() : '';
+  let text = typeof content === 'string' ? content.trim() : '';
+  
+  text = text.replace(/^["']|["']$/g, '');
+  text = text.replace(/\(Or,.*?\)/gi, '');
+  text = text.replace(/\(.*?\)/g, '');
+  
+  return text.trim();
 }
 
 export async function generateReply({ postContent, commentToReplyTo, personality }: ReplyOptions): Promise<string> {
   const personalityPrompts = {
-    friendly: 'Be warm and conversational.',
-    technical: 'Be precise and informative.',
-    casual: 'Be chill and brief.',
-    professional: 'Be respectful and thoughtful.'
+    friendly: 'warm',
+    technical: 'smart',
+    casual: 'chill',
+    professional: 'respectful'
   };
 
-  const prompt = `You are replying to a comment on a post. ${personalityPrompts[personality]}
+  const prompt = `Someone said: "${commentToReplyTo}"
 
-Original Post: "${postContent}"
-Comment to reply to: "${commentToReplyTo}"
-
-Generate a natural reply (1 sentence). Make it conversational and relevant.`;
+Reply in 1 short sentence. Be ${personalityPrompts[personality]}. Write ONLY your reply - no quotes, no options.`;
 
   const result = await mistral.chat.complete({
     model: 'mistral-small-latest',
-    messages: [{ role: 'user', content: prompt }]
+    messages: [{ role: 'user', content: prompt }],
+    temperature: 0.9,
+    maxTokens: 40
   });
   
   const content = result.choices?.[0]?.message?.content;
-  return typeof content === 'string' ? content.trim() : '';
+  let text = typeof content === 'string' ? content.trim() : '';
+  
+  text = text.replace(/^["']|["']$/g, '');
+  text = text.replace(/\(Or,.*?\)/gi, '');
+  text = text.replace(/\(.*?\)/g, '');
+  
+  return text.trim();
 }

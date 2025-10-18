@@ -52,11 +52,15 @@ async function commentOnPost(bot: any, post: any) {
     existingComments: existingTexts
   });
   
-  const comment = await Comment.create({
+  const comment = new Comment({
     content: commentText,
     author: bot.userId._id,
     post: post._id
   });
+  await comment.save();
+  await comment.populate('author', 'username displayName avatar level gender');
+  
+  await Post.findByIdAndUpdate(post._id, { $inc: { commentsCount: 1 } });
   
   await BotActivity.create({
     botAccountId: bot._id,
@@ -87,12 +91,16 @@ async function replyToComment(bot: any, post: any) {
     personality: bot.personality
   });
   
-  const reply = await Comment.create({
+  const reply = new Comment({
     content: replyText,
     author: bot.userId._id,
     post: post._id,
     parentComment: randomComment._id
   });
+  await reply.save();
+  await reply.populate('author', 'username displayName avatar level gender');
+  
+  await Post.findByIdAndUpdate(post._id, { $inc: { commentsCount: 1 } });
   
   await BotActivity.create({
     botAccountId: bot._id,
