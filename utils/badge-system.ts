@@ -90,6 +90,17 @@ export const BADGES: Badge[] = [
     naijaMeaning: "Your dedication dey inspire!",
   },
 
+  // Profile Badges
+  {
+    id: "first_impression",
+    name: "First Impression",
+    description: "Uploaded a profile picture",
+    icon: "📸",
+    rarity: "common",
+    condition: "profile_picture_uploaded",
+    naijaMeaning: "You don show your face!",
+  },
+
   // Special Badges
   {
     id: "bug_hunter",
@@ -152,6 +163,9 @@ export function checkBadgeEligibility(userId: string, userStats: any): Badge[] {
         break
       case "bugs_reported_5":
         if (userStats.bugsReported >= 5) earnedBadges.push(badge)
+        break
+      case "profile_picture_uploaded":
+        if (userStats.hasCustomAvatar) earnedBadges.push(badge)
         break
       // Add more conditions as needed
     }

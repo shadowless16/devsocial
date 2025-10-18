@@ -111,6 +111,15 @@ export async function PUT(req: NextRequest) {
     };
 
     const updateData: Partial<IUser> = {};
+    let earnedXP = 0;
+    let earnedBadge = null;
+
+    // Check if user is uploading a custom avatar for the first time
+    const isFirstCustomAvatar = avatar && 
+      (!user.avatar || user.isGenerated) && 
+      !avatar.includes('dicebear') && 
+      !avatar.includes('placeholder');
+
     if (firstName !== undefined) updateData.firstName = firstName;
     if (lastName !== undefined) updateData.lastName = lastName;
     if (displayName !== undefined) updateData.displayName = displayName;
@@ -118,7 +127,18 @@ export async function PUT(req: NextRequest) {
     if (affiliation !== undefined) updateData.affiliation = affiliation;
     if (location !== undefined) updateData.location = location;
     if (website !== undefined) updateData.website = website;
-    if (avatar !== undefined) updateData.avatar = normalizeAvatar(avatar as string);
+    if (avatar !== undefined) {
+      updateData.avatar = normalizeAvatar(avatar as string);
+      if (isFirstCustomAvatar) {
+        updateData.isGenerated = false;
+        earnedXP = 50;
+        earnedBadge = "first_impression";
+        if (!user.badges.includes("first_impression")) {
+          updateData.badges = [...user.badges, "first_impression"];
+        }
+        updateData.points = (user.points || 0) + earnedXP;
+      }
+    }
     if (bannerUrl !== undefined) updateData.bannerUrl = bannerUrl;
 
     if (currentPassword && newPassword) {
@@ -133,7 +153,15 @@ export async function PUT(req: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { user: updatedUser, message: "Profile updated successfully" }
+      data: { 
+        user: updatedUser, 
+        message: "Profile updated successfully",
+        reward: earnedXP > 0 ? {
+          xp: earnedXP,
+          badge: earnedBadge,
+          message: "🎉 First Impression badge earned! +50 XP"
+        } : null
+      }
     });
   } catch (error) {
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 });

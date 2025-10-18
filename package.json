@@ -50,6 +50,8 @@
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
+    "@dicebear/collection": "^9.2.4",
+    "@dicebear/core": "^9.2.4",
     "@emotion/is-prop-valid": "latest",
     "@google/generative-ai": "^0.21.0",
     "@google/model-viewer": "^4.1.0",
