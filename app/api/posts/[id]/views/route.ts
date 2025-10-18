@@ -15,6 +15,12 @@ export async function POST(
   try {
     await connectDB();
     const { id } = await params;
+    
+    // Skip tracking for temporary post IDs
+    if (id.startsWith('temp-')) {
+      return NextResponse.json({ success: true, message: "Temporary post, view not tracked" });
+    }
+    
     const session = await getServerSession(authOptions);
     
     // Get IP address
