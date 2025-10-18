@@ -68,6 +68,10 @@ const getNavItems = (userRole?: string): NavItem[] => {
     baseNav.splice(-1, 0, { label: "Moderation", icon: Shield, href: "/moderation" })
     baseNav.splice(-1, 0, { label: "Admin Roles", icon: UserCog, href: "/admin-roles" })
   }
+  
+  if (userRole === 'admin') {
+    baseNav.splice(-1, 0, { label: "User Management", icon: UserCog, href: "/admin/users" })
+  }
 
   return baseNav
 }
