@@ -13,6 +13,7 @@
  */
 
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { geminiRateLimiter } from './rate-limiter'
 
 class GeminiPublicService {
   private genAI: GoogleGenerativeAI
@@ -136,6 +137,12 @@ class GeminiPublicService {
 
   async generateSearchKeywords(query: string): Promise<string[]> {
     try {
+      if (!geminiRateLimiter.canMakeRequest()) {
+        console.warn('Rate limit reached, using basic keywords')
+        return [query]
+      }
+      geminiRateLimiter.recordRequest()
+      
       const model = this.genAI.getGenerativeModel({ model: this.model })
       const prompt = `Given this search query from a developer: "${query}"
 
@@ -168,6 +175,11 @@ Format: ["keyword1", "keyword2", ...]`
   async summarizeSearchResults(query: string, results: any[]): Promise<string> {
     try {
       if (!results || results.length === 0) return ''
+      
+      if (!geminiRateLimiter.canMakeRequest()) {
+        return `Found ${results.length} results matching "${query}".`
+      }
+      geminiRateLimiter.recordRequest()
       
       const model = this.genAI.getGenerativeModel({ model: this.model })
       const resultsText = results.slice(0, 5)
@@ -203,6 +215,12 @@ Provide a brief 2-3 sentence summary of what these results are about and how the
       
       const validPosts = posts.filter(p => p?.content)
       if (validPosts.length === 0) return posts
+      
+      if (!geminiRateLimiter.canMakeRequest()) {
+        console.warn('Rate limit reached, skipping AI ranking')
+        return validPosts
+      }
+      geminiRateLimiter.recordRequest()
       
       const model = this.genAI.getGenerativeModel({ model: this.model })
       

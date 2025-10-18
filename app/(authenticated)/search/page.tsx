@@ -253,9 +253,10 @@ export default function SearchPage() {
                 size="sm" 
                 className="text-xs h-8"
                 onClick={() => setSmartSearch(!smartSearch)}
+                title="AI-powered search (may be slower)"
               >
                 <Sparkles className="w-3 h-3 mr-1" />
-                <span className="hidden sm:inline">Smart Search</span>
+                <span className="hidden sm:inline">AI Search</span>
               </Button>
               <Button variant="outline" size="sm" className="text-xs bg-transparent h-8">
                 <Filter className="w-3 h-3 mr-1" />

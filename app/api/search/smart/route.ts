@@ -24,15 +24,14 @@ export async function GET(request: NextRequest) {
       }, { status: 400 })
     }
 
-    // Analyze query with Gemini AI (with fallback)
+    // Analyze query with AI (rate-limited)
     let analysis
     try {
       analysis = await analyzeSearchQuery(query.trim())
     } catch (error) {
-      console.warn('AI query analysis failed, using basic search:', error)
       analysis = {
         intent: query.trim(),
-        keywords: query.trim().split(' ').filter(Boolean),
+        keywords: query.trim().toLowerCase().split(/\s+/).filter(Boolean),
         expandedQuery: query.trim()
       }
     }
@@ -70,12 +69,11 @@ export async function GET(request: NextRequest) {
         .sort({ createdAt: -1 })
         .limit(50)
 
-      // Rank posts with AI (with fallback)
+      // AI ranking with fallback
       let rankedPosts
       try {
         rankedPosts = await rankSearchResults(query, posts)
       } catch (error) {
-        console.warn('AI ranking failed, using default order:', error)
         rankedPosts = posts
       }
       
@@ -106,7 +104,6 @@ export async function GET(request: NextRequest) {
       try {
         rankedUsers = await rankSearchResults(query, users)
       } catch (error) {
-        console.warn('AI user ranking failed, using default order:', error)
         rankedUsers = users
       }
       
@@ -135,12 +132,11 @@ export async function GET(request: NextRequest) {
       }))
     }
 
-    // Generate AI summary (with fallback)
-    let summary = ''
+    // AI summary with fallback
+    let summary
     try {
       summary = await generateSearchSummary(query, results)
     } catch (error) {
-      console.warn('AI summary generation failed:', error)
       summary = `Found ${results.posts.length} posts, ${results.users.length} users, and ${results.tags.length} tags.`
     }
 
