@@ -1,0 +1,91 @@
+paths:
+  /api/dashboard:
+    get:
+      tags:
+        - Analytics
+      summary: Get user dashboard analytics
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Dashboard data retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      stats:
+                        type: object
+                        properties:
+                          totalPosts:
+                            type: number
+                          totalLikes:
+                            type: number
+                          totalComments:
+                            type: number
+                          followers:
+                            type: number
+                          following:
+                            type: number
+                      activityChart:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            date:
+                              type: string
+                            posts:
+                              type: number
+                            likes:
+                              type: number
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/analytics:
+    get:
+      tags:
+        - Analytics
+      summary: Get detailed analytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: period
+          schema:
+            type: string
+            enum: [7d, 30d, 90d]
+            default: 30d
+      responses:
+        '200':
+          description: Analytics retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      xpBreakdown:
+                        type: object
+                      engagementMetrics:
+                        type: object
+                      topPosts:
+                        type: array
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'

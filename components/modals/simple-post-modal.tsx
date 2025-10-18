@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
-import { EmojiPicker } from "@/components/ui/emoji-picker";
+import EmojiPicker from "emoji-picker-react";
 import { MentionInput } from "@/components/ui/mention-input";
 import { PollCreator } from "@/components/poll/poll-creator";
 import { LinkPreviewCard } from "@/components/ui/link-preview-card";
@@ -443,9 +443,9 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
           )}
 
           {/* Bottom Actions */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700">
+          <div className="flex items-center justify-between pt-3 border-t border-gray-200 dark:border-gray-700 gap-2">
             {/* Media Upload Buttons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 flex-wrap">
               <input
                 ref={fileInputRef}
                 type="file"
@@ -462,7 +462,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 size="sm"
                 onClick={() => fileInputRef.current?.click()}
                 disabled={isUploading || mediaUrls.length >= 4}
-                className="h-9 w-9 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600"
+                className="h-8 w-8 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 shrink-0"
               >
                 <ImageIcon className="h-4 w-4" />
               </Button>
@@ -482,7 +482,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                   input.click();
                 }}
                 disabled={isUploading || mediaUrls.length >= 4}
-                className="h-9 w-9 p-0 rounded-full hover:bg-green-50 hover:text-green-600"
+                className="h-8 w-8 p-0 rounded-full hover:bg-green-50 hover:text-green-600 dark:hover:bg-green-900/20 shrink-0"
               >
                 <Video className="h-4 w-4" />
               </Button>
@@ -508,7 +508,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                     setContent(prev => prev + ' #');
                   }
                 }}
-                className="h-9 w-9 p-0 rounded-full hover:bg-purple-50 hover:text-purple-600"
+                className="h-8 w-8 p-0 rounded-full hover:bg-purple-50 hover:text-purple-600 dark:hover:bg-purple-900/20 shrink-0"
               >
                 <Hash className="h-4 w-4" />
               </Button>
@@ -532,7 +532,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                     }
                   }
                 }}
-                className="h-9 w-9 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600"
+                className="h-8 w-8 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 shrink-0"
               >
                 <Code className="h-4 w-4" />
               </Button>
@@ -543,7 +543,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 size="sm"
                 onClick={() => setShowPollCreator(true)}
                 disabled={showPollCreator || pollData}
-                className="h-9 w-9 p-0 rounded-full hover:bg-indigo-50 hover:text-indigo-600"
+                className="h-8 w-8 p-0 rounded-full hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/20 shrink-0"
               >
                 <BarChart3 className="h-4 w-4" />
               </Button>
@@ -554,7 +554,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                   variant="ghost"
                   size="sm"
                   onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="h-9 w-9 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600"
+                  className="h-8 w-8 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-900/20 shrink-0"
                 >
                   <Smile className="h-4 w-4" />
                 </Button>
@@ -564,12 +564,15 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                       className="fixed inset-0 z-40" 
                       onClick={() => setShowEmojiPicker(false)}
                     />
-                    <div className="absolute bottom-12 left-0 z-50">
+                    <div className="absolute bottom-12 left-0 z-50 sm:left-auto sm:right-0">
                       <EmojiPicker
-                        onEmojiSelect={(emoji) => {
-                          setContent(prev => prev + emoji);
+                        onEmojiClick={(emojiData) => {
+                          setContent(prev => prev + emojiData.emoji);
+                          setShowEmojiPicker(false);
                         }}
-                        onClose={() => setShowEmojiPicker(false)}
+                        width={280}
+                        height={350}
+                        previewConfig={{ showPreview: false }}
                       />
                     </div>
                   </>
@@ -581,9 +584,9 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
             <Button
               type="submit"
               disabled={(!content.trim() && !pollData) || isUploading || isSubmitting || isOverLimit}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white px-6 rounded-full"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 sm:px-6 rounded-full shrink-0"
             >
-              {isSubmitting ? "Posting..." : isUploading ? `Uploading ${Math.round(uploadProgress)}%` : "Post"}
+              {isSubmitting ? "Posting..." : isUploading ? `${Math.round(uploadProgress)}%` : "Post"}
             </Button>
           </div>
         </form>

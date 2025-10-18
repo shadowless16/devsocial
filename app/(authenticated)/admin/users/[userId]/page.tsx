@@ -8,9 +8,14 @@ import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { apiClient } from "@/lib/api-client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
+import { useToast } from "@/hooks/use-toast"
 
 export default function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
   const resolvedParams = use(params)
@@ -19,6 +24,13 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
   const [loading, setLoading] = useState(true)
   const [showXpDialog, setShowXpDialog] = useState(false)
   const [showRoleDialog, setShowRoleDialog] = useState(false)
+  const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [xpAmount, setXpAmount] = useState("")
+  const [xpAction, setXpAction] = useState("add")
+  const [newRole, setNewRole] = useState("")
+  const [newPassword, setNewPassword] = useState("")
+  const { toast } = useToast()
 
   useEffect(() => {
     fetchUserDetails()
@@ -211,8 +223,13 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                       variant="outline" 
                       className="w-full justify-start"
                       onClick={async () => {
-                        await apiClient.request(`/admin/users/${resolvedParams.userId}/block`, { method: "POST" })
-                        fetchUserDetails()
+                        try {
+                          await apiClient.request(`/admin/users/${resolvedParams.userId}/block`, { method: "POST" })
+                          toast({ title: "Success", description: `User ${user?.isBlocked ? 'unblocked' : 'blocked'} successfully` })
+                          fetchUserDetails()
+                        } catch (error) {
+                          toast({ title: "Error", description: "Failed to update user", variant: "destructive" })
+                        }
                       }}
                     >
                       {user?.isBlocked ? "Unblock" : "Block"} User
@@ -232,14 +249,16 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                       Change Role
                     </Button>
                     <Button 
+                      variant="outline" 
+                      className="w-full justify-start"
+                      onClick={() => setShowPasswordDialog(true)}
+                    >
+                      Reset Password
+                    </Button>
+                    <Button 
                       variant="destructive" 
                       className="w-full justify-start"
-                      onClick={async () => {
-                        if (confirm("Delete this user permanently?")) {
-                          await apiClient.request(`/admin/users/${resolvedParams.userId}/delete`, { method: "DELETE" })
-                          router.push("/admin/users")
-                        }
-                      }}
+                      onClick={() => setShowDeleteDialog(true)}
                     >
                       Delete User
                     </Button>
@@ -250,6 +269,135 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
           </Tabs>
         </div>
       </div>
+
+      <Dialog open={showXpDialog} onOpenChange={setShowXpDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Adjust XP</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>Action</Label>
+              <Select value={xpAction} onValueChange={setXpAction}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="add">Add XP</SelectItem>
+                  <SelectItem value="remove">Remove XP</SelectItem>
+                  <SelectItem value="set">Set XP</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Amount</Label>
+              <Input type="number" value={xpAmount} onChange={(e) => setXpAmount(e.target.value)} placeholder="Enter amount" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowXpDialog(false)}>Cancel</Button>
+            <Button onClick={async () => {
+              try {
+                await apiClient.request(`/admin/users/${resolvedParams.userId}/xp`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ action: xpAction, amount: parseInt(xpAmount) })
+                })
+                toast({ title: "Success", description: "XP updated successfully" })
+                setShowXpDialog(false)
+                fetchUserDetails()
+              } catch (error) {
+                toast({ title: "Error", description: "Failed to update XP", variant: "destructive" })
+              }
+            }}>Update</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change User Role</DialogTitle>
+          </DialogHeader>
+          <div>
+            <Label>New Role</Label>
+            <Select value={newRole} onValueChange={setNewRole}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select role" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="user">User</SelectItem>
+                <SelectItem value="moderator">Moderator</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowRoleDialog(false)}>Cancel</Button>
+            <Button onClick={async () => {
+              try {
+                await apiClient.request(`/admin/users/${resolvedParams.userId}/role`, {
+                  method: "PATCH",
+                  body: JSON.stringify({ role: newRole })
+                })
+                toast({ title: "Success", description: "Role updated successfully" })
+                setShowRoleDialog(false)
+                fetchUserDetails()
+              } catch (error) {
+                toast({ title: "Error", description: "Failed to update role", variant: "destructive" })
+              }
+            }}>Update</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Reset User Password</DialogTitle>
+          </DialogHeader>
+          <div>
+            <Label>New Password</Label>
+            <Input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} placeholder="Enter new password" />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowPasswordDialog(false)}>Cancel</Button>
+            <Button onClick={async () => {
+              try {
+                await apiClient.request(`/admin/users/${resolvedParams.userId}/reset-password`, {
+                  method: "POST",
+                  body: JSON.stringify({ newPassword })
+                })
+                toast({ title: "Success", description: "Password reset successfully" })
+                setShowPasswordDialog(false)
+                setNewPassword("")
+              } catch (error) {
+                toast({ title: "Error", description: "Failed to reset password", variant: "destructive" })
+              }
+            }}>Reset Password</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete User</DialogTitle>
+          </DialogHeader>
+          <p>Are you sure you want to permanently delete this user? This action cannot be undone.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>Cancel</Button>
+            <Button variant="destructive" onClick={async () => {
+              try {
+                await apiClient.request(`/admin/users/${resolvedParams.userId}/delete`, { method: "DELETE" })
+                toast({ title: "Success", description: "User deleted successfully" })
+                router.push("/admin/users")
+              } catch (error) {
+                toast({ title: "Error", description: "Failed to delete user", variant: "destructive" })
+              }
+            }}>Delete</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
