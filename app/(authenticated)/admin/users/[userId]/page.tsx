@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { use } from "react"
-import { ArrowLeft, Activity, TrendingUp, Award, Calendar, Mail, MapPin, Link as LinkIcon } from "lucide-react"
+import { ArrowLeft, Activity, TrendingUp, Award, Calendar, Mail, MapPin, Link as LinkIcon, Shield, Ban, Trash2, Key, Zap, Users, MessageSquare, Heart, Eye, Clock, BarChart3, Settings } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -12,6 +12,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Progress } from "@/components/ui/progress"
+import { Separator } from "@/components/ui/separator"
 import { apiClient } from "@/lib/api-client"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
@@ -49,148 +51,268 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
     }
   }
 
-  if (loading) return <div className="text-center py-12">Loading...</div>
-  if (!user) return <div className="text-center py-12">User not found</div>
+  if (loading) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+        <p className="text-slate-400">Loading user data...</p>
+      </div>
+    </div>
+  )
+  if (!user) return (
+    <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+      <div className="text-center">
+        <p className="text-slate-400 text-xl">User not found</p>
+        <Button onClick={() => router.back()} className="mt-4">Go Back</Button>
+      </div>
+    </div>
+  )
+
+  const xpProgress = ((user.points % 100) / 100) * 100
+  const nextLevel = user.level + 1
+  const xpNeeded = 100 - (user.points % 100)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
-      <div className="w-full max-w-7xl mx-auto px-4 py-8">
-        <Button 
-          variant="outline" 
-          onClick={() => router.back()} 
-          className="mb-6 border-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur shadow-lg hover:shadow-xl transition-all"
-        >
-          <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Users
-        </Button>
+    <div className="min-h-screen bg-slate-950">
+      {/* Top Navigation Bar */}
+      <div className="sticky top-0 z-50 bg-slate-900/95 backdrop-blur border-b border-slate-800">
+        <div className="max-w-[1600px] mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              onClick={() => router.back()} 
+              className="text-slate-300 hover:text-white hover:bg-slate-800"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Users
+            </Button>
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" className="border-emerald-500/30 text-emerald-400">
+                <Activity className="w-3 h-3 mr-1" />
+                Active
+              </Badge>
+              <Button size="sm" variant="outline" className="border-slate-700 hover:bg-slate-800">
+                <Settings className="w-4 h-4 mr-2" />
+                Quick Actions
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-1">
-            <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur overflow-hidden">
-              <div className="h-32 bg-gradient-to-br from-blue-500 via-indigo-500 to-purple-500"></div>
-              <CardContent className="p-6 text-center -mt-16">
-                <Avatar className="w-32 h-32 mx-auto mb-4 border-4 border-white dark:border-slate-900 shadow-2xl ring-4 ring-blue-500/20">
+      <div className="max-w-[1600px] mx-auto px-6 py-8">
+
+        {/* Hero Section */}
+        <div className="relative mb-8 rounded-2xl overflow-hidden">
+          <div className="h-48 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 relative">
+            <div className="absolute inset-0 bg-black/20"></div>
+            <div className="absolute bottom-0 left-0 right-0 p-8">
+              <div className="flex items-end gap-6">
+                <Avatar className="w-32 h-32 border-4 border-slate-900 shadow-2xl">
                   <AvatarImage src={user.avatar} />
-                  <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-600 to-indigo-600 text-white">
+                  <AvatarFallback className="text-4xl font-bold bg-gradient-to-br from-blue-600 to-purple-600 text-white">
                     {user.displayName?.[0]}
                   </AvatarFallback>
                 </Avatar>
-                <h2 className="text-3xl font-bold mb-2 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  {user.displayName}
-                </h2>
-                <p className="text-slate-600 dark:text-slate-400 mb-4 text-lg">@{user.username}</p>
-                <div className="flex justify-center gap-2 mb-6">
-                  <Badge className="bg-gradient-to-r from-emerald-500 to-green-500 text-white border-0 shadow-lg px-3 py-1">
-                    Level {user.level}
-                  </Badge>
-                  {user.role === "admin" && (
-                    <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-lg px-3 py-1">
-                      Admin
-                    </Badge>
-                  )}
-                  {user.role === "moderator" && (
-                    <Badge className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white border-0 shadow-lg px-3 py-1">
-                      Moderator
-                    </Badge>
-                  )}
-                </div>
-                {user.bio && (
-                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-6 p-4 bg-slate-100 dark:bg-slate-800 rounded-xl">
-                    {user.bio}
-                  </p>
-                )}
-                <div className="space-y-3 text-sm text-left bg-slate-50 dark:bg-slate-800/50 rounded-xl p-4">
-                  {user.email && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                      <div className="p-2 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-                        <Mail className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <span className="text-slate-700 dark:text-slate-300">{user.email}</span>
-                    </div>
-                  )}
-                  {user.location && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                      <div className="p-2 bg-green-100 dark:bg-green-900/30 rounded-lg">
-                        <MapPin className="w-4 h-4 text-green-600" />
-                      </div>
-                      <span className="text-slate-700 dark:text-slate-300">{user.location}</span>
-                    </div>
-                  )}
-                  {user.website && (
-                    <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                      <div className="p-2 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-                        <LinkIcon className="w-4 h-4 text-purple-600" />
-                      </div>
-                      <a href={user.website} target="_blank" className="text-blue-600 hover:underline">
-                        {user.website}
-                      </a>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white dark:hover:bg-slate-800 transition-colors">
-                    <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                      <Calendar className="w-4 h-4 text-orange-600" />
-                    </div>
-                    <span className="text-slate-700 dark:text-slate-300">
-                      Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </span>
+                <div className="flex-1 pb-2">
+                  <div className="flex items-center gap-3 mb-2">
+                    <h1 className="text-4xl font-bold text-white">{user.displayName}</h1>
+                    {user.role === "admin" && (
+                      <Badge className="bg-red-500/90 text-white border-0">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Admin
+                      </Badge>
+                    )}
+                    {user.role === "moderator" && (
+                      <Badge className="bg-blue-500/90 text-white border-0">
+                        <Shield className="w-3 h-3 mr-1" />
+                        Moderator
+                      </Badge>
+                    )}
                   </div>
+                  <p className="text-slate-200 text-lg">@{user.username}</p>
+                </div>
+                <div className="flex gap-2 pb-2">
+                  <Button size="sm" className="bg-slate-900 hover:bg-slate-800 text-white">
+                    <Mail className="w-4 h-4 mr-2" />
+                    Message
+                  </Button>
+                  <Button size="sm" variant="outline" className="border-white/20 text-white hover:bg-white/10">
+                    View Profile
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Dashboard Grid */}
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Sidebar - User Info */}
+          <div className="col-span-12 lg:col-span-3">
+            {/* Level Progress Card */}
+            <Card className="bg-slate-900 border-slate-800 mb-6">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between mb-4">
+                  <div>
+                    <p className="text-sm text-slate-400">Current Level</p>
+                    <p className="text-3xl font-bold text-white">{user.level}</p>
+                  </div>
+                  <div className="p-3 bg-emerald-500/10 rounded-xl">
+                    <TrendingUp className="w-8 h-8 text-emerald-400" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Progress to Level {nextLevel}</span>
+                    <span className="text-emerald-400 font-semibold">{xpProgress.toFixed(0)}%</span>
+                  </div>
+                  <Progress value={xpProgress} className="h-2 bg-slate-800" />
+                  <p className="text-xs text-slate-500">{xpNeeded} XP needed</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Quick Stats */}
+            <Card className="bg-slate-900 border-slate-800 mb-6">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Quick Stats</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-500/10 rounded-lg">
+                      <MessageSquare className="w-4 h-4 text-blue-400" />
+                    </div>
+                    <span className="text-slate-300">Posts</span>
+                  </div>
+                  <span className="text-white font-semibold">{user.stats?.postsCount || 0}</span>
+                </div>
+                <Separator className="bg-slate-800" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-purple-500/10 rounded-lg">
+                      <Award className="w-4 h-4 text-purple-400" />
+                    </div>
+                    <span className="text-slate-300">Badges</span>
+                  </div>
+                  <span className="text-white font-semibold">{user.badges?.length || 0}</span>
+                </div>
+                <Separator className="bg-slate-800" />
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-pink-500/10 rounded-lg">
+                      <Heart className="w-4 h-4 text-pink-400" />
+                    </div>
+                    <span className="text-slate-300">Comments</span>
+                  </div>
+                  <span className="text-white font-semibold">{user.stats?.commentsCount || 0}</span>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Contact Info */}
+            <Card className="bg-slate-900 border-slate-800">
+              <CardHeader>
+                <CardTitle className="text-white text-lg">Contact Info</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {user.email && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    <Mail className="w-4 h-4 text-blue-400" />
+                    <span className="text-slate-300 text-sm truncate">{user.email}</span>
+                  </div>
+                )}
+                {user.location && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    <MapPin className="w-4 h-4 text-green-400" />
+                    <span className="text-slate-300 text-sm">{user.location}</span>
+                  </div>
+                )}
+                {user.website && (
+                  <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                    <LinkIcon className="w-4 h-4 text-purple-400" />
+                    <a href={user.website} target="_blank" className="text-blue-400 hover:underline text-sm truncate">
+                      {user.website}
+                    </a>
+                  </div>
+                )}
+                <div className="flex items-center gap-3 p-3 bg-slate-800/50 rounded-lg">
+                  <Calendar className="w-4 h-4 text-orange-400" />
+                  <span className="text-slate-300 text-sm">
+                    Joined {new Date(user.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                  </span>
                 </div>
               </CardContent>
             </Card>
           </div>
 
-          <div className="lg:col-span-2">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-emerald-50 to-green-50 dark:from-emerald-950/30 dark:to-green-950/30 backdrop-blur hover:shadow-xl transition-all">
-                <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl w-fit mx-auto mb-3">
-                    <TrendingUp className="w-8 h-8 text-emerald-600" />
+          {/* Main Content Area */}
+          <div className="col-span-12 lg:col-span-9">
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card className="bg-slate-900 border-slate-800 hover:border-emerald-500/50 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-emerald-500/10 rounded-xl">
+                      <Zap className="w-6 h-6 text-emerald-400" />
+                    </div>
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-400">+12%</Badge>
                   </div>
-                  <p className="text-3xl font-bold text-emerald-600 mb-1">{user.points}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Total XP</p>
+                  <p className="text-3xl font-bold text-white mb-1">{user.points.toLocaleString()}</p>
+                  <p className="text-sm text-slate-400">Total XP</p>
                 </CardContent>
               </Card>
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 backdrop-blur hover:shadow-xl transition-all">
-                <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-xl w-fit mx-auto mb-3">
-                    <Activity className="w-8 h-8 text-blue-600" />
+              <Card className="bg-slate-900 border-slate-800 hover:border-blue-500/50 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-blue-500/10 rounded-xl">
+                      <MessageSquare className="w-6 h-6 text-blue-400" />
+                    </div>
+                    <Badge variant="outline" className="border-blue-500/30 text-blue-400">Active</Badge>
                   </div>
-                  <p className="text-3xl font-bold text-blue-600 mb-1">{user.stats?.postsCount || 0}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Posts</p>
+                  <p className="text-3xl font-bold text-white mb-1">{user.stats?.postsCount || 0}</p>
+                  <p className="text-sm text-slate-400">Total Posts</p>
                 </CardContent>
               </Card>
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 backdrop-blur hover:shadow-xl transition-all">
-                <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-xl w-fit mx-auto mb-3">
-                    <Award className="w-8 h-8 text-purple-600" />
+              <Card className="bg-slate-900 border-slate-800 hover:border-purple-500/50 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-purple-500/10 rounded-xl">
+                      <Award className="w-6 h-6 text-purple-400" />
+                    </div>
+                    <Badge variant="outline" className="border-purple-500/30 text-purple-400">Rare</Badge>
                   </div>
-                  <p className="text-3xl font-bold text-purple-600 mb-1">{user.badges?.length || 0}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Badges</p>
+                  <p className="text-3xl font-bold text-white mb-1">{user.badges?.length || 0}</p>
+                  <p className="text-sm text-slate-400">Badges Earned</p>
                 </CardContent>
               </Card>
-              <Card className="border-0 shadow-lg bg-gradient-to-br from-orange-50 to-amber-50 dark:from-orange-950/30 dark:to-amber-950/30 backdrop-blur hover:shadow-xl transition-all">
-                <CardContent className="p-6 text-center">
-                  <div className="p-3 bg-orange-100 dark:bg-orange-900/30 rounded-xl w-fit mx-auto mb-3">
-                    <Activity className="w-8 h-8 text-orange-600" />
+              <Card className="bg-slate-900 border-slate-800 hover:border-pink-500/50 transition-all">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="p-3 bg-pink-500/10 rounded-xl">
+                      <Heart className="w-6 h-6 text-pink-400" />
+                    </div>
+                    <Badge variant="outline" className="border-pink-500/30 text-pink-400">High</Badge>
                   </div>
-                  <p className="text-3xl font-bold text-orange-600 mb-1">{user.stats?.commentsCount || 0}</p>
-                  <p className="text-sm text-slate-600 dark:text-slate-400">Comments</p>
+                  <p className="text-3xl font-bold text-white mb-1">{user.stats?.commentsCount || 0}</p>
+                  <p className="text-sm text-slate-400">Engagement</p>
                 </CardContent>
               </Card>
             </div>
 
             <Tabs defaultValue="activity" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur border-0 shadow-lg p-1">
-                <TabsTrigger value="activity" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-indigo-500 data-[state=active]:text-white">Activity</TabsTrigger>
-                <TabsTrigger value="xp" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-green-500 data-[state=active]:text-white">XP History</TabsTrigger>
-                <TabsTrigger value="posts" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-500 data-[state=active]:to-pink-500 data-[state=active]:text-white">Posts</TabsTrigger>
-                <TabsTrigger value="actions" className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:to-red-500 data-[state=active]:text-white">Actions</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-4 bg-slate-900 border border-slate-800 p-1">
+                <TabsTrigger value="activity" className="data-[state=active]:bg-blue-500 data-[state=active]:text-white">Activity</TabsTrigger>
+                <TabsTrigger value="xp" className="data-[state=active]:bg-emerald-500 data-[state=active]:text-white">XP History</TabsTrigger>
+                <TabsTrigger value="posts" className="data-[state=active]:bg-purple-500 data-[state=active]:text-white">Posts</TabsTrigger>
+                <TabsTrigger value="actions" className="data-[state=active]:bg-orange-500 data-[state=active]:text-white">Admin</TabsTrigger>
               </TabsList>
 
               <TabsContent value="activity" className="mt-6">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+                <Card className="bg-slate-900 border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-2xl bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">Recent Activity</CardTitle>
+                    <CardTitle className="text-white text-xl">Recent Activity</CardTitle>
                   </CardHeader>
                   <CardContent>
                   <div className="space-y-4">
@@ -212,9 +334,9 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
             </TabsContent>
 
               <TabsContent value="xp" className="mt-6">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+                <Card className="bg-slate-900 border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-2xl bg-gradient-to-r from-emerald-600 to-green-600 bg-clip-text text-transparent">XP Breakdown</CardTitle>
+                    <CardTitle className="text-white text-xl">XP Breakdown</CardTitle>
                   </CardHeader>
                   <CardContent>
                   <div className="space-y-3">
@@ -233,9 +355,9 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
             </TabsContent>
 
               <TabsContent value="posts" className="mt-6">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+                <Card className="bg-slate-900 border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-2xl bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">Recent Posts</CardTitle>
+                    <CardTitle className="text-white text-xl">Recent Posts</CardTitle>
                   </CardHeader>
                   <CardContent>
                   <div className="space-y-3">
@@ -255,15 +377,15 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
             </TabsContent>
 
               <TabsContent value="actions" className="mt-6">
-                <Card className="border-0 shadow-xl bg-white/80 dark:bg-slate-900/80 backdrop-blur">
+                <Card className="bg-slate-900 border-slate-800">
                   <CardHeader>
-                    <CardTitle className="text-2xl bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">Admin Actions</CardTitle>
+                    <CardTitle className="text-white text-xl">Admin Actions</CardTitle>
                   </CardHeader>
                   <CardContent>
-                  <div className="grid gap-3">
+                  <div className="grid grid-cols-2 gap-4">
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="border-slate-700 hover:bg-slate-800 text-white justify-start h-auto py-4"
                       onClick={async () => {
                         try {
                           await apiClient.request(`/admin/users/${resolvedParams.userId}/block`, { method: "POST" })
@@ -274,35 +396,55 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                         }
                       }}
                     >
-                      {user?.isBlocked ? "Unblock" : "Block"} User
+                      <div className="flex flex-col items-start gap-1">
+                        <Ban className="w-5 h-5 mb-1" />
+                        <span className="font-semibold">{user?.isBlocked ? "Unblock" : "Block"} User</span>
+                        <span className="text-xs text-slate-400">Restrict access</span>
+                      </div>
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="border-slate-700 hover:bg-slate-800 text-white justify-start h-auto py-4"
                       onClick={() => setShowXpDialog(true)}
                     >
-                      Adjust XP
+                      <div className="flex flex-col items-start gap-1">
+                        <Zap className="w-5 h-5 mb-1" />
+                        <span className="font-semibold">Adjust XP</span>
+                        <span className="text-xs text-slate-400">Modify points</span>
+                      </div>
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="border-slate-700 hover:bg-slate-800 text-white justify-start h-auto py-4"
                       onClick={() => setShowRoleDialog(true)}
                     >
-                      Change Role
+                      <div className="flex flex-col items-start gap-1">
+                        <Shield className="w-5 h-5 mb-1" />
+                        <span className="font-semibold">Change Role</span>
+                        <span className="text-xs text-slate-400">Update permissions</span>
+                      </div>
                     </Button>
                     <Button 
                       variant="outline" 
-                      className="w-full justify-start"
+                      className="border-slate-700 hover:bg-slate-800 text-white justify-start h-auto py-4"
                       onClick={() => setShowPasswordDialog(true)}
                     >
-                      Reset Password
+                      <div className="flex flex-col items-start gap-1">
+                        <Key className="w-5 h-5 mb-1" />
+                        <span className="font-semibold">Reset Password</span>
+                        <span className="text-xs text-slate-400">Security action</span>
+                      </div>
                     </Button>
                     <Button 
                       variant="destructive" 
-                      className="w-full justify-start"
+                      className="col-span-2 justify-start h-auto py-4"
                       onClick={() => setShowDeleteDialog(true)}
                     >
-                      Delete User
+                      <div className="flex flex-col items-start gap-1">
+                        <Trash2 className="w-5 h-5 mb-1" />
+                        <span className="font-semibold">Delete User</span>
+                        <span className="text-xs opacity-80">Permanent action</span>
+                      </div>
                     </Button>
                   </div>
                 </CardContent>
