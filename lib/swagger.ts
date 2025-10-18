@@ -1,12 +1,12 @@
 import path from 'path'
 import { readFileSync } from 'fs'
-import { load } from 'js-yaml'
+import yaml from 'js-yaml'
 
 const loadYamlFile = (filename: string) => {
   try {
     const filePath = path.join(process.cwd(), 'docs', 'swagger', filename)
     const fileContents = readFileSync(filePath, 'utf8')
-    return load(fileContents) as any
+    return yaml.load(fileContents) as any
   } catch (e) {
     return { paths: {} }
   }
