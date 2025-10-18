@@ -548,36 +548,15 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 <BarChart3 className="h-4 w-4" />
               </Button>
 
-              <div className="relative">
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                  className="h-8 w-8 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-900/20 shrink-0"
-                >
-                  <Smile className="h-4 w-4" />
-                </Button>
-                {showEmojiPicker && (
-                  <>
-                    <div 
-                      className="fixed inset-0 z-40" 
-                      onClick={() => setShowEmojiPicker(false)}
-                    />
-                    <div className="absolute bottom-12 left-0 z-50 sm:left-auto sm:right-0">
-                      <EmojiPicker
-                        onEmojiClick={(emojiData) => {
-                          setContent(prev => prev + emojiData.emoji);
-                          setShowEmojiPicker(false);
-                        }}
-                        width={280}
-                        height={350}
-                        previewConfig={{ showPreview: false }}
-                      />
-                    </div>
-                  </>
-                )}
-              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="h-8 w-8 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-900/20 shrink-0"
+              >
+                <Smile className="h-4 w-4" />
+              </Button>
             </div>
 
             {/* Post Button */}
@@ -591,6 +570,27 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
           </div>
         </form>
       </div>
+
+      {/* Emoji Picker Portal */}
+      {showEmojiPicker && (
+        <>
+          <div 
+            className="fixed inset-0 z-[60]" 
+            onClick={() => setShowEmojiPicker(false)}
+          />
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[70] sm:bottom-24">
+            <EmojiPicker
+              onEmojiClick={(emojiData) => {
+                setContent(prev => prev + emojiData.emoji);
+                setShowEmojiPicker(false);
+              }}
+              width={280}
+              height={350}
+              previewConfig={{ showPreview: false }}
+            />
+          </div>
+        </>
+      )}
     </div>
   );
 }

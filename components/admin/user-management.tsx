@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -27,8 +27,31 @@ export function UserManagement() {
   const [updating, setUpdating] = useState<string | null>(null)
   const { toast } = useToast()
 
+  useEffect(() => {
+    loadAllUsers()
+  }, [])
+
+  const loadAllUsers = async () => {
+    setLoading(true)
+    try {
+      const response = await fetch('/api/admin/users/search?q=')
+      const data = await response.json()
+      
+      if (response.ok && data.success) {
+        setUsers(data.data.users || [])
+      }
+    } catch (error) {
+      console.error('Failed to load users:', error)
+    } finally {
+      setLoading(false)
+    }
+  }
+
   const handleSearch = async () => {
-    if (!searchQuery.trim()) return
+    if (!searchQuery.trim()) {
+      loadAllUsers()
+      return
+    }
     
     setLoading(true)
     try {
@@ -105,7 +128,10 @@ export function UserManagement() {
           <Input
             placeholder="Search by username, display name, or email..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => {
+              setSearchQuery(e.target.value)
+              if (e.target.value === '') loadAllUsers()
+            }}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
           />
           <Button onClick={handleSearch} disabled={loading}>
@@ -113,7 +139,12 @@ export function UserManagement() {
           </Button>
         </div>
 
-        {users.length > 0 && (
+        {loading && users.length === 0 ? (
+          <div className="flex items-center justify-center py-8">
+            <Loader2 className="h-6 w-6 animate-spin mr-2" />
+            <span>Loading users...</span>
+          </div>
+        ) : users.length > 0 ? (
           <div className="space-y-3">
             {users.map((user) => (
               <div key={user._id} className="flex items-center justify-between p-3 border rounded-lg">
@@ -153,6 +184,13 @@ export function UserManagement() {
                 </div>
               </div>
             ))}
+            <div className="text-sm text-muted-foreground text-center pt-2">
+              Showing {users.length} user{users.length !== 1 ? 's' : ''}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-muted-foreground">
+            No users found
           </div>
         )}
       </CardContent>

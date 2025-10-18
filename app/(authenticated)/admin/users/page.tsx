@@ -16,17 +16,24 @@ export default function UsersManagementPage() {
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filter, setFilter] = useState("all")
+  const [page, setPage] = useState(1)
+  const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 })
+
+  useEffect(() => {
+    setPage(1)
+  }, [filter])
 
   useEffect(() => {
     fetchUsers()
-  }, [filter])
+  }, [filter, page])
 
   const fetchUsers = async () => {
     setLoading(true)
     try {
-      const response = await apiClient.request<{ users: any[] }>(`/admin/users?filter=${filter}`, { method: "GET" })
+      const response = await apiClient.request<{ users: any[], pagination: any }>(`/admin/users?filter=${filter}&page=${page}&limit=50`, { method: "GET" })
       if (response.success && response.data) {
         setUsers(response.data.users)
+        setPagination(response.data.pagination)
       }
     } catch (error) {
       console.error("Failed to fetch users:", error)
@@ -63,7 +70,7 @@ export default function UsersManagementPage() {
           <p className="text-gray-600 mt-2">Manage and monitor all platform users</p>
         </div>
         <Badge variant="outline" className="text-lg px-4 py-2">
-          {users.length} Total Users
+          {pagination.total} Total Users
         </Badge>
       </div>
 
@@ -100,6 +107,7 @@ export default function UsersManagementPage() {
       {loading ? (
         <div className="text-center py-12">Loading...</div>
       ) : (
+        <>
         <div className="grid gap-4">
           {filteredUsers.map((user) => (
             <Card key={user._id} className="hover:shadow-md transition-shadow">
@@ -165,6 +173,29 @@ export default function UsersManagementPage() {
             </Card>
           ))}
         </div>
+        
+        {pagination.totalPages > 1 && (
+          <div className="flex items-center justify-center gap-2 mt-6">
+            <Button
+              variant="outline"
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+            >
+              Previous
+            </Button>
+            <span className="text-sm text-gray-600">
+              Page {page} of {pagination.totalPages}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setPage(p => Math.min(pagination.totalPages, p + 1))}
+              disabled={page === pagination.totalPages}
+            >
+              Next
+            </Button>
+          </div>
+        )}
+        </>
       )}
     </div>
   )

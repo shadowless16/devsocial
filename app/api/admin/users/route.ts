@@ -18,16 +18,23 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get("filter") || "all"
+    const page = parseInt(searchParams.get("page") || "1")
+    const limit = parseInt(searchParams.get("limit") || "50")
+    const skip = (page - 1) * limit
 
     let query: any = {}
     if (filter === "blocked") query.isBlocked = true
     if (filter === "active") query.isBlocked = false
     if (filter === "moderators") query.role = "moderator"
 
-    const users = await User.find(query)
-      .select("username displayName email avatar level points role isBlocked createdAt")
-      .sort({ createdAt: -1 })
-      .limit(100)
+    const [users, totalUsers] = await Promise.all([
+      User.find(query)
+        .select("username displayName email avatar level points role isBlocked createdAt")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      User.countDocuments(query)
+    ])
 
     const usersWithStats = await Promise.all(
       users.map(async (user) => {
@@ -41,7 +48,15 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      data: { users: usersWithStats }
+      data: { 
+        users: usersWithStats,
+        pagination: {
+          page,
+          limit,
+          total: totalUsers,
+          totalPages: Math.ceil(totalUsers / limit)
+        }
+      }
     })
   } catch (error: any) {
     console.error("Admin users fetch error:", error)

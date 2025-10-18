@@ -125,34 +125,34 @@ export function EnhancedCommentInput({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="relative">
-        <MentionInput
-          placeholder={placeholder}
-          value={content}
-          onChange={setContent}
-          className="min-h-[80px] resize-none text-sm pr-28"
-        />
-        
-        {/* Image Preview */}
-        {imagePreview && (
-          <div className="relative mt-2 inline-block">
-            <img src={imagePreview} alt="Preview" className="max-h-32 rounded-lg" />
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => setImagePreview(null)}
-              className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-red-500 hover:bg-red-600 text-white"
-            >
-              <X className="h-3 w-3" />
-            </Button>
-          </div>
-        )}
-        
-        {/* Action buttons */}
-        <div className="absolute bottom-2 right-2 flex items-center gap-1">
-          <div className="relative">
+    <>
+      <div className="space-y-2">
+        <div className="relative">
+          <MentionInput
+            placeholder={placeholder}
+            value={content}
+            onChange={setContent}
+            className="min-h-[80px] resize-none text-sm pr-28"
+          />
+          
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="relative mt-2 inline-block">
+              <img src={imagePreview} alt="Preview" className="max-h-32 rounded-lg" />
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setImagePreview(null)}
+                className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full bg-red-500 hover:bg-red-600 text-white"
+              >
+                <X className="h-3 w-3" />
+              </Button>
+            </div>
+          )}
+          
+          {/* Action buttons */}
+          <div className="absolute bottom-2 right-2 flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
@@ -162,71 +162,73 @@ export function EnhancedCommentInput({
             >
               <Smile className="h-3 w-3" />
             </Button>
-            {showEmojiPicker && (
-              <>
-                <div 
-                  className="fixed inset-0 z-40" 
-                  onClick={() => setShowEmojiPicker(false)}
-                />
-                <div className="absolute bottom-8 right-0 z-50">
-                  <EmojiPicker
-                    onEmojiClick={(emojiData) => {
-                      setContent(prev => prev + emojiData.emoji);
-                      setShowEmojiPicker(false);
-                    }}
-                    width={280}
-                    height={350}
-                    previewConfig={{ showPreview: false }}
-                  />
-                </div>
-              </>
-            )}
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+              className="h-7 w-7 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 shrink-0"
+            >
+              <Image className="h-3 w-3" />
+            </Button>
+
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={handleCodeFormat}
+              className="h-7 w-7 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 shrink-0"
+            >
+              <Code className="h-3 w-3" />
+            </Button>
           </div>
+          
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            onChange={handleImageUpload}
+            className="hidden"
+          />
+        </div>
 
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-gray-500">
+            Press Enter to submit, Shift+Enter for new line
+          </div>
           <Button
-            type="button"
-            variant="ghost"
+            onClick={handleSubmit}
+            disabled={!content.trim() || disabled}
             size="sm"
-            onClick={() => fileInputRef.current?.click()}
-            disabled={uploading}
-            className="h-7 w-7 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 shrink-0"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-full"
           >
-            <Image className="h-3 w-3" />
-          </Button>
-
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleCodeFormat}
-            className="h-7 w-7 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 shrink-0"
-          >
-            <Code className="h-3 w-3" />
+            Reply
           </Button>
         </div>
-        
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
-          className="hidden"
-        />
       </div>
 
-      <div className="flex justify-between items-center">
-        <div className="text-xs text-gray-500">
-          Press Enter to submit, Shift+Enter for new line
-        </div>
-        <Button
-          onClick={handleSubmit}
-          disabled={!content.trim() || disabled}
-          size="sm"
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 rounded-full"
-        >
-          Reply
-        </Button>
-      </div>
-    </div>
+      {/* Emoji Picker Portal */}
+      {showEmojiPicker && (
+        <>
+          <div 
+            className="fixed inset-0 z-[60]" 
+            onClick={() => setShowEmojiPicker(false)}
+          />
+          <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[70] sm:bottom-24">
+            <EmojiPicker
+              onEmojiClick={(emojiData) => {
+                setContent(prev => prev + emojiData.emoji);
+                setShowEmojiPicker(false);
+              }}
+              width={280}
+              height={350}
+              previewConfig={{ showPreview: false }}
+            />
+          </div>
+        </>
+      )}
+    </>
   );
 }
