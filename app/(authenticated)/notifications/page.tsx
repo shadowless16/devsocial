@@ -212,7 +212,13 @@ export default function NotificationsPage() {
                       
                       <div className="flex items-center gap-2">
                         {notification.actionUrl && (
-                          <Button variant="outline" size="sm" className="flex-shrink-0 text-xs px-2" asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className="flex-shrink-0 text-xs px-2" 
+                            asChild
+                            onClick={() => !notification.read && markAsRead(notification._id)}
+                          >
                             <Link href={notification.actionUrl}>
                               View
                             </Link>
