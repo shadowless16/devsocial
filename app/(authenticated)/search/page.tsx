@@ -83,6 +83,7 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
   const [smartSearch, setSmartSearch] = useState(false)
+  const [aiError, setAiError] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
   const [aiInsights, setAiInsights] = useState<any>(null)
   const [trendingData, setTrendingData] = useState<any>(null)
@@ -127,6 +128,7 @@ export default function SearchPage() {
       if (response.success && response.data) {
         setSearchResults(response.data.results)
         setHasSearched(true)
+        setAiError(false)
         
         if (smartSearch && response.data.aiSummary) {
           setAiSummary(response.data.aiSummary)
@@ -140,6 +142,12 @@ export default function SearchPage() {
       }
     } catch (error: any) {
       console.error("Search error:", error)
+      if (smartSearch) {
+        setAiError(true)
+        setSmartSearch(false)
+        performSearch(query, type)
+        return
+      }
       setError(error.message || "An error occurred while searching")
       setSearchResults({ posts: [], users: [], tags: [] })
       setAiSummary(null)

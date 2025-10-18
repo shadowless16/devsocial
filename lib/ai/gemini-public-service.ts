@@ -139,18 +139,27 @@ class GeminiPublicService {
     try {
       if (!geminiRateLimiter.canMakeRequest()) {
         console.warn('Rate limit reached, using basic keywords')
-        return [query]
+        return query.toLowerCase().split(/\s+/).filter(Boolean)
       }
       geminiRateLimiter.recordRequest()
       
       const model = this.genAI.getGenerativeModel({ model: this.model })
-      const prompt = `Given this search query from a developer: "${query}"
+      const prompt = `You are a search keyword expander for a developer social platform.
 
-Generate 5-10 related keywords, synonyms, and technical terms that would help find relevant posts.
+User's search query: "${query}"
+
+Generate 5-10 highly relevant keywords, synonyms, and technical terms that would help find posts related to this query.
 
 Examples:
-- Query: "how to center a div" → Keywords: ["css", "flexbox", "center", "align", "justify-content", "margin auto", "grid"]
-- Query: "react hooks" → Keywords: ["react", "hooks", "useState", "useEffect", "functional components", "state management"]
+- Query: "how to center a div" → ["css", "flexbox", "center", "align", "justify-content", "margin", "grid", "centering", "layout"]
+- Query: "react hooks" → ["react", "hooks", "useState", "useEffect", "functional", "components", "state"]
+- Query: "weekend activities" → ["weekend", "activities", "hobby", "free time", "leisure", "fun"]
+
+IMPORTANT: 
+- Include the original query terms
+- Add related technical terms if it's a technical query
+- Add synonyms and variations
+- Keep keywords relevant to the actual query intent
 
 Return ONLY a JSON array of keywords, no other text.
 Format: ["keyword1", "keyword2", ...]`
@@ -165,10 +174,10 @@ Format: ["keyword1", "keyword2", ...]`
         return keywords.slice(0, 10)
       }
       
-      return [query]
+      return query.toLowerCase().split(/\s+/).filter(Boolean)
     } catch (error) {
       console.error('Gemini keyword generation failed:', error)
-      return [query]
+      return query.toLowerCase().split(/\s+/).filter(Boolean)
     }
   }
 
@@ -185,17 +194,25 @@ Format: ["keyword1", "keyword2", ...]`
       const resultsText = results.slice(0, 5)
         .filter(r => r?.content)
         .map((r, i) => 
-          `${i + 1}. ${r.content.substring(0, 200)}...`
+          `${i + 1}. ${r.content.substring(0, 300)}...`
         ).join('\n\n')
       
       if (!resultsText) return ''
       
-      const prompt = `User searched for: "${query}"
+      const prompt = `You are analyzing search results for a developer social platform.
 
-Top results:
+User's search query: "${query}"
+
+Top search results found:
 ${resultsText}
 
-Provide a brief 2-3 sentence summary of what these results are about and how they relate to the search query.`
+Analyze these results and provide a 2-3 sentence summary that:
+1. Explains what topics/themes these posts cover
+2. States clearly whether they are relevant to the search query "${query}"
+3. If relevant, explain HOW they relate to the query
+4. If NOT relevant, explain what they're actually about instead
+
+Be honest and direct. If the results don't match the query, say so clearly.`
       
       const result = await model.generateContent(prompt)
       const response = await result.response
@@ -228,19 +245,26 @@ Provide a brief 2-3 sentence summary of what these results are about and how the
         `[${i}] ${p.content.substring(0, 300)}`
       ).join('\n\n')
       
-      const prompt = `User query: "${query}"
+      const prompt = `You are a search relevance analyzer for a developer social platform.
 
-Posts:
+User's search query: "${query}"
+
+Available posts:
 ${postsText}
 
-Rank these posts by relevance to the query. Consider:
-- Semantic meaning (not just keyword matching)
-- Context and intent
-- Helpfulness for the query
+Analyze each post and rank them by relevance to the query "${query}".
 
-Return ONLY a JSON array of post indices in order of relevance (most relevant first).
-Format: [2, 0, 5, 1, ...]
-Include only relevant posts (minimum 3/10 relevance).`
+Consider:
+- Does the post directly answer or relate to the query?
+- Semantic meaning and context (not just keyword matching)
+- Actual helpfulness for someone searching "${query}"
+
+IMPORTANT: Only include posts that are actually relevant (minimum 30% relevance).
+If a post is about something completely different, exclude it.
+
+Return ONLY a JSON array of relevant post indices in order (most relevant first).
+Format: [2, 0, 5]
+If NO posts are relevant, return an empty array: []`
       
       const result = await model.generateContent(prompt)
       const response = await result.response
@@ -249,7 +273,8 @@ Include only relevant posts (minimum 3/10 relevance).`
       const jsonMatch = text.match(/\[[\s\S]*?\]/)
       if (jsonMatch) {
         const indices = JSON.parse(jsonMatch[0])
-        return indices.map((i: number) => validPosts[i]).filter(Boolean)
+        const rankedPosts = indices.map((i: number) => validPosts[i]).filter(Boolean)
+        return rankedPosts.length > 0 ? rankedPosts : validPosts.slice(0, 3)
       }
       
       return validPosts

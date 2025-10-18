@@ -23,7 +23,8 @@ import {
   Users,
   Trophy,
   Home,
-  Hash
+  Hash,
+  UserCog
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -49,6 +50,7 @@ const menuItems = [
   { icon: ListOrdered, href: "/missions", label: "Missions", badge: "3" },
   { icon: MessageCircle, href: "/feedback", label: "Feedback" },
   { icon: Shield, href: "/moderation", label: "Moderation", adminOnly: true },
+  { icon: UserCog, href: "/admin/users", label: "User Management", adminOnly: true },
   { icon: Settings, href: "/settings", label: "Settings" },
 ]
 
