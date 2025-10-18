@@ -158,7 +158,7 @@ export function EnhancedCommentInput({
               variant="ghost"
               size="sm"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="h-7 w-7 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600"
+              className="h-7 w-7 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-900/20 shrink-0"
             >
               <Smile className="h-3 w-3" />
             </Button>
@@ -174,6 +174,9 @@ export function EnhancedCommentInput({
                       setContent(prev => prev + emojiData.emoji);
                       setShowEmojiPicker(false);
                     }}
+                    width={280}
+                    height={350}
+                    previewConfig={{ showPreview: false }}
                   />
                 </div>
               </>
@@ -186,7 +189,7 @@ export function EnhancedCommentInput({
             size="sm"
             onClick={() => fileInputRef.current?.click()}
             disabled={uploading}
-            className="h-7 w-7 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600"
+            className="h-7 w-7 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 shrink-0"
           >
             <Image className="h-3 w-3" />
           </Button>
@@ -196,7 +199,7 @@ export function EnhancedCommentInput({
             variant="ghost"
             size="sm"
             onClick={handleCodeFormat}
-            className="h-7 w-7 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600"
+            className="h-7 w-7 p-0 rounded-full hover:bg-orange-50 hover:text-orange-600 dark:hover:bg-orange-900/20 shrink-0"
           >
             <Code className="h-3 w-3" />
           </Button>

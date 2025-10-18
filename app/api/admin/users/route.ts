@@ -3,11 +3,17 @@ import User from "@/models/User"
 import Post from "@/models/Post"
 import connectDB from "@/lib/db"
 import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user || session.user.role !== 'admin') {
+      return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
+    }
+
     await connectDB()
 
     const { searchParams } = new URL(request.url)

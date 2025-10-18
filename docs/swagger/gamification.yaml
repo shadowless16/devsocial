@@ -1,0 +1,150 @@
+paths:
+  /api/leaderboard:
+    get:
+      tags:
+        - Gamification
+      summary: Get leaderboard rankings
+      parameters:
+        - in: query
+          name: period
+          schema:
+            type: string
+            enum: [all-time, weekly, monthly]
+            default: all-time
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Leaderboard retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      leaderboard:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            rank:
+                              type: integer
+                            user:
+                              $ref: '#/components/schemas/User'
+                            points:
+                              type: number
+
+  /api/challenges:
+    get:
+      tags:
+        - Gamification
+      summary: Get active challenges
+      responses:
+        '200':
+          description: Challenges retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      challenges:
+                        type: array
+                        items:
+                          type: object
+                          properties:
+                            _id:
+                              type: string
+                            title:
+                              type: string
+                            description:
+                              type: string
+                            xpReward:
+                              type: number
+                            deadline:
+                              type: string
+                              format: date-time
+
+  /api/challenges/{challengeId}/join:
+    post:
+      tags:
+        - Gamification
+      summary: Join a challenge
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: challengeId
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Joined challenge successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Success'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/challenges/{challengeId}/submit:
+    post:
+      tags:
+        - Gamification
+      summary: Submit challenge solution
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: challengeId
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - solution
+              properties:
+                solution:
+                  type: string
+      responses:
+        '200':
+          description: Solution submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      xpEarned:
+                        type: number
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
