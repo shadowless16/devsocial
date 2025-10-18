@@ -387,19 +387,9 @@ UserSchema.pre("save", function (next) {
     this.level = Math.floor(this.points / 1000) + 1;
   }
 
-  // 2. Generate avatar for new users (will be overridden during onboarding)
+  // 2. Mark new users as having generated avatars (will be created on-the-fly in frontend)
   if (this.isNew && !this.avatar) {
-    const seed = this.username;
-    let generated = '';
-    if (this.gender === "male") {
-      generated = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
-    } else if (this.gender === "female") {
-      generated = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
-    } else {
-      generated = `https://models.readyplayer.me/64bfa75f0e72c63d7c3934a6.png`;
-    }
-    // mark as generated and store normalized png
-    this.avatar = normalizeReadyPlayerMe(generated);
+    this.avatar = ''; // Empty string - frontend will generate DiceBear
     this.isGenerated = true;
   }
 

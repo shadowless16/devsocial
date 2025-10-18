@@ -31,12 +31,19 @@ export function SmartAvatar({
   const displaySrc = useMemo(() => {
     let avatarSrc = getAvatarUrl(src)
     
-    if (!avatarSrc || avatarSrc === '/placeholder.svg' || avatarSrc === '/placeholder-user.jpg') {
+    // If no avatar or empty string, generate DiceBear
+    if (!avatarSrc || avatarSrc === '' || avatarSrc === '/placeholder.svg' || avatarSrc === '/placeholder-user.jpg') {
       if (username) {
-        const style = getAvatarStyleForUser(username)
-        return generateDiceBearAvatar(username, style)
+        return generateDiceBearAvatar(username)
       }
       return '/placeholder-user.jpg'
+    }
+    
+    // If it's a data URI (old DiceBear), regenerate
+    if (avatarSrc.startsWith('data:image')) {
+      if (username) {
+        return generateDiceBearAvatar(username)
+      }
     }
     
     return avatarSrc
@@ -50,8 +57,7 @@ export function SmartAvatar({
         onError={(e) => {
           const target = e.target as HTMLImageElement
           if (username && !target.src.startsWith('data:')) {
-            const style = getAvatarStyleForUser(username)
-            target.src = generateDiceBearAvatar(username, style)
+            target.src = generateDiceBearAvatar(username)
           } else if (target.src !== '/placeholder-user.jpg') {
             target.src = '/placeholder-user.jpg'
           }
