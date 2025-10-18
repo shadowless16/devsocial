@@ -19,9 +19,9 @@ const EditProfileModal = dynamic(() => import('@/components/modals/edit-profile-
 const SmartAvatar = dynamic(() => import('@/components/ui/smart-avatar').then(mod => ({ default: mod.SmartAvatar })), {
   ssr: false,
   loading: () => (
-    <Avatar className="w-20 h-20 border-4 border-white shadow-lg">
-      <AvatarFallback className="text-xl">...</AvatarFallback>
-    </Avatar>
+    <div className="w-20 h-20 border-4 border-white shadow-lg rounded-full bg-muted flex items-center justify-center">
+      <span className="text-xl">...</span>
+    </div>
   )
 })
 
