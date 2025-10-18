@@ -7,7 +7,7 @@ import { useWebSocket } from '@/contexts/websocket-context'
 import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { FollowStats } from '@/components/shared/FollowStats'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
@@ -646,10 +646,14 @@ export default function MyProfile() {
                 <div className="space-y-3">
                   {followData.map((person: any) => (
                     <div key={person._id || person.id} className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={person.avatar} />
-                        <AvatarFallback>{person.displayName?.[0] || person.username?.[0] || 'U'}</AvatarFallback>
-                      </Avatar>
+                      <UserAvatar 
+                        user={{
+                          username: person.username || '',
+                          avatar: person.avatar,
+                          displayName: person.displayName
+                        }}
+                        className="h-10 w-10"
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{person.displayName || person.username}</p>
                         <p className="text-sm text-muted-foreground truncate">@{person.username}</p>

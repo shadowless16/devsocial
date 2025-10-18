@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 import { Button } from "@/components/ui/button";
 import { UserLink } from "@/components/shared/UserLink";
 import { FollowButton } from "@/components/shared/FollowButton";
@@ -243,12 +243,14 @@ export function FollowListModal({
           >
             <div className="flex items-center space-x-2 flex-1">
               <UserLink username={user.username}>
-                <Avatar className="w-8 h-8">
-                  <AvatarImage src={user.avatar} />
-                  <AvatarFallback>
-                    {user.displayName.charAt(0).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <UserAvatar 
+                  user={{
+                    username: user.username,
+                    avatar: user.avatar,
+                    displayName: user.displayName
+                  }}
+                  className="w-8 h-8"
+                />
               </UserLink>
               <div className="flex-1 min-w-0">
                 <div className="flex items-center space-x-1">

@@ -23,6 +23,7 @@ export function UserAvatar({ user, className = "w-10 h-10", showLevelFrame = fal
       alt={user.displayName || user.username}
       className={className}
       showLevelFrame={showLevelFrame}
+      gender={user.gender}
     />
   )
 }

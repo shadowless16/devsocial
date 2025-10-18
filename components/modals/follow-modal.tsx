@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
@@ -75,12 +75,14 @@ export function FollowModal({ isOpen, onClose, type, username }: FollowModalProp
             users.map((user) => (
               <div key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <Avatar>
-                    <AvatarImage src={user.avatar} />
-                    <AvatarFallback>
-                      <User />
-                    </AvatarFallback>
-                  </Avatar>
+                  <UserAvatar 
+                    user={{
+                      username: user.username || '',
+                      avatar: user.avatar,
+                      displayName: user.displayName
+                    }}
+                    className="h-10 w-10"
+                  />
                   <div>
                     <p className="font-semibold">{user.displayName || user.username}</p>
                     <p className="text-sm text-muted-foreground">@{user.username}</p>

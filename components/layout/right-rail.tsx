@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { apiClient } from "@/lib/api-client"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { getAvatarUrl } from "@/lib/avatar-utils"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Loader2, TrendingUp, Hash } from "lucide-react"
 
@@ -156,16 +155,16 @@ function TopDevs() {
             return (
               <div key={username} className="flex items-center gap-2">
                 <div className="text-[10px] w-3 text-muted-foreground">{i + 1}</div>
-                <Avatar 
-                  className="h-5 w-5 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all"
-                  onClick={() => window.location.href = `/profile/${username}`}
-                >
-                  <AvatarImage 
-                    src={getAvatarUrl(dev.user?.avatar || dev.avatar)} 
-                    alt={displayName}
+                <div onClick={() => window.location.href = `/profile/${username}`}>
+                  <UserAvatar 
+                    user={{
+                      username: username,
+                      avatar: dev.user?.avatar || dev.avatar,
+                      displayName: displayName
+                    }}
+                    className="h-5 w-5 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all"
                   />
-                  <AvatarFallback className="text-[10px]">{displayName.slice(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
+                </div>
                 <div className="min-w-0 flex-1">
                   <div 
                     className="truncate text-xs font-medium cursor-pointer hover:text-emerald-500 transition-colors"

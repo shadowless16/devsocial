@@ -52,6 +52,7 @@ interface Post {
     avatar: string;
     level: number;
     role?: string;
+    gender?: 'male' | 'female' | 'other';
   } | null;
   content: string;
   imageUrl?: string | null;
@@ -105,6 +106,7 @@ interface Comment {
     displayName: string;
     avatar: string;
     level: number;
+    gender?: 'male' | 'female' | 'other';
   };
   content: string;
   likesCount: number;

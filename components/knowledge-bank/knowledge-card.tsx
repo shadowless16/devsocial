@@ -3,7 +3,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { UserAvatar } from '@/components/ui/user-avatar'
 import { Heart, Code, Calendar, User } from 'lucide-react'
 import { formatDistanceToNow } from 'date-fns'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -94,12 +94,14 @@ export function KnowledgeCard({ entry, onLike }: KnowledgeCardProps) {
         {/* Author and Date */}
         <div className="flex items-center justify-between pt-3 border-t">
           <div className="flex items-center gap-2">
-            <Avatar className="w-6 h-6">
-              <AvatarImage src={entry.author.profilePicture} />
-              <AvatarFallback>
-                <User className="w-3 h-3" />
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              user={{
+                username: entry.author.username,
+                avatar: entry.author.profilePicture,
+                displayName: entry.author.username
+              }}
+              className="w-6 h-6"
+            />
             <span className="text-sm font-medium">{entry.author.username}</span>
           </div>
           <div className="flex items-center gap-1 text-sm text-muted-foreground">

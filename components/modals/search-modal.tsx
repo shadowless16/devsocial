@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { apiClient } from "@/lib/api-client"
-import { getAvatarUrl } from "@/lib/avatar-utils"
 
 interface SearchModalProps {
   isOpen: boolean
@@ -213,12 +212,14 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
                         onClick={() => handleResultClick("user", user.username)}
                         className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors"
                       >
-                        <Avatar className="w-10 h-10">
-                          <AvatarImage src={getAvatarUrl(user.avatar)} />
-                          <AvatarFallback>
-                            {(user.displayName || user.username).charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
+                        <UserAvatar 
+                          user={{
+                            username: user.username || '',
+                            avatar: user.avatar,
+                            displayName: user.displayName
+                          }}
+                          className="w-10 h-10"
+                        />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium truncate">{user.displayName}</p>
                           <p className="text-xs text-muted-foreground truncate">@{user.username}</p>

@@ -16,6 +16,7 @@ interface SmartAvatarProps {
   fallback?: React.ReactNode
   size?: number
   showLevelFrame?: boolean
+  gender?: 'male' | 'female' | 'other'
 }
 
 export function SmartAvatar({ 
@@ -26,7 +27,8 @@ export function SmartAvatar({
   className = "", 
   fallback,
   size,
-  showLevelFrame = true
+  showLevelFrame = true,
+  gender
 }: SmartAvatarProps) {
   const displaySrc = useMemo(() => {
     let avatarSrc = getAvatarUrl(src)
@@ -34,7 +36,7 @@ export function SmartAvatar({
     // If no avatar or empty string, generate DiceBear
     if (!avatarSrc || avatarSrc === '' || avatarSrc === '/placeholder.svg' || avatarSrc === '/placeholder-user.jpg') {
       if (username) {
-        return generateDiceBearAvatar(username)
+        return generateDiceBearAvatar(username, gender)
       }
       return '/placeholder-user.jpg'
     }
@@ -42,12 +44,12 @@ export function SmartAvatar({
     // If it's a data URI (old DiceBear), regenerate
     if (avatarSrc.startsWith('data:image')) {
       if (username) {
-        return generateDiceBearAvatar(username)
+        return generateDiceBearAvatar(username, gender)
       }
     }
     
     return avatarSrc
-  }, [src, username])
+  }, [src, username, gender])
   
   const avatarContent = (
     <Avatar className={className}>
@@ -57,7 +59,7 @@ export function SmartAvatar({
         onError={(e) => {
           const target = e.target as HTMLImageElement
           if (username && !target.src.startsWith('data:')) {
-            target.src = generateDiceBearAvatar(username)
+            target.src = generateDiceBearAvatar(username, gender)
           } else if (target.src !== '/placeholder-user.jpg') {
             target.src = '/placeholder-user.jpg'
           }
