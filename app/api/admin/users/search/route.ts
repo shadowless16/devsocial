@@ -18,20 +18,19 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ success: false, message: 'Admin access required' }, { status: 403 })
     }
 
-    const searchQuery = req.nextUrl.searchParams.get('q')
-    if (!searchQuery) {
-      return NextResponse.json({ success: false, message: 'Search query required' }, { status: 400 })
-    }
+    const searchQuery = req.nextUrl.searchParams.get('q') || ''
 
-    const users = await User.find({
+    const query = searchQuery.trim() ? {
       $or: [
         { username: { $regex: searchQuery, $options: 'i' } },
         { displayName: { $regex: searchQuery, $options: 'i' } },
         { email: { $regex: searchQuery, $options: 'i' } }
       ]
-    })
+    } : {}
+
+    const users = await User.find(query)
     .select('username displayName email role avatar level')
-    .limit(10)
+    .sort({ createdAt: -1 })
     .lean()
 
     return NextResponse.json({

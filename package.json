@@ -111,6 +111,7 @@
     "http": "latest",
     "immutable": "^4.3.7",
     "input-otp": "1.4.1",
+    "js-yaml": "^4.1.0",
     "lit": "^3.3.1",
     "lucide-react": "^0.454.0",
     "mongodb": "^6.18.0",
