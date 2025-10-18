@@ -390,13 +390,9 @@ UserSchema.pre("save", function (next) {
   // 2. Ensure avatar field is always a string (empty for DiceBear generation)
   if (this.isNew && !this.avatar) {
     this.avatar = ''; // Empty string - frontend will generate DiceBear
+    // Note: isGenerated should ONLY be true for bot/fake users, not real users with DiceBear avatars
   }
   
-  // Mark as generated if avatar is empty or placeholder
-  if (!this.avatar || this.avatar === '' || this.avatar === '/placeholder.svg') {
-    this.isGenerated = true;
-  }
-
   // Normalize avatar if changed or present
   if (this.isModified('avatar') && this.avatar) {
     this.avatar = normalizeReadyPlayerMe(this.avatar);
