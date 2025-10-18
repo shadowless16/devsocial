@@ -65,6 +65,7 @@ export default function HomePage() {
         console.log('Sample post author:', newPosts[0]?.author)
         console.log('Posts with empty avatar:', newPosts.filter((p: any) => p.author && (!p.author.avatar || p.author.avatar === '')).length)
         console.log('Posts with avatar:', newPosts.filter((p: any) => p.author && p.author.avatar && p.author.avatar !== '').length)
+        console.log('All authors:', newPosts.map((p: any) => ({ username: p.author?.username, hasAvatar: !!p.author?.avatar })))
         setPosts(prev => reset ? newPosts : [...prev, ...newPosts])
         setHasMore(newPosts.length === 10)
         setPage(pageNum)

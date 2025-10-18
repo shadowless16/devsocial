@@ -387,9 +387,13 @@ UserSchema.pre("save", function (next) {
     this.level = Math.floor(this.points / 1000) + 1;
   }
 
-  // 2. Mark new users as having generated avatars (will be created on-the-fly in frontend)
+  // 2. Ensure avatar field is always a string (empty for DiceBear generation)
   if (this.isNew && !this.avatar) {
     this.avatar = ''; // Empty string - frontend will generate DiceBear
+  }
+  
+  // Mark as generated if avatar is empty or placeholder
+  if (!this.avatar || this.avatar === '' || this.avatar === '/placeholder.svg') {
     this.isGenerated = true;
   }
 
