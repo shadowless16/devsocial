@@ -311,10 +311,8 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
             </Tabs>
           </div>
         </div>
-      </div>
-    </div>
 
-      <Dialog open={showXpDialog} onOpenChange={setShowXpDialog}>
+        <Dialog open={showXpDialog} onOpenChange={setShowXpDialog}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Adjust XP</DialogTitle>
@@ -442,6 +440,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      </div>
     </div>
   )
 }

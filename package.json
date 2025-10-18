@@ -45,7 +45,8 @@
     "check:missing-referrals": "node scripts/test-missing-referrals.js",
     "fix:all-referrals": "node scripts/fix-all-referral-issues.js",
     "test:signup-flow": "node scripts/test-signup-flow-complete.js",
-    "export:db": "node scripts/export-db.js"
+    "export:db": "node scripts/export-db.js",
+    "analyze:db": "tsx scripts/analyze-database.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
