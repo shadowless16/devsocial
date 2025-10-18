@@ -233,6 +233,10 @@ export default function PostPage() {
             }))
           })))
         }
+        setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : null)
+        toast({
+          title: "Reply posted!",
+        })
       }
     } catch (error) {
       console.error("Failed to submit reply:", error)
@@ -385,7 +389,7 @@ export default function PostPage() {
   const author = post.isAnonymous ? fallbackAuthor : (post.author || fallbackAuthor)
 
   return (
-    <div className="w-full min-w-0 max-w-4xl mx-auto px-4 py-4 space-y-4">
+    <div className="w-full min-w-0 max-w-4xl mx-auto px-2 py-2 sm:px-4 sm:py-4 space-y-3">
       {/* Back Button */}
       <div>
         <Button variant="ghost" onClick={() => router.back()} className="flex items-center gap-2">
@@ -396,7 +400,7 @@ export default function PostPage() {
 
       {/* Post */}
       <Card className="w-full min-w-0 border-0 ring-1 ring-black/5">
-        <CardContent className="p-4 space-y-4">
+        <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           {/* Header */}
           <div className="flex items-start gap-3 min-w-0">
             <Avatar className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20">
@@ -663,7 +667,7 @@ export default function PostPage() {
           <div className="space-y-3">
             {comments.map((comment) => (
               <Card key={comment.id} className="border-gray-200">
-                <CardContent className="p-4">
+                <CardContent className="p-3 sm:p-4">
                   <div className="flex items-start space-x-3">
                     <Avatar className="w-10 h-10 flex-shrink-0">
                       <AvatarImage src={getAvatarUrl(comment.author.avatar)} />
@@ -724,6 +728,51 @@ export default function PostPage() {
                           />
                         </div>
                       )}
+                      
+                      {comment.replies && comment.replies.length > 0 && (
+                        <div className="mt-3 ml-8 space-y-3 border-l-2 border-gray-200 pl-3">
+                          {comment.replies.map((reply) => (
+                            <div key={reply.id} className="flex items-start space-x-3">
+                              <Avatar className="w-8 h-8 flex-shrink-0">
+                                <AvatarImage src={getAvatarUrl(reply.author.avatar)} />
+                                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
+                                  {(reply.author.displayName || reply.author.username || "U")
+                                    .split(' ')
+                                    .map((n) => n[0])
+                                    .join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <div className="flex items-center space-x-2 mb-1">
+                                  <h4 className="font-semibold text-gray-900 text-sm">
+                                    {reply.author.displayName}
+                                  </h4>
+                                  <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
+                                    L{reply.author.level}
+                                  </Badge>
+                                  <span className="text-xs text-gray-500">@{reply.author.username}</span>
+                                  <span className="text-gray-400">•</span>
+                                  <span className="text-xs text-gray-500">{formatTimestamp(reply.createdAt)}</span>
+                                </div>
+                                <p className="text-gray-800 text-sm mb-2 leading-relaxed">{reply.content}</p>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleCommentLike(reply.id)}
+                                  className={`flex items-center space-x-1 text-xs h-7 px-2 rounded-full ${
+                                    reply.isLiked
+                                      ? 'text-red-500 hover:text-red-600 hover:bg-red-50'
+                                      : 'text-gray-500 hover:text-red-500 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  <Heart className={`w-3 h-3 ${reply.isLiked ? 'fill-current' : ''}`} />
+                                  <span>{reply.likesCount}</span>
+                                </Button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   </div>
                 </CardContent>
@@ -734,7 +783,7 @@ export default function PostPage() {
         
         {/* Comment Input */}
         <Card className="border-gray-200">
-          <CardContent className="p-4">
+          <CardContent className="p-3 sm:p-4">
             <div className="flex items-start space-x-3">
               <Avatar className="w-10 h-10 flex-shrink-0">
                 <AvatarImage src={getAvatarUrl(user?.avatar)} />

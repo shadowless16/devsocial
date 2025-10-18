@@ -158,7 +158,7 @@ export function EnhancedCommentInput({
               variant="ghost"
               size="sm"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-              className="h-7 w-7 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-900/20 shrink-0"
+              className="hidden sm:flex h-7 w-7 p-0 rounded-full hover:bg-yellow-50 hover:text-yellow-600 dark:hover:bg-yellow-900/20 shrink-0"
             >
               <Smile className="h-3 w-3" />
             </Button>
