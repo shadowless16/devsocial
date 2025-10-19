@@ -350,9 +350,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 user={{
                   username: user.username || '',
                   avatar: user.avatar,
-                  displayName: user.displayName,
-                  gender: user.gender
-                }}
+                  displayName: user.displayName
+                } as any}
                 className="w-10 h-10 flex-shrink-0"
               />
             )}
