@@ -14,10 +14,11 @@ export async function runBotEngagement() {
   for (const bot of activeBots) {
     const recentPosts = await Post.find()
       .sort({ createdAt: -1 })
-      .limit(20)
+      .limit(100)
       .populate('author');
     
-    const postsToEngage = recentPosts.slice(0, bot.commentFrequency);
+    const shuffled = recentPosts.sort(() => Math.random() - 0.5);
+    const postsToEngage = shuffled.slice(0, bot.commentFrequency);
     
     for (const post of postsToEngage) {
       const hasCommented = await BotActivity.findOne({ 

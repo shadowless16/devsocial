@@ -5,7 +5,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Send, Trash, Coins, Eye, Bookmark, Flag } from "lucide-react"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { UserAvatar } from "@/components/ui/user-avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
@@ -403,17 +403,10 @@ export default function PostPage() {
         <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           {/* Header */}
           <div className="flex items-start gap-3 min-w-0">
-            <Avatar className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20">
-              <AvatarImage src={getAvatarUrl(author.avatar)} />
-              <AvatarFallback>
-                {post.isAnonymous
-                  ? "?"
-                  : (author.displayName || author.username || "A")
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-              </AvatarFallback>
-            </Avatar>
+            <UserAvatar 
+              user={author}
+              className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20"
+            />
             
             <div className="flex-1 min-w-0 space-y-2">
               <div className="flex items-start justify-between min-w-0">
@@ -669,15 +662,10 @@ export default function PostPage() {
               <Card key={comment.id} className="border-gray-200">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-start space-x-3">
-                    <Avatar className="w-10 h-10 flex-shrink-0">
-                      <AvatarImage src={getAvatarUrl(comment.author.avatar)} />
-                      <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                        {(comment.author.displayName || comment.author.username || "U")
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')}
-                      </AvatarFallback>
-                    </Avatar>
+                    <UserAvatar 
+                      user={comment.author}
+                      className="w-10 h-10 flex-shrink-0"
+                    />
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
                         <h4 className="font-semibold text-gray-900">
@@ -733,15 +721,10 @@ export default function PostPage() {
                         <div className="mt-3 ml-8 space-y-3 border-l-2 border-gray-200 pl-3">
                           {comment.replies.map((reply) => (
                             <div key={reply.id} className="flex items-start space-x-3">
-                              <Avatar className="w-8 h-8 flex-shrink-0">
-                                <AvatarImage src={getAvatarUrl(reply.author.avatar)} />
-                                <AvatarFallback className="bg-emerald-100 text-emerald-700 text-xs">
-                                  {(reply.author.displayName || reply.author.username || "U")
-                                    .split(' ')
-                                    .map((n) => n[0])
-                                    .join('')}
-                                </AvatarFallback>
-                              </Avatar>
+                              <UserAvatar 
+                                user={reply.author}
+                                className="w-8 h-8 flex-shrink-0"
+                              />
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
                                   <h4 className="font-semibold text-gray-900 text-sm">
@@ -785,15 +768,16 @@ export default function PostPage() {
         <Card className="border-gray-200">
           <CardContent className="p-3 sm:p-4">
             <div className="flex items-start space-x-3">
-              <Avatar className="w-10 h-10 flex-shrink-0">
-                <AvatarImage src={getAvatarUrl(user?.avatar)} />
-                <AvatarFallback className="bg-emerald-100 text-emerald-700">
-                  {(user?.displayName || "U")
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </AvatarFallback>
-              </Avatar>
+              {user && (
+                <UserAvatar 
+                  user={{
+                    username: user.username || '',
+                    avatar: user.avatar,
+                    displayName: user.displayName
+                  }}
+                  className="w-10 h-10 flex-shrink-0"
+                />
+              )}
               <div className="flex-1">
                 <EnhancedCommentInput
                   placeholder="Write a comment..."
