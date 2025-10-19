@@ -110,18 +110,37 @@ export default function BotsManagement() {
                   <p>💬 {bot.stats.totalComments} comments</p>
                   <p>↩️ {bot.stats.totalReplies} replies</p>
                 </div>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={async () => {
-                    if (confirm('Delete this bot?')) {
-                      await fetch(`/api/admin/bots/${bot._id}`, { method: 'DELETE' });
-                      fetchBots();
-                    }
-                  }}
-                >
-                  Delete
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={async () => {
+                      const newFreq = prompt('Comments per run (1-20):', bot.commentFrequency);
+                      if (newFreq) {
+                        await fetch(`/api/admin/bots/${bot._id}`, {
+                          method: 'PATCH',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({ commentFrequency: Number(newFreq) })
+                        });
+                        fetchBots();
+                      }
+                    }}
+                  >
+                    Edit
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={async () => {
+                      if (confirm('Delete this bot?')) {
+                        await fetch(`/api/admin/bots/${bot._id}`, { method: 'DELETE' });
+                        fetchBots();
+                      }
+                    }}
+                  >
+                    Delete
+                  </Button>
+                </div>
               </div>
             </div>
           ))}
