@@ -348,10 +348,10 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
             {user && (
               <UserAvatar 
                 user={{
-                  username: user.username || '',
-                  avatar: user.avatar,
-                  displayName: user.displayName
-                } as any}
+                  username: user.username,
+                  avatar: user.avatar || '',
+                  displayName: user.displayName || user.username
+                }}
                 className="w-10 h-10 flex-shrink-0"
               />
             )}
