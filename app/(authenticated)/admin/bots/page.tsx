@@ -105,9 +105,23 @@ export default function BotsManagement() {
                 <p className="font-semibold">{bot.userId?.username}</p>
                 <p className="text-sm text-gray-500">{bot.personality} • {bot.commentFrequency} comments/run</p>
               </div>
-              <div className="text-sm">
-                <p>💬 {bot.stats.totalComments} comments</p>
-                <p>↩️ {bot.stats.totalReplies} replies</p>
+              <div className="flex items-center gap-4">
+                <div className="text-sm">
+                  <p>💬 {bot.stats.totalComments} comments</p>
+                  <p>↩️ {bot.stats.totalReplies} replies</p>
+                </div>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={async () => {
+                    if (confirm('Delete this bot?')) {
+                      await fetch(`/api/admin/bots/${bot._id}`, { method: 'DELETE' });
+                      fetchBots();
+                    }
+                  }}
+                >
+                  Delete
+                </Button>
               </div>
             </div>
           ))}
