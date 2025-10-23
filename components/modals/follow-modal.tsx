@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { User } from 'lucide-react';
 import { apiClient } from '@/lib/api-client';
 import type { User as UserType } from '@/contexts/app-context';
+import { UserLink } from '@/components/shared/UserLink';
 
 interface FollowModalProps {
   isOpen: boolean;
@@ -75,22 +76,30 @@ export function FollowModal({ isOpen, onClose, type, username }: FollowModalProp
             users.map((user) => (
               <div key={user.id} className="flex items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <UserAvatar 
-                    user={{
-                      username: user.username || '',
-                      avatar: user.avatar,
-                      displayName: user.displayName
-                    }}
-                    className="h-10 w-10"
-                  />
+                  <UserLink username={user.username}>
+                    <UserAvatar 
+                      user={{
+                        username: user.username || '',
+                        avatar: user.avatar,
+                        displayName: user.displayName
+                      }}
+                      className="h-10 w-10"
+                    />
+                  </UserLink>
                   <div>
-                    <p className="font-semibold">{user.displayName || user.username}</p>
-                    <p className="text-sm text-muted-foreground">@{user.username}</p>
+                    <UserLink username={user.username}>
+                      <p className="font-semibold hover:text-emerald-600 transition-colors">{user.displayName || user.username}</p>
+                    </UserLink>
+                    <UserLink username={user.username}>
+                      <p className="text-sm text-muted-foreground hover:text-emerald-600 transition-colors">@{user.username}</p>
+                    </UserLink>
                   </div>
                 </div>
-                <Button variant="outline" size="sm">
-                  View
-                </Button>
+                <UserLink username={user.username}>
+                  <Button variant="outline" size="sm">
+                    View Profile
+                  </Button>
+                </UserLink>
               </div>
             ))
           ) : (

@@ -14,9 +14,12 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useNotifications } from '@/contexts/notification-context'
+import { UserLink } from '@/components/shared/UserLink'
 
 export function NotificationList() {
+  const router = useRouter()
   const { notifications, loading, fetchNotifications, markAsRead, markAsUnread, markAllAsRead } = useNotifications()
 
   useEffect(() => {
@@ -74,11 +77,23 @@ export function NotificationList() {
             {notifications.map((notification) => (
               <div
                 key={notification._id}
-                className={`flex gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                className={`flex gap-3 p-2 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer ${
                   !notification.read ? 'bg-emerald-50 dark:bg-emerald-900/10' : ''
                 }`}
+                onClick={() => {
+                  if (notification.actionUrl) {
+                    if (!notification.read) markAsRead(notification._id)
+                    router.push(notification.actionUrl)
+                  }
+                }}
               >
-                <div className="relative">
+                <div 
+                  className="relative cursor-pointer"
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    router.push(`/profile/${notification.sender.username}`)
+                  }}
+                >
                   <UserAvatar 
                     user={{
                       username: notification.sender.username || '',
@@ -111,7 +126,12 @@ export function NotificationList() {
                       )}
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-6 w-6 p-0">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => e.stopPropagation()}
+                          >
                             <MoreHorizontal className="h-3 w-3" />
                           </Button>
                         </DropdownMenuTrigger>
@@ -129,14 +149,6 @@ export function NotificationList() {
                       </DropdownMenu>
                     </div>
                   </div>
-                  
-                  {notification.actionUrl && (
-                    <Button variant="ghost" size="sm" className="mt-1 h-6 px-2 text-xs" asChild>
-                      <Link href={notification.actionUrl}>
-                        View
-                      </Link>
-                    </Button>
-                  )}
                 </div>
               </div>
             ))}

@@ -172,7 +172,8 @@ export default function HomePage() {
   }
 
   const handleCommentPost = (postId: string) => {
-    window.location.href = `/post/${postId}`
+    // Comment functionality handled inline - no navigation needed
+    console.log('Comment clicked for post:', postId)
   }
 
   const handlePostClick = (postId: string) => {
