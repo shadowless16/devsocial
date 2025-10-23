@@ -14,6 +14,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { formatDistanceToNow } from 'date-fns'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useNotifications } from '@/contexts/notification-context'
 
 function TimeAgo({ timestamp }: { timestamp: string }) {
@@ -47,6 +48,7 @@ interface Notification {
 }
 
 export default function NotificationsPage() {
+  const router = useRouter()
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
   const { notifications, loading, fetchNotifications, markAsRead, markAsUnread, markAllAsRead } = useNotifications()
   const [filteredNotifications, setFilteredNotifications] = useState(notifications)
@@ -165,15 +167,27 @@ export default function NotificationsPage() {
           filteredNotifications.map((notification) => (
             <Card
               key={notification._id}
-              className={`transition-colors ${
+              className={`transition-colors cursor-pointer ${
                 !notification.read 
                   ? 'bg-emerald-50 dark:bg-emerald-900/10 border-emerald-200 dark:border-emerald-800' 
                   : 'hover:bg-gray-50 dark:hover:bg-gray-800'
               }`}
+              onClick={() => {
+                if (notification.actionUrl) {
+                  if (!notification.read) markAsRead(notification._id)
+                  router.push(notification.actionUrl)
+                }
+              }}
             >
               <CardContent className="p-3 md:p-4">
                 <div className="flex gap-3">
-                  <div className="relative flex-shrink-0">
+                  <div 
+                    className="relative flex-shrink-0 cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      router.push(`/profile/${notification.sender.username}`)
+                    }}
+                  >
                     <Avatar className="h-8 w-8 md:h-10 md:w-10">
                       <AvatarImage src={notification.sender.avatar} />
                       <AvatarFallback className="text-xs">
@@ -200,7 +214,13 @@ export default function NotificationsPage() {
                           {notification.message}
                         </p>
                         <div className="flex flex-wrap items-center gap-2 text-xs text-gray-500">
-                          <span className="truncate">
+                          <span 
+                            className="truncate cursor-pointer hover:text-emerald-600 transition-colors"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              router.push(`/profile/${notification.sender.username}`)
+                            }}
+                          >
                             From {notification.sender.displayName || notification.sender.username}
                           </span>
                           <Badge variant="outline" className="text-xs flex-shrink-0">
@@ -211,22 +231,14 @@ export default function NotificationsPage() {
                       </div>
                       
                       <div className="flex items-center gap-2">
-                        {notification.actionUrl && (
-                          <Button 
-                            variant="outline" 
-                            size="sm" 
-                            className="flex-shrink-0 text-xs px-2" 
-                            asChild
-                            onClick={() => !notification.read && markAsRead(notification._id)}
-                          >
-                            <Link href={notification.actionUrl}>
-                              View
-                            </Link>
-                          </Button>
-                        )}
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-6 w-6 p-0 flex-shrink-0">
+                            <Button 
+                              variant="ghost" 
+                              size="sm" 
+                              className="h-6 w-6 p-0 flex-shrink-0"
+                              onClick={(e) => e.stopPropagation()}
+                            >
                               <MoreHorizontal className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>

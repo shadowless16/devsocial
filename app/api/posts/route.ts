@@ -357,7 +357,10 @@ export async function POST(req: NextRequest) {
     if (isFirstPost) {
       await awardXP(authorId, "first_post", newPost._id.toString());
     } else {
-      await awardXP(authorId, "post_creation", newPost._id.toString());
+      const xpResult = await awardXP(authorId, "post_creation", newPost._id.toString());
+      if (xpResult.limitReached) {
+        console.log(`User ${authorId} reached daily post creation limit`);
+      }
     }
     
     // Award quality bonus XP

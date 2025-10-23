@@ -19,6 +19,9 @@ import { getAvatarUrl } from "@/lib/avatar-utils"
 import { PollDisplay } from "@/components/poll/poll-display"
 import { apiClient } from "@/lib/api-client"
 import { LinkPreviewCard } from "@/components/ui/link-preview-card"
+import { Textarea } from "@/components/ui/textarea"
+import { UserLink } from "@/components/shared/UserLink"
+import { MentionText } from "@/components/ui/mention-text"
 
 interface PostCardProps {
   author?: string
@@ -117,6 +120,11 @@ export default function PostCard({
   const [currentViews, setCurrentViews] = useState(views)
   const viewTracked = useRef(false)
   const [pollData, setPollData] = useState(poll)
+  const [showComments, setShowComments] = useState(false)
+  const [comments, setComments] = useState<any[]>([])
+  const [loadingComments, setLoadingComments] = useState(false)
+  const [commentContent, setCommentContent] = useState("")
+  const [submittingComment, setSubmittingComment] = useState(false)
   
   useEffect(() => {
     setIsLiked(liked)
@@ -562,7 +570,23 @@ export default function PostCard({
                 variant="ghost"
                 size="sm"
                 className="h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-blue-500"
-                onClick={() => postId && onComment?.(postId)}
+                onClick={async (e) => {
+                  e.stopPropagation()
+                  if (!showComments && postId) {
+                    setLoadingComments(true)
+                    try {
+                      const response = await apiClient.getComments(postId)
+                      if (response.success && response.data) {
+                        setComments((response.data as any).comments || [])
+                      }
+                    } catch (error) {
+                      console.error('Failed to fetch comments:', error)
+                    } finally {
+                      setLoadingComments(false)
+                    }
+                  }
+                  setShowComments(!showComments)
+                }}
               >
                 <MessageCircle className="h-4 w-4" />
                 <span className="text-sm font-medium">{commentsCount}</span>
@@ -587,6 +611,128 @@ export default function PostCard({
               <span>{formatTimeAgo(timestamp)}</span>
             </div>
           </div>
+
+          {/* Comments Section */}
+          {showComments && (
+            <div className="mt-4 pt-4 border-t">
+              {loadingComments ? (
+                <div className="flex items-center justify-center py-4">
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-emerald-600"></div>
+                  <span className="ml-2 text-sm text-gray-500">Loading comments...</span>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {comments.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      <p>No comments yet. Be the first to comment!</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {comments.map((comment: any) => (
+                        <div key={comment.id || comment._id} className="flex items-start space-x-2">
+                          <UserLink username={comment.author.username}>
+                            <UserAvatar 
+                              user={comment.author}
+                              className="w-8 h-8 flex-shrink-0"
+                            />
+                          </UserLink>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center space-x-2 mb-1">
+                              <UserLink username={comment.author.username}>
+                                <span className="font-semibold text-sm hover:text-emerald-600">
+                                  {comment.author.displayName || comment.author.username}
+                                </span>
+                              </UserLink>
+                              <Badge variant="outline" className="text-xs px-1 py-0">L{comment.author.level}</Badge>
+                              <span className="text-xs text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
+                            </div>
+                            <div className="text-sm text-gray-800">
+                              <MentionText text={comment.content} />
+                            </div>
+                            <div className="flex items-center gap-2 mt-1">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={async () => {
+                                  try {
+                                    const response = await apiClient.toggleCommentLike(comment.id || comment._id)
+                                    if (response.success && response.data) {
+                                      setComments(comments.map((c: any) => 
+                                        (c.id || c._id) === (comment.id || comment._id)
+                                          ? { ...c, isLiked: (response.data as any).liked, likesCount: (response.data as any).likesCount }
+                                          : c
+                                      ))
+                                    }
+                                  } catch (error) {
+                                    console.error('Failed to like comment:', error)
+                                  }
+                                }}
+                                className={`h-6 px-2 text-xs ${comment.isLiked ? 'text-red-500' : 'text-gray-500'}`}
+                              >
+                                <Heart className={`w-3 h-3 ${comment.isLiked ? 'fill-current' : ''}`} />
+                                <span className="ml-1">{comment.likesCount}</span>
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Comment Input */}
+                  <div className="mt-4 pt-4 border-t">
+                    <div className="flex items-start space-x-2">
+                      {user && (
+                        <UserAvatar 
+                          user={{
+                            username: user.username || '',
+                            avatar: user.avatar,
+                            displayName: user.displayName
+                          }}
+                          className="w-8 h-8 flex-shrink-0"
+                        />
+                      )}
+                      <div className="flex-1">
+                        <Textarea
+                          placeholder="Write a comment..."
+                          value={commentContent}
+                          onChange={(e) => setCommentContent(e.target.value)}
+                          className="min-h-[60px] resize-none text-sm"
+                          rows={2}
+                        />
+                        <div className="flex justify-end mt-2">
+                          <Button
+                            onClick={async () => {
+                              if (!commentContent.trim() || submittingComment || !postId) return
+                              setSubmittingComment(true)
+                              try {
+                                const response = await apiClient.createComment(postId, commentContent.trim())
+                                if (response.success && response.data) {
+                                  const newComment = (response.data as any).comment
+                                  setComments([newComment, ...comments])
+                                  setCommentContent("")
+                                  toast({ title: "Comment posted!" })
+                                }
+                              } catch (error) {
+                                toast({ title: "Failed to post comment", variant: "destructive" })
+                              } finally {
+                                setSubmittingComment(false)
+                              }
+                            }}
+                            disabled={!commentContent.trim() || submittingComment}
+                            size="sm"
+                            className="bg-emerald-600 hover:bg-emerald-700"
+                          >
+                            {submittingComment ? 'Posting...' : 'Post'}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
             </div>
           </div>
         

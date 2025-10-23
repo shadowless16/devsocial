@@ -47,6 +47,9 @@ export async function processMentions(
         type: "mention",
         title: "You were mentioned",
         message: `${mentioner?.displayName || mentioner?.username} mentioned you in a ${commentId ? 'comment' : 'post'}`,
+        actionUrl: `/post/${postId}`,
+        relatedPost: postId,
+        relatedComment: commentId,
         metadata: { postId, commentId }
       })
     } catch (error) {

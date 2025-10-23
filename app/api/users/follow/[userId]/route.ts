@@ -54,11 +54,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     let follow;
+    let isNewFollow = false;
     try {
       follow = await Follow.create({
         follower: currentUserId,
         following: userId,
       });
+      isNewFollow = true;
     } catch (createError: any) {
       console.error("Error creating follow record:", createError);
       if (createError.code === 11000) {
@@ -88,8 +90,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       xpEarned: XP_VALUES.user_followed,
     });
 
-    // Award XP for following a user
-    await awardXP(currentUserId, "user_followed", userId)
+    // Award XP only if this is a new follow (prevent duplicate XP on retries)
+    if (isNewFollow) {
+      await awardXP(currentUserId, "user_followed", userId);
+    }
 
     // Auto-track mission progress for following users
     try {

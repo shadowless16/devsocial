@@ -2,6 +2,7 @@ import User from "@/models/User"
 import XPLog from "@/models/XPLog"
 import connectDB from "@/lib/db"
 import { ReferralSystemFixed } from "./referral-system-fixed"
+import { checkDailyLimit } from "./check-daily-limit"
 
 // XP values for different actions
 export const XP_VALUES = {
@@ -30,13 +31,22 @@ export async function awardXP(
   type: keyof typeof XP_VALUES,
   refId?: string,
   customXP?: number,
-): Promise<{ success: boolean; newLevel?: number; levelUp?: boolean }> {
+): Promise<{ success: boolean; newLevel?: number; levelUp?: boolean; limitReached?: boolean }> {
   try {
     // await connectDB() // Remove in tests, connection already exists
 
     const xpAmount = customXP || XP_VALUES[type]
     if (!xpAmount) {
       throw new Error(`Invalid XP type: ${type}`)
+    }
+
+    // Check daily limit for post_creation
+    if (type === 'post_creation') {
+      const limitCheck = await checkDailyLimit(userId, 'post_created');
+      if (!limitCheck.allowed) {
+        console.log(`Daily limit reached for ${type}: ${limitCheck.count}/${limitCheck.limit}`);
+        return { success: false, limitReached: true };
+      }
     }
 
     // Create XP log entry

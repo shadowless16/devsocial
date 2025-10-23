@@ -410,8 +410,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
     <TooltipProvider>
       <Card 
         ref={viewTrackerRef}
-        className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer w-full overflow-hidden" 
-        onClick={handlePostClick} 
+        className="border-0 shadow-none ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] w-full overflow-hidden" 
         data-post-id={post.id}
       >
         <div className="flex flex-row items-start gap-2 md:gap-3 space-y-0 p-3 md:p-6 overflow-hidden">
@@ -521,7 +520,10 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         ) : null}
         
         {post.content && (
-          <div className="text-sm md:text-[15px] leading-6 md:leading-7 mb-3 break-words overflow-wrap-anywhere word-wrap break-word whitespace-pre-wrap">
+          <div 
+            className="text-sm md:text-[15px] leading-6 md:leading-7 mb-3 break-words overflow-wrap-anywhere word-wrap break-word whitespace-pre-wrap cursor-pointer"
+            onClick={handlePostClick}
+          >
             <PostContent content={post.content} onCopyCode={handleCopyCode} />
           </div>
         )}
@@ -661,56 +663,41 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         </CardContent>
 
         <div className="flex items-center gap-2 md:gap-6 p-3 md:px-6 interactive-element">
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className={`h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-emerald-700 ${
-                post.isLiked ? "text-emerald-600" : ""
-              }`}
-              onClick={handleLikeClick}
-              aria-pressed={post.isLiked}
-            >
-              <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-emerald-600 text-emerald-600" : ""}`} />
-              <span className="text-xs">{post.likesCount}</span>
-              <span className="sr-only">Like</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Like</TooltipContent>
-        </Tooltip>
+        <Button
+          variant="ghost"
+          size="sm"
+          className={`h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-emerald-700 ${
+            post.isLiked ? "text-emerald-600" : ""
+          }`}
+          onClick={handleLikeClick}
+          aria-pressed={post.isLiked}
+          title="Like"
+        >
+          <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-emerald-600 text-emerald-600" : ""}`} />
+          <span className="text-xs">{post.likesCount}</span>
+        </Button>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-foreground"
-              onClick={handleCommentClick}
-            >
-              <MessageCircle className="h-4 w-4" />
-              <span className="text-xs">{post.commentsCount}</span>
-              <span className="sr-only">Comment</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Comment</TooltipContent>
-        </Tooltip>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-foreground"
+          onClick={handleCommentClick}
+          title="Comment"
+        >
+          <MessageCircle className="h-4 w-4" />
+          <span className="text-xs">{post.commentsCount}</span>
+        </Button>
 
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-foreground"
-              onClick={handleShareClick}
-            >
-              <Share className="h-4 w-4" />
-              <span className="text-xs hidden sm:inline">Share</span>
-              <span className="sr-only">Share</span>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Share</TooltipContent>
-        </Tooltip>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-foreground"
+          onClick={handleShareClick}
+          title="Share"
+        >
+          <Share className="h-4 w-4" />
+          <span className="text-xs hidden sm:inline">Share</span>
+        </Button>
 
         {!post.isAnonymous && post.author && user && post.author.username !== user.username && (
           <Tooltip>
