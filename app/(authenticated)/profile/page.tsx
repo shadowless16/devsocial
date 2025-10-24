@@ -202,9 +202,11 @@ export default function MyProfile() {
           <SmartAvatar 
             src={profileData?.avatar} 
             alt={profileData?.name || 'User'}
+            username={profileData?.username || user?.username}
             fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
             className="w-20 h-20 sm:w-32 sm:h-32 border-4 border-white shadow-xl"
             size={128}
+            showLevelFrame={false}
           />
           <Button 
             variant="outline" 
@@ -336,9 +338,11 @@ export default function MyProfile() {
                           <SmartAvatar 
                             src={profileData?.avatar} 
                             alt={profileData?.name || 'User'}
+                            username={profileData?.username || user?.username}
                             fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
                             className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0"
                             size={40}
+                            showLevelFrame={false}
                           />
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center gap-1 sm:gap-2 mb-1.5 sm:mb-2 flex-wrap">

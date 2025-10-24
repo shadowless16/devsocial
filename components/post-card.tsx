@@ -557,12 +557,14 @@ export default function PostCard({
               <Button
                 variant="ghost"
                 size="sm"
-                className={`h-8 gap-2 rounded-full px-3 text-muted-foreground hover:text-red-500 ${
-                  isLiked ? "text-red-500" : ""
+                className={`h-8 gap-2 rounded-full px-3 transition-colors ${
+                  isLiked ? "text-red-600 hover:text-red-700" : "text-muted-foreground hover:text-red-600"
                 }`}
                 onClick={handleLike}
               >
-                <Heart className={`h-4 w-4 transition ${isLiked ? "fill-red-500 text-red-500" : ""}`} />
+                <Heart className={`h-4 w-4 transition-all ${
+                  isLiked ? "fill-red-600 text-red-600" : ""
+                }`} />
                 <span className="text-sm font-medium">{currentLikesCount}</span>
               </Button>
 
