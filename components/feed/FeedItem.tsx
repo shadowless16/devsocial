@@ -666,14 +666,16 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         <Button
           variant="ghost"
           size="sm"
-          className={`h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 text-muted-foreground hover:text-emerald-700 ${
-            post.isLiked ? "text-emerald-600" : ""
+          className={`h-9 gap-1 md:gap-2 rounded-full px-2 md:px-3 transition-colors ${
+            post.isLiked ? "text-red-600 hover:text-red-700" : "text-muted-foreground hover:text-red-600"
           }`}
           onClick={handleLikeClick}
           aria-pressed={post.isLiked}
           title="Like"
         >
-          <Heart className={`h-4 w-4 transition ${post.isLiked ? "fill-emerald-600 text-emerald-600" : ""}`} />
+          <Heart className={`h-4 w-4 transition-all ${
+            post.isLiked ? "fill-red-600 text-red-600" : ""
+          }`} />
           <span className="text-xs">{post.likesCount}</span>
         </Button>
 

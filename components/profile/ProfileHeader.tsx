@@ -105,9 +105,11 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
               <SmartAvatar 
                 src={profile.avatar} 
                 alt={profile.name}
+                username={profile.username}
                 fallback={profile.name.split(' ').map(n => n[0]).join('')}
                 className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/20"
                 size={80}
+                showLevelFrame={false}
               />
             </div>
             <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white" />
