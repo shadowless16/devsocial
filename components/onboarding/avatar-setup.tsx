@@ -10,8 +10,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ReadyPlayerMeAvatar } from "./ready-player-me-avatar"
 import { getAvatarUrl } from "@/lib/avatar-utils"
 import { useAuth } from "@/contexts/app-context"
 
@@ -34,7 +32,6 @@ export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps
     socials: data.socials || { twitter: "", linkedin: "" },
   });
   const [isUploading, setIsUploading] = useState(false);
-  const [avatarType, setAvatarType] = useState<'upload' | 'avatar'>('avatar');
 
   // Update state when data prop changes (only on mount or when localStorage loads)
   useEffect(() => {
@@ -122,71 +119,49 @@ export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps
 
       {/* Avatar Selection */}
       <div className="space-y-4">
-        <Tabs value={avatarType} onValueChange={(value) => setAvatarType(value as 'upload' | 'avatar')} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="upload" className="flex items-center gap-2">
-              <Upload className="w-4 h-4" />
-              Upload Photo
-            </TabsTrigger>
-            <TabsTrigger value="avatar" className="flex items-center gap-2">
-              <Camera className="w-4 h-4" />
-              Create Avatar
-            </TabsTrigger>
-          </TabsList>
+        <div className="text-center">
+          <p className="text-sm text-gray-600 mb-4">Upload your profile picture</p>
           
-          <TabsContent value="upload" className="space-y-4">
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4">Upload your own profile picture</p>
-              
-              <div className="flex flex-col items-center space-y-4">
-                <input
-                  type="file"
-                  id="avatar-upload"
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                  className="hidden"
-                  disabled={isUploading}
-                />
-                
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => document.getElementById('avatar-upload')?.click()}
-                  disabled={isUploading}
-                  className="flex items-center gap-2"
-                >
-                  <Upload className="w-4 h-4" />
-                  {isUploading ? 'Uploading...' : 'Choose Image'}
-                </Button>
-                
-                <p className="text-xs text-gray-500">
-                  PNG, JPG, GIF up to 5MB
-                </p>
-              </div>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="avatar" className="space-y-4">
-            <ReadyPlayerMeAvatar 
-              onAvatarSelect={handleAvatarSelect}
-              currentAvatar={formData.avatar}
+          <div className="flex flex-col items-center space-y-4">
+            <input
+              type="file"
+              id="avatar-upload"
+              accept="image/*"
+              onChange={handleImageUpload}
+              className="hidden"
+              disabled={isUploading}
             />
-          </TabsContent>
-        </Tabs>
+            
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => document.getElementById('avatar-upload')?.click()}
+              disabled={isUploading}
+              className="flex items-center gap-2"
+            >
+              <Upload className="w-4 h-4" />
+              {isUploading ? 'Uploading...' : 'Choose Image'}
+            </Button>
+            
+            <p className="text-xs text-gray-500">
+              PNG, JPG, GIF up to 5MB
+            </p>
+          </div>
+        </div>
         
         {formData.avatar && (
           <div className="flex justify-center">
             <div className="text-center">
               <Avatar className="w-24 h-24 mx-auto mb-2">
                 <AvatarImage 
-                  src={avatarType === 'upload' ? formData.avatar : (getAvatarUrl(formData.avatar) || "/placeholder.svg")} 
+                  src={formData.avatar} 
                   alt="Avatar preview"
                 />
                 <AvatarFallback>
                   <User className="w-12 h-12" />
                 </AvatarFallback>
               </Avatar>
-              <p className="text-sm text-emerald-600 font-medium">✓ {avatarType === 'upload' ? 'Photo' : 'Avatar'} Selected</p>
+              <p className="text-sm text-emerald-600 font-medium">✓ Photo Selected</p>
             </div>
           </div>
         )}
