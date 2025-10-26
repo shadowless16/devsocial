@@ -13,8 +13,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const period = searchParams.get("period") || "today"
     
-    // Check cache first
-    const cacheKey = `trending_${period}`;
+    // Check cache first - include date to reset daily
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+    const cacheKey = `trending_${period}_${today}`;
     const cached = cache.get(cacheKey);
     if (cached) {
       return NextResponse.json(cached);
@@ -234,8 +235,8 @@ export async function GET(request: NextRequest) {
       }
     };
     
-    // Cache for 10 minutes to improve performance (trending data doesn't need to be real-time)
-    cache.set(cacheKey, responseData, 600000);
+    // Cache for 5 minutes - resets daily via date in cache key
+    cache.set(cacheKey, responseData, 300000);
 
     return NextResponse.json(responseData)
   } catch (error) {
