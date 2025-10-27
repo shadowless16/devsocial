@@ -86,7 +86,7 @@ export const config = {
      * - favicon.ico (favicon file)
      * - .well-known (well-known URIs)
      */
-    "/((?!api|auth|onboarding|trending|_next/static|_next/image|favicon.ico|\.well-known).*)",
+    "/((?!api|auth|onboarding|trending|_next/static|_next/image|favicon.ico|manifest.json|sw.js|register-sw.js|icon-.*\.png|\.well-known).*)",
   ]
 }
 
