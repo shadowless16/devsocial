@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>DevSocial Icon Generator</title>
+  <style>
+    body { font-family: Arial; padding: 20px; background: #0a0a0a; color: #fff; }
+    canvas { border: 2px solid #3b82f6; margin: 10px; }
+    button { background: #3b82f6; color: white; padding: 10px 20px; border: none; cursor: pointer; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>DevSocial Icon Generator</h1>
+  <p>Click to generate and download PWA icons</p>
+  <button onclick="generateIcons()">Generate Icons</button>
+  <div id="canvases"></div>
+  
+  <script>
+    function generateIcons() {
+      const sizes = [192, 512];
+      const container = document.getElementById('canvases');
+      container.innerHTML = '';
+      
+      sizes.forEach(size => {
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        // Background
+        ctx.fillStyle = '#3b82f6';
+        ctx.fillRect(0, 0, size, size);
+        
+        // Code brackets
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `bold ${size * 0.5}px monospace`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('</>', size / 2, size / 2);
+        
+        container.appendChild(canvas);
+        
+        // Download
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `icon-${size}x${size}.png`;
+          a.click();
+        });
+      });
+      
+      // Generate favicon
+      const favicon = document.createElement('canvas');
+      favicon.width = 32;
+      favicon.height = 32;
+      const fctx = favicon.getContext('2d');
+      fctx.fillStyle = '#3b82f6';
+      fctx.fillRect(0, 0, 32, 32);
+      fctx.fillStyle = '#ffffff';
+      fctx.font = 'bold 20px monospace';
+      fctx.textAlign = 'center';
+      fctx.textBaseline = 'middle';
+      fctx.fillText('D', 16, 16);
+      
+      favicon.toBlob(blob => {
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'favicon.ico';
+        a.click();
+      });
+    }
+  </script>
+</body>
+</html>

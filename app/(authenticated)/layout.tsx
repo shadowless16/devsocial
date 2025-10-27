@@ -7,6 +7,7 @@ import SideNav from "@/components/layout/side-nav"
 import RightRail from "@/components/layout/right-rail"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { Skeleton } from "@/components/ui/skeleton"
+import { InstallPrompt } from "@/components/pwa/install-prompt"
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -54,6 +55,7 @@ export default function AuthenticatedLayout({
           </aside>
         </div>
         <MobileNav />
+        <InstallPrompt />
       </main>
     </TooltipProvider>
   )
