@@ -39,10 +39,20 @@ export function InstallPrompt() {
 
   const handleDismiss = () => {
     setShowPrompt(false);
-    localStorage.setItem('pwa-prompt-dismissed', 'true');
+    localStorage.setItem('pwa-prompt-dismissed', Date.now().toString());
   };
 
-  if (!showPrompt || localStorage.getItem('pwa-prompt-dismissed')) {
+  // Check if dismissed in last 7 days
+  const dismissed = localStorage.getItem('pwa-prompt-dismissed');
+  if (dismissed) {
+    const dismissedTime = parseInt(dismissed);
+    const sevenDays = 7 * 24 * 60 * 60 * 1000;
+    if (Date.now() - dismissedTime < sevenDays) {
+      return null;
+    }
+  }
+
+  if (!showPrompt) {
     return null;
   }
 

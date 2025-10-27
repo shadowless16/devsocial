@@ -1,49 +1,24 @@
 {
   "name": "DevSocial - Developer Social Platform",
   "short_name": "DevSocial",
-  "description": "Gamified social media platform for developers and tech enthusiasts",
+  "description": "Gamified social platform for developers",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#3b82f6",
   "orientation": "portrait-primary",
-  "scope": "/",
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
-    }
-  ],
-  "categories": ["social", "productivity", "developer tools"],
-  "shortcuts": [
-    {
-      "name": "Home Feed",
-      "short_name": "Feed",
-      "description": "View your personalized feed",
-      "url": "/home",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Leaderboard",
-      "short_name": "Leaderboard",
-      "description": "Check rankings",
-      "url": "/leaderboard",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "Challenges",
-      "short_name": "Challenges",
-      "description": "View weekly challenges",
-      "url": "/challenges",
-      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+      "purpose": "maskable"
     }
   ]
 }

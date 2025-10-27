@@ -8,6 +8,7 @@ import RightRail from "@/components/layout/right-rail"
 import { MobileNav } from "@/components/layout/mobile-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InstallPrompt } from "@/components/pwa/install-prompt"
+import PushNotificationManager from "@/components/push-notification-manager"
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -56,6 +57,7 @@ export default function AuthenticatedLayout({
         </div>
         <MobileNav />
         <InstallPrompt />
+        <PushNotificationManager />
       </main>
     </TooltipProvider>
   )
