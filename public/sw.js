@@ -59,7 +59,13 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification event
 self.addEventListener('push', (event) => {
-  const data = event.data ? event.data.json() : {};
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch (e) {
+    // Handle plain text from DevTools test
+    data = { title: 'DevSocial', body: event.data ? event.data.text() : 'New notification' };
+  }
   
   const title = data.title || 'DevSocial';
   const options = {
