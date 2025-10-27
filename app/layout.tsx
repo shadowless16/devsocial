@@ -4,6 +4,7 @@ import './globals.css'
 import { Providers } from './providers'
 import '@/lib/appkit-config'
 import DisablePrefetch from '@/components/client/disable-prefetch'
+import PWAInstall from '@/components/pwa-install'
 
 // const inter = Inter({ subsets: ['latin'] })
 
@@ -44,6 +45,7 @@ export default function RootLayout({
             <DisablePrefetch />
           ) : null}
           {children}
+          <PWAInstall />
         </Providers>
       </body>
     </html>

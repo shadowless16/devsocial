@@ -36,6 +36,7 @@ import {
   UserCog,
 } from "lucide-react"
 import { SimplePostModal } from "@/components/modals/simple-post-modal"
+import { InstallButton } from "@/components/pwa/install-button"
 
 import { useRouter } from "next/navigation"
 import { apiClient } from "@/lib/api-client"
@@ -220,6 +221,9 @@ export default function SideNav() {
         <div className="flex items-center gap-1">
           <CreateButton />
           <NotificationButton />
+        </div>
+        <div className="mt-1">
+          <InstallButton />
         </div>
       </div>
 

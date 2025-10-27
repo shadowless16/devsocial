@@ -56,3 +56,77 @@ self.addEventListener('fetch', (event) => {
       .catch(() => caches.match('/offline'))
   );
 });
+
+// Push notification event
+self.addEventListener('push', (event) => {
+  const data = event.data ? event.data.json() : {};
+  
+  const title = data.title || 'DevSocial';
+  const options = {
+    body: data.body || data.message || 'You have a new notification',
+    icon: data.icon || '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+    image: data.image,
+    data: {
+      url: data.url || data.actionUrl || '/',
+      notificationId: data.notificationId
+    },
+    tag: data.tag || 'devsocial-notification',
+    requireInteraction: false,
+    vibrate: [200, 100, 200],
+    actions: data.actions || [
+      { action: 'open', title: 'Open' },
+      { action: 'close', title: 'Close' }
+    ]
+  };
+
+  event.waitUntil(
+    self.registration.showNotification(title, options)
+  );
+});
+
+// Notification click event
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+
+  if (event.action === 'close') {
+    return;
+  }
+
+  const urlToOpen = event.notification.data?.url || '/';
+
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true })
+      .then((clientList) => {
+        // Check if there's already a window open
+        for (const client of clientList) {
+          if (client.url === urlToOpen && 'focus' in client) {
+            return client.focus();
+          }
+        }
+        // Open new window if none exists
+        if (clients.openWindow) {
+          return clients.openWindow(urlToOpen);
+        }
+      })
+  );
+});
+
+// Background sync for offline actions
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'sync-notifications') {
+    event.waitUntil(syncNotifications());
+  }
+});
+
+async function syncNotifications() {
+  try {
+    const response = await fetch('/api/notifications/sync', {
+      method: 'POST',
+      credentials: 'include'
+    });
+    return response.json();
+  } catch (error) {
+    console.error('Sync failed:', error);
+  }
+}

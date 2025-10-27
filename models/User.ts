@@ -58,6 +58,7 @@ export interface IUser extends Document {
     explain?: Array<{ date: Date; contentLength: number }>;
   }; // Track AI feature usage
   isPremium?: boolean; // Premium subscription status
+  pushSubscription?: any; // Push notification subscription
   isBlocked?: boolean; // User blocked status
   appearanceSettings?: {
     theme?: "light" | "dark" | "system";
@@ -285,6 +286,10 @@ const UserSchema = new Schema<IUser>(
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+    pushSubscription: {
+      type: Schema.Types.Mixed,
+      required: false,
     },
     appearanceSettings: {
       theme: {

@@ -4,6 +4,8 @@ import { authOptions } from '@/lib/auth'
 import { connectWithRetry } from '@/lib/connect-with-retry'
 import Notification from '@/models/Notification'
 import { cache } from '@/lib/cache'
+import User from '@/models/User'
+import { sendPushNotification } from '@/lib/push-notification'
 
 export async function GET(request: NextRequest) {
   try {
@@ -97,6 +99,17 @@ export async function POST(request: NextRequest) {
     })
 
     await notification.save()
+
+    // Send push notification
+    const recipientUser = await User.findById(recipient)
+    if (recipientUser?.pushSubscription) {
+      await sendPushNotification(recipientUser.pushSubscription, {
+        title,
+        body: message,
+        url: actionUrl || '/notifications',
+        icon: '/icon-192x192.png'
+      })
+    }
 
     return NextResponse.json({
       success: true,
