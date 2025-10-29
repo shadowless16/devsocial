@@ -296,13 +296,15 @@ function HeaderBar({ onCreateClick, onSearchClick }: { onCreateClick: () => void
 function Compose({ onCreateClick }: { onCreateClick: () => void }) {
   const { user } = useAuth()
   
+  const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : '/placeholder.svg'
+  
   return (
     <Card className="w-full min-w-0 border-0 shadow-none ring-1 ring-black/5 transition-colors hover:bg-background">
       <CardContent className="p-4">
         <div className="flex items-start gap-3 min-w-0">
           <Avatar className="h-9 w-9 ring-1 ring-primary/20 flex-shrink-0">
             <AvatarImage 
-              src={getAvatarUrl(user?.avatar)} 
+              src={avatarUrl}
               alt="Your avatar"
             />
             <AvatarFallback>

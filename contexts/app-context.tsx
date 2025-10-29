@@ -333,7 +333,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               lastName: userData.lastName,
               bio: userData.bio || '',
               affiliation: userData.affiliation || '',
-              avatar: userData.avatar || '/placeholder.svg',
+              avatar: userData.avatar || '',
               bannerUrl: userData.bannerUrl || '',
               role: userData.role || 'user',
               points: userData.points || 0,

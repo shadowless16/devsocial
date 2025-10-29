@@ -1,6 +1,5 @@
-const CACHE_NAME = 'devsocial-v1';
+const CACHE_NAME = 'devsocial-v2';
 const urlsToCache = [
-  '/',
   '/home',
   '/leaderboard',
   '/challenges',
@@ -34,6 +33,12 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  
+  // Skip service worker for root path to allow redirects
+  const url = new URL(event.request.url);
+  if (url.pathname === '/') {
+    return;
+  }
   
   event.respondWith(
     caches.match(event.request)
