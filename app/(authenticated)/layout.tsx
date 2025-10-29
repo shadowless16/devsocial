@@ -21,12 +21,6 @@ export default function AuthenticatedLayout({
   const router = useRouter()
   const pathname = usePathname()
   
-  useEffect(() => {
-    if (pathname === '/') {
-      router.replace('/home')
-    }
-  }, [pathname, router])
-  
   return (
     <TooltipProvider>
       <main className="h-screen overflow-hidden bg-muted/30 pb-16 md:pb-0 w-full">

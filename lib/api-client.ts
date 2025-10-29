@@ -200,7 +200,7 @@ class ApiClient {
     '/trending': { ttl: 2 * 60 * 1000, staleWhileRevalidate: true }, // 2 minutes with SWR
     '/leaderboard': { ttl: 3 * 60 * 1000, staleWhileRevalidate: true },
     '/dashboard': { ttl: 1 * 60 * 1000 }, // 1 minute
-    '/posts': { ttl: 30 * 1000 }, // 30 seconds for posts
+    '/posts': { ttl: 5 * 1000 }, // 5 seconds for posts - keep fresh
   };
 
   constructor() {
