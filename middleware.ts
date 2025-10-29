@@ -9,11 +9,18 @@ const shouldLog = process.env.LOG_MIDDLEWARE === 'true'
 
 export default withAuth(
   async function middleware(req: NextRequest) {
+    const { pathname } = req.nextUrl
+    
+    // Skip middleware for root path entirely
+    if (pathname === '/') {
+      return NextResponse.next()
+    }
+    
     // Apply rate limiting to API routes
-    if (req.nextUrl.pathname.startsWith("/api")) {
+    if (pathname.startsWith("/api")) {
       // Use stricter rate limiting for auth endpoints
-      if (req.nextUrl.pathname.startsWith("/api/auth/login") || 
-          req.nextUrl.pathname.startsWith("/api/auth/signup")) {
+      if (pathname.startsWith("/api/auth/login") || 
+          pathname.startsWith("/api/auth/signup")) {
         const rateLimitResponse = authRateLimiter(req);
         if (rateLimitResponse) return rateLimitResponse;
       } else {
@@ -24,18 +31,12 @@ export default withAuth(
 
     // Handle onboarding redirects for authenticated users
     const token = await getToken({ req })
-    const { pathname } = req.nextUrl
 
     // If user is authenticated and tries to access auth pages, redirect to home
     if (token && (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/signup'))) {
       return NextResponse.redirect(new URL('/home', req.url))
     }
     
-    // Redirect root authenticated route to home
-    if (token && pathname === '/') {
-      return NextResponse.redirect(new URL('/home', req.url))
-    }
-
     // Allow onboarding page for authenticated users
     if (pathname === '/onboarding' && token) {
       return NextResponse.next()
@@ -56,8 +57,8 @@ export default withAuth(
           }
         }
         
-        // Allow public access to auth pages, onboarding, and trending
-        if (pathname.startsWith('/auth') || pathname === '/onboarding' || pathname.startsWith('/trending')) {
+        // Allow public access to root, auth pages, onboarding, and trending
+        if (pathname === '/' || pathname.startsWith('/auth') || pathname === '/onboarding' || pathname.startsWith('/trending')) {
           return true;
         }
         
@@ -72,21 +73,33 @@ export default withAuth(
   }
 )
 
-// Protect all routes under /authenticated
+// Protect authenticated routes only
 export const config = {
   matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (all API routes)
-     * - auth (login/signup pages)
-     * - onboarding (onboarding page)
-     * - trending (public trending page)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - .well-known (well-known URIs)
-     */
-    "/((?!api|auth|onboarding|trending|_next/static|_next/image|favicon.ico|manifest.json|sw.js|register-sw.js|icon-.*\.png|\.well-known).*)",
+    '/home/:path*',
+    '/dashboard/:path*',
+    '/profile/:path*',
+    '/settings/:path*',
+    '/messages/:path*',
+    '/notifications/:path*',
+    '/leaderboard/:path*',
+    '/challenges/:path*',
+    '/projects/:path*',
+    '/communities/:path*',
+    '/community/:path*',
+    '/missions/:path*',
+    '/referrals/:path*',
+    '/feedback/:path*',
+    '/search/:path*',
+    '/post/:path*',
+    '/tag/:path*',
+    '/confess/:path*',
+    '/moderation/:path*',
+    '/admin/:path*',
+    '/admin-roles/:path*',
+    '/career-paths/:path*',
+    '/knowledge-bank/:path*',
+    '/create-community/:path*',
   ]
 }
 
