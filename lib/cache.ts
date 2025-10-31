@@ -29,6 +29,10 @@ class SimpleCache {
     return item.data;
   }
   
+  delete(key: string): boolean {
+    return this.cache.delete(key);
+  }
+  
   clear(): void {
     this.cache.clear();
   }

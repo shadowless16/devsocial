@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { useAuth } from "@/contexts/app-context"
 import { apiClient } from "@/lib/api-client"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { SmartAvatar } from "@/components/ui/smart-avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -52,20 +52,15 @@ export default function HomePage() {
         setLoadingMore(true)
       }
       
+      // Add timestamp to prevent caching
       const response = await apiClient.getPosts({ 
         page: pageNum.toString(), 
-        limit: "10" 
+        limit: "10",
+        _t: Date.now().toString()
       })
       
       if (response.success && response.data) {
         const newPosts = (response.data as any).posts || []
-        console.log('Fetched posts:', newPosts.length, 'posts')
-        console.log('Posts with authors:', newPosts.filter((p: any) => p.author).length)
-        console.log('Posts without authors:', newPosts.filter((p: any) => !p.author).length)
-        console.log('Sample post author:', newPosts[0]?.author)
-        console.log('Posts with empty avatar:', newPosts.filter((p: any) => p.author && (!p.author.avatar || p.author.avatar === '')).length)
-        console.log('Posts with avatar:', newPosts.filter((p: any) => p.author && p.author.avatar && p.author.avatar !== '').length)
-        console.log('All authors:', newPosts.map((p: any) => ({ username: p.author?.username, hasAvatar: !!p.author?.avatar })))
         setPosts(prev => reset ? newPosts : [...prev, ...newPosts])
         setHasMore(newPosts.length === 10)
         setPage(pageNum)
@@ -90,28 +85,6 @@ export default function HomePage() {
   }, [loading, loadingMore, hasMore, page])
 
   const handleCreatePost = async (postData: any) => {
-    // Optimistic update - add post immediately
-    const tempId = `temp-${Date.now()}`
-    const optimisticPost = {
-      id: tempId,
-      ...postData,
-      author: user,
-      isLiked: false,
-      likesCount: 0,
-      commentsCount: 0,
-      viewsCount: 0,
-      xpAwarded: 10,
-      createdAt: new Date().toISOString(),
-      imageUrl: postData.imageUrls?.[0] || null,
-      imageUrls: postData.imageUrls || [],
-      videoUrls: postData.videoUrls || []
-    }
-    
-    setPosts(prev => [optimisticPost, ...prev])
-    setShowPostModal(false)
-    toast({ title: "Posted!", description: "Your post is being published..." })
-    
-    // Background save
     try {
       const response = await apiClient.createPost(postData)
       if (response.success && response.data) {
@@ -127,12 +100,11 @@ export default function HomePage() {
           imageUrls: createdPost.imageUrls || [],
           videoUrls: createdPost.videoUrls || []
         }
-        // Replace temp post with real one
-        setPosts(prev => prev.map(p => p.id === tempId ? normalized : p))
+        // Add to top of feed immediately
+        setPosts(prev => [normalized, ...prev])
+        toast({ title: "Posted!", description: "Your post has been published" })
       }
     } catch (error: any) {
-      // Remove optimistic post on error
-      setPosts(prev => prev.filter(p => p.id !== tempId))
       toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
     }
   }
@@ -296,21 +268,18 @@ function HeaderBar({ onCreateClick, onSearchClick }: { onCreateClick: () => void
 function Compose({ onCreateClick }: { onCreateClick: () => void }) {
   const { user } = useAuth()
   
-  const avatarUrl = user?.avatar ? getAvatarUrl(user.avatar) : '/placeholder.svg'
-  
   return (
     <Card className="w-full min-w-0 border-0 shadow-none ring-1 ring-black/5 transition-colors hover:bg-background">
       <CardContent className="p-4">
         <div className="flex items-start gap-3 min-w-0">
-          <Avatar className="h-9 w-9 ring-1 ring-primary/20 flex-shrink-0">
-            <AvatarImage 
-              src={avatarUrl}
-              alt="Your avatar"
-            />
-            <AvatarFallback>
-              {(user?.displayName || user?.username || "U").charAt(0).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
+          <SmartAvatar
+            src={user?.avatar}
+            username={user?.username}
+            alt={user?.displayName || user?.username}
+            className="h-9 w-9 ring-1 ring-primary/20 flex-shrink-0"
+            showLevelFrame={false}
+            gender={(user as any)?.gender}
+          />
           <div className="flex-1 min-w-0">
             <Input
               onClick={onCreateClick}

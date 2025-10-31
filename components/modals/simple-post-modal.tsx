@@ -12,7 +12,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
 import EmojiPicker from "emoji-picker-react";
 import { MentionInput } from "@/components/ui/mention-input";
-import { UserAvatar } from "@/components/ui/user-avatar";
+import { SmartAvatar } from "@/components/ui/smart-avatar";
 import { useAuth } from "@/contexts/app-context";
 import { PollCreator } from "@/components/poll/poll-creator";
 import { LinkPreviewCard } from "@/components/ui/link-preview-card";
@@ -344,23 +344,25 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
           ) : (
           <>
           {/* User Avatar + Content Input */}
-          <div className="mb-4 flex gap-3">
-            {user && (
-              <UserAvatar 
-                user={{
-                  username: user.username,
-                  avatar: user.avatar || '',
-                  displayName: user.displayName || user.username
-                }}
+          <div className="mb-4">
+            <div className="flex gap-3">
+              <SmartAvatar
+                src={user?.avatar}
+                username={user?.username}
+                alt={user?.displayName || user?.username}
                 className="w-10 h-10 flex-shrink-0"
+                showLevelFrame={false}
+                gender={(user as any)?.gender}
               />
-            )}
-            <MentionInput
-              placeholder="What's on your mind?"
-              value={content}
-              onChange={handleContentChange}
-              className="min-h-[120px] resize-none border-0 text-lg placeholder:text-gray-500 focus-visible:ring-0 p-0 flex-1"
-            />
+              <div className="flex-1 min-w-0">
+                <MentionInput
+                  placeholder="What's on your mind?"
+                  value={content}
+                  onChange={handleContentChange}
+                  className="w-full min-h-[120px] resize-none border-0 text-lg placeholder:text-gray-500 focus-visible:ring-0 p-0"
+                />
+              </div>
+            </div>
             
             {/* Character Counter */}
             <div className="flex justify-between items-center mt-2">
