@@ -222,9 +222,6 @@ export default function SideNav() {
           <CreateButton />
           <NotificationButton />
         </div>
-        <div className="mt-1">
-          <InstallButton />
-        </div>
       </div>
 
       <Separator />

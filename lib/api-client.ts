@@ -200,7 +200,7 @@ class ApiClient {
     '/trending': { ttl: 2 * 60 * 1000, staleWhileRevalidate: true }, // 2 minutes with SWR
     '/leaderboard': { ttl: 3 * 60 * 1000, staleWhileRevalidate: true },
     '/dashboard': { ttl: 1 * 60 * 1000 }, // 1 minute
-    '/posts': { ttl: 5 * 1000 }, // 5 seconds for posts - keep fresh
+    // Posts are not cached at all - removed from config
   };
 
   constructor() {
@@ -403,7 +403,14 @@ class ApiClient {
 
   public getPosts<T>(params?: Record<string, string>): Promise<ApiResponse<T>> {
     const query = params ? "?" + new URLSearchParams(params).toString() : "";
-    return this.request<T>(`/posts${query}`, { method: "GET" });
+    // Force no-cache for posts
+    return this.request<T>(`/posts${query}`, { 
+      method: "GET",
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    });
   }
 
   public async createPost<T>(postData: any): Promise<ApiResponse<T>> {
