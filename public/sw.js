@@ -1,4 +1,4 @@
-const CACHE_NAME = 'devsocial-v2';
+const CACHE_NAME = 'devsocial-v3'; // Bumped to clear old cache
 const urlsToCache = [
   '/home',
   '/leaderboard',
@@ -34,12 +34,40 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
   
-  // Skip service worker for root path to allow redirects
   const url = new URL(event.request.url);
+  
+  // Skip service worker for root path to allow redirects
   if (url.pathname === '/') {
     return;
   }
   
+  // NEVER cache API requests - always fetch fresh
+  if (url.pathname.startsWith('/api/')) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+  
+  // Network-first strategy for dynamic pages
+  const dynamicPages = ['/home', '/dashboard', '/profile', '/leaderboard'];
+  if (dynamicPages.some(page => url.pathname.startsWith(page))) {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Cache the response but always fetch fresh first
+          if (response && response.status === 200) {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+              cache.put(event.request, responseToCache);
+            });
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request)) // Fallback to cache only if offline
+    );
+    return;
+  }
+  
+  // Cache-first for static assets only
   event.respondWith(
     caches.match(event.request)
       .then((response) => {

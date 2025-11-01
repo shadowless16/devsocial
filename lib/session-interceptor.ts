@@ -4,7 +4,7 @@
 // Intercept and cache NextAuth session calls
 let sessionCache: any = null;
 let cacheTimestamp = 0;
-const CACHE_DURATION = 2 * 60 * 1000; // 2 minutes
+const CACHE_DURATION = 30 * 1000; // 30 seconds only
 
 // Override fetch for session endpoints
 const originalFetch = globalThis.fetch;

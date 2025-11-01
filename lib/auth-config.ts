@@ -5,8 +5,8 @@ import { SessionProviderProps } from "next-auth/react";
 
 // Centralized auth configuration
 export const authConfig: Partial<SessionProviderProps> = {
-  // Refetch session every 5 minutes instead of default 10 seconds
-  refetchInterval: 5 * 60,
+  // Refetch session every 30 minutes to reduce server load
+  refetchInterval: 30 * 60,
   
   // Don't refetch when window regains focus
   refetchOnWindowFocus: false,
@@ -18,7 +18,7 @@ export const authConfig: Partial<SessionProviderProps> = {
 // Session cache configuration
 export const sessionCacheConfig = {
   // Cache duration in milliseconds
-  duration: 5 * 60 * 1000, // 5 minutes
+  duration: 30 * 60 * 1000, // 30 minutes
   
   // Enable debug logging
   debug: process.env.NODE_ENV === "development",
