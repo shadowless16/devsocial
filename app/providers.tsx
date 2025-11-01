@@ -11,13 +11,12 @@ import { NotificationProvider } from '@/contexts/notification-context'
 import { Toaster } from '@/components/ui/toaster'
 import { authConfig } from '@/lib/auth-config'
 import '@/lib/session-interceptor' // Intercept and cache session calls
+import '@/lib/cache-buster' // Auto-clear old caches
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <SessionProvider 
       {...authConfig}
-      refetchInterval={5 * 60} // Reduce refetch frequency to 5 minutes
-      refetchOnWindowFocus={false} // Disable refetch on window focus
     >
       <ThemeProvider
         attribute="class"

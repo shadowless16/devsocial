@@ -195,12 +195,11 @@ class ApiClient {
   
   // Cache configurations for different endpoints
   private cacheConfigs: Record<string, CacheConfig> = {
-    '/users/profile': { ttl: 5 * 60 * 1000 }, // 5 minutes
-    '/profile': { ttl: 5 * 60 * 1000 },
-    '/trending': { ttl: 2 * 60 * 1000, staleWhileRevalidate: true }, // 2 minutes with SWR
-    '/leaderboard': { ttl: 3 * 60 * 1000, staleWhileRevalidate: true },
-    '/dashboard': { ttl: 1 * 60 * 1000 }, // 1 minute
-    // Posts are not cached at all - removed from config
+    '/users/profile': { ttl: 2 * 60 * 1000 }, // 2 minutes
+    '/profile': { ttl: 2 * 60 * 1000 },
+    '/trending': { ttl: 30 * 1000, staleWhileRevalidate: true }, // 30 seconds with SWR
+    '/leaderboard': { ttl: 1 * 60 * 1000, staleWhileRevalidate: true }, // 1 minute
+    // Posts, dashboard, and dynamic content are NOT cached
   };
 
   constructor() {
@@ -401,10 +400,12 @@ class ApiClient {
     return this.request<T>(`/users/${username}`, { method: "GET" });
   }
 
-  public getPosts<T>(params?: Record<string, string>): Promise<ApiResponse<T>> {
+  public async getPosts<T>(params?: Record<string, string>): Promise<ApiResponse<T>> {
     const query = params ? "?" + new URLSearchParams(params).toString() : "";
-    // Force no-cache for posts
-    return this.request<T>(`/posts${query}`, { 
+    const cacheKey = this.getCacheKey(`/posts${query}`, { method: 'GET' });
+    this.cache.delete(cacheKey); // Always clear posts cache before fetching
+    
+    return this.fetchRequest<T>(`/posts${query}`, { 
       method: "GET",
       headers: {
         'Cache-Control': 'no-cache, no-store, must-revalidate',
@@ -485,9 +486,17 @@ class ApiClient {
     return this.request<T>("/dashboard", { method: "GET" });
   }
 
-  public getDashboard<T>(period?: string): Promise<ApiResponse<T>> {
+  public async getDashboard<T>(period?: string): Promise<ApiResponse<T>> {
     const query = period ? `?period=${period}` : "";
-    return this.request<T>(`/dashboard${query}`, { method: "GET" });
+    const cacheKey = this.getCacheKey(`/dashboard${query}`, { method: 'GET' });
+    this.cache.delete(cacheKey); // Always clear dashboard cache
+    
+    return this.fetchRequest<T>(`/dashboard${query}`, { 
+      method: "GET",
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate'
+      }
+    });
   }
 
   public async deletePost<T>(postId: string): Promise<ApiResponse<T>> {
