@@ -13,6 +13,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { PostContent } from "@/components/shared/PostContent"
 import { PostAIActions } from "@/components/shared/PostAIActions"
 import { EnhancedCommentInput } from "@/components/ui/enhanced-comment-input"
+import { UserLink } from "@/components/shared/UserLink"
+import { MentionText } from "@/components/ui/mention-text"
 import { apiClient } from "@/lib/api-client"
 import { useAuth } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
@@ -403,18 +405,35 @@ export default function PostPage() {
         <CardContent className="p-3 sm:p-4 space-y-3 sm:space-y-4">
           {/* Header */}
           <div className="flex items-start gap-3 min-w-0">
-            <UserAvatar 
-              user={author}
-              className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20"
-            />
+            {post.isAnonymous ? (
+              <UserAvatar 
+                user={author}
+                className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20"
+              />
+            ) : (
+              <UserLink username={author.username}>
+                <UserAvatar 
+                  user={author}
+                  className="w-10 h-10 flex-shrink-0 ring-1 ring-primary/20"
+                />
+              </UserLink>
+            )}
             
             <div className="flex-1 min-w-0 space-y-2">
               <div className="flex items-start justify-between min-w-0">
                 <div className="flex-1 min-w-0 space-y-1">
                   <div className="flex items-center gap-2 min-w-0">
-                    <h3 className="font-semibold text-gray-900 text-base truncate">
-                      {post.isAnonymous ? "Anonymous" : author.displayName}
-                    </h3>
+                    {post.isAnonymous ? (
+                      <h3 className="font-semibold text-gray-900 text-base truncate">
+                        Anonymous
+                      </h3>
+                    ) : (
+                      <UserLink username={author.username}>
+                        <h3 className="font-semibold text-gray-900 text-base truncate hover:text-emerald-600 transition-colors">
+                          {author.displayName}
+                        </h3>
+                      </UserLink>
+                    )}
                     {!post.isAnonymous && (
                       <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 flex-shrink-0">
                         L{author.level}
@@ -430,11 +449,15 @@ export default function PostPage() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1 text-sm text-gray-500">
-                    <span className="truncate">
-                      {post.isAnonymous
-                        ? "Anonymous User"
-                        : `@${author.username}`}
-                    </span>
+                    {post.isAnonymous ? (
+                      <span className="truncate">Anonymous User</span>
+                    ) : (
+                      <UserLink username={author.username}>
+                        <span className="truncate hover:text-emerald-600 transition-colors">
+                          @{author.username}
+                        </span>
+                      </UserLink>
+                    )}
                   </div>
                 </div>
                 
@@ -662,23 +685,31 @@ export default function PostPage() {
               <Card key={comment.id} className="border-gray-200">
                 <CardContent className="p-3 sm:p-4">
                   <div className="flex items-start space-x-3">
-                    <UserAvatar 
-                      user={comment.author}
-                      className="w-10 h-10 flex-shrink-0"
-                    />
+                    <UserLink username={comment.author.username}>
+                      <UserAvatar 
+                        user={comment.author}
+                        className="w-10 h-10 flex-shrink-0"
+                      />
+                    </UserLink>
                     <div className="flex-1">
                       <div className="flex items-center space-x-2 mb-2">
-                        <h4 className="font-semibold text-gray-900">
-                          {comment.author.displayName}
-                        </h4>
+                        <UserLink username={comment.author.username}>
+                          <h4 className="font-semibold text-gray-900 hover:text-emerald-600 transition-colors">
+                            {comment.author.displayName}
+                          </h4>
+                        </UserLink>
                         <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
                           L{comment.author.level}
                         </Badge>
-                        <span className="text-sm text-gray-500">@{comment.author.username}</span>
+                        <UserLink username={comment.author.username}>
+                          <span className="text-sm text-gray-500 hover:text-emerald-600 transition-colors">@{comment.author.username}</span>
+                        </UserLink>
                         <span className="text-gray-400">•</span>
                         <span className="text-sm text-gray-500">{formatTimestamp(comment.createdAt)}</span>
                       </div>
-                      <p className="text-gray-800 mb-3 leading-relaxed">{comment.content}</p>
+                      <div className="text-gray-800 mb-3 leading-relaxed">
+                        <MentionText text={comment.content} />
+                      </div>
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4">
                           <Button
@@ -721,23 +752,31 @@ export default function PostPage() {
                         <div className="mt-3 ml-8 space-y-3 border-l-2 border-gray-200 pl-3">
                           {comment.replies.map((reply) => (
                             <div key={reply.id} className="flex items-start space-x-3">
-                              <UserAvatar 
-                                user={reply.author}
-                                className="w-8 h-8 flex-shrink-0"
-                              />
+                              <UserLink username={reply.author.username}>
+                                <UserAvatar 
+                                  user={reply.author}
+                                  className="w-8 h-8 flex-shrink-0"
+                                />
+                              </UserLink>
                               <div className="flex-1">
                                 <div className="flex items-center space-x-2 mb-1">
-                                  <h4 className="font-semibold text-gray-900 text-sm">
-                                    {reply.author.displayName}
-                                  </h4>
+                                  <UserLink username={reply.author.username}>
+                                    <h4 className="font-semibold text-gray-900 text-sm hover:text-emerald-600 transition-colors">
+                                      {reply.author.displayName}
+                                    </h4>
+                                  </UserLink>
                                   <Badge variant="outline" className="text-xs text-emerald-600 border-emerald-200 bg-emerald-50">
                                     L{reply.author.level}
                                   </Badge>
-                                  <span className="text-xs text-gray-500">@{reply.author.username}</span>
+                                  <UserLink username={reply.author.username}>
+                                    <span className="text-xs text-gray-500 hover:text-emerald-600 transition-colors">@{reply.author.username}</span>
+                                  </UserLink>
                                   <span className="text-gray-400">•</span>
                                   <span className="text-xs text-gray-500">{formatTimestamp(reply.createdAt)}</span>
                                 </div>
-                                <p className="text-gray-800 text-sm mb-2 leading-relaxed">{reply.content}</p>
+                                <div className="text-gray-800 text-sm mb-2 leading-relaxed">
+                                  <MentionText text={reply.content} />
+                                </div>
                                 <Button
                                   variant="ghost"
                                   size="sm"

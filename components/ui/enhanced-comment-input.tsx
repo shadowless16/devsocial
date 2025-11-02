@@ -8,16 +8,22 @@ import { Smile, Code, Image, X } from "lucide-react";
 
 interface EnhancedCommentInputProps {
   placeholder?: string;
-  onSubmit: (content: string, imageUrl?: string) => void;
+  onSubmit: (content: string, imageUrl?: string) => void | Promise<void>;
   disabled?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
 }
 
 export function EnhancedCommentInput({ 
   placeholder = "Write a reply...", 
   onSubmit, 
-  disabled = false 
+  disabled = false,
+  value: externalValue,
+  onChange: externalOnChange
 }: EnhancedCommentInputProps) {
-  const [content, setContent] = useState("");
+  const [internalContent, setInternalContent] = useState("");
+  const content = externalValue !== undefined ? externalValue : internalContent;
+  const setContent = externalOnChange || setInternalContent;
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -70,10 +76,12 @@ export function EnhancedCommentInput({
     return text;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if ((!content.trim() && !imagePreview) || disabled) return;
-    onSubmit(content.trim(), imagePreview || undefined);
-    setContent("");
+    await onSubmit(content.trim(), imagePreview || undefined);
+    if (!externalValue) {
+      setContent("");
+    }
     setImagePreview(null);
   };
 

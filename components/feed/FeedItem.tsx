@@ -138,7 +138,6 @@ interface FeedItemProps {
 
 export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: FeedItemProps) {
   const [showComments, setShowComments] = useState(false);
-  const [commentContent, setCommentContent] = useState("");
   const [comments, setComments] = useState<Comment[]>([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [submittingComment, setSubmittingComment] = useState(false);
@@ -221,32 +220,34 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
     }
   };
 
-  const handleCommentSubmit = async (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey && commentContent.trim()) {
-      e.preventDefault();
-      await submitComment();
-    }
-  };
 
-  const submitComment = async () => {
-    if (!commentContent.trim() || submittingComment) return;
+
+  const submitComment = async (content: string, imageUrl?: string) => {
+    if (!content.trim() || submittingComment) return;
 
     try {
       setSubmittingComment(true);
-      const response = await apiClient.createComment<CreateCommentResponse>(post.id, commentContent.trim());
+      const response = await apiClient.createComment<CreateCommentResponse>(post.id, content.trim(), undefined, imageUrl);
       if (response.success && response.data) {
         const newComment = response.data?.comment;
         if (newComment) {
           setComments([newComment, ...comments]);
-          setCommentContent("");
           // Update post comment count if onComment callback is provided
           if (onComment) {
-            onComment(post.id, commentContent.trim());
+            onComment(post.id, content.trim());
           }
+          toast({
+            title: "Comment posted!",
+            variant: "success",
+          });
         }
       }
     } catch (error) {
       console.error("Failed to submit comment:", error);
+      toast({
+        title: "Failed to post comment",
+        variant: "destructive",
+      });
     } finally {
       setSubmittingComment(false);
     }
@@ -855,26 +856,11 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                       />
                     )}
                     <div className="flex-1">
-                      <Textarea
+                      <EnhancedCommentInput
                         placeholder="Write a comment..."
-                        value={commentContent}
-                        onChange={(e) => setCommentContent(e.target.value)}
-                        className="min-h-[80px] resize-none border-gray-200"
-                        rows={3}
+                        onSubmit={submitComment}
+                        disabled={submittingComment}
                       />
-                      <div className="flex justify-between items-center mt-2">
-                        <span className="text-xs text-gray-500">
-                          {commentContent.length}/500 characters
-                        </span>
-                        <Button
-                          onClick={submitComment}
-                          disabled={!commentContent.trim() || submittingComment}
-                          className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                          size="sm"
-                        >
-                          {submittingComment ? 'Posting...' : 'Post Comment'}
-                        </Button>
-                      </div>
                     </div>
                   </div>
                 </div>
