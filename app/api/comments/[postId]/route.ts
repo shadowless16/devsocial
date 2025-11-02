@@ -88,7 +88,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const userId = authResult.user!.id
     const { postId } = await params
-    const { content, parentCommentId } = await request.json()
+    const { content, parentCommentId, imageUrl } = await request.json()
 
     if (!content || content.trim().length === 0) {
       return NextResponse.json(errorResponse("Comment content is required"), { status: 400 })
@@ -108,6 +108,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       author: userId,
       post: postId,
       content: content.trim(),
+      imageUrl: imageUrl || undefined,
       parentComment: parentCommentId // Set parentComment if provided
     })
 
