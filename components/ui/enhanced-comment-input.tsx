@@ -23,7 +23,21 @@ export function EnhancedCommentInput({
 }: EnhancedCommentInputProps) {
   const [internalContent, setInternalContent] = useState("");
   const content = externalValue !== undefined ? externalValue : internalContent;
-  const setContent = externalOnChange || setInternalContent;
+  const setContent = (value: string | ((prev: string) => string)) => {
+    if (externalOnChange) {
+      if (typeof value === 'function') {
+        externalOnChange(value(content));
+      } else {
+        externalOnChange(value);
+      }
+    } else {
+      if (typeof value === 'function') {
+        setInternalContent(value);
+      } else {
+        setInternalContent(value);
+      }
+    }
+  };
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
@@ -227,7 +241,7 @@ export function EnhancedCommentInput({
           <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-[70] sm:bottom-24">
             <EmojiPicker
               onEmojiClick={(emojiData) => {
-                setContent(prev => prev + emojiData.emoji);
+                setContent((prev: string) => prev + emojiData.emoji);
                 setShowEmojiPicker(false);
               }}
               width={280}
