@@ -110,6 +110,7 @@ interface Comment {
     gender?: 'male' | 'female' | 'other';
   };
   content: string;
+  imageUrl?: string;
   likesCount: number;
   createdAt: string;
   isLiked: boolean;
@@ -803,6 +804,18 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                               <div className="text-gray-800 mb-3 leading-relaxed">
                                 <MentionText text={comment.content} />
                               </div>
+                              {comment.imageUrl && (
+                                <div className="mb-3 rounded-lg overflow-hidden">
+                                  <Image
+                                    src={comment.imageUrl}
+                                    alt="Comment image"
+                                    width={400}
+                                    height={300}
+                                    className="w-full h-auto rounded-lg"
+                                    style={{ maxHeight: '400px' }}
+                                  />
+                                </div>
+                              )}
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center space-x-4">
                                   <Button

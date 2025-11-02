@@ -5,6 +5,7 @@ export interface IComment extends Document {
   post: mongoose.Types.ObjectId
   parentComment?: mongoose.Types.ObjectId
   content: string
+  imageUrl?: string
   mentions: string[]
   mentionIds: mongoose.Types.ObjectId[]
   likes: mongoose.Types.ObjectId[]
@@ -33,6 +34,10 @@ const CommentSchema = new Schema<IComment>(
       type: String,
       required: true,
       maxlength: 500,
+    },
+    imageUrl: {
+      type: String,
+      required: false,
     },
     mentions: [
       {
