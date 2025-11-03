@@ -817,6 +817,35 @@ export default function PostPage() {
                         </div>
                       )}
                     </div>
+                    {user && comment.author.username === user.username && (
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-7 w-7 p-0">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuItem
+                            onClick={async () => {
+                              try {
+                                const response = await apiClient.request(`/comments/delete/${comment.id}`, { method: 'DELETE' });
+                                if (response.success) {
+                                  setComments(comments.filter(c => c.id !== comment.id));
+                                  setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount - 1 } : null);
+                                  toast({ title: "Comment deleted", variant: "success" });
+                                }
+                              } catch (error) {
+                                toast({ title: "Failed to delete comment", variant: "destructive" });
+                              }
+                            }}
+                            className="text-red-600 focus:text-red-600"
+                          >
+                            <Trash className="w-4 h-4 mr-2" />
+                            Delete Comment
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    )}
                   </div>
                 </CardContent>
               </Card>
