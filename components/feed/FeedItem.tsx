@@ -233,7 +233,14 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
       if (response.success && response.data) {
         const newComment = response.data?.comment;
         if (newComment) {
-          setComments([newComment, ...comments]);
+          const formattedComment = {
+            ...newComment,
+            id: newComment._id || newComment.id,
+            _id: newComment._id || newComment.id,
+            likesCount: 0,
+            isLiked: false
+          };
+          setComments([formattedComment, ...comments]);
           // Update post comment count if onComment callback is provided
           if (onComment) {
             onComment(post.id, content.trim());
@@ -840,13 +847,38 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                                     <span>Reply</span>
                                   </Button>
                                 </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50"
-                                >
-                                  <MoreHorizontal className="w-4 h-4" />
-                                </Button>
+                                {user && comment.author.username === user.username && (
+                                  <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        className="h-8 w-8 p-0 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+                                      >
+                                        <MoreHorizontal className="w-4 h-4" />
+                                      </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                      <DropdownMenuItem
+                                        onClick={async () => {
+                                          try {
+                                            const response = await apiClient.request(`/comments/delete/${comment.id}`, { method: 'DELETE' });
+                                            if (response.success) {
+                                              setComments(comments.filter(c => c.id !== comment.id));
+                                              toast({ title: "Comment deleted", variant: "success" });
+                                            }
+                                          } catch (error) {
+                                            toast({ title: "Failed to delete comment", variant: "destructive" });
+                                          }
+                                        }}
+                                        className="text-red-600 focus:text-red-600"
+                                      >
+                                        <Trash className="w-4 h-4 mr-2" />
+                                        Delete
+                                      </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                  </DropdownMenu>
+                                )}
                               </div>
                             </div>
                           </div>
