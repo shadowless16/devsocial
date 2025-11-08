@@ -3,7 +3,8 @@
   "version": "0.1.1",
   "private": true,
   "scripts": {
-    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --turbo",
+    "dev": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev",
+    "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 next dev --turbo",
     "dev:fast": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.fast.mjs next dev --turbo",
     "dev:turbo": "cross-env NODE_OPTIONS=--max-old-space-size=8192 NEXT_CONFIG_FILE=next.config.turbo.mjs next dev --turbo",
     "build": "next build",
@@ -47,7 +48,8 @@
     "test:signup-flow": "node scripts/test-signup-flow-complete.js",
     "export:db": "node scripts/export-db.js",
     "analyze:db": "tsx scripts/analyze-database.ts",
-    "bots:run": "tsx scripts/run-bot-engagement.ts"
+    "bots:run": "tsx scripts/run-bot-engagement.ts",
+    "db:indexes": "tsx scripts/add-indexes.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
