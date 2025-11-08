@@ -40,7 +40,7 @@ export default function LoginPage() {
           setError(`Login failed: ${result.error}`);
         }
       } else if (result?.ok) {
-        router.push("/home");
+        window.location.href = "/home";
       } else {
         setError("Login failed. Please try again.");
       }
