@@ -33,7 +33,7 @@ declare module "next-auth" {
     role: string;
   }
 }
-
+//done
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
