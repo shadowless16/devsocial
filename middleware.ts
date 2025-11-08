@@ -63,7 +63,6 @@ export default withAuth(
 // Protect authenticated routes only
 export const config = {
   matcher: [
-    '/home/:path*',
     '/dashboard/:path*',
     '/profile/:path*',
     '/settings/:path*',
