@@ -25,25 +25,11 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await signIn("credentials", {
+      await signIn("credentials", {
         usernameOrEmail,
         password,
-        redirect: false,
         callbackUrl: "/home",
       })
-
-      if (result?.error) {
-        console.log("Login error:", result.error);
-        if (result.error === "CredentialsSignin") {
-          setError("Invalid username/email or password. Please try again.");
-        } else {
-          setError(`Login failed: ${result.error}`);
-        }
-      } else if (result?.ok) {
-        window.location.href = "/home";
-      } else {
-        setError("Login failed. Please try again.");
-      }
     } catch (err: any) {
       setError(err.message || "Login failed")
     } finally {
