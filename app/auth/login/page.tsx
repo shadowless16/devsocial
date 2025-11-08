@@ -34,10 +34,11 @@ export default function LoginPage() {
       console.log("SignIn result:", result)
 
       if (result?.ok) {
-        console.log("Login successful, redirecting...")
-        
-        // Bypass service worker and force hard navigation
-        window.top!.location.href = "https://techdevsocial.vercel.app/home"
+        setError("")
+        setLoading(false)
+        // Show success and provide manual link
+        alert("Login successful! Click OK to continue.")
+        window.location.href = "/home"
       } else {
         console.log("Login failed:", result?.error)
         setError(result?.error || "Invalid credentials")
