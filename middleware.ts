@@ -29,19 +29,6 @@ export default withAuth(
       }
     }
 
-    // Handle onboarding redirects for authenticated users
-    const token = await getToken({ req })
-
-    // If user is authenticated and tries to access auth pages, redirect to home
-    if (token && (pathname.startsWith('/auth/login') || pathname.startsWith('/auth/signup'))) {
-      return NextResponse.redirect(new URL('/home', req.url))
-    }
-    
-    // Allow onboarding page for authenticated users
-    if (pathname === '/onboarding' && token) {
-      return NextResponse.next()
-    }
-    
     return NextResponse.next();
   },
   {
