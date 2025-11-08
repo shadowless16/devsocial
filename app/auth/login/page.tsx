@@ -35,7 +35,7 @@ export default function LoginPage() {
 
       if (result?.ok) {
         console.log("Login successful, redirecting...")
-        window.location.replace("/home")
+        window.location.href = "/home"
       } else {
         console.log("Login failed:", result?.error)
         setError(result?.error || "Invalid credentials")
