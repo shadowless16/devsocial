@@ -35,9 +35,11 @@ export default function LoginPage() {
 
       if (result?.ok) {
         console.log("Login successful, redirecting...")
-        setTimeout(() => {
-          window.location.href = "/home"
-        }, 600)
+        console.log("Current URL:", window.location.href)
+        console.log("Attempting redirect to /home")
+        
+        // Force navigation
+        window.location.assign(window.location.origin + "/home")
       } else {
         console.log("Login failed:", result?.error)
         setError(result?.error || "Invalid credentials")
