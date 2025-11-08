@@ -25,14 +25,20 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      await signIn("credentials", {
+      const result = await signIn("credentials", {
         usernameOrEmail,
         password,
-        callbackUrl: "/home",
+        redirect: false,
       })
+
+      if (result?.ok) {
+        window.location.replace("/home")
+      } else {
+        setError("Invalid credentials")
+        setLoading(false)
+      }
     } catch (err: any) {
       setError(err.message || "Login failed")
-    } finally {
       setLoading(false)
     }
   }
