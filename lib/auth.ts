@@ -112,7 +112,24 @@ export const authOptions: AuthOptions = {
         sameSite: 'lax',
         path: '/',
         secure: process.env.NODE_ENV === 'production',
-        maxAge: 30 * 24 * 60 * 60, // 30 days
+        maxAge: 30 * 24 * 60 * 60,
+      },
+    },
+    callbackUrl: {
+      name: `next-auth.callback-url`,
+      options: {
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
+      },
+    },
+    csrfToken: {
+      name: `next-auth.csrf-token`,
+      options: {
+        httpOnly: true,
+        sameSite: 'lax',
+        path: '/',
+        secure: process.env.NODE_ENV === 'production',
       },
     },
   },
@@ -122,13 +139,40 @@ export const authOptions: AuthOptions = {
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
-      // Prevent redirect to API endpoints
-      if (url.includes('/api/')) return baseUrl + "/home"
-      // Allows relative callback URLs
-      if (url.startsWith("/")) return `${baseUrl}${url}`
-      // Allows callback URLs on the same origin
-      else if (new URL(url).origin === baseUrl) return url
-      return baseUrl + "/home"
+      const base = process.env.NEXTAUTH_URL || baseUrl;
+      
+      // Prevent redirect to API, auth pages, or root
+      if (url.includes('/api/') || url.includes('/auth/') || url === '/' || url === base || url === baseUrl) {
+        return base + "/home";
+      }
+      
+      // Handle relative URLs
+      if (url.startsWith("/")) {
+        // Don't redirect to auth pages
+        if (url.startsWith("/auth/")) {
+          return base + "/home";
+        }
+        return `${base}${url}`;
+      }
+      
+      // Handle absolute URLs on same origin
+      try {
+        const urlObj = new URL(url);
+        const baseObj = new URL(base);
+        
+        // Prevent auth page redirects
+        if (urlObj.pathname.startsWith('/auth/')) {
+          return base + "/home";
+        }
+        
+        if (urlObj.origin === baseObj.origin) {
+          return url;
+        }
+      } catch (e) {
+        console.error('[Auth] Invalid URL in redirect:', e);
+      }
+      
+      return base + "/home";
     },
     async jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
