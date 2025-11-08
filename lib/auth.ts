@@ -180,8 +180,8 @@ export const authOptions: AuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: process.env.NODE_ENV === 'development',
+  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-please-set-nextauth-secret-in-vercel',
+  debug: true, // Enable debug to see JWT errors
 };
 
 export interface AuthenticatedRequest extends Request {
