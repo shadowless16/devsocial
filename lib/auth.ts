@@ -8,7 +8,7 @@ import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
 
-import { SessionCacheService } from "@/lib/session-cache";
+
  
 declare module "next-auth" {
   interface User {
@@ -176,17 +176,6 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role as string;
         session.user.username = token.username as string;
         session.user.isAdmin = token.role === 'admin';
-        
-        // Cache session for faster lookups (optional, don't fail if it errors)
-        try {
-          const sessionId = `session_${token.id}`;
-          SessionCacheService.set(sessionId, {
-            user: session.user,
-            expires: session.expires || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-          });
-        } catch (e) {
-          console.error('[Auth] Session cache error:', e);
-        }
       }
       return session;
     },
