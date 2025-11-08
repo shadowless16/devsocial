@@ -56,14 +56,14 @@ export const authOptions: AuthOptions = {
               { email: credentials.usernameOrEmail.toLowerCase() },
               { username: credentials.usernameOrEmail }
             ],
-          }).select('+password').lean().maxTimeMS(10000);
+          }).select('+password').maxTimeMS(10000);
           
           if (!user) {
             console.error("[Auth] User not found:", credentials.usernameOrEmail);
             throw new Error("Invalid credentials");
           }
 
-          const isValid = await bcrypt.compare(credentials.password, user.password);
+          const isValid = await bcrypt.compare(credentials.password, user.password as string);
           if (!isValid) {
             console.error("[Auth] Invalid password for user:", credentials.usernameOrEmail);
             throw new Error("Invalid credentials");
