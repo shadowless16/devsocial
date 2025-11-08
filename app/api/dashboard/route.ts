@@ -55,36 +55,31 @@ export async function GET(request: NextRequest) {
     const user = await User.findById(userObjectId).select("points level badges createdAt")
     console.log("[Dashboard] User found:", user ? "Yes" : "No")
 
-    // Get user's posts (both period and lifetime)
+    // Get user's posts count and engagement in single aggregation
     console.log("[Dashboard] Fetching user posts...")
-    const [periodPosts, allUserPosts] = await Promise.all([
-      Post.find({ author: userObjectId, createdAt: { $gte: startDate } }).select('_id'),
-      Post.find({ author: userObjectId }).select('_id')
+    const [periodStats, lifetimeStats] = await Promise.all([
+      Post.aggregate([
+        { $match: { author: userObjectId, createdAt: { $gte: startDate } } },
+        { $group: { _id: null, count: { $sum: 1 }, likes: { $sum: '$likesCount' }, comments: { $sum: '$commentsCount' } } }
+      ]),
+      Post.aggregate([
+        { $match: { author: userObjectId } },
+        { $group: { _id: null, count: { $sum: 1 }, likes: { $sum: '$likesCount' }, comments: { $sum: '$commentsCount' } } }
+      ])
     ])
     
-    const periodPostIds = periodPosts.map(post => post._id)
-    const allPostIds = allUserPosts.map(post => post._id)
-    
-    // Count actual likes and comments for both period and lifetime
-    console.log("[Dashboard] Counting likes and comments...")
-    const [periodLikes, periodComments, totalLikes, totalComments] = await Promise.all([
-      Like.countDocuments({ post: { $in: periodPostIds } }),
-      Comment.countDocuments({ post: { $in: periodPostIds } }),
-      Like.countDocuments({ post: { $in: allPostIds } }),
-      Comment.countDocuments({ post: { $in: allPostIds } })
-    ])
+    const periodData = periodStats[0] || { count: 0, likes: 0, comments: 0 }
+    const lifetimeData = lifetimeStats[0] || { count: 0, likes: 0, comments: 0 }
     
     const postsStats = {
-      // Period stats
-      totalPosts: periodPosts.length,
-      totalLikes: periodLikes,
-      totalComments: periodComments,
-      avgLikes: periodPosts.length > 0 ? periodLikes / periodPosts.length : 0,
-      avgComments: periodPosts.length > 0 ? periodComments / periodPosts.length : 0,
-      // Lifetime stats for main display
-      lifetimePosts: allUserPosts.length,
-      lifetimeLikes: totalLikes,
-      lifetimeComments: totalComments,
+      totalPosts: periodData.count,
+      totalLikes: periodData.likes,
+      totalComments: periodData.comments,
+      avgLikes: periodData.count > 0 ? periodData.likes / periodData.count : 0,
+      avgComments: periodData.count > 0 ? periodData.comments / periodData.count : 0,
+      lifetimePosts: lifetimeData.count,
+      lifetimeLikes: lifetimeData.likes,
+      lifetimeComments: lifetimeData.comments,
     }
 
     // XP analytics
@@ -151,24 +146,17 @@ export async function GET(request: NextRequest) {
       .sort({ createdAt: -1 })
       .limit(5)
 
-    // Engagement metrics - get top post engagement from all posts
+    // Engagement metrics - get top post engagement efficiently
     console.log("[Dashboard] Fetching engagement stats...")
-    let topPostEngagement = 0
-    if (allPostIds.length > 0) {
-      const postEngagements = await Promise.all(
-        allPostIds.slice(0, 20).map(async (postId) => { // Limit to top 20 posts for performance
-          const [likes, comments] = await Promise.all([
-            Like.countDocuments({ post: postId }),
-            Comment.countDocuments({ post: postId })
-          ])
-          return likes + comments
-        })
-      )
-      topPostEngagement = Math.max(...postEngagements, 0)
-    }
+    const topPostResult = await Post.findOne({ author: userObjectId })
+      .select('likesCount commentsCount')
+      .sort({ likesCount: -1, commentsCount: -1 })
+      .lean() as { likesCount: number; commentsCount: number } | null
+    
+    const topPostEngagement = topPostResult ? (topPostResult.likesCount + topPostResult.commentsCount) : 0
     
     const engagementStats = {
-      avgEngagementRate: allUserPosts.length > 0 ? (totalLikes + totalComments) / allUserPosts.length : 0,
+      avgEngagementRate: lifetimeData.count > 0 ? (lifetimeData.likes + lifetimeData.comments) / lifetimeData.count : 0,
       topPost: topPostEngagement,
     }
 
