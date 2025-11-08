@@ -35,7 +35,9 @@ export default function LoginPage() {
 
       if (result?.ok) {
         console.log("Login successful, redirecting...")
-        window.location.href = "/home"
+        setTimeout(() => {
+          window.location.href = "/home"
+        }, 600)
       } else {
         console.log("Login failed:", result?.error)
         setError(result?.error || "Invalid credentials")
