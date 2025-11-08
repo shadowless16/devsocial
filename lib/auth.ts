@@ -35,8 +35,6 @@ declare module "next-auth" {
 }
 
 export const authOptions: AuthOptions = {
-  trustHost: true,
-  useSecureCookies: process.env.NODE_ENV === 'production',
   providers: [
     CredentialsProvider({
       name: "Credentials",
