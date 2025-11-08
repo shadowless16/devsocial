@@ -46,7 +46,7 @@ export const authOptions: AuthOptions = {
         try {
           if (!credentials?.usernameOrEmail || !credentials?.password) {
             console.error("[Auth] Missing credentials");
-            throw new Error("Missing credentials");
+            return null;
           }
 
           await connectDB();
@@ -60,13 +60,13 @@ export const authOptions: AuthOptions = {
           
           if (!user) {
             console.error("[Auth] User not found:", credentials.usernameOrEmail);
-            throw new Error("Invalid credentials");
+            return null;
           }
 
           const isValid = await bcrypt.compare(credentials.password, user.password as string);
           if (!isValid) {
             console.error("[Auth] Invalid password for user:", credentials.usernameOrEmail);
-            throw new Error("Invalid credentials");
+            return null;
           }
 
           console.log("[Auth] Login successful for user:", user.username);
@@ -78,7 +78,7 @@ export const authOptions: AuthOptions = {
           };
         } catch (error) {
           console.error("[Auth] Authorization error:", error);
-          throw error;
+          return null;
         }
       },
     }),
