@@ -31,10 +31,14 @@ export default function LoginPage() {
         redirect: false,
       })
 
+      console.log("SignIn result:", result)
+
       if (result?.ok) {
+        console.log("Login successful, redirecting...")
         window.location.replace("/home")
       } else {
-        setError("Invalid credentials")
+        console.log("Login failed:", result?.error)
+        setError(result?.error || "Invalid credentials")
         setLoading(false)
       }
     } catch (err: any) {
