@@ -45,40 +45,28 @@ export const authOptions: AuthOptions = {
       async authorize(credentials) {
         try {
           if (!credentials?.usernameOrEmail || !credentials?.password) {
-            console.log("[Auth] Missing credentials");
-            return null;
+            console.error("[Auth] Missing credentials");
+            throw new Error("Missing credentials");
           }
 
-          // Retry connection up to 3 times
-          let retries = 3;
-          let user = null;
+          await connectDB();
           
-          while (retries > 0 && !user) {
-            try {
-              await connectDB();
-              
-              user = await UserModel.findOne({
-                $or: [{ email: credentials.usernameOrEmail }, { username: credentials.usernameOrEmail }],
-              }).maxTimeMS(5000);
-              
-              break;
-            } catch (dbError) {
-              retries--;
-              console.log(`[Auth] DB connection attempt failed, retries left: ${retries}`);
-              if (retries === 0) throw dbError;
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-          }
+          const user = await UserModel.findOne({
+            $or: [
+              { email: credentials.usernameOrEmail.toLowerCase() },
+              { username: credentials.usernameOrEmail }
+            ],
+          }).select('+password').lean().maxTimeMS(10000);
           
           if (!user) {
-            console.log("[Auth] User not found:", credentials.usernameOrEmail);
-            return null;
+            console.error("[Auth] User not found:", credentials.usernameOrEmail);
+            throw new Error("Invalid credentials");
           }
 
           const isValid = await bcrypt.compare(credentials.password, user.password);
           if (!isValid) {
-            console.log("[Auth] Invalid password for user:", credentials.usernameOrEmail);
-            return null;
+            console.error("[Auth] Invalid password for user:", credentials.usernameOrEmail);
+            throw new Error("Invalid credentials");
           }
 
           console.log("[Auth] Login successful for user:", user.username);
@@ -86,11 +74,11 @@ export const authOptions: AuthOptions = {
             id: user._id.toString(),
             email: user.email,
             username: user.username,
-            role: user.role,
+            role: user.role || 'user',
           };
         } catch (error) {
-          console.error("[Auth] Authorization error:", error instanceof Error ? error.message : String(error));
-          return null;
+          console.error("[Auth] Authorization error:", error);
+          throw error;
         }
       },
     }),
@@ -189,12 +177,16 @@ export const authOptions: AuthOptions = {
         session.user.username = token.username as string;
         session.user.isAdmin = token.role === 'admin';
         
-        // Cache session for faster lookups
-        const sessionId = `session_${token.id}`;
-        SessionCacheService.set(sessionId, {
-          user: session.user,
-          expires: session.expires || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-        });
+        // Cache session for faster lookups (optional, don't fail if it errors)
+        try {
+          const sessionId = `session_${token.id}`;
+          SessionCacheService.set(sessionId, {
+            user: session.user,
+            expires: session.expires || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
+          });
+        } catch (e) {
+          console.error('[Auth] Session cache error:', e);
+        }
       }
       return session;
     },
