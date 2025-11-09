@@ -6,9 +6,13 @@ import { apiRateLimiter, authRateLimiter } from "@/middleware/rate-limit"
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl
   
-  // Skip middleware for root path
+  // Redirect root to login if not authenticated
   if (pathname === '/') {
-    return NextResponse.next()
+    const user = await getUserFromRequest(req)
+    if (!user) {
+      return NextResponse.redirect(new URL('/auth/login', req.url))
+    }
+    return NextResponse.redirect(new URL('/home', req.url))
   }
   
   // Apply rate limiting to API routes
@@ -57,6 +61,8 @@ export async function middleware(req: NextRequest) {
 // Protect authenticated routes only
 export const config = {
   matcher: [
+    '/',
+    '/home/:path*',
     '/dashboard/:path*',
     '/profile/:path*',
     '/settings/:path*',

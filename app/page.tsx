@@ -1,9 +1,5 @@
-"use client"
+import { redirect } from 'next/navigation'
 
 export default function RootPage() {
-  if (typeof window !== 'undefined') {
-    window.location.replace('/home')
-  }
-  
-  return null
+  redirect('/home')
 }
