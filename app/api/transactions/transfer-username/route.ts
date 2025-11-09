@@ -5,7 +5,7 @@ import { TransactionService } from '@/services/transactionService'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     if (!session?.user?.username) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }

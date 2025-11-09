@@ -6,7 +6,7 @@ import User from '@/models/User'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -67,7 +67,7 @@ export async function POST(request: NextRequest) {
 // Get current user role (for verification)
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

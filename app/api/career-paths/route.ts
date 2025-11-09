@@ -9,7 +9,7 @@ export async function GET(request: NextRequest) {
   try {
     await connectDB()
     
-    const session = await getSession(req)
+    const session = await getSession(request)
     const userId = session?.user?.id
 
     // Get all active career paths

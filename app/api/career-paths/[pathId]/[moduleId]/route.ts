@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     await connectDB()
     
     const { pathId, moduleId } = await params
-    const session = await getSession(req)
+    const session = await getSession(request)
     const userId = session?.user?.id
 
     // Get career path first
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     await connectDB()
     
     const { pathId, moduleId } = await params
-    const session = await getSession(req)
+    const session = await getSession(request)
     
     if (!session?.user?.id) {
       return NextResponse.json(

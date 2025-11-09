@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
-    const session = await getSession(req)
+    const session = await getSession(request)
     
     const { searchParams } = new URL(request.url)
     const query = searchParams.get("q")

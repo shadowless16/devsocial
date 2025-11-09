@@ -14,7 +14,7 @@ export async function POST(
 ) {
   try {
     await connectDB()
-    const session = await getSession(req)
+    const session = await getSession(request)
     
     if (!session?.user?.id) {
       return NextResponse.json({ 

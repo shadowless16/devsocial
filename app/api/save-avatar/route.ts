@@ -6,7 +6,7 @@ import { getAvatarUrl } from '@/lib/avatar-utils'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     if (!session?.user?.email) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
