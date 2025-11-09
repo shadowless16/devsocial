@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from "@/lib/auth"
 import dbConnect from "@/lib/db"
 import Community from "@/models/Community"

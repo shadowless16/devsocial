@@ -1,6 +1,6 @@
 // app/api/users/[username]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getSession } from '@/lib/server-auth';
 import { authOptions } from "@/lib/auth";
 import User from "@/models/User";
 import Post from "@/models/Post";
@@ -29,7 +29,7 @@ export async function GET(
     }
 
     // Get current session (if authenticated)
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     const currentUserId = session?.user?.id;
 
     // Find user by username (case-insensitive)

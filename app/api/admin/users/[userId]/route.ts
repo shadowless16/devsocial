@@ -3,7 +3,7 @@ import User from "@/models/User"
 import Post from "@/models/Post"
 import Comment from "@/models/Comment"
 import connectDB from "@/lib/db"
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 
 export const dynamic = 'force-dynamic'
 

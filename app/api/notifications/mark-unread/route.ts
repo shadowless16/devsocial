@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import Notification from '@/models/Notification'
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user?.id) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }

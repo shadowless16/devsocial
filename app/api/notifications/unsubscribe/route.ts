@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 import { connectWithRetry } from '@/lib/connect-with-retry'
 import User from '@/models/User'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }

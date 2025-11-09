@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import MissionProgress from "@/models/MissionProgress"
 import Mission from "@/models/Mission"
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from "@/lib/auth"
 
 
@@ -14,7 +14,7 @@ export async function POST(
 ) {
   try {
     await connectDB()
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     
     if (!session?.user?.id) {
       return NextResponse.json({ 

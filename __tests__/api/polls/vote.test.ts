@@ -1,6 +1,6 @@
 import { POST } from '@/app/api/polls/vote/route'
 import { NextRequest } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 import Post from '@/models/Post'
 import User from '@/models/User'
 

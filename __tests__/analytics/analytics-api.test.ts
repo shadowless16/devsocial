@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 
 // Mock API route handlers
 const GET = jest.fn().mockResolvedValue(NextResponse.json({ success: true }))

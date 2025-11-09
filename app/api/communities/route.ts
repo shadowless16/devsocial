@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from "@/lib/jwt-auth"
 import dbConnect from "@/lib/db"
 import Community from "@/models/Community"
 
@@ -19,8 +18,8 @@ export async function GET() {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const user = await getUserFromRequest(request)
+    if (!user?.userId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
     }
 
@@ -37,8 +36,8 @@ export async function POST(request: NextRequest) {
       category,
       longDescription,
       rules: rules?.filter((rule: string) => rule?.trim()) || [],
-      creator: session.user.id,
-      members: [session.user.id],
+      creator: user.userId,
+      members: [user.userId],
       memberCount: 1
     })
 

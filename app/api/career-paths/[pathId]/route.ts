@@ -3,7 +3,7 @@ import connectDB from '@/lib/db'
 import CareerPath from '@/models/CareerPath'
 import Module from '@/models/Module'
 import UserProgress from '@/models/UserProgress'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 
 interface Props {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     await connectDB()
     
     const { pathId } = await params
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     const userId = session?.user?.id
 
     // Get career path by slug or ID

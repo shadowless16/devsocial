@@ -58,9 +58,9 @@
 // }
 
 // middleware/auth-middleware.ts
-import { getServerSession } from "next-auth/next";
+import { getUserFromRequest } from '@/lib/jwt-auth';
 import { NextResponse, type NextRequest } from "next/server";
-import { authOptions } from "@/lib/auth";
+;
 
 // Extend the Session type to include custom user fields
 declare module "next-auth" {
@@ -87,7 +87,7 @@ export interface AuthenticatedRequest extends NextRequest {
 export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextResponse>) {
   return async (req: NextRequest) => {
     console.log(`[Middleware] Protecting route: ${req.nextUrl.pathname}`);
-    const session = await getServerSession(authOptions);
+    const user = await getUserFromRequest(req);
     if (!session || !session.user) {
       console.log("[Middleware] Failed: No session found.");
       return NextResponse.json({ success: false, message: "Authentication required." }, { status: 401 });
@@ -95,13 +95,13 @@ export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextRes
 
     const authenticatedReq = req as AuthenticatedRequest;
     authenticatedReq.user = {
-      id: session.user.id,
-      username: session.user.username,
-      email: session.user.email || "",
-      role: session.user.role,
+      id: user.userId,
+      username: user.username,
+      email: user.email || "",
+      role: user.role,
     };
 
-    console.log(`[Middleware] Success: User ${session.user.username} authenticated.`);
+    console.log(`[Middleware] Success: User ${user.username} authenticated.`);
     return handler(authenticatedReq);
   };
 }

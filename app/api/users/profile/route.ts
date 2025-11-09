@@ -1,6 +1,6 @@
 // app/api/users/profile/route.ts
 import { type NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth";
+import { getSession } from '@/lib/server-auth';
 import bcrypt from "bcryptjs";
 import { authOptions } from "@/lib/auth";
 import User, { IUser } from "@/models/User";
@@ -36,7 +36,7 @@ export async function GET(req: NextRequest) {
       }, { status: 500 });
     }
     
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     
     if (!session || !session.user?.id) {
       logger.info('No session found');
@@ -80,7 +80,7 @@ export async function PUT(req: NextRequest) {
   try {
     await connectWithRetry();
     
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     if (!session || !session.user?.id) {
       return NextResponse.json(errorResponse("Unauthorized"), { status: 401 });
     }

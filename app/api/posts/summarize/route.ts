@@ -1,6 +1,6 @@
 // app/api/posts/summarize/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getSession } from '@/lib/server-auth';
 import { authOptions } from '@/lib/auth';
 import { aiService } from '@/lib/ai-service';
 import { errorResponse, successResponse } from '@/utils/response';
@@ -9,7 +9,7 @@ import User from '@/models/User';
 
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     if (!session?.user?.id) {
       return NextResponse.json({ success: false, message: 'Authentication required' }, { status: 401 });
     }

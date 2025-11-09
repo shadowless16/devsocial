@@ -14,7 +14,7 @@ jest.mock('@/lib/db', () => ({
   default: jest.fn().mockResolvedValue(undefined)
 }));
 
-import { getServerSession } from 'next-auth';
+import { getUserFromRequest } from '@/lib/jwt-auth';
 const mockGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
 
 // Mock GET function

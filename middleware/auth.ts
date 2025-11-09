@@ -1,6 +1,6 @@
+// middleware/auth.ts - JWT-based authentication helper (replaces getServerSession)
 import { NextRequest } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 
 export interface AuthenticatedRequest extends NextRequest {
   user?: {
@@ -16,22 +16,26 @@ type AuthResult =
   | { success: true; user: { id: string; email: string; username: string; role?: string; displayName?: string } }
   | { success: false; error: string; status?: number }
 
+/**
+ * Main authentication middleware - replaces getServerSession
+ * Use this in API routes to authenticate requests
+ */
 export async function authMiddleware(request: NextRequest): Promise<AuthResult> {
   try {
-    const session = await getServerSession(authOptions)
+    const user = await getUserFromRequest(request)
     
-    if (!session?.user?.id) {
+    if (!user?.userId) {
       return { success: false, error: 'Unauthorized', status: 401 }
     }
 
     return { 
       success: true, 
       user: {
-        id: session.user.id,
-        email: session.user.email || '',
-        username: session.user.username,
-        role: session.user.role,
-        displayName: session.user.username
+        id: user.userId,
+        email: user.email || '',
+        username: user.username,
+        role: user.role,
+        displayName: user.username
       }
     }
   } catch (error) {

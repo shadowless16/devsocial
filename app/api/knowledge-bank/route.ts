@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import KnowledgeEntry from '@/models/KnowledgeEntry'
@@ -30,7 +30,7 @@ export async function GET(request: NextRequest) {
       ]
     }
 
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     const userId = session?.user?.id
 
     // Fetch entries with pagination
@@ -72,7 +72,7 @@ export async function GET(request: NextRequest) {
 // POST - Create new knowledge entry
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user?.id) {
       return NextResponse.json(
         { success: false, message: 'Authentication required' },

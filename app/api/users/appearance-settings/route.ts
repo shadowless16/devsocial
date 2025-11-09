@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getSession } from '@/lib/server-auth';
 import User from "@/models/User";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     
    if (!session?.user?.id) {
       return NextResponse.json(
@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     
     if (!session?.user?.id) {
       return NextResponse.json(

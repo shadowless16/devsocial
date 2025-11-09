@@ -1,6 +1,6 @@
 // app/api/posts/summarize/usage/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSession } from 'next-auth';
+import { getSession } from '@/lib/server-auth';
 import { authOptions } from '@/lib/auth';
 import { errorResponse, successResponse } from '@/utils/response';
 import connectDB from '@/lib/db';
@@ -12,7 +12,7 @@ const CACHE_DURATION = 30000; // 30 seconds
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     if (!session?.user?.id) {
       return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
     }

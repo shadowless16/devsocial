@@ -2,14 +2,14 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/db'
 import CareerPath from '@/models/CareerPath'
 import UserProgress from '@/models/UserProgress'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
     
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     const userId = session?.user?.id
 
     // Get all active career paths

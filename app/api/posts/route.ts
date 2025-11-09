@@ -3,7 +3,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { connectWithRetry } from "@/lib/connect-with-retry";
 import Post from "@/models/Post";
 import User from "@/models/User";
-import { getServerSession } from "next-auth";
+import { getSession } from '@/lib/server-auth';
 import { authOptions } from "@/lib/auth";
 import { successResponse, errorResponse } from "@/utils/response";
 import { awardXP, checkFirstTimeAction } from "@/utils/awardXP";
@@ -56,7 +56,7 @@ export async function GET(req: NextRequest) {
     // Get current user ID if authenticated
     let currentUserId = null;
     try {
-      const session = await getServerSession(authOptions);
+      const session = await getSession(req);
       if (session?.user?.id) {
         currentUserId = session.user.id;
       }
@@ -200,7 +200,7 @@ export async function GET(req: NextRequest) {
 //================================================================//
 export async function POST(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     if (!session?.user?.id) {
       return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
     }

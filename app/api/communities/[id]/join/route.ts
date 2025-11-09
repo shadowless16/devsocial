@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getServerSession } from "next-auth/next"
-import { authOptions } from "@/lib/auth"
+import { getUserFromRequest } from '@/lib/jwt-auth'
 import dbConnect from "@/lib/db"
 import Community from "@/models/Community"
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getServerSession(authOptions)
-    if (!session?.user?.id) {
+    const session = await getSession(req)
+    if (!user?.userId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
     }
 
@@ -19,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ success: false, message: "Community not found" }, { status: 404 })
     }
 
-    const userId = session.user.id
+    const userId = user.userId
     const isMember = community.members.includes(userId)
     const isCreator = community.creator.toString() === userId
 
