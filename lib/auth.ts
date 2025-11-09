@@ -180,7 +180,7 @@ export const authOptions: AuthOptions = {
       return session;
     },
   },
-  secret: process.env.NEXTAUTH_SECRET || 'fallback-secret-please-set-nextauth-secret-in-vercel',
+  secret: 'devsocial-nextauth-secret-2024-production-key',
   debug: true, // Enable debug to see JWT errors
 };
 
