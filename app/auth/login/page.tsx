@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { signIn } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -25,23 +24,19 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const result = await signIn("credentials", {
-        usernameOrEmail,
-        password,
-        redirect: false,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ usernameOrEmail, password }),
       })
 
-      console.log("SignIn result:", result)
+      const data = await response.json()
 
-      if (result?.ok) {
-        setError("")
-        setLoading(false)
-        // Show success and provide manual link
-        alert("Login successful! Click OK to continue.")
+      if (data.success) {
+        // Redirect to home
         window.location.href = "/home"
       } else {
-        console.log("Login failed:", result?.error)
-        setError(result?.error || "Invalid credentials")
+        setError(data.message || "Invalid credentials")
         setLoading(false)
       }
     } catch (err: any) {
