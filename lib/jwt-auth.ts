@@ -86,10 +86,15 @@ export async function getUserFromRequest(req: NextRequest): Promise<TokenPayload
  * Get current user from cookies (for server components)
  */
 export async function getCurrentUser(): Promise<TokenPayload | null> {
-  const cookieStore = await cookies()
-  const token = cookieStore.get(TOKEN_NAME)?.value
-  if (!token) return null
-  return verifyToken(token)
+  try {
+    const cookieStore = await cookies()
+    const token = cookieStore.get(TOKEN_NAME)?.value
+    if (!token) return null
+    return verifyToken(token)
+  } catch (error) {
+    console.error('[JWT] Error getting current user:', error)
+    return null
+  }
 }
 
 /**
