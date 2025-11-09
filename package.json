@@ -49,7 +49,9 @@
     "export:db": "node scripts/export-db.js",
     "analyze:db": "tsx scripts/analyze-database.ts",
     "bots:run": "tsx scripts/run-bot-engagement.ts",
-    "db:indexes": "tsx scripts/add-indexes.ts"
+    "db:indexes": "tsx scripts/add-indexes.ts",
+    "bot:init": "tsx scripts/init-welcome-bot.ts",
+    "bot:test": "tsx scripts/test-welcome-bot.ts"
   },
   "dependencies": {
     "@auth/mongodb-adapter": "^2.4.0",
