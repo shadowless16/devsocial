@@ -9,6 +9,12 @@ const shouldLog = process.env.LOG_MIDDLEWARE === 'true'
 
 export default withAuth(
   async function middleware(req: NextRequest) {
+    // Log token check
+    const token = await getToken({ 
+      req, 
+      secret: 'devsocial-nextauth-secret-2024-production-key' 
+    })
+    console.log('[Middleware] Token check:', !!token, req.nextUrl.pathname)
     const { pathname } = req.nextUrl
     
     // Skip middleware for root path entirely
@@ -57,13 +63,13 @@ export default withAuth(
       signIn: '/auth/login',
       error: '/auth/error',
     },
+    secret: 'devsocial-nextauth-secret-2024-production-key',
   }
 )
 
 // Protect authenticated routes only
 export const config = {
   matcher: [
-    '/home/:path*',
     '/dashboard/:path*',
     '/profile/:path*',
     '/settings/:path*',
