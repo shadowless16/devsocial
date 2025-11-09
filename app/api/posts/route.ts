@@ -18,6 +18,7 @@ import Notification from '@/models/Notification'
 import { getWebSocketServer } from '@/lib/websocket'
 import { cache } from '@/lib/cache'
 import { mistralBackgroundService } from '@/lib/ai/mistral-background-service'
+import { isFirstPost, createWelcomeComment } from '@/lib/welcome-bot'
 
 // Only import mission models if needed
 let MissionProgress: any = null;
@@ -487,6 +488,17 @@ export async function POST(req: NextRequest) {
     }
 
     // No cache to invalidate anymore
+
+    // Welcome bot for first-time posts
+    try {
+      const isFirst = await isFirstPost(authorId)
+      if (isFirst) {
+        const authorName = author.displayName || author.firstName || author.username
+        await createWelcomeComment(newPost._id.toString(), authorId, authorName)
+      }
+    } catch (botError) {
+      console.warn('Welcome bot failed:', botError)
+    }
 
     const responseData = {
       success: true,
