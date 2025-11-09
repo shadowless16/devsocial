@@ -1,71 +1,58 @@
-import { withAuth } from "next-auth/middleware"
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getToken } from "next-auth/jwt"
+import { getUserFromRequest } from "@/lib/jwt-auth"
 import { apiRateLimiter, authRateLimiter } from "@/middleware/rate-limit"
 
-const isDev = process.env.NODE_ENV === 'development'
-const shouldLog = process.env.LOG_MIDDLEWARE === 'true'
-
-export default withAuth(
-  async function middleware(req: NextRequest) {
-    // Log token check
-    const token = await getToken({ 
-      req, 
-      secret: 'devsocial-nextauth-secret-2024-production-key' 
-    })
-    console.log('[Middleware] Token check:', !!token, req.nextUrl.pathname)
-    const { pathname } = req.nextUrl
-    
-    // Skip middleware for root path entirely
-    if (pathname === '/') {
-      return NextResponse.next()
-    }
-    
-    // Apply rate limiting to API routes
-    if (pathname.startsWith("/api")) {
-      // Use stricter rate limiting for auth endpoints
-      if (pathname.startsWith("/api/auth/login") || 
-          pathname.startsWith("/api/auth/signup")) {
-        const rateLimitResponse = authRateLimiter(req);
-        if (rateLimitResponse) return rateLimitResponse;
-      } else {
-        const rateLimitResponse = apiRateLimiter(req);
-        if (rateLimitResponse) return rateLimitResponse;
-      }
-    }
-
-    return NextResponse.next();
-  },
-  {
-    callbacks: {
-      authorized: ({ token, req }) => {
-        const { pathname } = req.nextUrl;
-        
-        // Reduce middleware logging noise
-        if (shouldLog && pathname.startsWith('/api/')) {
-          console.log(`[Middleware] Protecting route: ${pathname}`);
-          if (token) {
-            console.log(`[Middleware] Success: User ${token.username || 'unknown'} authenticated.`);
-          }
-        }
-        
-        // Allow public access to root, auth pages, onboarding, and trending
-        if (pathname === '/' || pathname.startsWith('/auth') || pathname === '/onboarding' || pathname.startsWith('/trending')) {
-          return true;
-        }
-        
-        // For all other routes, require authentication
-        return !!token;
-      },
-    },
-    pages: {
-      signIn: '/auth/login',
-      error: '/auth/error',
-    },
-    secret: 'devsocial-nextauth-secret-2024-production-key',
+export async function middleware(req: NextRequest) {
+  const { pathname } = req.nextUrl
+  
+  // Skip middleware for root path
+  if (pathname === '/') {
+    return NextResponse.next()
   }
-)
+  
+  // Apply rate limiting to API routes
+  if (pathname.startsWith("/api")) {
+    if (pathname.startsWith("/api/auth/login") || 
+        pathname.startsWith("/api/auth/signup")) {
+      const rateLimitResponse = authRateLimiter(req);
+      if (rateLimitResponse) return rateLimitResponse;
+    } else {
+      const rateLimitResponse = apiRateLimiter(req);
+      if (rateLimitResponse) return rateLimitResponse;
+    }
+  }
+
+  // Public routes - allow access
+  const publicPaths = ['/', '/auth', '/trending', '/onboarding']
+  const isPublic = publicPaths.some(path => pathname.startsWith(path))
+  
+  if (isPublic) {
+    return NextResponse.next()
+  }
+
+  // Protected routes - require authentication
+  const protectedPaths = ['/home', '/dashboard', '/profile', '/settings', '/messages', '/notifications', 
+    '/leaderboard', '/challenges', '/projects', '/communities', '/community', '/missions', 
+    '/referrals', '/feedback', '/search', '/post', '/tag', '/confess', '/moderation', 
+    '/admin', '/admin-roles', '/career-paths', '/knowledge-bank', '/create-community']
+  
+  const isProtected = protectedPaths.some(path => pathname.startsWith(path))
+  
+  if (isProtected) {
+    const user = await getUserFromRequest(req)
+    
+    console.log('[Middleware] Protected route:', pathname, 'Authenticated:', !!user)
+    
+    if (!user) {
+      const url = new URL('/auth/login', req.url)
+      url.searchParams.set('callbackUrl', pathname)
+      return NextResponse.redirect(url)
+    }
+  }
+
+  return NextResponse.next()
+}
 
 // Protect authenticated routes only
 export const config = {

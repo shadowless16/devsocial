@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
+
 import { apiClient } from '@/lib/api-client';
 import { useSessionCache } from './session-cache-context';
 // User type definition
@@ -159,13 +159,22 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  const { data: session, status } = useSession();
   const { getCachedSession, setCachedSession, clearCache } = useSessionCache();
+  const [sessionStatus, setSessionStatus] = React.useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
 
   // Auth actions
   const login = useCallback(async (credentials: { usernameOrEmail: string; password: string }) => {
-    // Implementation handled by NextAuth
-    throw new Error('Use NextAuth signIn instead');
+    const response = await fetch('/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(credentials),
+    });
+    const data = await response.json();
+    if (data.success) {
+      window.location.href = '/home';
+    } else {
+      throw new Error(data.message || 'Login failed');
+    }
   }, []);
 
   const signup = useCallback(async (userData: any) => {
@@ -190,9 +199,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    dispatch({ type: 'SET_USER', payload: null });
-    // Implementation handled by NextAuth
-  }, []);
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+      dispatch({ type: 'SET_USER', payload: null });
+      clearCache();
+      window.location.href = '/auth/login';
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+  }, [clearCache]);
 
   const updateUser = useCallback((userData: Partial<User>) => {
     if (state.user) {
@@ -306,73 +321,60 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, [state.user])
 
-  // Load user data when session changes
+  // Load user data on mount
   useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (status === 'authenticated' && session?.user?.id) {
-      // Check cache first
-      const cachedSession = getCachedSession();
-      if (cachedSession && cachedSession.user?.id === session.user.id) {
-        dispatch({ type: 'SET_USER', payload: cachedSession.user });
-        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-        return;
-      }
-      
+    const loadUser = async () => {
+      setSessionStatus('loading');
       dispatch({ type: 'SET_AUTH_LOADING', payload: true });
       
-      apiClient.getCurrentUserProfile<{ user: any }>()
-        .then(response => {
-          if (response.success && response.data?.user) {
-            const userData = response.data.user;
-            const user: User = {
-              id: userData._id?.toString() || userData.id,
-              username: userData.username,
-              email: userData.email,
-              firstName: userData.firstName,
-              lastName: userData.lastName,
-              bio: userData.bio || '',
-              affiliation: userData.affiliation || '',
-              avatar: userData.avatar || '',
-              bannerUrl: userData.bannerUrl || '',
-              role: userData.role || 'user',
-              points: userData.points || 0,
-              badges: userData.badges || [],
-              level: userData.level || 1,
-              isVerified: userData.isVerified || false,
-              displayName: userData.displayName || userData.username,
-              location: userData.location,
-              website: userData.website,
-              refreshTokens: userData.refreshTokens || [],
-              loginStreak: userData.loginStreak || 0,
-              onboardingCompleted: userData.onboardingCompleted === true,
-              demoWalletBalance: userData.demoWalletBalance || 100,
-              xpToNext: userData.xpToNext || 0,
-              totalXpForLevel: userData.totalXpForLevel || 1000,
-            };
-            dispatch({ type: 'SET_USER', payload: user });
-            
-            // Cache the session data
-            setCachedSession({ user, session });
-            
-            // Preload frequently accessed data
-            apiClient.preload('/dashboard');
-            apiClient.preload('/trending');
-          }
-        })
-        .catch(error => {
-          console.error('Failed to fetch user:', error);
-        })
-        .finally(() => {
-          dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-        });
-    } else if (status === 'unauthenticated') {
-      dispatch({ type: 'SET_USER', payload: null });
-      dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-      clearCache();
-      apiClient.invalidateCache();
-    }
-  }, [status, session, getCachedSession, setCachedSession, clearCache]);
+      try {
+        const response = await fetch('/api/auth/session');
+        const data = await response.json();
+        
+        if (data.success && data.user) {
+          const userData = data.user;
+          const user: User = {
+            id: userData._id?.toString() || userData.id,
+            username: userData.username,
+            email: userData.email,
+            firstName: userData.firstName,
+            lastName: userData.lastName,
+            bio: userData.bio || '',
+            affiliation: userData.affiliation || '',
+            avatar: userData.avatar || '',
+            bannerUrl: userData.bannerUrl || '',
+            role: userData.role || 'user',
+            points: userData.points || 0,
+            badges: userData.badges || [],
+            level: userData.level || 1,
+            isVerified: userData.isVerified || false,
+            displayName: userData.displayName || userData.username,
+            location: userData.location,
+            website: userData.website,
+            refreshTokens: userData.refreshTokens || [],
+            loginStreak: userData.loginStreak || 0,
+            onboardingCompleted: userData.onboardingCompleted === true,
+            demoWalletBalance: userData.demoWalletBalance || 100,
+            xpToNext: userData.xpToNext || 0,
+            totalXpForLevel: userData.totalXpForLevel || 1000,
+          };
+          dispatch({ type: 'SET_USER', payload: user });
+          setSessionStatus('authenticated');
+        } else {
+          dispatch({ type: 'SET_USER', payload: null });
+          setSessionStatus('unauthenticated');
+        }
+      } catch (error) {
+        console.error('Failed to load session:', error);
+        dispatch({ type: 'SET_USER', payload: null });
+        setSessionStatus('unauthenticated');
+      } finally {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+      }
+    };
+    
+    loadUser();
+  }, []);
 
   const value: AppContextType = {
     state,

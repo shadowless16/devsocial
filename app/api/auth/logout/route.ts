@@ -1,11 +1,14 @@
-import type { NextRequest } from "next/server"
-import { successResponse } from "@/utils/response"
+// app/api/auth/logout/route.ts
+import { NextResponse } from "next/server";
+import { clearAuthCookie } from "@/lib/jwt-auth";
 
-
-export const dynamic = 'force-dynamic'
-
-export async function POST(request: NextRequest) {
-  // For JWT-based auth, logout is primarily handled client-side
-  // This endpoint exists for consistency and future token blacklisting
-  return successResponse({ message: "Logged out successfully" })
+export async function POST() {
+  const response = NextResponse.json({
+    success: true,
+    message: "Logged out successfully"
+  });
+  
+  clearAuthCookie(response);
+  
+  return response;
 }
