@@ -14,7 +14,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     await connectDB();
 
-    const session = await getSession(req);
+    const session = await getSession(request);
     if (!session?.user?.id) {
       return NextResponse.json(errorResponse('Authentication required'), { status: 401 });
     }

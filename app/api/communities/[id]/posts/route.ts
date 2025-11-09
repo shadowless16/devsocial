@@ -23,7 +23,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const session = await getSession(req)
+    const user = await getUserFromRequest(request)
     if (!user?.userId) {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
     }

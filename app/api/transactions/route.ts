@@ -6,7 +6,7 @@ import connectDB from '@/lib/db'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     if (!session?.user) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }
@@ -45,7 +45,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     if (!session?.user) {
       return NextResponse.json({ success: false, message: 'Unauthorized' }, { status: 401 })
     }

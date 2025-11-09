@@ -88,8 +88,8 @@ export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextRes
   return async (req: NextRequest) => {
     console.log(`[Middleware] Protecting route: ${req.nextUrl.pathname}`);
     const user = await getUserFromRequest(req);
-    if (!session || !session.user) {
-      console.log("[Middleware] Failed: No session found.");
+    if (!user || !user.userId) {
+      console.log("[Middleware] Failed: No user found.");
       return NextResponse.json({ success: false, message: "Authentication required." }, { status: 401 });
     }
 
@@ -98,7 +98,7 @@ export function withAuth(handler: (req: AuthenticatedRequest) => Promise<NextRes
       id: user.userId,
       username: user.username,
       email: user.email || "",
-      role: user.role,
+      role: user.role || "user",
     };
 
     console.log(`[Middleware] Success: User ${user.username} authenticated.`);

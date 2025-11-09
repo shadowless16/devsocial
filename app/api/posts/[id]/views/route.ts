@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ success: true, message: "Temporary post, view not tracked" });
     }
     
-    const session = await getSession(req);
+    const session = await getSession(request);
     
     // Get IP address
     const ipHeader = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');

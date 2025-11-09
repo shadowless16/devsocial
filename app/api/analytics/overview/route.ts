@@ -5,7 +5,7 @@ import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getSession(req)
+    const session = await getSession(request)
     
     console.log('Analytics API - Session:', JSON.stringify(session, null, 2))
     
