@@ -1,13 +1,13 @@
 import User from '@/models/User'
 import Post from '@/models/Post'
 import Comment from '@/models/Comment'
-import connectDB from '@/lib/db'
+import { connectWithRetry } from '@/lib/connect-with-retry'
 
 const BOT_USERNAME = 'welcomebot'
 const BOT_EMAIL = 'welcomebot@devsocial.dev'
 
 export async function getOrCreateWelcomeBot() {
-  await connectDB()
+  await connectWithRetry()
   
   let bot = await User.findOne({ username: BOT_USERNAME })
   
