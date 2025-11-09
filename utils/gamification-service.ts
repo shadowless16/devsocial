@@ -12,6 +12,7 @@ import {
 } from "./xp-system"
 import { getRankByXP, getNextRank } from "./rank-system"
 import { checkBadgeEligibility, BADGES } from "./badge-system"
+import { XPOvertakeService } from "./xp-overtake-service"
 
 export class GamificationService {
   static async awardXP(
@@ -126,6 +127,15 @@ export class GamificationService {
         })
         userStats.totalXP += 50
         await userStats.save()
+      }
+
+      // Check for XP overtakes after significant XP gain
+      if (xpAwarded >= 10) {
+        Promise.all([
+          XPOvertakeService.checkAndNotifyOvertakes('all-time'),
+          XPOvertakeService.checkAndNotifyOvertakes('weekly'),
+          XPOvertakeService.checkAndNotifyOvertakes('monthly')
+        ]).catch(err => console.error('Overtake check failed:', err))
       }
 
       return {

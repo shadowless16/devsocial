@@ -9,6 +9,7 @@ export async function middleware(req: NextRequest) {
   // Redirect root to login if not authenticated
   if (pathname === '/') {
     const user = await getUserFromRequest(req)
+    console.log('[Middleware] Root path - User:', !!user)
     if (!user) {
       return NextResponse.redirect(new URL('/auth/login', req.url))
     }
@@ -46,9 +47,10 @@ export async function middleware(req: NextRequest) {
   if (isProtected) {
     const user = await getUserFromRequest(req)
     
-    console.log('[Middleware] Protected route:', pathname, 'Authenticated:', !!user)
+    console.log('[Middleware] Protected route:', pathname, 'User:', user ? user.username : 'none')
     
     if (!user) {
+      console.log('[Middleware] Redirecting to login')
       const url = new URL('/auth/login', req.url)
       url.searchParams.set('callbackUrl', pathname)
       return NextResponse.redirect(url)

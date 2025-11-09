@@ -12,9 +12,10 @@ const nextConfig = {
       'recharts',
       'react-syntax-highlighter'
     ],
-    turbo: {
-      resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
-    },
+  },
+
+  turbopack: {
+    resolveExtensions: ['.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
   },
 
   images: {

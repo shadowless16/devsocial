@@ -9,6 +9,7 @@ import { MobileNav } from "@/components/layout/mobile-nav"
 import { Skeleton } from "@/components/ui/skeleton"
 import { InstallPrompt } from "@/components/pwa/install-prompt"
 import PushNotificationManager from "@/components/push-notification-manager"
+import { PushNotificationPrompt } from "@/components/notifications/push-notification-prompt"
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -52,6 +53,7 @@ export default function AuthenticatedLayout({
         <MobileNav />
         <InstallPrompt />
         <PushNotificationManager />
+        <PushNotificationPrompt />
       </main>
     </TooltipProvider>
   )
