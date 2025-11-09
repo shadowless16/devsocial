@@ -13,13 +13,14 @@ export interface TokenPayload {
   email: string
   username: string
   role: string
+  [key: string]: any // Index signature for JWTPayload compatibility
 }
 
 /**
  * Create a JWT token for a user
  */
 export async function createToken(payload: TokenPayload): Promise<string> {
-  const token = await new SignJWT(payload)
+  const token = await new SignJWT({ ...payload } as any)
     .setProtectedHeader({ alg: 'HS256' })
     .setIssuedAt()
     .setExpirationTime('30d')
