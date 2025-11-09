@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ContentAnalytics } from '@/models/Analytics'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 import connectDB from '@/lib/db'
 import Post from '@/models/Post'
@@ -14,7 +14,7 @@ interface TopTag {
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     
     if (!session?.user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })

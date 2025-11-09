@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 import { TransactionService } from '@/services/transactionService'
 
 export async function POST(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user?.username) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }

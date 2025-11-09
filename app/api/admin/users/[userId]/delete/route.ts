@@ -3,7 +3,7 @@ import User from "@/models/User"
 import Post from "@/models/Post"
 import Comment from "@/models/Comment"
 import connectDB from "@/lib/db"
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from "@/lib/auth"
 
 export async function DELETE(
@@ -11,7 +11,7 @@ export async function DELETE(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
     }

@@ -1,6 +1,6 @@
 // app/api/users/[username]/following/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth";
+import { getSession } from '@/lib/server-auth';
 import { authOptions } from "@/lib/auth";
 import User from "@/models/User";
 import Follow from "@/models/Follow";

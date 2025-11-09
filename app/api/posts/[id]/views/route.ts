@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import connectDB from "@/lib/db";
 import Post from "@/models/Post";
 import View from "@/models/View";
-import { getServerSession } from "next-auth";
+import { getSession } from '@/lib/server-auth';
 import { authOptions } from "@/lib/auth";
 import { handleDatabaseError } from "@/lib/api-error-handler";
 
@@ -21,7 +21,7 @@ export async function POST(
       return NextResponse.json({ success: true, message: "Temporary post, view not tracked" });
     }
     
-    const session = await getServerSession(authOptions);
+    const session = await getSession(req);
     
     // Get IP address
     const ipHeader = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip');

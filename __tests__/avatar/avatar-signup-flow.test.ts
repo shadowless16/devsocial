@@ -25,7 +25,7 @@ jest.mock('next-auth', () => ({
   getServerSession: jest.fn()
 }));
 
-import { getServerSession } from 'next-auth';
+import { getUserFromRequest } from '@/lib/jwt-auth';
 const mockedGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>;
 
 let testUserId: string;

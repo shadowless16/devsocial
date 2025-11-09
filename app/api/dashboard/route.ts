@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from "@/lib/auth"
 import User from "@/models/User"
 import Post from "@/models/Post"
@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
   try {
     await connectWithRetry()
 
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user?.id) {
       return NextResponse.json(errorResponse('Unauthorized'), { status: 401 })
     }

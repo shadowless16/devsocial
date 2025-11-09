@@ -1,23 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
+import { requireAdmin } from '@/lib/server-auth'
 import connectDB from '@/lib/db'
 import AILog from '@/models/AILog'
 
 export async function GET(req: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    // Require admin authentication
+    await requireAdmin(req)
     
-    if (!session?.user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
     await connectDB()
-    
-    const user = await (await import('@/models/User')).default.findById(session.user.id)
-    if (user?.role !== 'admin') {
-      return NextResponse.json({ error: 'Admin access required' }, { status: 403 })
-    }
 
     const { searchParams } = new URL(req.url)
     const page = parseInt(searchParams.get('page') || '1')

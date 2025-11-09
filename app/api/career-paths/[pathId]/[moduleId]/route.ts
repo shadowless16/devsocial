@@ -3,7 +3,7 @@ import connectDB from '@/lib/db'
 import Module from '@/models/Module'
 import CareerPath from '@/models/CareerPath'
 import UserProgress from '@/models/UserProgress'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 
 interface Props {
@@ -15,7 +15,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     await connectDB()
     
     const { pathId, moduleId } = await params
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     const userId = session?.user?.id
 
     // Get career path first
@@ -97,7 +97,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     await connectDB()
     
     const { pathId, moduleId } = await params
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     
     if (!session?.user?.id) {
       return NextResponse.json(

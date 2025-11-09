@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from "@/lib/auth"
 
 export const dynamic = 'force-dynamic'
@@ -10,7 +10,7 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     
     const { searchParams } = new URL(request.url)
     const query = searchParams.get("q")

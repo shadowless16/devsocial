@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import User from "@/models/User"
 import connectDB from "@/lib/db"
-import { getServerSession } from "next-auth"
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from "@/lib/auth"
 
 export async function PATCH(
@@ -9,7 +9,7 @@ export async function PATCH(
   { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     if (!session?.user || session.user.role !== 'admin') {
       return NextResponse.json({ success: false, message: "Unauthorized" }, { status: 401 })
     }

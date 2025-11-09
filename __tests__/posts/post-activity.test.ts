@@ -4,7 +4,7 @@ import Activity from '@/models/Activity'
 
 // Mock next-auth getServerSession so the POST route authenticates
 jest.mock('next-auth', () => ({ getServerSession: jest.fn() }))
-import { getServerSession } from 'next-auth'
+import { getUserFromRequest } from '@/lib/jwt-auth'
 const mockedGetServerSession = getServerSession as jest.MockedFunction<typeof getServerSession>
 
 import { POST as createPostRoute } from '@/app/api/posts/route'

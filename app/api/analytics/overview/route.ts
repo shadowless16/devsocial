@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { AnalyticsService } from '@/lib/analytics-service'
-import { getServerSession } from 'next-auth'
+import { getSession } from '@/lib/server-auth'
 import { authOptions } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
   try {
-    const session = await getServerSession(authOptions)
+    const session = await getSession(req)
     
     console.log('Analytics API - Session:', JSON.stringify(session, null, 2))
     

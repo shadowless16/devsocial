@@ -1,13 +1,10 @@
-// middleware/auth.ts
-import NextAuth, { AuthOptions, Session, User, getServerSession } from "next-auth";
+// lib/auth.ts
+import NextAuth, { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { MongoDBAdapter } from "@auth/mongodb-adapter";
-import { MongoClient } from "mongodb";
 import bcrypt from "bcryptjs";
 import connectDB from "@/lib/db";
 import UserModel from "@/models/User";
-
 
  
 declare module "next-auth" {
@@ -26,11 +23,13 @@ declare module "next-auth" {
       isAdmin: boolean;
     };
   }
-  interface AdapterUser {
-    id: string;
-    email: string;
-    username: string;
-    role: string;
+}
+
+declare module "next-auth/jwt" {
+  interface JWT {
+    id?: string;
+    role?: string;
+    username?: string;
   }
 }
 //done
@@ -180,7 +179,7 @@ export const authOptions: AuthOptions = {
       return session;
     },
   },
-  secret: 'devsocial-nextauth-secret-2024-production-key',
+  secret: process.env.NEXTAUTH_SECRET || 'devsocial-nextauth-secret-2024-production-key',
   debug: true, // Enable debug to see JWT errors
 };
 
