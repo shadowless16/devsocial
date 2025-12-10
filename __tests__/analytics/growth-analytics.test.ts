@@ -217,9 +217,9 @@ describe('Growth Analytics API', () => {
       const channels = data.acquisitionChannels;
       
       expect(channels).toHaveLength(3);
-      expect(channels.find((c: any) => c.channel === 'direct')?.users).toBe(2);
-      expect(channels.find((c: any) => c.channel === 'referral')?.users).toBe(1);
-      expect(channels.find((c: any) => c.channel === 'social')?.users).toBe(1);
+      expect(channels.find((c: unknown) => c.channel === 'direct')?.users).toBe(2);
+      expect(channels.find((c: unknown) => c.channel === 'referral')?.users).toBe(1);
+      expect(channels.find((c: unknown) => c.channel === 'social')?.users).toBe(1);
     });
   });
 });

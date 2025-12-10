@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Project from "@/models/Project"
 import UserModel from "@/models/User";
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth";
+import { getSession } from '@/lib/auth/server-auth'
 
 export async function POST(
   request: NextRequest,
@@ -46,8 +45,14 @@ export async function POST(
       project.openPositions[positionIndex].applicants = []
     }
 
+    interface Applicant {
+      user: { toString: () => string };
+      appliedAt: Date;
+      status: string;
+    }
+    
     const hasApplied = project.openPositions[positionIndex].applicants.some(
-      (applicant: any) => applicant.user.toString() === user._id.toString()
+      (applicant: Applicant) => applicant.user.toString() === user._id.toString()
     )
 
     if (hasApplied) {
@@ -68,7 +73,8 @@ export async function POST(
     })
 
   } catch (error) {
-    console.error("Error joining position:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error joining position:", errorMessage)
     return NextResponse.json({ 
       success: false, 
       error: "Internal server error" 

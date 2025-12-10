@@ -18,8 +18,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const participation = await ChallengeSystem.joinChallenge(userId, challengeId)
 
     return NextResponse.json(successResponse({ participation }), { status: 201 })
-  } catch (error: any) {
-    console.error("Error joining challenge:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error joining challenge:", errorMessage)
     return NextResponse.json(errorResponse(error.message || "Failed to join challenge"), { status: 500 })
   }
 }

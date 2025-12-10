@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react';
 import { usePosts } from '@/contexts/app-context';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/api/api-client';
 
 export function usePostsState() {
   const { posts, loading, fetchPosts, likePost, deletePost } = usePosts();
@@ -23,7 +23,8 @@ export function usePostsState() {
         // This could be handled by the context in the future
       }
     } catch (error) {
-      console.error('Failed to post comment:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to post comment:', errorMessage);
       throw error;
     }
   }, []);

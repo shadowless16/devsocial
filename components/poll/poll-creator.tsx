@@ -200,7 +200,7 @@ export function PollCreator({ onPollCreate, onCancel }: PollCreatorProps) {
                 <Label htmlFor="showResults">Show Results</Label>
                 <Select
                   value={settings.showResults}
-                  onValueChange={(value: any) => setSettings({ ...settings, showResults: value })}
+                  onValueChange={(value: string) => setSettings({ ...settings, showResults: value as "always" | "afterVote" | "afterEnd" })}
                 >
                   <SelectTrigger id="showResults" className="mt-1">
                     <SelectValue />

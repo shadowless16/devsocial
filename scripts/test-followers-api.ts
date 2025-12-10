@@ -21,12 +21,12 @@ async function testFollowersAPI() {
       try {
         const json = JSON.parse(text);
         console.log('Parsed JSON:', json);
-      } catch (e) {
+      } catch (e: unknown) {
         console.error('JSON parse error:', e);
       }
     }
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Test error:', error);
   }
 }

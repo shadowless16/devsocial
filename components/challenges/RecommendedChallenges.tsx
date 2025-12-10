@@ -27,23 +27,23 @@ export default function RecommendedChallenges() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    const fetchRecommendedChallenges = async () => {
+      try {
+        const response = await fetch("/api/challenges/recommended?limit=5")
+        const data = await response.json()
+        
+        if (response.ok) {
+          setChallenges(data.challenges)
+        }
+      } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching recommended challenges:", errorMessage)
+      } finally {
+        setLoading(false)
+      }
+    }
     fetchRecommendedChallenges()
   }, [])
-
-  const fetchRecommendedChallenges = async () => {
-    try {
-      const response = await fetch("/api/challenges/recommended?limit=5")
-      const data = await response.json()
-      
-      if (response.ok) {
-        setChallenges(data.challenges)
-      }
-    } catch (error) {
-      console.error("Error fetching recommended challenges:", error)
-    } finally {
-      setLoading(false)
-    }
-  }
 
   const handleJoinChallenge = async (challengeId: string) => {
     try {
@@ -57,7 +57,8 @@ export default function RecommendedChallenges() {
         setChallenges(prev => prev.filter(c => c._id !== challengeId))
       }
     } catch (error) {
-      console.error("Error joining challenge:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error joining challenge:", errorMessage)
     }
   }
 

@@ -55,7 +55,7 @@ async function cleanFollowData() {
 
     console.log("Follow data cleanup completed!");
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error cleaning follow data:", error);
   } finally {
     process.exit(0);

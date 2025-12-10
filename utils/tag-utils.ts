@@ -1,5 +1,5 @@
 import Tag from "@/models/Tag"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export async function findOrCreateTags(tagNames: string[], userId: string) {
   await connectDB()
@@ -9,7 +9,7 @@ export async function findOrCreateTags(tagNames: string[], userId: string) {
   for (const name of tagNames) {
     const slug = name.toLowerCase().replace(/[^a-z0-9]/g, "")
     
-    let tag = await Tag.findOne({ slug })
+    let tag = await Tag.findOne({ slug } as any)
     
     if (!tag) {
       tag = await Tag.create({
@@ -19,7 +19,7 @@ export async function findOrCreateTags(tagNames: string[], userId: string) {
       })
     } else {
       // Increment usage count
-      await Tag.findByIdAndUpdate(tag._id, { $inc: { usageCount: 1 } })
+      await Tag.findByIdAndUpdate(tag._id, { $inc: { usageCount: 1 } } as any)
     }
     
     tagIds.push(tag._id)

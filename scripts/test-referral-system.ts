@@ -56,7 +56,7 @@
 //       try {
 //         await ReferralSystem.checkReferralCompletion(testUser._id.toString())
 //         console.log("✅ Completion check completed successfully")
-//       } catch (error) {
+//       } catch (error: unknown) {
 //         console.log("❌ Completion check failed:", error)
 //       }
 //     }
@@ -76,7 +76,7 @@
 
 //     console.log("\n=== Test Complete ===")
 //     process.exit(0)
-//   } catch (error) {
+//   } catch (error: unknown) {
 //     console.error("Test failed:", error)
 //     process.exit(1)
 //   }

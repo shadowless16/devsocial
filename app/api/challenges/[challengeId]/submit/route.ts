@@ -21,7 +21,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json(successResponse({ message: "Progress updated successfully" }))
   } catch (error) {
-    console.error("Error updating challenge progress:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error updating challenge progress:", errorMessage)
     return NextResponse.json(errorResponse("Failed to update progress"), { status: 500 })
   }
 }

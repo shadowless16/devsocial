@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { AnalyticsService } from '@/lib/analytics-service'
-import connectDB from '@/lib/db'
+import { AnalyticsService } from '@/lib/analytics/analytics-service'
+import connectDB from '@/lib/core/db'
+import { NextResponse } from 'next/server'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await connectDB()
     
@@ -33,7 +33,8 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Analytics test error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Analytics test error:', errorMessage)
     return NextResponse.json(
       { 
         success: false, 

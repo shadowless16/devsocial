@@ -1,26 +1,17 @@
 // app/api/likes/posts/[postId]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
+import { getSession } from '@/lib/auth/server-auth';
 import Like from "@/models/Like";
 import Post from "@/models/Post";
 import Activity from "@/models/Activity";
 import Notification from "@/models/Notification";
-import connectDB from "@/lib/db";
-import { successResponse, errorResponse } from "@/utils/response";
+import connectDB from "@/lib/core/db";
+import { errorResponse } from "@/utils/response";
 import { awardXP } from "@/utils/awardXP";
-import { getWebSocketServer } from "@/lib/websocket";
-import { handleDatabaseError } from "@/lib/api-error-handler";
+import { getWebSocketServer } from "@/lib/realtime/websocket";
+import { handleDatabaseError } from "@/lib/api/api-error-handler";
 // Only import mission models if needed
-let MissionProgress: any = null;
-let Mission: any = null;
 
-try {
-  MissionProgress = require("@/models/MissionProgress").default;
-  Mission = require("@/models/Mission").default;
-} catch (error) {
-  console.warn("Mission models not available:", error);
-}
 
 export const dynamic = 'force-dynamic'
 
@@ -114,7 +105,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             console.warn("Background task failed:", bgError);
           }
         });
-      } catch (likeError: any) {
+      } catch (likeError) {
         if (likeError.code === 11000) {
           return NextResponse.json({
             success: true,
@@ -140,8 +131,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
       data: { liked, likesCount }
     });
-  } catch (error: any) {
-    console.error("Error toggling post like:", error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error toggling post like:", errorMessage);
     return handleDatabaseError(error);
   }
 }

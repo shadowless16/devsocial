@@ -22,10 +22,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
   ComposedChart,
 } from "recharts"
-import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
 // Types
@@ -86,19 +84,12 @@ interface UserAnalytics {
   retention?: RetentionData[]
 }
 
-// Default fallback data
-const defaultRegistrationSources: RegistrationSource[] = [
-  { source: "Organic Search", users: 0, percentage: 35, color: "#22c55e" },
-  { source: "Social Media", users: 0, percentage: 25, color: "#3b82f6" },
-  { source: "Direct", users: 0, percentage: 20, color: "#f59e0b" },
-  { source: "Referrals", users: 0, percentage: 15, color: "#8b5cf6" },
-  { source: "Email", users: 0, percentage: 5, color: "#ef4444" },
-]
+
 
 export default function UserAnalyticsPage() {
   const [userAnalytics, setUserAnalytics] = useState<UserAnalytics | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
-  const [timeRange, setTimeRange] = useState<string>('30d')
+  const [timeRange] = useState<string>('30d')
 
   // Fetch user analytics data
   const fetchUserAnalytics = async (days: number = 30): Promise<void> => {
@@ -113,7 +104,7 @@ export default function UserAnalyticsPage() {
       }
       const data = await response.json() as UserAnalytics
       setUserAnalytics(data)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching user analytics:', error)
       setUserAnalytics(null)
     } finally {
@@ -381,12 +372,12 @@ export default function UserAnalyticsPage() {
               <div style={{ width: '100%', height: '200px' }}>
               <PieChart width={300} height={200}>
                 <Pie
-                  data={registrationSources as any}
+                  data={registrationSources as unknown as Array<Record<string, unknown>>}
                   cx={150}
                   cy={100}
                   outerRadius={80}
                   dataKey="users"
-                  label={({ source, percentage }: any) => `${source}: ${percentage}%`}
+                  label
                 >
                   {registrationSources.map((entry: RegistrationSource, index: number) => (
                     <Cell key={`cell-${index}`} fill={entry.color} />

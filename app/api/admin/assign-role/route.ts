@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import User from '@/models/User'
 
 export async function POST(request: NextRequest) {
@@ -56,7 +55,8 @@ export async function POST(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Assign role error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Assign role error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to assign role' },
       { status: 500 }
@@ -90,7 +90,8 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Get user role error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Get user role error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to get user role' },
       { status: 500 }

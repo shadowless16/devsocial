@@ -36,7 +36,8 @@ class GeminiPublicService {
       const response = await result.response
       return response.text().trim() || 'Summary unavailable'
     } catch (error) {
-      console.error('Gemini summarization failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini summarization failed'
+      console.error('Gemini summarization failed:', errorMessage)
       return 'Summary unavailable'
     }
   }
@@ -50,7 +51,8 @@ class GeminiPublicService {
       const response = await result.response
       return response.text().trim() || 'Explanation unavailable'
     } catch (error) {
-      console.error('Gemini explanation failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini explanation failed'
+      console.error('Gemini explanation failed:', errorMessage)
       return 'Explanation unavailable'
     }
   }
@@ -72,7 +74,8 @@ class GeminiPublicService {
       const response = await result.response
       return response.text().trim() || 'Transcription unavailable'
     } catch (error) {
-      console.error('Gemini transcription failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini transcription failed'
+      console.error('Gemini transcription failed:', errorMessage)
       return 'Transcription unavailable'
     }
   }
@@ -94,7 +97,8 @@ class GeminiPublicService {
       const response = await result.response
       return response.text().trim() || 'Analysis unavailable'
     } catch (error) {
-      console.error('Gemini image analysis failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini image analysis failed'
+      console.error('Gemini image analysis failed:', errorMessage)
       return 'Analysis unavailable'
     }
   }
@@ -116,7 +120,8 @@ class GeminiPublicService {
       const response = await result.response
       return response.text().trim() || 'Image description unavailable'
     } catch (error) {
-      console.error('Gemini image description failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini image description failed'
+      console.error('Gemini image description failed:', errorMessage)
       return 'Image description unavailable'
     }
   }
@@ -130,7 +135,8 @@ class GeminiPublicService {
       const response = await result.response
       return response.text().trim() || content
     } catch (error) {
-      console.error('Gemini text enhancement failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini text enhancement failed'
+      console.error('Gemini text enhancement failed:', errorMessage)
       return content
     }
   }
@@ -176,12 +182,13 @@ Format: ["keyword1", "keyword2", ...]`
       
       return query.toLowerCase().split(/\s+/).filter(Boolean)
     } catch (error) {
-      console.error('Gemini keyword generation failed:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Gemini keyword generation failed'
+      console.error('Gemini keyword generation failed:', errorMessage)
       return query.toLowerCase().split(/\s+/).filter(Boolean)
     }
   }
 
-  async summarizeSearchResults(query: string, results: any[]): Promise<string> {
+  async summarizeSearchResults(query: string, results: Array<Record<string, unknown>>): Promise<string> {
     try {
       if (!results || results.length === 0) return ''
       
@@ -192,9 +199,9 @@ Format: ["keyword1", "keyword2", ...]`
       
       const model = this.genAI.getGenerativeModel({ model: this.model })
       const resultsText = results.slice(0, 5)
-        .filter(r => r?.content)
+        .filter((r): r is { content?: string } => typeof r === 'object' && r !== null && 'content' in r && typeof (r as { content?: unknown }).content === 'string')
         .map((r, i) => 
-          `${i + 1}. ${r.content.substring(0, 300)}...`
+          `${i + 1}. ${r.content!.substring(0, 300)}...`
         ).join('\n\n')
       
       if (!resultsText) return ''
@@ -217,20 +224,22 @@ Be honest and direct. If the results don't match the query, say so clearly.`
       const result = await model.generateContent(prompt)
       const response = await result.response
       return response.text().trim()
-    } catch (error: any) {
-      console.error('Gemini search summary failed:', error)
-      if (error?.status === 429) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gemini search summary failed'
+      console.error('Gemini search summary failed:', errorMessage)
+      const status = typeof error === 'object' && error !== null && 'status' in error ? (error as { status: number }).status : 0
+      if (status === 429) {
         return 'AI summary temporarily unavailable due to rate limits. Please try again in a moment.'
       }
       return ''
     }
   }
 
-  async semanticSearch(query: string, posts: any[]): Promise<any[]> {
+  async semanticSearch(query: string, posts: Array<Record<string, unknown>>): Promise<Array<Record<string, unknown>>> {
     try {
       if (!posts || posts.length === 0) return []
       
-      const validPosts = posts.filter(p => p?.content)
+      const validPosts = posts.filter((p): p is { content?: string } => typeof p === 'object' && p !== null && 'content' in p)
       if (validPosts.length === 0) return posts
       
       if (!geminiRateLimiter.canMakeRequest()) {
@@ -242,7 +251,7 @@ Be honest and direct. If the results don't match the query, say so clearly.`
       const model = this.genAI.getGenerativeModel({ model: this.model })
       
       const postsText = validPosts.map((p, i) => 
-        `[${i}] ${p.content.substring(0, 300)}`
+        `[${i}] ${typeof p === 'object' && p !== null && 'content' in p && typeof (p as { content?: string }).content === 'string' ? (p as { content: string }).content.substring(0, 300) : ''}`
       ).join('\n\n')
       
       const prompt = `You are a search relevance analyzer for a developer social platform.
@@ -278,9 +287,11 @@ If NO posts are relevant, return an empty array: []`
       }
       
       return validPosts
-    } catch (error: any) {
-      console.error('Gemini semantic search failed:', error)
-      if (error?.status === 429) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Gemini semantic search failed'
+      console.error('Gemini semantic search failed:', errorMessage)
+      const status = typeof error === 'object' && error !== null && 'status' in error ? (error as { status: number }).status : 0
+      if (status === 429) {
         console.warn('Gemini rate limit exceeded, returning posts without AI ranking')
       }
       return posts

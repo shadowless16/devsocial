@@ -15,7 +15,6 @@ export function WalletBalanceDisplay({ showBalance = true }: WalletBalanceDispla
   const [balance, setBalance] = useState<string>('0')
   const [loading, setLoading] = useState(true)
   const [visible, setVisible] = useState(showBalance)
-  const accountId = (user as any)?.hederaAccountId || 'demo-account'
 
   useEffect(() => {
     // Use the demoWalletBalance from user context instead of fetching from Hedera

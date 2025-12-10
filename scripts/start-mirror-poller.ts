@@ -7,7 +7,7 @@ async function main() {
   
   try {
     await startMirrorNodePoller()
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Failed to start mirror node poller:', error)
     process.exit(1)
   }

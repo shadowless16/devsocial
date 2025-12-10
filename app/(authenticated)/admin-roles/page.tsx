@@ -1,7 +1,7 @@
 "use client"
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect, useCallback } from 'react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from '@/contexts/app-context'
@@ -20,24 +20,19 @@ export default function AdminRolesPage() {
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>('')
 
-  useEffect(() => {
-    if (!authLoading) {
-      fetchCurrentUser()
-    }
-  }, [authLoading, user])
-
-  const fetchCurrentUser = async (): Promise<void> => {
+  const fetchCurrentUser = useCallback(async () => {
     try {
       console.log('Fetching current user...')
       
       // First try to get user from auth context
       if (user) {
-        console.log('Using user from auth context:', { id: (user as any).id, username: (user as any).username, role: (user as any).role })
+        const userData = user as { id: string; username: string; email: string; role: string }
+        console.log('Using user from auth context:', { id: userData.id, username: userData.username, role: userData.role })
         setCurrentUser({
-          id: (user as any).id,
-          username: (user as any).username,
-          email: (user as any).email,
-          role: (user as any).role
+          id: userData.id,
+          username: userData.username,
+          email: userData.email,
+          role: userData.role
         })
         setLoading(false)
         return
@@ -56,13 +51,19 @@ export default function AdminRolesPage() {
         console.error('Error fetching user:', errorData)
         setError(`Error fetching user: ${errorData.error}`)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching user:', error)
       setError(`Failed to fetch user: ${(error as Error).message}`)
     } finally {
       setLoading(false)
     }
-  }
+  }, [user])
+
+  useEffect(() => {
+    if (!authLoading) {
+      fetchCurrentUser()
+    }
+  }, [authLoading, fetchCurrentUser])
 
   const assignAnalyticsRole = async (): Promise<void> => {
     if (!currentUser) {
@@ -95,7 +96,7 @@ export default function AdminRolesPage() {
       } else {
         alert(`Error: ${data.error || 'Unknown error'}`)
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error assigning role:', error)
       alert(`Failed to assign role: ${(error as Error).message}`)
     }

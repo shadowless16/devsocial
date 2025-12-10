@@ -12,7 +12,7 @@ interface LinkPreviewCardProps {
   onRemove: () => void
 }
 
-export function LinkPreviewCard({ title, description, image, url, siteName, onRemove }: LinkPreviewCardProps) {
+export function LinkPreviewCard({ title, description, image, siteName, onRemove }: LinkPreviewCardProps) {
   return (
     <div className="relative border border-border rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors">
       <Button
@@ -28,6 +28,7 @@ export function LinkPreviewCard({ title, description, image, url, siteName, onRe
       <div className="flex gap-3 p-3">
         {image && (
           <div className="flex-shrink-0 w-20 h-20 rounded overflow-hidden bg-muted">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img 
               src={image} 
               alt={title}

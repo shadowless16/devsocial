@@ -1,8 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { type NextRequest } from "next/server"
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Report from "@/models/Report"
 import Post from "@/models/Post"
 import Comment from "@/models/Comment"
@@ -85,7 +85,8 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("Get reports error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get reports error:", errorMessage)
     return errorResponse("Internal server error", 500)
   }
 }

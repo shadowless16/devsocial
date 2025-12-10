@@ -28,13 +28,13 @@ test('creating a Post also creates an Activity record via POST handler', async (
   const user = await User.create({ username: 'tester', email: 'tester@example.com', password: 'pass123' })
 
   // Mock session to be this user
-  mockedGetServerSession.mockResolvedValue({ user: { id: user._id.toString(), email: user.email } } as any)
+  mockedGetServerSession.mockResolvedValue({ user: { id: user._id.toString(), email: user.email } } as unknown)
 
   // Create a POST request to the route
   const body = { content: 'Hello world from route', tags: [] }
   const request = new NextRequest('http://localhost/api/posts', { method: 'POST', body: JSON.stringify(body) })
 
-  const response = await createPostRoute(request as any)
+  const response = await createPostRoute(request as unknown)
   const resJson = await response.json()
 
   // Verify route responded with created post

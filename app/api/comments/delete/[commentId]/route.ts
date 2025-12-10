@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
 import Comment from "@/models/Comment"
 import Post from "@/models/Post"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 
 
@@ -38,7 +38,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json(successResponse({ message: "Comment deleted successfully" }))
   } catch (error) {
-    console.error("Error deleting comment:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error deleting comment:", errorMessage)
     return NextResponse.json(errorResponse("Failed to delete comment"), { status: 500 })
   }
 }

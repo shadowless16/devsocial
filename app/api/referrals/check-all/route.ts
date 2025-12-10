@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 import Referral from "@/models/Referral";
 import { successResponse, errorResponse } from "@/utils/response";
 
@@ -25,7 +25,8 @@ export async function POST() {
       })
     );
   } catch (error) {
-    console.error("Error during referral check-all:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error during referral check-all:", errorMessage);
     return NextResponse.json(
       errorResponse("Failed to process referrals"),
       { status: 500 }

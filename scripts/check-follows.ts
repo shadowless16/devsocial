@@ -20,7 +20,7 @@ async function checkFollows() {
       .lean();
 
     console.log('All Follow relationships:');
-    follows.forEach((follow: any) => {
+    follows.forEach((follow: unknown) => {
       console.log(`${follow.follower?.username || 'Unknown'} follows ${follow.following?.username || 'Unknown'}`);
     });
 
@@ -38,12 +38,12 @@ async function checkFollows() {
         .lean();
 
       console.log(`AkDavid followers: ${akDavidFollowers.length}`);
-      akDavidFollowers.forEach((follow: any) => {
+      akDavidFollowers.forEach((follow: unknown) => {
         console.log(`  - ${follow.follower?.username || 'Unknown'}`);
       });
 
       console.log(`AkDavid following: ${akDavidFollowing.length}`);
-      akDavidFollowing.forEach((follow: any) => {
+      akDavidFollowing.forEach((follow: unknown) => {
         console.log(`  - ${follow.following?.username || 'Unknown'}`);
       });
 
@@ -52,7 +52,7 @@ async function checkFollows() {
       console.log(`User document followingCount: ${akDavid.followingCount || 'undefined'}`);
     }
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error checking follows:', error);
   } finally {
     await mongoose.disconnect();

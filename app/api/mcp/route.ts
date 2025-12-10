@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import User from '@/models/User'
 
 export async function POST(request: NextRequest) {
@@ -26,20 +26,34 @@ export async function POST(request: NextRequest) {
         .limit(limit)
         .lean()
 
-      const leaderboard = users.map((user: any, index) => ({
-        _id: user._id.toString(),
-        user: {
-          _id: user._id.toString(),
-          username: user.username,
-          displayName: user.displayName ||
-            (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username),
-          avatar: user.avatar,
-          level: user.level
-        },
-        totalXP: user.points,
-        rank: index + 1,
-        level: user.level
-      }))
+      interface McpUser {
+        _id: { toString: () => string };
+        username: string;
+        displayName?: string;
+        firstName?: string;
+        lastName?: string;
+        avatar?: string;
+        level: number;
+        points: number;
+      }
+      
+      const leaderboard = users.map((user: unknown, index) => {
+        const typedUser = user as McpUser;
+        return {
+          _id: typedUser._id.toString(),
+          user: {
+            _id: typedUser._id.toString(),
+            username: typedUser.username,
+            displayName: typedUser.displayName ||
+              (typedUser.firstName && typedUser.lastName ? `${typedUser.firstName} ${typedUser.lastName}` : typedUser.username),
+            avatar: typedUser.avatar,
+            level: typedUser.level
+          },
+          totalXP: typedUser.points,
+          rank: index + 1,
+          level: typedUser.level
+        };
+      })
 
       return NextResponse.json(leaderboard)
     }
@@ -98,7 +112,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Unknown tool' }, { status: 400 })
     
   } catch (error) {
-    console.error('MCP API error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('MCP API error:', errorMessage)
     return NextResponse.json(
       { error: 'MCP request failed' },
       { status: 500 }

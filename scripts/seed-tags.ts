@@ -44,7 +44,7 @@ async function seedTags() {
     console.log(`Created ${createdTags.length} sample tags`)
 
     console.log("Tags seeded successfully!")
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error seeding tags:", error)
   }
 }

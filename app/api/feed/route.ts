@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { authMiddleware } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 import { FeedAlgorithm } from "@/utils/feed-algorithm"
@@ -30,7 +30,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(successResponse(feedData))
   } catch (error) {
-    console.error("Feed generation error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Feed generation error:", errorMessage)
     return NextResponse.json(errorResponse("Failed to generate feed"), { status: 500 })
   }
 }
@@ -56,7 +57,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(successResponse({ message: "Interaction recorded" }))
   } catch (error) {
-    console.error("Interaction tracking error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Interaction tracking error:", errorMessage)
     return NextResponse.json(errorResponse("Failed to track interaction"), { status: 500 })
   }
 }

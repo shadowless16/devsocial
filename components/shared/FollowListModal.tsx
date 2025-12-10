@@ -1,6 +1,6 @@
-"use client";
+﻿"use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent, 
@@ -15,9 +15,9 @@ import { FollowButton } from "@/components/shared/FollowButton";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Loader2, Users, Search, X } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api/api-client";
 import { useAuth } from "@/contexts/app-context";
-import { GAMIFIED_TERMS } from "@/lib/gamified-terms";
+import { GAMIFIED_TERMS } from "@/lib/ui/gamified-terms";
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface User {
@@ -84,19 +84,81 @@ export function FollowListModal({
     }
   }, [currentUser, isOpen, username]);
 
+
+
+  const fetchFollowers = useCallback(async (page = 1) => {
+    setLoadingFollowers(true);
+    try {
+      const response = await apiClient.getFollowers<{
+        followers: User[];
+        pagination: { hasMore: boolean };
+      }>(username, { page: page.toString(), limit: "20" });
+      
+      if (response.success && response.data) {
+        const followersData = response.data.followers || [];
+        if (page === 1) {
+          setFollowers(followersData);
+        } else {
+          setFollowers(prev => [...prev, ...followersData]);
+        }
+        setHasMoreFollowers(response.data.pagination?.hasMore || false);
+        setFollowersPage(page);
+      } else {
+        setFollowers([]);
+        setHasMoreFollowers(false);
+      }
+    } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to fetch followers:", errorMessage);
+      setFollowers([]);
+      setHasMoreFollowers(false);
+    } finally {
+      setLoadingFollowers(false);
+    }
+  }, [username]);
+
+  const fetchFollowing = useCallback(async (page = 1) => {
+    setLoadingFollowing(true);
+    try {
+      const response = await apiClient.getFollowing<{
+        following: User[];
+        pagination: { hasMore: boolean };
+      }>(username, { page: page.toString(), limit: "20" });
+      
+      if (response.success && response.data) {
+        const followingData = response.data.following || [];
+        if (page === 1) {
+          setFollowing(followingData);
+        } else {
+          setFollowing(prev => [...prev, ...followingData]);
+        }
+        setHasMoreFollowing(response.data.pagination?.hasMore || false);
+        setFollowingPage(page);
+      } else {
+        setFollowing([]);
+        setHasMoreFollowing(false);
+      }
+    } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to fetch following:", errorMessage);
+      setFollowing([]);
+      setHasMoreFollowing(false);
+    } finally {
+      setLoadingFollowing(false);
+    }
+  }, [username]);
+
   useEffect(() => {
     if (isOpen && activeTab === "followers") {
-      // Always fetch when modal opens or tab changes to followers
       fetchFollowers();
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, fetchFollowers]);
 
   useEffect(() => {
     if (isOpen && activeTab === "following") {
-      // Always fetch when modal opens or tab changes to following
       fetchFollowing();
     }
-  }, [isOpen, activeTab]);
+  }, [isOpen, activeTab, fetchFollowing]);
 
   // Filter users based on search query
   useEffect(() => {
@@ -124,66 +186,6 @@ export function FollowListModal({
     }
   }, [searchQuery, followers, following]);
 
-  const fetchFollowers = async (page = 1) => {
-    setLoadingFollowers(true);
-    try {
-      const response = await apiClient.getFollowers<{
-        followers: User[];
-        pagination: { hasMore: boolean };
-      }>(username, { page: page.toString(), limit: "20" });
-      
-      if (response.success && response.data) {
-        const followersData = response.data.followers || [];
-        if (page === 1) {
-          setFollowers(followersData);
-        } else {
-          setFollowers(prev => [...prev, ...followersData]);
-        }
-        setHasMoreFollowers(response.data.pagination?.hasMore || false);
-        setFollowersPage(page);
-      } else {
-        setFollowers([]);
-        setHasMoreFollowers(false);
-      }
-    } catch (error) {
-      console.error("Failed to fetch followers:", error);
-      setFollowers([]);
-      setHasMoreFollowers(false);
-    } finally {
-      setLoadingFollowers(false);
-    }
-  };
-
-  const fetchFollowing = async (page = 1) => {
-    setLoadingFollowing(true);
-    try {
-      const response = await apiClient.getFollowing<{
-        following: User[];
-        pagination: { hasMore: boolean };
-      }>(username, { page: page.toString(), limit: "20" });
-      
-      if (response.success && response.data) {
-        const followingData = response.data.following || [];
-        if (page === 1) {
-          setFollowing(followingData);
-        } else {
-          setFollowing(prev => [...prev, ...followingData]);
-        }
-        setHasMoreFollowing(response.data.pagination?.hasMore || false);
-        setFollowingPage(page);
-      } else {
-        setFollowing([]);
-        setHasMoreFollowing(false);
-      }
-    } catch (error) {
-      console.error("Failed to fetch following:", error);
-      setFollowing([]);
-      setHasMoreFollowing(false);
-    } finally {
-      setLoadingFollowing(false);
-    }
-  };
-
   const handleTabChange = (tab: string) => {
     setActiveTab(tab as "followers" | "following");
     if (tab === "followers" && followers.length === 0) {
@@ -191,19 +193,19 @@ export function FollowListModal({
     } else if (tab === "following" && following.length === 0) {
       fetchFollowing();
     }
-  };
+  }
 
   const loadMoreFollowers = () => {
     if (!loadingFollowers && hasMoreFollowers) {
       fetchFollowers(followersPage + 1);
     }
-  };
+  }
 
   const loadMoreFollowing = () => {
     if (!loadingFollowing && hasMoreFollowing) {
       fetchFollowing(followingPage + 1);
     }
-  };
+  }
 
   const renderUserList = (users: User[], loading: boolean, hasMore: boolean, loadMore: () => void) => {
     if (loading && users.length === 0) {
@@ -280,7 +282,7 @@ export function FollowListModal({
                   isFollowing={userFollowStates[user._id] || false}
                   size="sm"
                   showIcon={false}
-                  onFollowChange={(isFollowing, delta) => {
+                  onFollowChange={(isFollowing, _delta) => {
                     // Update the follow state when it changes
                     setUserFollowStates(prev => ({
                       ...prev,

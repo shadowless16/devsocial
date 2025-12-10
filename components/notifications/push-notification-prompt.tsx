@@ -11,6 +11,7 @@ export function PushNotificationPrompt() {
   const { isSupported, isSubscribed, subscribe } = usePushNotifications()
 
   useEffect(() => {
+    if (typeof window === 'undefined') return
     const dismissed = localStorage.getItem('push-notification-dismissed')
     if (isSupported && !isSubscribed && !dismissed) {
       setTimeout(() => setShowPrompt(true), 5000)
@@ -25,7 +26,9 @@ export function PushNotificationPrompt() {
   }
 
   const handleDismiss = () => {
-    localStorage.setItem('push-notification-dismissed', 'true')
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('push-notification-dismissed', 'true')
+    }
     setShowPrompt(false)
   }
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +11,7 @@ export async function GET() {
       message: "API is healthy",
       timestamp: new Date().toISOString()
     })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({
       success: false,
       error: "Database connection failed",

@@ -267,7 +267,6 @@ describe('Verify Endpoint API', () => {
       });
 
       const response = await POST(request);
-      const data = await response.json();
 
       expect(response.status).toBe(200);
       expect(mockComputeContentHash).toHaveBeenCalledWith({

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import Feedback from '@/models/Feedback'
 
 export async function GET(request: NextRequest) {
@@ -17,7 +16,12 @@ export async function GET(request: NextRequest) {
     const status = url.searchParams.get('status')
     const type = url.searchParams.get('type')
     
-    let query: any = {}
+    interface FeedbackQuery {
+      status?: string;
+      type?: string;
+    }
+    
+    const query: FeedbackQuery = {}
     if (status) query.status = status
     if (type) query.type = type
     
@@ -28,7 +32,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ feedback })
   } catch (error) {
-    console.error('Admin feedback fetch error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Admin feedback fetch error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -48,7 +53,15 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const updateData: any = { 
+    interface UpdateData {
+      status: string;
+      updatedAt: Date;
+      solvedBy?: string;
+      solvedAt?: Date;
+      adminResponse?: string;
+    }
+    
+    const updateData: UpdateData = { 
       status,
       updatedAt: new Date()
     }
@@ -75,7 +88,8 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ feedback })
   } catch (error) {
-    console.error('Admin feedback update error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Admin feedback update error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

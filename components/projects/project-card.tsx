@@ -2,25 +2,24 @@
 
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Eye, Users } from "lucide-react"
-import { useState } from "react"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import type { Density } from "./density-toggle"
-import Image from "next/image"
 import Link from "next/link"
+import Image from "next/image"
+import { useState } from "react"
+import { Users, Eye } from "lucide-react"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
 
-export type Project = {
+type Density = "compact" | "normal"
+
+interface Project {
   id: string
   title: string
   description: string
-  techStack: string[]
-  projectType: "startup" | "open-source" | "learning" | "freelance"
   status: "planning" | "in-development" | "mvp-ready" | "looking-for-funding" | "completed"
+  projectType: "startup" | "open-source" | "learning" | "freelance"
+  techStack: string[]
   teamSize: number
   openPositions: string[]
-  timeCommitment: "part-time" | "full-time" | "weekend" | "long-term"
   experienceLevel: "beginner" | "intermediate" | "advanced"
   views: number
   applications: number

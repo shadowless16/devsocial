@@ -1,8 +1,8 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { use } from "react"
-import { ArrowLeft, Activity, TrendingUp, Award, Calendar, Mail, MapPin, Link as LinkIcon, Shield, Ban, Trash2, Key, Zap, Users, MessageSquare, Heart, Eye, Clock, BarChart3, Settings } from "lucide-react"
+import { ArrowLeft, Activity, TrendingUp, Award, Calendar, Mail, MapPin, Link as LinkIcon, Shield, Ban, Trash2, Key, Zap, MessageSquare, Heart, Settings } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -14,15 +14,53 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
-import { apiClient } from "@/lib/api-client"
-import Link from "next/link"
+import { apiClient } from "@/lib/api/api-client"
+
 import { useRouter } from "next/navigation"
 import { useToast } from "@/hooks/use-toast"
+
+interface UserDetail {
+  _id: string
+  username: string
+  displayName: string
+  email: string
+  avatar?: string
+  role: string
+  level: number
+  points: number
+  badges?: Array<{ name: string }>
+  stats?: {
+    postsCount?: number
+    commentsCount?: number
+  }
+  location?: string
+  website?: string
+  createdAt: string
+  isBlocked?: boolean
+  recentActivity?: Array<{
+    type: string
+    description: string
+    timestamp: string
+    xp?: number
+  }>
+  xpBreakdown?: Array<{
+    source: string
+    count: number
+    totalXP: number
+  }>
+  recentPosts?: Array<{
+    _id: string
+    content: string
+    likesCount: number
+    commentsCount: number
+    createdAt: string
+  }>
+}
 
 export default function UserDetailPage({ params }: { params: Promise<{ userId: string }> }) {
   const resolvedParams = use(params)
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
+  const [user, setUser] = useState<UserDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [showXpDialog, setShowXpDialog] = useState(false)
   const [showRoleDialog, setShowRoleDialog] = useState(false)
@@ -34,22 +72,22 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
   const [newPassword, setNewPassword] = useState("")
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchUserDetails()
-  }, [resolvedParams.userId])
-
-  const fetchUserDetails = async () => {
+  const fetchUserDetails = useCallback(async () => {
     try {
       const response = await apiClient.request(`/admin/users/${resolvedParams.userId}`, { method: "GET" })
       if (response.success && response.data) {
-        setUser(response.data)
+        setUser(response.data as unknown as UserDetail)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to fetch user details:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [resolvedParams.userId])
+
+  useEffect(() => {
+    fetchUserDetails()
+  }, [fetchUserDetails])
 
   if (loading) return (
     <div className="min-h-screen bg-slate-950 flex items-center justify-center">
@@ -316,7 +354,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                   </CardHeader>
                   <CardContent>
                   <div className="space-y-4">
-                    {user.recentActivity?.map((activity: any, i: number) => (
+                    {user.recentActivity && user.recentActivity.length > 0 ? user.recentActivity.map((activity, i) => (
                       <div key={i} className="flex items-center gap-3 p-3 border rounded-lg">
                         <div className="flex-1">
                           <p className="font-medium">{activity.type}</p>
@@ -327,7 +365,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                         </div>
                         {activity.xp && <Badge>+{activity.xp} XP</Badge>}
                       </div>
-                    )) || <p className="text-gray-500">No recent activity</p>}
+                    )) : <p className="text-gray-500">No recent activity</p>}
                   </div>
                 </CardContent>
               </Card>
@@ -340,7 +378,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                   </CardHeader>
                   <CardContent>
                   <div className="space-y-3">
-                    {user.xpBreakdown?.map((item: any, i: number) => (
+                    {user.xpBreakdown && user.xpBreakdown.length > 0 ? user.xpBreakdown.map((item, i) => (
                       <div key={i} className="flex items-center justify-between p-3 border rounded-lg">
                         <div>
                           <p className="font-medium">{item.source}</p>
@@ -348,7 +386,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                         </div>
                         <Badge variant="outline">{item.totalXP} XP</Badge>
                       </div>
-                    )) || <p className="text-gray-500">No XP data available</p>}
+                    )) : <p className="text-gray-500">No XP data available</p>}
                   </div>
                 </CardContent>
               </Card>
@@ -361,7 +399,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                   </CardHeader>
                   <CardContent>
                   <div className="space-y-3">
-                    {user.recentPosts?.map((post: any) => (
+                    {user.recentPosts && user.recentPosts.length > 0 ? user.recentPosts.map((post) => (
                       <div key={post._id} className="p-3 border rounded-lg">
                         <p className="line-clamp-2">{post.content}</p>
                         <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
@@ -370,7 +408,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                           <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                         </div>
                       </div>
-                    )) || <p className="text-gray-500">No posts yet</p>}
+                    )) : <p className="text-gray-500">No posts yet</p>}
                   </div>
                 </CardContent>
               </Card>
@@ -391,7 +429,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                           await apiClient.request(`/admin/users/${resolvedParams.userId}/block`, { method: "POST" })
                           toast({ title: "Success", description: `User ${user?.isBlocked ? 'unblocked' : 'blocked'} successfully` })
                           fetchUserDetails()
-                        } catch (error) {
+                        } catch {
                           toast({ title: "Error", description: "Failed to update user", variant: "destructive" })
                         }
                       }}
@@ -489,7 +527,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                 toast({ title: "Success", description: "XP updated successfully" })
                 setShowXpDialog(false)
                 fetchUserDetails()
-              } catch (error) {
+              } catch {
                 toast({ title: "Error", description: "Failed to update XP", variant: "destructive" })
               }
             }}>Update</Button>
@@ -526,7 +564,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                 toast({ title: "Success", description: "Role updated successfully" })
                 setShowRoleDialog(false)
                 fetchUserDetails()
-              } catch (error) {
+              } catch {
                 toast({ title: "Error", description: "Failed to update role", variant: "destructive" })
               }
             }}>Update</Button>
@@ -554,7 +592,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                 toast({ title: "Success", description: "Password reset successfully" })
                 setShowPasswordDialog(false)
                 setNewPassword("")
-              } catch (error) {
+              } catch {
                 toast({ title: "Error", description: "Failed to reset password", variant: "destructive" })
               }
             }}>Reset Password</Button>
@@ -575,7 +613,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ userId: s
                 await apiClient.request(`/admin/users/${resolvedParams.userId}/delete`, { method: "DELETE" })
                 toast({ title: "Success", description: "User deleted successfully" })
                 router.push("/admin/users")
-              } catch (error) {
+              } catch {
                 toast({ title: "Error", description: "Failed to delete user", variant: "destructive" })
               }
             }}>Delete</Button>

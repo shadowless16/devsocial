@@ -1,5 +1,3 @@
-"use client"
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { ArrowLeft } from "lucide-react"
@@ -89,7 +87,7 @@ export default function TermsPage() {
               <section>
                 <h2 className="text-xl font-semibold mb-3">7. Disclaimer</h2>
                 <p className="text-muted-foreground">
-                  The information on this platform is provided on an 'as is' basis. To the fullest extent 
+                  The information on this platform is provided on an &apos;as is&apos; basis. To the fullest extent 
                   permitted by law, this Company excludes all representations, warranties, conditions and 
                   terms relating to our platform and the use of this platform.
                 </p>
@@ -99,7 +97,7 @@ export default function TermsPage() {
                 <h2 className="text-xl font-semibold mb-3">8. Changes to Terms</h2>
                 <p className="text-muted-foreground">
                   We reserve the right to modify these terms at any time. We will notify users of any 
-                  changes by posting the new Terms of Service on this page and updating the "Last updated" date.
+                  changes by posting the new Terms of Service on this page and updating the &quot;Last updated&quot; date.
                 </p>
               </section>
 

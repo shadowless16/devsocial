@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getUserFromRequest } from "@/lib/jwt-auth"
-import dbConnect from "@/lib/db"
+import { getUserFromRequest } from "@/lib/auth/jwt-auth"
+import dbConnect from "@/lib/core/db"
 import Community from "@/models/Community"
 
 export async function GET() {
@@ -11,7 +11,7 @@ export async function GET() {
       .sort({ createdAt: -1 })
     
     return NextResponse.json({ success: true, data: communities })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }
@@ -44,8 +44,9 @@ export async function POST(request: NextRequest) {
     const populatedCommunity = await Community.findById(community._id).populate('creator', 'username displayName avatar')
     
     return NextResponse.json({ success: true, data: populatedCommunity })
-  } catch (error: any) {
-    console.error('Community creation error:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Community creation error:', errorMessage)
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }

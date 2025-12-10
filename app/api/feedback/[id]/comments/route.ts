@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from '@/lib/auth/auth'
+import connectDB from '@/lib/core/db'
 import Feedback from '@/models/Feedback'
 import FeedbackComment from '@/models/FeedbackComment'
 import User from '@/models/User'
@@ -60,7 +61,8 @@ export async function POST(
 
     return NextResponse.json({ comment })
   } catch (error) {
-    console.error('Comment creation error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Comment creation error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

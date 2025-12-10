@@ -30,7 +30,7 @@ async function syncFollowCounts() {
     }
 
     console.log('Follow counts synchronized successfully');
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error syncing follow counts:', error);
   } finally {
     await mongoose.disconnect();

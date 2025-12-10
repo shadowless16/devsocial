@@ -22,7 +22,8 @@ export function TransactionStatusTracker({ transactionId, onStatusChange }: Tran
         setStatus(data.status)
         onStatusChange?.(data.status)
       } catch (error) {
-        console.error('Failed to check transaction status:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to check transaction status:', errorMessage)
       } finally {
         setLoading(false)
       }

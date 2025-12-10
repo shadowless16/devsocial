@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from "@/lib/auth/auth"
 
 export const dynamic = 'force-dynamic'
 
@@ -85,7 +86,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ users })
   } catch (error) {
-    console.error("Search users error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Search users error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

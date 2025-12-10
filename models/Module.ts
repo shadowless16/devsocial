@@ -38,7 +38,7 @@ export interface IContentSection {
   title: string
   content: string
   order: number
-  metadata?: any
+  metadata?: unknown
 }
 
 export interface IPrerequisite {

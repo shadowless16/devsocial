@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
+import { getSession } from '@/lib/auth/server-auth';
 import User from "@/models/User";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 
 export async function GET(request: NextRequest) {
   try {
@@ -41,7 +40,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching privacy settings:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching privacy settings:", errorMessage);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
@@ -122,7 +122,8 @@ export async function PUT(request: NextRequest) {
       message: "Privacy settings updated successfully",
     });
   } catch (error) {
-    console.error("Error updating privacy settings:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error updating privacy settings:", errorMessage);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }

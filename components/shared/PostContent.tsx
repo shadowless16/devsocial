@@ -2,10 +2,6 @@
 
 import React from "react";
 import ReactMarkdown from "react-markdown";
-// @ts-ignore
-import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
-// @ts-ignore
-import { vscDarkPlus } from "react-syntax-highlighter/dist/esm/styles/prism";
 import { Button } from "@/components/ui/button";
 import { Copy, ExternalLink } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -40,7 +36,7 @@ export function PostContent({ content, onCopyCode }: PostContentProps) {
   return (
     <ReactMarkdown
       components={{ 
-        code({ node, className, children, ...props }: any) {
+        code({ className, children, ...props }: { className?: string; children?: React.ReactNode; [key: string]: unknown }) {
           const inline = !className;
           const match = /language-(\w+)/.exec(className || "");
           return !inline && match ? (

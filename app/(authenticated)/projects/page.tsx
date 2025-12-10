@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -48,13 +48,9 @@ export default function ProjectsPage() {
   })
   const { user } = useAuth()
 
-  useEffect(() => {
-    fetchProjects()
-  }, [filter])
-
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true)
-    try {
+    try{
       const params = new URLSearchParams()
       if (filter.status) params.append('status', filter.status)
       if (filter.tech) params.append('tech', filter.tech)
@@ -74,14 +70,18 @@ export default function ProjectsPage() {
         
         setProjects(filteredProjects)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching projects:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter])
 
-  const handleDelete = async (projectId: string, projectTitle: string) => {
+  useEffect(() => {
+    fetchProjects()
+  }, [filter, fetchProjects])
+
+  const handleDelete = async (projectId: string) => {
     setDeleting(projectId)
     try {
       const response = await fetch(`/api/projects/${projectId}`, {
@@ -96,7 +96,7 @@ export default function ProjectsPage() {
       } else {
         toast.error(data.error || 'Failed to delete project')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting project:', error)
       toast.error('Failed to delete project')
     } finally {
@@ -283,13 +283,13 @@ export default function ProjectsPage() {
                             <AlertDialogHeader>
                               <AlertDialogTitle>Delete Project</AlertDialogTitle>
                               <AlertDialogDescription>
-                                Are you sure you want to delete "{project.title}"? This action cannot be undone.
+                                Are you sure you want to delete &quot;{project.title}&quot;? This action cannot be undone.
                               </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
-                                onClick={() => handleDelete(project._id, project.title)}
+                                onClick={() => handleDelete(project._id)}
                                 disabled={deleting === project._id}
                                 className="bg-red-600 hover:bg-red-700"
                               >

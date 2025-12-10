@@ -105,10 +105,10 @@ export default function ConfessPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Content */}
             <div className="space-y-2">
-              <Label htmlFor="content">What's on your mind?</Label>
+              <Label htmlFor="content">What&apos;s on your mind?</Label>
               <Textarea
                 id="content"
-                placeholder="Share your thoughts, experiences, struggles, or questions anonymously. This is a safe space to be honest about your coding journey, career concerns, or anything else you'd like to discuss..."
+                placeholder="Share your thoughts, experiences, struggles, or questions anonymously. This is a safe space to be honest about your coding journey, career concerns, or anything else you&apos;d like to discuss..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
                 className="min-h-[150px] resize-none"
@@ -208,7 +208,7 @@ export default function ConfessPage() {
               <ul className="text-sm text-gray-600 space-y-1">
                 <li>• Be respectful and constructive in your confessions</li>
                 <li>• No harassment, hate speech, or personal attacks</li>
-                <li>• Don't share personal information about others</li>
+                <li>• Don&apos;t share personal information about others</li>
                 <li>• Keep content relevant to the developer community</li>
                 <li>• Remember: even anonymous posts should be kind</li>
               </ul>
@@ -238,7 +238,7 @@ export default function ConfessPage() {
           <div className="space-y-4">
             <div className="border-l-4 border-l-purple-500 pl-4 py-2">
               <p className="text-gray-700 mb-2">
-                "I've been coding for 3 years and still feel like I don't know anything. Imposter syndrome is real..."
+                &quot;I&amp;apos;ve been coding for 3 years and still feel like I don&amp;apos;t know anything. Imposter syndrome is real...&quot;
               </p>
               <div className="flex items-center space-x-2 text-xs text-gray-500">
                 <Badge variant="outline" className="text-purple-600">
@@ -257,7 +257,7 @@ export default function ConfessPage() {
 
             <div className="border-l-4 border-l-purple-500 pl-4 py-2">
               <p className="text-gray-700 mb-2">
-                "I got my first dev job by lying about my experience. Now I'm terrified they'll find out..."
+                &quot;I got my first dev job by lying about my experience. Now I&amp;apos;m terrified they&amp;apos;ll find out...&quot;
               </p>
               <div className="flex items-center space-x-2 text-xs text-gray-500">
                 <Badge variant="outline" className="text-purple-600">
@@ -276,7 +276,7 @@ export default function ConfessPage() {
 
             <div className="border-l-4 border-l-purple-500 pl-4 py-2">
               <p className="text-gray-700 mb-2">
-                "I spend more time on Stack Overflow than actually coding. Is this normal?"
+                &quot;I spend more time on Stack Overflow than actually coding. Is this normal?&quot;
               </p>
               <div className="flex items-center space-x-2 text-xs text-gray-500">
                 <Badge variant="outline" className="text-purple-600">

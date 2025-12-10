@@ -76,7 +76,7 @@ async function createTestFollows() {
     const updatedAkDavid = await User.findById(akDavid._id).select('username followersCount followingCount');
     console.log('Updated AkDavid data:', updatedAkDavid);
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating test follows:', error);
   } finally {
     await mongoose.disconnect();

@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import User from "@/models/User"
 import Post from "@/models/Post"
-import connectDB from "@/lib/db"
-import { successResponse, errorResponse } from "@/utils/response"
+import connectDB from "@/lib/core/db"
+
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     }
 
     const searchRegex = new RegExp(query.trim(), "i")
-    const results: any = {
+    const results: { posts: unknown[]; users: unknown[]; tags: unknown[] } = {
       posts: [],
       users: [],
       tags: [],
@@ -113,7 +113,8 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error("Error performing search:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error performing search:", errorMessage)
     return NextResponse.json({ success: false, message: "Search failed" }, { status: 500 })
   }
 }

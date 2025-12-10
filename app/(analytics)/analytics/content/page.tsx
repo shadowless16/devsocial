@@ -15,10 +15,8 @@ import {
   CartesianGrid,
   Tooltip,
   Legend,
-  ResponsiveContainer,
 } from "recharts"
 import { FileText, MessageSquare, Heart, Share2, Eye, Flag, TrendingUp, Hash, Clock, AlertTriangle, RefreshCw } from "lucide-react"
-import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
 // Types
@@ -35,11 +33,11 @@ interface ContentAnalytics {
     avgEngagementRate?: string
     totalEngagements?: number
   }
-  trends?: any[]
-  topTags?: any[]
-  viralContent?: any[]
+  trends?: unknown[]
+  topTags?: unknown[]
+  viralContent?: unknown[]
   engagementDistribution?: EngagementDistribution[]
-  moderationData?: any[]
+  moderationData?: unknown[]
 }
 
 interface ModerationItem {
@@ -73,7 +71,7 @@ export default function ContentAnalyticsPage() {
       }
       const data = await response.json() as ContentAnalytics
       setContentAnalytics(data)
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching content analytics:', error)
       setContentAnalytics(null)
     } finally {
@@ -116,7 +114,7 @@ export default function ContentAnalyticsPage() {
   const topTags = contentAnalytics?.topTags || []
   const viralContent = contentAnalytics?.viralContent || []
   const engagementDistribution = contentAnalytics?.engagementDistribution || defaultEngagementDistribution
-  const moderationData: ModerationItem[] = contentAnalytics?.moderationData || [
+  const moderationData: ModerationItem[] = (contentAnalytics?.moderationData as ModerationItem[]) || [
     { category: "Spam", count: 45, resolved: 42, pending: 3 },
     { category: "Inappropriate Content", count: 23, resolved: 20, pending: 3 },
     { category: "Harassment", count: 12, resolved: 11, pending: 1 },
@@ -229,23 +227,25 @@ export default function ContentAnalyticsPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {topTags.length > 0 ? topTags.slice(0, 6).map((tag: any, index: number) => (
-                <div key={tag._id || tag.tag || index} className="flex items-center justify-between">
+              {topTags.length > 0 ? topTags.slice(0, 6).map((tag: unknown, index: number) => {
+                const tagData = tag as { _id?: string; tag?: string; count?: number; growth?: number }
+                return (
+                <div key={tagData._id || tagData.tag || index} className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-100 text-sm font-medium text-emerald-700">
                       {index + 1}
                     </div>
                     <div>
-                      <div className="font-medium">#{tag._id || tag.tag || 'Unknown'}</div>
-                      <div className="text-sm text-muted-foreground">{tag.count || 0} posts</div>
+                      <div className="font-medium">#{tagData._id || tagData.tag || 'Unknown'}</div>
+                      <div className="text-sm text-muted-foreground">{tagData.count || 0} posts</div>
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-medium">{Math.round((tag.growth || 0) * 100) / 100}%</div>
+                    <div className="font-medium">{Math.round((tagData.growth || 0) * 100) / 100}%</div>
                     <div className="text-sm text-muted-foreground">growth</div>
                   </div>
                 </div>
-              )) : (
+              )}) : (
                 <div className="text-center text-muted-foreground py-8">
                   <Hash className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p className="font-medium">No trending tags yet</p>
@@ -267,7 +267,7 @@ export default function ContentAnalyticsPage() {
               <div style={{ width: '100%', height: '200px' }}>
                 <PieChart width={300} height={200}>
                   <Pie
-                    data={engagementDistribution as any}
+                    data={engagementDistribution as unknown as Array<{ name: string; value: number; [key: string]: string | number }>}
                     cx={150}
                     cy={100}
                     innerRadius={40}
@@ -279,7 +279,7 @@ export default function ContentAnalyticsPage() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: any) => [`${value}%`, 'Posts']} />
+                  <Tooltip formatter={(value: unknown) => [`${value}%`, 'Posts']} />
                 </PieChart>
               </div>
               <div className="grid grid-cols-1 gap-2">
@@ -312,45 +312,47 @@ export default function ContentAnalyticsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {viralContent.length > 0 ? viralContent.map((post: any) => (
+            {viralContent.length > 0 ? viralContent.map((post: unknown) => {
+              const postData = post as { _id?: string; content?: string; author?: { username?: string }; createdAt?: string; viewsCount?: number; views?: number; likesCount?: number; commentsCount?: number; sharesCount?: number; viralScore?: number }
+              return (
               <div 
-                key={post._id} 
+                key={postData._id} 
                 className="flex items-center justify-between rounded-lg border p-4 hover:bg-muted/50 cursor-pointer transition-colors"
-                onClick={() => window.open(`/post/${post._id}`, '_blank')}
+                onClick={() => window.open(`/post/${postData._id}`, '_blank')}
               >
                 <div className="flex-1">
                   <h4 className="font-medium hover:text-primary transition-colors">
-                    {(post.content?.substring(0, 80) + (post.content?.length > 80 ? '...' : '')) || 'Post Content'}
+                    {(postData.content?.substring(0, 80) + (postData.content?.length > 80 ? '...' : '')) || 'Post Content'}
                   </h4>
                   <p className="text-sm text-muted-foreground">
-                    by @{typeof post.author === 'object' ? (post.author as any)?.username || 'Unknown' : 'Unknown'} • {new Date(post.createdAt).toLocaleDateString()}
+                    by @{postData.author?.username || 'Unknown'} • {new Date(postData.createdAt || Date.now()).toLocaleDateString()}
                   </p>
                   <div className="mt-2 flex items-center gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                       <Eye className="h-4 w-4" />
-                      {(post.viewsCount || post.views || 0).toLocaleString()}
+                      {(postData.viewsCount || postData.views || 0).toLocaleString()}
                     </span>
                     <span className="flex items-center gap-1">
                       <Heart className="h-4 w-4" />
-                      {(post.likesCount || 0).toLocaleString()}
+                      {(postData.likesCount || 0).toLocaleString()}
                     </span>
                     <span className="flex items-center gap-1">
                       <MessageSquare className="h-4 w-4" />
-                      {(post.commentsCount || 0).toLocaleString()}
+                      {(postData.commentsCount || 0).toLocaleString()}
                     </span>
                     <span className="flex items-center gap-1">
                       <Share2 className="h-4 w-4" />
-                      {(post.sharesCount || 0).toLocaleString()}
+                      {(postData.sharesCount || 0).toLocaleString()}
                     </span>
                   </div>
                 </div>
                 <div className="text-right">
                   <Badge className="bg-emerald-100 text-emerald-700 hover:bg-emerald-200 transition-colors">
-                    {Math.round((post.viralScore || 0) * 10) / 10}/10 Viral
+                    {Math.round((postData.viralScore || 0) * 10) / 10}/10 Viral
                   </Badge>
                 </div>
               </div>
-            )) : (
+            )}) : (
               <div className="text-center text-muted-foreground py-8">
                 <p>No viral content data available</p>
                 <p className="text-sm">Posts with high engagement will appear here</p>

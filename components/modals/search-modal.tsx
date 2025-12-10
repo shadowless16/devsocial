@@ -1,23 +1,39 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Search, X, Hash, User, FileText, Loader2, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { UserAvatar } from "@/components/ui/user-avatar"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
+import { Post, UserSearchResult } from "@/types"
 
 interface SearchModalProps {
   isOpen: boolean
   onClose: () => void
 }
 
+interface SearchTag {
+  tag: string
+  posts: number
+}
+
 interface SearchResults {
-  posts: any[]
-  users: any[]
-  tags: any[]
+  posts: Post[]
+  users: UserSearchResult[]
+  tags: SearchTag[]
+}
+
+interface SmartSearchResponse {
+  results: Post[]
+  summary?: string
+  keywords?: string[]
+}
+
+interface SearchResponse {
+  results: SearchResults
 }
 
 export function SearchModal({ isOpen, onClose }: SearchModalProps) {
@@ -35,19 +51,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     }
   }, [isOpen])
 
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (query.trim()) {
-        performSearch(query)
-      } else {
-        setResults({ posts: [], users: [], tags: [] })
-      }
-    }, 300)
-
-    return () => clearTimeout(timeoutId)
-  }, [query])
-
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string) => {
     setIsSearching(true)
     setSearchSummary("")
     setSearchKeywords([])
@@ -55,7 +59,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
     try {
       if (smartMode) {
         // AI-powered semantic search
-        const response = await apiClient.request<any>(
+        const response = await apiClient.request<SmartSearchResponse>(
           `/search/smart?q=${encodeURIComponent(searchQuery)}`,
           { method: "GET" }
         )
@@ -71,7 +75,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         }
       } else {
         // Regular keyword search
-        const response = await apiClient.request<any>(
+        const response = await apiClient.request<SearchResponse>(
           `/search?q=${encodeURIComponent(searchQuery)}&type=all&limit=5`,
           { method: "GET" }
         )
@@ -81,11 +85,24 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
         }
       }
     } catch (error) {
-      console.error("Search error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Search error:", errorMessage)
     } finally {
       setIsSearching(false)
     }
-  }
+  }, [smartMode])
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (query.trim()) {
+        performSearch(query)
+      } else {
+        setResults({ posts: [], users: [], tags: [] })
+      }
+    }, 300)
+
+    return () => clearTimeout(timeoutId)
+  }, [query, smartMode, performSearch])
 
   const handleResultClick = (type: string, id: string) => {
     onClose()
@@ -194,7 +211,7 @@ export function SearchModal({ isOpen, onClose }: SearchModalProps) {
           ) : totalResults === 0 ? (
             <div className="text-center py-8">
               <Search className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">No results found for "{query}"</p>
+              <p className="text-sm text-muted-foreground">No results found for &quot;{query}&quot;</p>
             </div>
           ) : (
             <div className="space-y-6">

@@ -1,5 +1,15 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  webpack: (config, { isServer }) => {
+    config.watchOptions = {
+      poll: 1000,
+      aggregateTimeout: 300,
+    }
+    return config
+  },
+  // Move serverComponentsExternalPackages to root level (Next.js 15)
+  serverExternalPackages: ['mongoose', 'mongodb', 'bcrypt', 'bcryptjs'],
+  
   experimental: {
     optimizePackageImports: [
       'lucide-react',

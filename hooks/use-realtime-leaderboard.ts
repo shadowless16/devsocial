@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useRef } from "react"
-import WebSocketClient from "@/lib/websocket-client"
+import WebSocketClient from "@/lib/realtime/websocket-client"
 
 interface LeaderboardEntry {
   _id: string
@@ -35,7 +35,8 @@ export function useRealtimeLeaderboard(type: string) {
     wsClient.current = new WebSocketClient(wsUrl)
 
     // Listen for connection status
-    wsClient.current.on("connected", (connected: boolean) => {
+    wsClient.current.on("connected", (data: Record<string, unknown>) => {
+      const connected = data.connected as boolean
       setIsConnected(connected)
 
       if (connected) {
@@ -80,7 +81,8 @@ export function useRealtimeLeaderboard(type: string) {
         setRealtimeData(data.data.leaderboard)
       }
     } catch (error) {
-      console.error("Error fetching leaderboard update:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching leaderboard update:", errorMessage)
     }
   }
 

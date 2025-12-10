@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
-import dbConnect from "@/lib/db"
+import { getSession } from '@/lib/auth/server-auth'
+import dbConnect from "@/lib/core/db"
 import Post from "@/models/Post"
 import User from "@/models/User"
 
@@ -29,12 +28,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Poll has ended" }, { status: 400 })
     }
 
-    const hasVoted = post.poll.options.some((opt: any) => opt.voters.includes(session.user.id))
+    const hasVoted = post.poll.options.some((opt: { voters: string[] }) => opt.voters.includes(session.user.id))
     if (hasVoted) {
       return NextResponse.json({ success: false, message: "Already voted" }, { status: 400 })
     }
 
-    const validOptionIds = post.poll.options.map((opt: any) => opt.id)
+    const validOptionIds = post.poll.options.map((opt: { id: string }) => opt.id)
     const invalidOptions = optionIds.filter((id: string) => !validOptionIds.includes(id))
     if (invalidOptions.length > 0) {
       return NextResponse.json({ success: false, message: "Invalid option IDs" }, { status: 400 })
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Too many choices" }, { status: 400 })
     }
 
-    post.poll.options = post.poll.options.map((opt: any) => {
+    post.poll.options = post.poll.options.map((opt: { id: string; votes: number; voters: string[] }) => {
       if (optionIds.includes(opt.id)) {
         return {
           ...opt,
@@ -68,8 +67,9 @@ export async function POST(req: NextRequest) {
       success: true,
       data: { poll: post.poll, xpAwarded: 5 },
     })
-  } catch (error: any) {
-    console.error("Vote error:", error)
-    return NextResponse.json({ success: false, message: error.message }, { status: 500 })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Vote error:", errorMessage)
+    return NextResponse.json({ success: false, message: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 })
   }
 }

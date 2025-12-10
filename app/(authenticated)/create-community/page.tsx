@@ -35,7 +35,7 @@ export default function CreateCommunityPage() {
       } else {
         console.error('Failed to create community:', data.message)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating community:', error)
     }
   }
@@ -157,7 +157,7 @@ export default function CreateCommunityPage() {
                   </Button>
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  For now, we'll use the first letter of your community name. Image upload coming soon!
+                  For now, we&apos;ll use the first letter of your community name. Image upload coming soon!
                 </p>
               </div>
 

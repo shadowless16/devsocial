@@ -2,7 +2,6 @@ import * as React from "react"
 import { X } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
-import { Button } from "@/components/ui/button"
 
 interface MultiSelectProps {
   options: string[]
@@ -98,7 +97,7 @@ export function MultiSelect({
                 className="w-full px-3 py-2 text-left hover:bg-emerald-50 focus:bg-emerald-50 border-t text-emerald-600"
                 onClick={() => handleAddItem(inputValue.trim())}
               >
-                Add "{inputValue.trim()}"
+                Add &quot;{inputValue.trim()}&quot;
               </button>
             )}
             

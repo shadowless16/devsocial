@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState, useEffect, useCallback } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
 import { Search, Plus, BookOpen, Code, Database, Globe } from 'lucide-react'
 import { KnowledgeEntryModal } from '@/components/knowledge-bank/knowledge-entry-modal'
 import { KnowledgeCard } from '@/components/knowledge-bank/knowledge-card'
@@ -46,11 +45,7 @@ export default function KnowledgeBankPage() {
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    fetchEntries()
-  }, [selectedTech, searchQuery])
-
-  const fetchEntries = async () => {
+  const fetchEntries = useCallback(async () => {
     try {
       const params = new URLSearchParams()
       if (selectedTech !== 'All') params.append('technology', selectedTech)
@@ -62,12 +57,16 @@ export default function KnowledgeBankPage() {
       if (data.success) {
         setEntries(data.entries)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching entries:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [selectedTech, searchQuery])
+
+  useEffect(() => {
+    fetchEntries()
+  }, [fetchEntries])
 
   const handleEntryCreated = (newEntry: KnowledgeEntry) => {
     setEntries(prev => [newEntry, ...prev])
@@ -87,7 +86,7 @@ export default function KnowledgeBankPage() {
             : entry
         ))
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error liking entry:', error)
     }
   }

@@ -43,7 +43,7 @@ export function VoiceRecorder({ onTranscription }: VoiceRecorderProps) {
         title: "Recording started",
         description: "Speak clearly into your microphone",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Microphone access denied",
         description: "Please allow microphone access to use voice recording",
@@ -82,10 +82,10 @@ export function VoiceRecorder({ onTranscription }: VoiceRecorderProps) {
       } else {
         throw new Error(data.message || "Transcription failed");
       }
-    } catch (error: any) {
+    } catch (err) {
       toast({
         title: "Transcription failed",
-        description: error.message || "Failed to transcribe audio",
+        description: (err as Error).message || "Failed to transcribe audio",
         variant: "destructive",
       });
     } finally {

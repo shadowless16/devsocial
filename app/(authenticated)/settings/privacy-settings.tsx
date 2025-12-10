@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Shield, Eye, EyeOff, Mail, MapPin, Activity, MessageCircle, BarChart3, Download, Archive, Trash2, Lock, Globe } from "lucide-react";
+import { Shield, Eye, Mail, MapPin, Activity, MessageCircle, BarChart3, Download, Archive, Trash2, Lock, Globe } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/contexts/app-context";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api/api-client";
 
 interface PrivacyPreferences {
   profileVisibility: "public" | "followers" | "private";
@@ -48,7 +48,7 @@ export function PrivacySettings() {
         if (response.success && response.data) {
           setPreferences({ ...defaultPreferences, ...response.data });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Failed to load privacy preferences:", error);
       }
     };
@@ -58,7 +58,7 @@ export function PrivacySettings() {
     }
   }, [user]);
 
-  const handlePreferenceChange = (key: keyof PrivacyPreferences, value: any) => {
+  const handlePreferenceChange = (key: keyof PrivacyPreferences, value: unknown) => {
     setPreferences(prev => ({
       ...prev,
       [key]: value,
@@ -77,7 +77,7 @@ export function PrivacySettings() {
       if (response.success) {
         setHasChanges(false);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to save privacy preferences:", error);
     } finally {
       setIsSaving(false);
@@ -93,7 +93,7 @@ export function PrivacySettings() {
         // Handle download or show success message
         alert("Data export request submitted. You'll receive an email with your data within 24 hours.");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to request data export:", error);
     }
   };

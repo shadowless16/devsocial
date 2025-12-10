@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -10,10 +10,11 @@ import { useAuth } from '@/contexts/app-context'
 export function AnalyticsStatus() {
   const { user } = useAuth()
   const [status, setStatus] = useState<'loading' | 'success' | 'error' | null>(null)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [statusData, setStatusData] = useState<any>(null)
   const [isChecking, setIsChecking] = useState(false)
 
-  const checkAnalyticsStatus = async () => {
+  const checkAnalyticsStatus = useCallback(async () => {
     if (!user || (user.role !== 'admin' && user.role !== 'analytics')) {
       return
     }
@@ -30,16 +31,17 @@ export function AnalyticsStatus() {
         setStatus('error')
         setStatusData(data)
       }
-    } catch (error) {
+    } catch {
       setStatus('error')
       setStatusData({ error: 'Failed to check analytics status' })
     } finally {
       setIsChecking(false)
     }
-  }
+  }, [user])
 
   useEffect(() => {
     checkAnalyticsStatus()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user])
 
   // Don't show for non-admin users

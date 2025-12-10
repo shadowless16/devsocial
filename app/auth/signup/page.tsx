@@ -10,11 +10,11 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Check, ChevronsUpDown, Eye, EyeOff } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useAuth } from "@/contexts/app-context"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { toast } from "sonner"
 
 export default function SignupPage() {
@@ -54,9 +54,15 @@ export default function SignupPage() {
 useEffect(() => {
     const fetchAffiliations = async () => {
       try {
+        interface AffiliationsData {
+          affiliations: Record<string, string[]>
+        }
         const response = await apiClient.getAffiliations();
-        if (response.success && response.data?.affiliations) {
-          setAffiliations(response.data.affiliations);
+        if (response.success && response.data) {
+          const data = response.data as unknown as AffiliationsData;
+          if (data.affiliations) {
+            setAffiliations(data.affiliations);
+          }
         } else {
           // Provide fallback affiliations if API fails
           setAffiliations({
@@ -68,7 +74,7 @@ useEffect(() => {
             distanceLearning: ['Other', 'National Open University']
           });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Failed to fetch affiliations:", error);
         // Don't show error to user, just use fallback data
         setAffiliations({
@@ -178,22 +184,29 @@ useEffect(() => {
       toast.success("Account created successfully! Welcome to DevSocial!")
       // Use router navigation instead of window.location
       router.push("/onboarding")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error:", error);
       
+      interface ErrorWithMessage {
+        message?: string
+        error?: string | { message?: string; details?: Record<string, { _errors?: string[] }> }
+        response?: { data?: { error?: { message?: string; details?: Record<string, { _errors?: string[] }> }; message?: string } }
+      }
+      
       let errorMessage = "Signup failed";
+      const typedError = error as ErrorWithMessage
       
       // Extract detailed error messages
-      if (error?.message) {
-        errorMessage = error.message;
-      } else if (error?.error) {
-        if (typeof error.error === 'string') {
-          errorMessage = error.error;
-        } else if (error.error.message) {
-          errorMessage = error.error.message;
-        } else if (error.error.details) {
+      if (typedError?.message) {
+        errorMessage = typedError.message;
+      } else if (typedError?.error) {
+        if (typeof typedError.error === 'string') {
+          errorMessage = typedError.error;
+        } else if (typeof typedError.error === 'object' && typedError.error.message) {
+          errorMessage = typedError.error.message;
+        } else if (typeof typedError.error === 'object' && typedError.error.details) {
           // Handle Zod validation errors with specific field mapping
-          const details = error.error.details;
+          const details = typedError.error.details;
           const validationErrors: string[] = [];
           
           for (const field in details) {
@@ -227,8 +240,8 @@ useEffect(() => {
             return;
           }
         }
-      } else if (error?.response?.data) {
-        const responseData = error.response.data;
+      } else if (typedError?.response?.data) {
+        const responseData = typedError.response.data;
         if (responseData.error?.message) {
           errorMessage = responseData.error.message;
         } else if (responseData.error?.details) {
@@ -306,7 +319,7 @@ useEffect(() => {
             {referralCode && (
               <Alert className="border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950">
                 <AlertDescription className="text-emerald-600 dark:text-emerald-400">
-                  🎉 You're joining with a referral code: <strong>{referralCode}</strong>
+                  🎉 You&apos;re joining with a referral code: <strong>{referralCode}</strong>
                 </AlertDescription>
               </Alert>
             )}

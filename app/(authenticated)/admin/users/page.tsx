@@ -1,20 +1,20 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Users, Search, Filter, MoreVertical, Eye, Ban, Trash2, Shield, Mail, TrendingUp, Calendar, Award, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect, useCallback } from "react"
+import { Users, Search, Filter, MoreVertical, Eye, Ban, Trash2, Shield, TrendingUp, Calendar, Award, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react"
+import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { apiClient } from "@/lib/api-client"
-import Link from "next/link"
+import { apiClient } from "@/lib/api/api-client"
 import { useRouter } from "next/navigation"
+import type { UserData } from "@/types/components"
 
 export default function UsersManagementPage() {
   const router = useRouter()
-  const [users, setUsers] = useState<any[]>([])
+  const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
   const [filter, setFilter] = useState("all")
@@ -25,35 +25,35 @@ export default function UsersManagementPage() {
     setPage(1)
   }, [filter])
 
-  useEffect(() => {
-    fetchUsers()
-  }, [filter, page])
-
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient.request<{ users: any[], pagination: any }>(`/admin/users?filter=${filter}&page=${page}&limit=50`, { method: "GET" })
+      const response = await apiClient.request<{ users: UserData[], pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/users?filter=${filter}&page=${page}&limit=50`, { method: "GET" })
       if (response.success && response.data) {
-        setUsers(response.data.users)
+        setUsers(response.data.users as UserData[])
         setPagination(response.data.pagination)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to fetch users:", error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [filter, page])
+
+  useEffect(() => {
+    fetchUsers()
+  }, [fetchUsers])
 
   const handleBlockUser = async (userId: string) => {
     try {
       await apiClient.request(`/admin/users/${userId}/block`, { method: "POST" })
       fetchUsers()
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to block user:", error)
     }
   }
 
-  const filteredUsers = users.filter(user =>
+  const filteredUsers = users.filter((user) =>
     user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     user.email?.toLowerCase().includes(searchQuery.toLowerCase())

@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { authMiddleware } from "@/middleware/auth"
+import { authMiddleware, type AuthResult } from "@/middleware/auth"
 import { ReferralSystemFixed } from "@/utils/referral-system-fixed"
 
 
@@ -8,9 +8,9 @@ export const dynamic = 'force-dynamic'
 
 export async function POST(request: NextRequest) {
   try {
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json({ success: false, message: authResult.error || 'Authentication failed' }, { status: 401 })
+      return NextResponse.json({ success: false, message: authResult.error }, { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -31,17 +31,18 @@ export async function POST(request: NextRequest) {
     const referral = await ReferralSystemFixed.createReferral(userId, referredUserId, referralCode)
 
     return NextResponse.json({ success: true, data: { referral } }, { status: 201 })
-  } catch (error: any) {
-    console.error("Error creating referral:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error creating referral:", errorMessage)
     return NextResponse.json({ success: false, message: error.message || "Failed to create referral" }, { status: 500 })
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json({ success: false, message: authResult.error || 'Authentication failed' }, { status: 401 })
+      return NextResponse.json({ success: false, message: authResult.error }, { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -49,7 +50,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, data: { referralCode } })
   } catch (error) {
-    console.error("Error generating referral code:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error generating referral code:", errorMessage)
     return NextResponse.json({ success: false, message: "Failed to generate referral code" }, { status: 500 })
   }
 }

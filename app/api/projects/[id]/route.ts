@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import Project from '@/models/Project'
 
 export async function GET(
@@ -15,7 +14,7 @@ export async function GET(
     
     const project = await Project.findById(id)
       .populate('author', 'username displayName avatar level')
-      .lean() as any
+      .lean() as { _id: unknown; views?: number; viewedBy?: unknown[] } | null
     
     if (!project) {
       return NextResponse.json(
@@ -26,7 +25,7 @@ export async function GET(
     
     // Increment view count only if user hasn't viewed before
     if (session?.user?.id) {
-      const hasViewed = project.viewedBy?.some((id: any) => id.toString() === session.user.id)
+      const hasViewed = project.viewedBy?.some((viewId: { toString: () => string }) => viewId.toString() === session.user.id)
       if (!hasViewed) {
         await Project.findByIdAndUpdate(id, {
           $inc: { views: 1 },
@@ -40,7 +39,7 @@ export async function GET(
       success: true,
       data: project
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to fetch project' },
       { status: 500 }
@@ -90,7 +89,7 @@ export async function PUT(
       success: true,
       data: updatedProject
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to update project' },
       { status: 500 }
@@ -135,7 +134,7 @@ export async function DELETE(
       success: true,
       message: 'Project deleted successfully'
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to delete project' },
       { status: 500 }

@@ -1,7 +1,7 @@
 import User from "@/models/User"
-import UserStats from "@/models/UserStats"
+import UserStats, { IUserStats } from "@/models/UserStats"
 import XPLog from "@/models/XPLog"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { 
   calculateXPWithBonuses, 
   type XPAction, 
@@ -148,12 +148,13 @@ export class GamificationService {
         rankUp,
       }
     } catch (error) {
-      console.error("Error awarding XP:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error awarding XP:", errorMessage)
       return { success: false, xpAwarded: 0 }
     }
   }
 
-  private static async updateActionStats(userStats: any, action: XPAction) {
+  private static async updateActionStats(userStats: IUserStats, action: XPAction) {
     switch (action) {
       case "post_created":
         userStats.postsCount += 1
@@ -173,7 +174,7 @@ export class GamificationService {
     }
   }
 
-  private static async updateLoginStreak(userStats: any) {
+  private static async updateLoginStreak(userStats: IUserStats) {
     const today = new Date()
     const lastLogin = userStats.lastLoginDate
 

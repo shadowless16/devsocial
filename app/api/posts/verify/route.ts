@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import Post from '@/models/Post'
-import { computeContentHash } from '@/lib/contentHash'
+import { computeContentHash } from '@/lib/content/contentHash'
 
 // Step 10: Verification endpoint for dispute resolution
 export async function POST(request: NextRequest) {
@@ -18,18 +18,29 @@ export async function POST(request: NextRequest) {
       )
     }
     
-    let post: any
+    interface PostData {
+      content: string;
+      imageUrls?: string[];
+      videoUrls?: string[];
+      tags?: string[];
+      contentHash?: string;
+      onChainProof?: string;
+      imprintStatus?: string;
+    }
+    
+    let post: PostData | null = null
     let computedHash: string
     
     if (postId) {
       // Verify by postId
-      post = await Post.findById(postId)
-      if (!post) {
+      const foundPost = await Post.findById(postId)
+      if (!foundPost) {
         return NextResponse.json(
           { error: 'Post not found' },
           { status: 404 }
         )
       }
+      post = foundPost as PostData
       
       // Recompute canonical hash for the post
       computedHash = computeContentHash({
@@ -44,7 +55,8 @@ export async function POST(request: NextRequest) {
       computedHash = computeContentHash(content)
       
       // Find post with matching hash
-      post = await Post.findOne({ contentHash: computedHash })
+      const foundPost = await Post.findOne({ contentHash: computedHash })
+      post = foundPost as PostData | null
     }
     
     const result = {
@@ -58,7 +70,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(result)
     
   } catch (error) {
-    console.error('Verification endpoint error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Verification endpoint error:', errorMessage)
     return NextResponse.json(
       { error: 'Internal server error' },
       { status: 500 }

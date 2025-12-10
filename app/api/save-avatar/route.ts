@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import User from '@/models/User'
-import { getAvatarUrl } from '@/lib/avatar-utils'
+import { getAvatarUrl } from '@/lib/storage/avatar-utils'
+import { getSession } from '@/lib/auth/server-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Save avatar error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Save avatar error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

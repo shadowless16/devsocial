@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import User from "@/models/User"
-import connectDB from "@/lib/db"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
+import connectDB from "@/lib/core/db"
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from "@/lib/auth/auth"
 import bcrypt from "bcryptjs"
 
 export async function POST(
@@ -30,10 +31,10 @@ export async function POST(
       success: true,
       message: "Password reset successfully"
     })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ 
       success: false, 
-      message: error.message || "Failed to reset password" 
+      message: error instanceof Error ? error.message : "Failed to reset password" 
     }, { status: 500 })
   }
 }

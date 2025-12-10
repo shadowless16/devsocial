@@ -41,7 +41,7 @@
 
 //         console.log(`✅ Updated ${user.username} with referral code: ${referralCode}`)
 //         updated++
-//       } catch (error) {
+//       } catch (error: unknown) {
 //         console.error(`❌ Failed to update ${user.username}:`, error)
 //         failed++
 //       }
@@ -55,7 +55,7 @@
 // `)
 
 //     process.exit(0)
-//   } catch (error) {
+//   } catch (error: unknown) {
 //     console.error("Migration failed:", error)
 //     process.exit(1)
 //   }

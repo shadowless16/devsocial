@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(successResponse(result))
   } catch (error) {
-    console.error("Error awarding XP:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error awarding XP:", errorMessage)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
   }
 }

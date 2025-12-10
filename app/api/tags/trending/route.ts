@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Tag from "@/models/Tag"
 
 export const dynamic = 'force-dynamic'
@@ -21,7 +21,8 @@ export async function GET(request: NextRequest) {
       tags: trendingTags
     })
   } catch (error) {
-    console.error("Get trending tags error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get trending tags error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

@@ -8,7 +8,7 @@ export interface IChallengeParticipation extends Document {
   completedAt?: Date
   isFirstCompletion: boolean
   xpEarned: number
-  submissionData?: any
+  submissionData?: unknown
   createdAt: Date
   updatedAt: Date
 }

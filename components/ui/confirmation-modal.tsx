@@ -72,7 +72,8 @@ export function ConfirmationModal({
       await onConfirm()
       onClose()
     } catch (error) {
-      console.error("Confirmation action failed:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Confirmation action failed:", errorMessage)
     } finally {
       setIsLoading(false)
     }

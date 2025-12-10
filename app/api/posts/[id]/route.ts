@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Post from "@/models/Post"
 import Comment from "@/models/Comment"
 import Like from "@/models/Like"
-import { authMiddleware, type AuthenticatedRequest } from "@/middleware/auth"
+import { authMiddleware } from "@/middleware/auth"
 import { errorResponse } from "@/utils/response"
 
 export const dynamic = 'force-dynamic'
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .lean()
 
     // Format post for response
-    const postData = post as any
+    const postData = post as { _id: unknown; isAnonymous?: boolean; author: { username: string; avatar: string; level: number }; content: string; imageUrl?: string; imageUrls?: string[]; videoUrls?: string[]; tags: string[]; likesCount: number; commentsCount: number; viewsCount?: number; xpAwarded: number; createdAt: Date }
     const formattedPost = {
       id: postData._id,
       author: postData.isAnonymous
@@ -79,7 +79,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       data: { post: formattedPost }
     })
   } catch (error) {
-    console.error("Get post error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get post error:", errorMessage)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
   }
 }
@@ -131,7 +132,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       data: { message: "Post deleted successfully" }
     })
   } catch (error) {
-    console.error("Delete post error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Delete post error:", errorMessage)
     return NextResponse.json(errorResponse("Failed to delete post"), { status: 500 })
   }
 }

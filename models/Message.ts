@@ -1,7 +1,6 @@
 import mongoose, { Schema, type Document } from "mongoose"
 
 export interface IMessage extends Document {
-  _id: string
   sender: mongoose.Types.ObjectId
   recipient: mongoose.Types.ObjectId
   content: string

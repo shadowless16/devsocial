@@ -25,7 +25,6 @@ export function createRateLimiter(config: RateLimitConfig) {
     const key = `${clientId}:${path}`;
     
     const now = Date.now();
-    const windowStart = now - config.windowMs;
     
     // Get or create rate limit entry
     let entry = rateLimitStore.get(key);

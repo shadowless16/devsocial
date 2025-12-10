@@ -30,7 +30,8 @@ export function DataModeToggle() {
         setDataMode('real')
       }
     } catch (error) {
-      console.error('Error deleting users:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error deleting users:', errorMessage)
       alert('Failed to delete generated users')
     } finally {
       setIsDeleting(false)

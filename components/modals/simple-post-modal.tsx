@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
+// import Image from 'next/image';
 import { X, ImageIcon, Video, Hash, Smile, Code, BarChart3 } from "lucide-react";
 import { VoiceRecorder } from "@/components/ui/voice-recorder";
 import { ImageAnalyzer } from "@/components/ui/image-analyzer";
@@ -20,7 +21,7 @@ import { LinkPreviewCard } from "@/components/ui/link-preview-card";
 interface SimplePostModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (postData: any) => void;
+  onSubmit: (postData: unknown) => void;
 }
 
 export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalProps) {
@@ -34,9 +35,25 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const [tags, setTags] = useState<string[]>([]);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const [showPollCreator, setShowPollCreator] = useState(false);
-  const [pollData, setPollData] = useState<any>(null);
+  const [pollData, setPollData] = useState<{
+    question: string;
+    options: Array<{ id: string; text: string }>;
+    settings: {
+      multipleChoice: boolean;
+      maxChoices: number;
+      showResults: string;
+      allowAddOptions: boolean;
+      duration?: number;
+    };
+  } | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [linkPreview, setLinkPreview] = useState<any>(null);
+  const [linkPreview, setLinkPreview] = useState<{
+    title: string;
+    description: string;
+    image?: string;
+    url: string;
+    siteName: string;
+  } | null>(null);
   const [isFetchingPreview, setIsFetchingPreview] = useState(false);
   
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -120,7 +137,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         setLinkPreview(data)
       }
     } catch (error) {
-      console.error('Failed to fetch link preview:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to fetch link preview:', errorMessage)
     } finally {
       setIsFetchingPreview(false)
     }
@@ -194,6 +212,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         description: `${urls.length} file(s) uploaded`,
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Upload failed:', errorMessage);
       toast({
         title: "Upload failed",
         description: "Failed to upload media. Please try again.",
@@ -235,7 +255,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
       linkPreview: linkPreview || undefined,
       poll: pollData ? {
         question: pollData.question,
-        options: pollData.options.map((opt: any) => ({
+        options: pollData.options.map((opt) => ({
           id: opt.id,
           text: opt.text,
           votes: 0,
@@ -275,6 +295,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
         description: "Your post has been shared with the community.",
       });
     } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Failed to post:', errorMessage);
       toast({
         title: "Failed to post",
         description: "Something went wrong. Please try again.",
@@ -335,7 +357,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 </Button>
               </div>
               <p className="font-medium mb-2">{pollData.question}</p>
-              {pollData.options.map((opt: any) => (
+              {pollData.options.map((opt) => (
                 <div key={opt.id} className="p-2 bg-white dark:bg-gray-800 rounded mb-1 text-sm">
                   {opt.text}
                 </div>
@@ -352,7 +374,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 alt={user?.displayName || user?.username}
                 className="w-10 h-10 flex-shrink-0"
                 showLevelFrame={false}
-                gender={(user as any)?.gender}
+                gender={user && typeof user === 'object' && 'gender' in user ? (user.gender as 'male' | 'female' | 'other' | undefined) : undefined}
               />
               <div className="flex-1 min-w-0">
                 <MentionInput
@@ -396,6 +418,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                     />
                   ) : (
                     <>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={url}
                         alt={`Upload ${index + 1}`}
@@ -557,7 +580,7 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowPollCreator(true)}
-                disabled={showPollCreator || pollData}
+                disabled={showPollCreator || !!pollData}
                 className="h-8 w-8 p-0 rounded-full hover:bg-indigo-50 hover:text-indigo-600 dark:hover:bg-indigo-900/20 shrink-0"
               >
                 <BarChart3 className="h-4 w-4" />

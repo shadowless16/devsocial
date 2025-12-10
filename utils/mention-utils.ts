@@ -1,7 +1,7 @@
 import User from "@/models/User"
 import UserMention from "@/models/UserMention"
 import Notification from "@/models/Notification"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export function extractMentions(content: string): string[] {
   const mentionRegex = /@(\w+)/g
@@ -53,7 +53,8 @@ export async function processMentions(
         metadata: { postId, commentId }
       })
     } catch (error) {
-      console.error(`Error processing mention for ${username}:`, error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing mention for ${username}:`, errorMessage)
     }
   }
 

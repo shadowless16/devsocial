@@ -58,7 +58,7 @@ export interface IUser extends Document {
     explain?: Array<{ date: Date; contentLength: number }>;
   }; // Track AI feature usage
   isPremium?: boolean; // Premium subscription status
-  pushSubscription?: any; // Push notification subscription
+  pushSubscription?: unknown; // Push notification subscription
   isBlocked?: boolean; // User blocked status
   appearanceSettings?: {
     theme?: "light" | "dark" | "system";
@@ -386,7 +386,7 @@ function normalizeReadyPlayerMe(avatar?: string) {
   return url;
 }
 
-UserSchema.pre("save", function (next) {
+UserSchema.pre("save", function () {
   // 1. Level calculation logic
   if (this.isModified("points")) {
     this.level = Math.floor(this.points / 1000) + 1;
@@ -410,8 +410,6 @@ UserSchema.pre("save", function (next) {
     const random = Math.random().toString(36).substring(2, 6).toUpperCase();
     this.referralCode = `${username}${timestamp}${random}`;
   }
-
-  next();
 });
 
 // --- END: COMBINED MIDDLEWARE ---

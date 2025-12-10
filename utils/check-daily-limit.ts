@@ -20,7 +20,7 @@ export async function checkDailyLimit(
     userId,
     type: action,
     createdAt: { $gte: today, $lt: tomorrow }
-  });
+  } as any);
 
   return {
     allowed: count < limit,

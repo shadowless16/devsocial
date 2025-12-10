@@ -23,7 +23,7 @@ interface TransactionFiltersProps {
 export default function TransactionFilters({ onFiltersChange, onReset }: TransactionFiltersProps) {
   const [filters, setFilters] = useState<TransactionFilters>({});
 
-  const handleFilterChange = (key: keyof TransactionFilters, value: any) => {
+  const handleFilterChange = (key: keyof TransactionFilters, value: unknown) => {
     const newFilters = { ...filters, [key]: value || undefined };
     setFilters(newFilters);
     onFiltersChange(newFilters);

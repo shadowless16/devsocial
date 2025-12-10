@@ -115,3 +115,9 @@ scripts/
 /test_documentation
 
 /db-exports
+
+/.bun-cache
+
+/scripts
+
+scripts/

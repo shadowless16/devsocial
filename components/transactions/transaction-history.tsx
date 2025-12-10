@@ -1,6 +1,6 @@
-"use client"
+﻿"use client"
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useAuth } from '@/contexts/app-context'
 import { Badge } from '@/components/ui/badge'
@@ -31,13 +31,7 @@ export function TransactionHistory({ limit = 10 }: TransactionHistoryProps) {
   const [page, setPage] = useState(1)
   const userId = user?.id
 
-  useEffect(() => {
-    if (userId) {
-      fetchTransactions()
-    }
-  }, [userId, page])
-
-  const fetchTransactions = async () => {
+  const fetchTransactions = useCallback(async () => {
     try {
       const response = await fetch(`/api/transactions?userId=${userId}&page=${page}&limit=${limit}`)
       const data = await response.json()
@@ -72,7 +66,8 @@ export function TransactionHistory({ limit = 10 }: TransactionHistoryProps) {
         setTransactions(prev => page === 1 ? mockTransactions : [...prev, ...mockTransactions])
       }
     } catch (error) {
-      console.error('Failed to fetch transactions:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to fetch transactions:', errorMessage)
       // Show mock data on error
       const mockTransactions = [
         {
@@ -91,7 +86,13 @@ export function TransactionHistory({ limit = 10 }: TransactionHistoryProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, page, limit]);
+
+  useEffect(() => {
+    if (userId) {
+      fetchTransactions()
+    }
+  }, [userId, page, fetchTransactions])
 
   const getTransactionIcon = (type: string, isOutgoing: boolean) => {
     if (type === 'reward') return <Gift className="w-4 h-4 text-green-500" />

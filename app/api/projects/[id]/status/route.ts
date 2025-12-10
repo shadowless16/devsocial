@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import Project from '@/models/Project'
 
 export async function PUT(
@@ -40,7 +39,8 @@ export async function PUT(
       data: { status: project.status }
     })
   } catch (error) {
-    console.error('Error updating project status:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error updating project status:', errorMessage)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

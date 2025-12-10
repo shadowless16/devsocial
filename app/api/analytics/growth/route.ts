@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import User from '@/models/User'
-import Post from '@/models/Post'
 
 export async function GET(request: NextRequest) {
   try {
@@ -118,7 +117,8 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Growth analytics error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Growth analytics error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to fetch growth analytics' },
       { status: 500 }

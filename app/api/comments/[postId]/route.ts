@@ -4,17 +4,18 @@ import Comment from "@/models/Comment"
 import Post from "@/models/Post"
 import Activity from "@/models/Activity"
 import Notification from "@/models/Notification"
-import connectDB from "@/lib/db"
-import { successResponse, errorResponse } from "@/utils/response"
+import connectDB from "@/lib/core/db"
+import { errorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
-import { getWebSocketServer } from "@/lib/websocket"
+import { getWebSocketServer } from "@/lib/realtime/websocket"
 // Only import mission models if needed
-let MissionProgress: any = null;
+let MissionProgress: typeof import("@/models/MissionProgress").default | null = null;
 
 try {
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   MissionProgress = require("@/models/MissionProgress").default;
-} catch (error) {
-  console.warn("MissionProgress model not available:", error);
+} catch {
+  console.warn("MissionProgress model not available");
 }
 
 export const dynamic = 'force-dynamic'
@@ -72,7 +73,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }
     })
   } catch (error) {
-    console.error("Error fetching comments:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Error fetching comments';
+    console.error("Error fetching comments:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch comments"), { status: 500 })
   }
 }
@@ -83,7 +85,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const authResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error || 'An unknown authentication error occurred.'), { status: 401 })
+      return NextResponse.json(errorResponse('error' in authResult ? authResult.error : 'Authentication failed'), { status: 401 })
     }
 
     const userId = authResult.user!.id
@@ -209,7 +211,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           }
         }
       } catch (missionError) {
-        console.warn('Mission progress tracking failed, continuing with comment creation:', missionError);
+        const errorMessage = missionError instanceof Error ? missionError.message : 'Mission progress tracking failed';
+        console.warn('Mission progress tracking failed, continuing with comment creation:', errorMessage);
         // Don't fail the comment creation if mission tracking fails
       }
     }
@@ -219,7 +222,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       data: { comment }
     }, { status: 201 })
   } catch (error) {
-    console.error("Error creating comment:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Error creating comment';
+    console.error("Error creating comment:", errorMessage)
     return NextResponse.json(errorResponse("Failed to create comment"), { status: 500 })
   }
 }

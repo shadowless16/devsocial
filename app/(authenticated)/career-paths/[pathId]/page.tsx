@@ -4,7 +4,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import React, { useState } from 'react'
 import { ArrowLeft, BookOpen, Clock, Play, CheckCircle, Brain } from 'lucide-react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { SkillAssessment } from '@/components/career-paths/skill-assessment'
@@ -115,7 +115,7 @@ export default function PathPage({ params }: Props) {
     }
   ]
   
-  const handleAssessmentComplete = (result: any) => {
+  const handleAssessmentComplete = (result: unknown) => {
     console.log('Assessment result:', result)
     setAssessmentCompleted(true)
     setShowAssessment(false)

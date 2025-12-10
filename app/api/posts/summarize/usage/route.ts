@@ -1,13 +1,19 @@
 // app/api/posts/summarize/usage/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from '@/lib/auth';
+import { getSession } from '@/lib/auth/server-auth';
 import { errorResponse, successResponse } from '@/utils/response';
-import connectDB from '@/lib/db';
+import connectDB from '@/lib/core/db';
 import User from '@/models/User';
 
 // Simple in-memory cache for usage data
-const usageCache = new Map<string, { data: any; timestamp: number }>();
+interface UsageData {
+  used: number;
+  limit: number;
+  remaining: number;
+  isPremium: boolean;
+}
+
+const usageCache = new Map<string, { data: UsageData; timestamp: number }>();
 const CACHE_DURATION = 30000; // 30 seconds
 
 export async function GET(req: NextRequest) {
@@ -24,7 +30,7 @@ export async function GET(req: NextRequest) {
     // Check cache first
     const cached = usageCache.get(cacheKey);
     if (cached && (now - cached.timestamp) < CACHE_DURATION) {
-      return NextResponse.json(successResponse(cached.data));
+      return NextResponse.json(successResponse(cached.data as unknown as Record<string, unknown>));
     }
 
     await connectDB();
@@ -37,24 +43,33 @@ export async function GET(req: NextRequest) {
     const currentYear = new Date().getFullYear();
     const monthKey = `${currentYear}-${currentMonth}`;
     
-    const summaryUsage = (user as any).summaryUsage || {};
+    interface UserWithUsage {
+      summaryUsage?: Record<string, number>;
+      isPremium?: boolean;
+      username: string;
+    }
+    
+    const typedUser = user as UserWithUsage;
+    const summaryUsage = typedUser.summaryUsage || {};
     const monthlyUsage = summaryUsage[monthKey] || 0;
-    const monthlyLimit = (user as any).isPremium ? 100 : 5;
-    const remainingUsage = (user as any).username === 'AkDavid' ? 999999 : monthlyLimit - monthlyUsage;
+    const monthlyLimit = typedUser.isPremium ? 100 : 5;
+    const isUnlimited = typedUser.username === 'AkDavid';
+    const remainingUsage = isUnlimited ? 999999 : monthlyLimit - monthlyUsage;
     
     const responseData = { 
-      used: (user as any).username === 'AkDavid' ? 0 : monthlyUsage,
-      limit: (user as any).username === 'AkDavid' ? 999999 : monthlyLimit,
+      used: isUnlimited ? 0 : monthlyUsage,
+      limit: isUnlimited ? 999999 : monthlyLimit,
       remaining: remainingUsage,
-      isPremium: (user as any).isPremium || (user as any).username === 'AkDavid'
+      isPremium: typedUser.isPremium || isUnlimited
     };
     
     // Cache the result
     usageCache.set(cacheKey, { data: responseData, timestamp: now });
     
-    return NextResponse.json(successResponse(responseData));
+    return NextResponse.json(successResponse(responseData as unknown as Record<string, unknown>));
   } catch (error) {
-    console.error('Usage check error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Usage check error:', errorMessage);
     return NextResponse.json(errorResponse('Failed to check usage'), { status: 500 });
   }
 }

@@ -18,7 +18,7 @@ interface SkillProgressProps {
   skills: Skill[]
 }
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   'JavaScript': Code2,
   'React': Atom,
   'Node.js': Server,
@@ -68,8 +68,7 @@ export default function SkillProgress({ skills }: SkillProgressProps) {
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 bg-primary/10 rounded-lg flex items-center justify-center">
                       <IconComponent 
-                        size={16} 
-                        className="text-primary"
+                        className="text-primary w-4 h-4"
                       />
                     </div>
                     <div>

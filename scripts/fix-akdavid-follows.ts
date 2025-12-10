@@ -43,7 +43,7 @@ async function fixAkDavidFollows() {
         } else {
           alreadyFollowing++
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error processing ${user.username}:`, error)
       }
     }
@@ -53,7 +53,7 @@ async function fixAkDavidFollows() {
     console.log(`- Already following: ${alreadyFollowing}`)
     console.log(`- Total users processed: ${allUsers.length}`)
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fixing AkDavid follows:", error)
   }
 }

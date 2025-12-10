@@ -1,14 +1,15 @@
 "use client"
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
+import Image from 'next/image'
 import { MapPin, Calendar, Edit2, Trophy, Target, Users, MessageCircle, Loader2, Heart, FolderOpen, ListOrdered, Plus, BarChart3 } from 'lucide-react'
 import { useAuth } from '@/contexts/app-context'
-import { useWebSocket } from '@/contexts/websocket-context'
+import { Post, ProfileData, UserSearchResult } from '@/types'
 import { ProfileSkeleton } from '@/components/skeletons/profile-skeleton'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { UserAvatar } from '@/components/ui/user-avatar'
-import { FollowStats } from '@/components/shared/FollowStats'
+
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
 
@@ -27,29 +28,60 @@ const SmartAvatar = dynamic(() => import('@/components/ui/smart-avatar').then(mo
 
 export default function MyProfile() {
   const { user, loading: authLoading } = useAuth()
-  const { socket } = useWebSocket()
   const router = useRouter()
   const [activeTab, setActiveTab] = useState('posts')
-  const [profileData, setProfileData] = useState<any>(null)
+  const [profileData, setProfileData] = useState<ProfileData | null>(null)
   const [showEditModal, setShowEditModal] = useState(false)
-  const [userPosts, setUserPosts] = useState<any[]>([])
-  const [userStats, setUserStats] = useState<any>(null)
+  const [userPosts, setUserPosts] = useState<Post[]>([])
+  const [userStats, setUserStats] = useState<{ totalXP?: number; challengesCompleted?: number; communityRank?: number; postsCreated?: number; totalLikes?: number } | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [loadingMore, setLoadingMore] = useState(false)
   const [hasMore, setHasMore] = useState(true)
   const [page, setPage] = useState(1)
   const [showFollowModal, setShowFollowModal] = useState(false)
   const [followModalType, setFollowModalType] = useState<'followers' | 'following'>('followers')
-  const [followData, setFollowData] = useState<any[]>([])
+  const [followData, setFollowData] = useState<UserSearchResult[]>([])
   const [loadingFollowData, setLoadingFollowData] = useState(false)
   const observer = useRef<IntersectionObserver | null>(null)
 
-  useEffect(() => {
-    if (authLoading || !user) return
-    fetchInitialData()
-  }, [user, authLoading])
+  const fetchUserPosts = useCallback(async (pageNum: number, reset = false) => {
+    try {
+      if (!reset) {
+        setLoadingMore(true)
+      }
+      
+      const response = await fetch(`/api/posts?limit=50&page=${pageNum}`)
+      
+      if (response.ok) {
+        const result = await response.json()
+        
+        if (result.success && result.data?.posts) {
+          const userSpecificPosts = result.data.posts.filter((post: Post) => {
+            const author = post.author as { id?: string; _id?: string } | null
+            const authorId = author?.id || author?._id
+            const currentUser = user as { id?: string; _id?: string } | null
+            const userId = currentUser?.id || currentUser?._id
+            return authorId === userId
+          })
+          
+          if (reset) {
+            setUserPosts(userSpecificPosts)
+          } else {
+            setUserPosts(prev => [...prev, ...userSpecificPosts])
+          }
+          
+          setHasMore(result.data.posts.length === 50)
+          setPage(pageNum)
+        }
+      }
+    } catch (error: unknown) {
+      console.error('Error fetching user posts:', error)
+    } finally {
+      setLoadingMore(false)
+    }
+  }, [user])
 
-  const fetchInitialData = async () => {
+  const fetchInitialData = useCallback(async () => {
     setIsLoading(true)
     try {
       const [profileRes, statsRes] = await Promise.all([
@@ -73,47 +105,17 @@ export default function MyProfile() {
 
       // Fetch initial posts
       await fetchUserPosts(1, true)
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching profile data:', error)
     } finally {
       setIsLoading(false)
     }
-  }
+  }, [fetchUserPosts])
 
-  const fetchUserPosts = async (pageNum: number, reset = false) => {
-    try {
-      if (!reset) {
-        setLoadingMore(true)
-      }
-      
-      const response = await fetch(`/api/posts?limit=50&page=${pageNum}`)
-      
-      if (response.ok) {
-        const result = await response.json()
-        
-        if (result.success && result.data?.posts) {
-          const userSpecificPosts = result.data.posts.filter((post: any) => {
-            const authorId = post.author?.id || post.author?._id
-            const userId = user?.id || (user as any)?._id
-            return authorId === userId
-          })
-          
-          if (reset) {
-            setUserPosts(userSpecificPosts)
-          } else {
-            setUserPosts(prev => [...prev, ...userSpecificPosts])
-          }
-          
-          setHasMore(result.data.posts.length === 50)
-          setPage(pageNum)
-        }
-      }
-    } catch (error) {
-      console.error('Error fetching user posts:', error)
-    } finally {
-      setLoadingMore(false)
-    }
-  }
+  useEffect(() => {
+    if (authLoading || !user) return
+    fetchInitialData()
+  }, [user, authLoading, fetchInitialData])
 
   const lastPostElementRef = useCallback((node: HTMLDivElement) => {
     if (isLoading || loadingMore) return
@@ -124,7 +126,7 @@ export default function MyProfile() {
       }
     })
     if (node) observer.current?.observe(node)
-  }, [isLoading, loadingMore, hasMore, page])
+  }, [isLoading, loadingMore, hasMore, page, fetchUserPosts])
 
   const handlePostClick = (postId: string) => {
     router.push(`/post/${postId}`)
@@ -148,7 +150,7 @@ export default function MyProfile() {
           setFollowData(list || [])
         }
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching follow data:', error)
     } finally {
       setLoadingFollowData(false)
@@ -157,7 +159,7 @@ export default function MyProfile() {
 
   const tabs = [
     { id: 'posts', label: 'Posts', count: userPosts.length, icon: MessageCircle },
-    { id: 'media', label: 'Media', count: userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length, icon: Target },
+    { id: 'media', label: 'Media', count: userPosts.filter((p: Post) => p.imageUrl || (p.imageUrls && p.imageUrls.length > 0) || (p.videoUrls && p.videoUrls.length > 0)).length, icon: Target },
     { id: 'projects', label: 'Projects', count: 0, icon: FolderOpen },
     { id: 'missions', label: 'Missions', count: 3, icon: ListOrdered },
     { id: 'referrals', label: 'Referrals', count: 0, icon: Plus },
@@ -186,10 +188,11 @@ export default function MyProfile() {
       {/* Cover Photo Area */}
       <div className="h-32 sm:h-48 bg-gradient-to-r from-blue-500 to-purple-600 relative">
         {profileData?.bannerUrl && (
-          <img 
+          <Image 
             src={profileData.bannerUrl} 
             alt="Profile banner" 
-            className="w-full h-full object-cover"
+            fill
+            className="object-cover"
           />
         )}
         <div className="absolute inset-0 bg-black/20" />
@@ -205,7 +208,6 @@ export default function MyProfile() {
             username={profileData?.username || user?.username}
             fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
             className="w-20 h-20 sm:w-32 sm:h-32 border-4 border-white shadow-xl"
-            size={128}
             showLevelFrame={false}
           />
           <Button 
@@ -341,7 +343,6 @@ export default function MyProfile() {
                             username={profileData?.username || user?.username}
                             fallback={profileData?.name?.split(' ').map((n: string) => n[0]).join('') || 'U'}
                             className="w-8 h-8 sm:w-10 sm:h-10 flex-shrink-0"
-                            size={40}
                             showLevelFrame={false}
                           />
                           <div className="flex-1 min-w-0">
@@ -356,7 +357,7 @@ export default function MyProfile() {
                             <p className="text-foreground text-sm sm:text-base mb-2 sm:mb-3 break-words">{post.content}</p>
                             
                             {/* Media Preview */}
-                            {(post.imageUrl || post.imageUrls?.length > 0 || post.videoUrls?.length > 0) && (() => {
+                            {(post.imageUrl || (post.imageUrls && post.imageUrls.length > 0) || (post.videoUrls && post.videoUrls.length > 0)) && (() => {
                               const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url) || url.includes('video')
                               const mediaUrl = post.videoUrls?.[0] || post.imageUrl || post.imageUrls?.[0]
                               const isVideoMedia = mediaUrl && isVideo(mediaUrl)
@@ -366,14 +367,16 @@ export default function MyProfile() {
                                   {isVideoMedia ? (
                                     <video 
                                       controls
-                                      src={mediaUrl}
+                                      src={mediaUrl || ''}
                                       className="w-full h-auto object-contain rounded-none sm:rounded-lg max-h-[400px]"
                                       preload="metadata"
                                     />
                                   ) : (
-                                    <img 
-                                      src={mediaUrl} 
+                                    <Image 
+                                      src={mediaUrl || '/placeholder.png'} 
                                       alt="Post media" 
+                                      width={800}
+                                      height={600}
                                       className="w-full h-auto object-contain rounded-none sm:rounded-lg"
                                     />
                                   )}
@@ -405,7 +408,7 @@ export default function MyProfile() {
                   
                   {!hasMore && userPosts.length > 0 && (
                     <div className="text-center py-4 text-muted-foreground">
-                      You've reached the end of your posts!
+                      You&apos;ve reached the end of your posts!
                     </div>
                   )}
                 </>
@@ -421,10 +424,10 @@ export default function MyProfile() {
 
           {activeTab === 'media' && (
             <div className="space-y-3">
-              {userPosts.filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length).length > 0 ? (
+              {userPosts.filter(p => p.imageUrl || (p.imageUrls && p.imageUrls.length > 0) || (p.videoUrls && p.videoUrls.length > 0)).length > 0 ? (
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4">
                   {userPosts
-                    .filter(p => p.imageUrl || p.imageUrls?.length || p.videoUrls?.length)
+                    .filter(p => p.imageUrl || (p.imageUrls && p.imageUrls.length > 0) || (p.videoUrls && p.videoUrls.length > 0))
                     .map((post) => {
                       const isVideo = (url: string) => /\.(mp4|webm|ogg|mov)$/i.test(url) || url.includes('video')
                       const mediaUrl = post.videoUrls?.[0] || post.imageUrl || post.imageUrls?.[0]
@@ -438,15 +441,16 @@ export default function MyProfile() {
                         >
                           {isVideoMedia ? (
                             <video 
-                              src={mediaUrl}
+                              src={mediaUrl || ''}
                               className="w-full h-full object-cover"
                               preload="metadata"
                             />
                           ) : (
-                            <img 
-                              src={mediaUrl} 
+                            <Image 
+                              src={mediaUrl || '/placeholder.png'} 
                               alt="Media post" 
-                              className="w-full h-full object-cover"
+                              fill
+                              className="object-cover"
                             />
                           )}
                         </div>
@@ -616,14 +620,17 @@ export default function MyProfile() {
           isOpen={showEditModal}
           onClose={() => setShowEditModal(false)}
           profile={profileData}
-          onSave={(data) => {
-            setProfileData((prev: any) => ({ 
-              ...prev, 
-              ...data,
-              name: data.displayName || prev.name,
-              avatar: data.avatar || prev.avatar,
-              bannerUrl: data.bannerUrl || prev.bannerUrl
-            }))
+          onSave={(data: Record<string, unknown>) => {
+            setProfileData((prev) => {
+              if (!prev) return null
+              return { 
+                ...prev, 
+                ...data,
+                name: (data.displayName as string) || prev.name,
+                avatar: (data.avatar as string) || prev.avatar,
+                bannerUrl: (data.bannerUrl as string) || prev.bannerUrl
+              } as ProfileData
+            })
             setShowEditModal(false)
           }}
         />
@@ -648,25 +655,27 @@ export default function MyProfile() {
                 </div>
               ) : followData.length > 0 ? (
                 <div className="space-y-3">
-                  {followData.map((person: any) => (
-                    <div key={person._id || person.id} className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg">
+                  {followData.map((person) => {
+                    const personData = person as { _id?: string; id?: string; username: string; displayName?: string; avatar?: string; level?: number }
+                    return (
+                    <div key={personData._id || personData.id} className="flex items-center gap-3 p-2 hover:bg-muted rounded-lg">
                       <UserAvatar 
                         user={{
-                          username: person.username || '',
-                          avatar: person.avatar,
-                          displayName: person.displayName
+                          username: personData.username || '',
+                          avatar: personData.avatar,
+                          displayName: personData.displayName
                         }}
                         className="h-10 w-10"
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{person.displayName || person.username}</p>
-                        <p className="text-sm text-muted-foreground truncate">@{person.username}</p>
+                        <p className="font-medium truncate">{personData.displayName || personData.username}</p>
+                        <p className="text-sm text-muted-foreground truncate">@{personData.username}</p>
                       </div>
-                      <Button size="sm" variant="outline" onClick={() => router.push(`/profile/${person.username}`)}>
+                      <Button size="sm" variant="outline" onClick={() => router.push(`/profile/${personData.username}`)}>
                         View
                       </Button>
                     </div>
-                  ))}
+                  )})}
                 </div>
               ) : (
                 <div className="text-center py-8">

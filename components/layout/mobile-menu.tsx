@@ -4,7 +4,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useAuth, useApp } from "@/contexts/app-context"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 import { 
   Grid2X2,
   FolderOpen,
@@ -61,6 +61,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   const [localUser, setLocalUser] = useState(user)
 
   const handleThemeToggle = () => {
+    if (typeof window === 'undefined') return
     const html = document.documentElement
     if (html.classList.contains('dark')) {
       html.classList.remove('dark')
@@ -81,11 +82,15 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
   }, [user])
 
   useEffect(() => {
-    const handleUserUpdated = (e: any) => {
-      if (e?.detail) setLocalUser(e.detail)
+    interface UserUpdatedEvent extends Event {
+      detail: typeof user
     }
-    window.addEventListener('user:updated', handleUserUpdated as EventListener)
-    return () => window.removeEventListener('user:updated', handleUserUpdated as EventListener)
+    const handleUserUpdated = (e: Event) => {
+      const customEvent = e as UserUpdatedEvent;
+      if (customEvent.detail) setLocalUser(customEvent.detail)
+    }
+    window.addEventListener('user:updated', handleUserUpdated)
+    return () => window.removeEventListener('user:updated', handleUserUpdated)
   }, [])
 
   if (!isOpen) return null

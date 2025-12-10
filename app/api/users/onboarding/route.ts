@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
-import connectDB from "@/lib/db"
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from "@/lib/auth/auth"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import { generateGenderAvatar } from "@/utils/avatar-generator"
 
@@ -39,7 +40,8 @@ export async function GET(req: NextRequest) {
       xp: user.xp || 10,
     })
   } catch (error) {
-    console.error("Get onboarding error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get onboarding error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -92,7 +94,8 @@ export async function PUT(req: NextRequest) {
       data: { user: user.toObject() }
     })
   } catch (error) {
-    console.error("Onboarding error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Onboarding error:", errorMessage)
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

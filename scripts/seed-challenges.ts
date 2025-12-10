@@ -32,7 +32,7 @@ async function seedChallenges() {
     })
 
     console.log("\nChallenges seeded successfully!")
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error seeding challenges:", error)
   }
 }

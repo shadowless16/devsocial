@@ -43,7 +43,7 @@ export function AvatarShowcase() {
           <li>✅ Unique illustrated avatars for every user</li>
           <li>✅ Level-based colored frames</li>
           <li>✅ 50 XP reward for uploading custom photo</li>
-          <li>✅ "First Impression" badge</li>
+          <li>✅ &quot;First Impression&quot; badge</li>
           <li>✅ Animated effects for high-level users</li>
         </ul>
       </div>

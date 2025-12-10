@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
-import dbConnect from "@/lib/db"
+import dbConnect from "@/lib/core/db"
 import Community from "@/models/Community"
 import Post from "@/models/Post"
 
@@ -33,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
     
     return NextResponse.json({ success: true, data: community })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }

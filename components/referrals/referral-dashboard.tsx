@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -37,11 +37,7 @@ export function ReferralDashboard() {
   const { toast } = useToast()
   const router = useRouter()
 
-  useEffect(() => {
-    fetchReferralData()
-  }, [])
-
-  const fetchReferralData = async () => {
+  const fetchReferralData = useCallback(async () => {
     try {
       // Fetch referral code
       const codeResponse = await fetch("/api/referrals/create")
@@ -59,7 +55,8 @@ export function ReferralDashboard() {
         setStats(statsData.data)
       }
     } catch (error) {
-      console.error("Error fetching referral data:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching referral data:", errorMessage)
       toast({
         title: "Error",
         description: "Failed to load referral data",
@@ -68,7 +65,11 @@ export function ReferralDashboard() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
+
+  useEffect(() => {
+    fetchReferralData()
+  }, [fetchReferralData])
 
   const getReferralLink = () => {
     if (typeof window === 'undefined') return ''
@@ -95,7 +96,8 @@ export function ReferralDashboard() {
           url: referralLink,
         })
       } catch (error) {
-        console.error("Error sharing:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error sharing:", errorMessage)
       }
     } else {
       copyReferralLink()

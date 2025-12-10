@@ -14,7 +14,7 @@ interface LoggerConfig {
 class Logger {
   private config: LoggerConfig = {
     enabled: process.env.NODE_ENV === 'development',
-    level: (process.env.LOG_LEVEL as any) || 'info',
+    level: (process.env.LOG_LEVEL as 'debug' | 'info' | 'warn' | 'error') || 'info',
     suppressPatterns: [
       /GET \/api\/auth\/session/,
       /GET \/api\/users\/profile/,
@@ -30,7 +30,7 @@ class Logger {
     error: 3,
   }
 
-  private safeStringify(args: any[]): string {
+  private safeStringify(args: unknown[]): string {
     try {
       return args.map(arg => {
         if (typeof arg === 'string') return arg
@@ -82,7 +82,7 @@ class Logger {
     return true
   }
 
-  private internallyLog(logFunc: Function, level: keyof typeof this.levels, args: any[]) {
+  private internallyLog(logFunc: (...args: unknown[]) => unknown, level: keyof typeof this.levels, args: unknown[]) {
     try {
       const message = this.safeStringify(args);
       if (this.shouldLog(level, message)) {
@@ -94,23 +94,23 @@ class Logger {
     }
   }
 
-  debug(...args: any[]) {
+  debug(...args: unknown[]) {
     this.internallyLog(console.debug, 'debug', args);
   }
 
-  info(...args: any[]) {
+  info(...args: unknown[]) {
     this.internallyLog(console.info, 'info', args);
   }
 
-  warn(...args: any[]) {
+  warn(...args: unknown[]) {
     this.internallyLog(console.warn, 'warn', args);
   }
 
-  error(...args: any[]) {
+  error(...args: unknown[]) {
     this.internallyLog(console.error, 'error', args);
   }
 
-  log(...args: any[]) {
+  log(...args: unknown[]) {
     this.internallyLog(console.log, 'info', args);
   }
 }

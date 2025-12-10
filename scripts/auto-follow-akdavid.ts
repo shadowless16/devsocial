@@ -44,7 +44,7 @@ async function autoFollowAkDavid() {
         } else {
           alreadyFollowing++
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error(`Error processing user ${user.username}:`, error)
       }
     }
@@ -60,7 +60,7 @@ async function autoFollowAkDavid() {
     
     console.log(`AkDavid now has ${totalFollowers} followers`)
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error in auto-follow script:', error)
   } finally {
     process.exit(0)

@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(successResponse({ challenges }))
   } catch (error) {
-    console.error("Error fetching user challenges:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching user challenges:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch user challenges"), { status: 500 })
   }
 }

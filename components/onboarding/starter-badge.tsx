@@ -16,10 +16,14 @@ const starterBadges = [
   { id: "speed-coder", name: "Speed Coder", icon: Zap, description: "Fast and efficient" },
 ]
 
+interface BadgeData {
+  starterBadge?: string
+}
+
 interface StarterBadgeProps {
-  data: any
-  onNext: (data: any) => void
-  onChange?: (data: any) => void
+  data: BadgeData
+  onNext: (data: BadgeData) => void
+  onChange?: (data: BadgeData) => void
   onBack?: () => void
 }
 

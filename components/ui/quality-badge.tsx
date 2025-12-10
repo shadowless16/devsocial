@@ -1,6 +1,6 @@
 "use client";
 
-import { Sparkles, Award, MessageCircle, HelpCircle, Code, Lightbulb } from "lucide-react";
+import { Award, MessageCircle, HelpCircle, Code, Lightbulb } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 

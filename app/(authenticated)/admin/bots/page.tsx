@@ -13,6 +13,7 @@ export default function BotsManagement() {
   const [frequency, setFrequency] = useState(5);
   const [loading, setLoading] = useState(false);
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     fetchBots();
   }, []);
@@ -99,25 +100,27 @@ export default function BotsManagement() {
       <Card className="p-6">
         <h2 className="text-xl font-semibold mb-4">Active Bots ({bots.length})</h2>
         <div className="space-y-2">
-          {bots.map((bot: any) => (
-            <div key={bot._id} className="flex items-center justify-between p-3 border rounded">
+          {bots.map((bot: unknown) => {
+            const botData = bot as { _id: string; userId?: { username?: string }; personality: string; commentFrequency: number; stats: { totalComments: number; totalReplies: number } }
+            return (
+            <div key={botData._id} className="flex items-center justify-between p-3 border rounded">
               <div>
-                <p className="font-semibold">{bot.userId?.username}</p>
-                <p className="text-sm text-gray-500">{bot.personality} • {bot.commentFrequency} comments/run</p>
+                <p className="font-semibold">{botData.userId?.username}</p>
+                <p className="text-sm text-gray-500">{botData.personality} • {botData.commentFrequency} comments/run</p>
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-sm">
-                  <p>💬 {bot.stats.totalComments} comments</p>
-                  <p>↩️ {bot.stats.totalReplies} replies</p>
+                  <p>💬 {botData.stats.totalComments} comments</p>
+                  <p>↩️ {botData.stats.totalReplies} replies</p>
                 </div>
                 <div className="flex gap-2">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={async () => {
-                      const newFreq = prompt('Comments per run (1-20):', bot.commentFrequency);
+                      const newFreq = prompt('Comments per run (1-20):', String(botData.commentFrequency));
                       if (newFreq) {
-                        await fetch(`/api/admin/bots/${bot._id}`, {
+                        await fetch(`/api/admin/bots/${botData._id}`, {
                           method: 'PATCH',
                           headers: { 'Content-Type': 'application/json' },
                           body: JSON.stringify({ commentFrequency: Number(newFreq) })
@@ -133,7 +136,7 @@ export default function BotsManagement() {
                     size="sm"
                     onClick={async () => {
                       if (confirm('Delete this bot?')) {
-                        await fetch(`/api/admin/bots/${bot._id}`, { method: 'DELETE' });
+                        await fetch(`/api/admin/bots/${botData._id}`, { method: 'DELETE' });
                         fetchBots();
                       }
                     }}
@@ -143,7 +146,8 @@ export default function BotsManagement() {
                 </div>
               </div>
             </div>
-          ))}
+          )})
+        }
         </div>
       </Card>
     </div>

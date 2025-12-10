@@ -27,7 +27,7 @@ export function TipModal({
   recipientId,
   recipientName,
   recipientAvatar,
-  currentUserId,
+  currentUserId: _currentUserId,
   currentUserBalance,
   onTipSent
 }: TipModalProps) {
@@ -99,7 +99,7 @@ export function TipModal({
           variant: "destructive"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to send tip. Please try again.",

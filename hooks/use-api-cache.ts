@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/api/api-client';
 
 export function useApiCache() {
   const invalidateCache = useCallback((pattern?: string) => {

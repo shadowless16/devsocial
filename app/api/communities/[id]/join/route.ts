@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getUserFromRequest } from '@/lib/jwt-auth'
-import dbConnect from "@/lib/db"
+import { getUserFromRequest } from '@/lib/auth/jwt-auth'
+import dbConnect from "@/lib/core/db"
 import Community from "@/models/Community"
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -49,7 +49,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         memberCount: community.memberCount 
       }
     })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }

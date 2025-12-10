@@ -1,8 +1,16 @@
+import mongoose from "mongoose"
 import User from "@/models/User"
 import Notification from "@/models/Notification"
 import LeaderboardSnapshot from "@/models/LeaderboardSnapshot"
-import connectDB from "@/lib/db"
-import { sendPushNotification } from "@/lib/push-notification"
+import connectDB from "@/lib/core/db"
+import { sendPushNotification } from "@/lib/notifications/push-notification"
+
+interface LeaderboardEntry {
+  userId: string | mongoose.Types.ObjectId
+  username: string
+  rank: number
+  totalXP: number
+}
 
 export class XPOvertakeService {
   static async checkAndNotifyOvertakes(type: 'all-time' | 'weekly' | 'monthly' = 'all-time') {
@@ -10,7 +18,7 @@ export class XPOvertakeService {
       await connectDB()
 
       const currentLeaderboard = await this.getCurrentLeaderboard(type)
-      const previousSnapshots = await LeaderboardSnapshot.find({ type })
+      const previousSnapshots = await LeaderboardSnapshot.find({ type } as any)
 
       if (previousSnapshots.length === 0) {
         await this.saveCurrentSnapshot(currentLeaderboard, type)
@@ -29,18 +37,18 @@ export class XPOvertakeService {
       }> = []
 
       for (const current of currentLeaderboard) {
-        const userId = (current.userId as any).toString()
+        const userId = current.userId.toString()
         const currentRank = current.rank
         const previousRank = previousRankMap.get(userId)
 
         if (previousRank && currentRank < previousRank) {
           for (const prevSnapshot of previousSnapshots) {
-            const prevUserId = (prevSnapshot.userId as any).toString()
+            const prevUserId = prevSnapshot.userId.toString()
             if (prevUserId === userId) continue
             
             const prevUserRank = prevSnapshot.rank
             if (prevUserRank >= currentRank && prevUserRank < previousRank) {
-              const currentUserEntry = currentLeaderboard.find(u => (u.userId as any).toString() === prevUserId)
+              const currentUserEntry = currentLeaderboard.find(u => u.userId.toString() === prevUserId)
               if (currentUserEntry && currentUserEntry.rank > currentRank) {
                 overtakes.push({
                   overtaker: userId,
@@ -62,12 +70,13 @@ export class XPOvertakeService {
 
       return { success: true, overtakes: overtakes.length }
     } catch (error) {
-      console.error('Error checking overtakes:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error checking overtakes:', errorMessage)
       return { success: false, error }
     }
   }
 
-  private static async getCurrentLeaderboard(type: 'all-time' | 'weekly' | 'monthly') {
+  private static async getCurrentLeaderboard(type: 'all-time' | 'weekly' | 'monthly'): Promise<LeaderboardEntry[]> {
     const XPLog = (await import('@/models/XPLog')).default
 
     if (type === 'weekly') {
@@ -84,12 +93,15 @@ export class XPOvertakeService {
         { $limit: 100 }
       ])
 
-      return weeklyXP.map((entry: any, index) => ({
-        userId: entry._id,
-        username: entry.user.username,
-        rank: index + 1,
-        totalXP: entry.weeklyXP || 0
-      }))
+      return weeklyXP.map((entry: Record<string, unknown>, index: number) => {
+        const user = entry.user as { username: string }
+        return {
+          userId: entry._id as string | mongoose.Types.ObjectId,
+          username: user.username,
+          rank: index + 1,
+          totalXP: (entry.weeklyXP as number) || 0
+        }
+      })
     }
 
     if (type === 'monthly') {
@@ -106,12 +118,15 @@ export class XPOvertakeService {
         { $limit: 100 }
       ])
 
-      return monthlyXP.map((entry: any, index) => ({
-        userId: entry._id,
-        username: entry.user.username,
-        rank: index + 1,
-        totalXP: entry.monthlyXP || 0
-      }))
+      return monthlyXP.map((entry: Record<string, unknown>, index: number) => {
+        const user = entry.user as { username: string }
+        return {
+          userId: entry._id as string | mongoose.Types.ObjectId,
+          username: user.username,
+          rank: index + 1,
+          totalXP: (entry.monthlyXP as number) || 0
+        }
+      })
     }
 
     const users = await User.find()
@@ -143,16 +158,16 @@ export class XPOvertakeService {
     return new Date(now.getFullYear(), now.getMonth(), 1)
   }
 
-  private static async saveCurrentSnapshot(leaderboard: any[], type: string) {
+  private static async saveCurrentSnapshot(leaderboard: LeaderboardEntry[], type: string) {
     await LeaderboardSnapshot.deleteMany({ 
       createdAt: { $lt: new Date(Date.now() - 24 * 60 * 60 * 1000) }
     })
 
     const snapshots = leaderboard.map(entry => ({
-      userId: entry.userId,
+      userId: entry.userId instanceof mongoose.Types.ObjectId ? entry.userId : new mongoose.Types.ObjectId(entry.userId),
       rank: entry.rank,
       totalXP: entry.totalXP,
-      type
+      type: type as 'weekly' | 'monthly' | 'all-time'
     }))
 
     await LeaderboardSnapshot.insertMany(snapshots)
@@ -165,13 +180,13 @@ export class XPOvertakeService {
     oldRank: number
   }) {
     const [overtakerUser, overtakenUser] = await Promise.all([
-      User.findById(overtake.overtaker).select('username avatar pushSubscription'),
-      User.findById(overtake.overtaken).select('username avatar pushSubscription')
+      User.findById(overtake.overtaker).select('username avatar pushSubscription') as Promise<typeof User.prototype | null>,
+      User.findById(overtake.overtaken).select('username avatar pushSubscription') as Promise<typeof User.prototype | null>
     ])
 
     if (!overtakerUser || !overtakenUser) return
 
-    const overtakerNotification = await Notification.create({
+    await Notification.create({
       recipient: overtake.overtaker,
       sender: overtake.overtaken,
       type: 'xp_overtake',
@@ -180,7 +195,7 @@ export class XPOvertakeService {
       actionUrl: '/leaderboard'
     })
 
-    const overtakenNotification = await Notification.create({
+    await Notification.create({
       recipient: overtake.overtaken,
       sender: overtake.overtaker,
       type: 'xp_overtaken',
@@ -213,8 +228,8 @@ export class XPOvertakeService {
       await connectDB()
 
       const [overtaker, overtaken] = await Promise.all([
-        User.findById(overtakerId).select('username avatar pushSubscription points'),
-        User.findById(overtakenId).select('username avatar pushSubscription points')
+        User.findById(overtakerId).select('username avatar pushSubscription points') as Promise<typeof User.prototype | null>,
+        User.findById(overtakenId).select('username avatar pushSubscription points') as Promise<typeof User.prototype | null>
       ])
 
       if (!overtaker || !overtaken) return { success: false }
@@ -261,7 +276,8 @@ export class XPOvertakeService {
 
       return { success: true }
     } catch (error) {
-      console.error('Error sending overtake notification:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error sending overtake notification:', errorMessage)
       return { success: false, error }
     }
   }

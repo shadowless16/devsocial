@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
+import Image from 'next/image';
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -11,13 +12,14 @@ import { PostContent } from "@/components/shared/PostContent"
 import { useToast } from "@/hooks/use-toast"
 import { ReportModal } from "@/components/modals/report-modal"
 import { TipModal } from "@/components/modals/tip-modal"
-import { formatTimeAgo } from "@/lib/time-utils"
+import { formatTimeAgo } from "@/lib/core/time-utils"
 import { PostMeta } from "@/components/shared/PostMeta"
 import { PostAIActions } from "@/components/shared/PostAIActions"
 import { useAuth } from "@/contexts/app-context"
-import { getAvatarUrl } from "@/lib/avatar-utils"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { getAvatarUrl } from "@/lib/storage/avatar-utils"
 import { PollDisplay } from "@/components/poll/poll-display"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { LinkPreviewCard } from "@/components/ui/link-preview-card"
 import { Textarea } from "@/components/ui/textarea"
 import { UserLink } from "@/components/shared/UserLink"
@@ -104,8 +106,7 @@ export default function PostCard({
   onChainProof,
   onDelete,
   onLike,
-  onComment,
-  onBookmark,
+    onBookmark,
   onClick,
   linkPreview,
   poll
@@ -121,7 +122,24 @@ export default function PostCard({
   const viewTracked = useRef(false)
   const [pollData, setPollData] = useState(poll)
   const [showComments, setShowComments] = useState(false)
-  const [comments, setComments] = useState<any[]>([])
+interface CommentAuthor {
+  username: string
+  displayName?: string
+  avatar?: string
+  level?: number
+}
+
+interface Comment {
+  id?: string
+  _id?: string
+  author: CommentAuthor
+  content: string
+  createdAt: string
+  isLiked?: boolean
+  likesCount?: number
+}
+
+  const [comments, setComments] = useState<Comment[]>([])
   const [loadingComments, setLoadingComments] = useState(false)
   const [commentContent, setCommentContent] = useState("")
   const [submittingComment, setSubmittingComment] = useState(false)
@@ -133,15 +151,7 @@ export default function PostCard({
     setCurrentViews(views)
   }, [liked, bookmarked, likesCount, views])
 
-  // Track view when component mounts
-  useEffect(() => {
-    if (postId && !viewTracked.current) {
-      viewTracked.current = true
-      trackView()
-    }
-  }, [postId])
-
-  const trackView = async () => {
+  const trackView = useCallback(async () => {
     if (!postId) return
     
     try {
@@ -160,9 +170,18 @@ export default function PostCard({
         }
       }
     } catch (error) {
-      console.error('Failed to track view:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to track view:', errorMessage)
     }
-  }
+  }, [postId])
+
+  // Track view when component mounts
+  useEffect(() => {
+    if (postId && !viewTracked.current) {
+      viewTracked.current = true
+      trackView()
+    }
+  }, [postId, trackView])
 
   const handleCopyCode = (codeContent: string) => {
     navigator.clipboard.writeText(codeContent).then(() => {
@@ -189,7 +208,7 @@ export default function PostCard({
     
     try {
       await onLike(postId)
-    } catch (error) {
+    } catch {
       setIsLiked(previousLiked)
       setCurrentLikesCount(previousCount)
     }
@@ -207,7 +226,7 @@ export default function PostCard({
         title: isBookmarked ? "Bookmark removed" : "Post bookmarked",
         description: isBookmarked ? "Removed from your bookmarks" : "Added to your bookmarks",
       })
-    } catch (error) {
+    } catch {
       setIsBookmarked(previousBookmarked)
       toast({
         title: "Failed to bookmark",
@@ -233,7 +252,7 @@ export default function PostCard({
           description: "Post link copied to clipboard",
         })
       }
-    } catch (error) {
+    } catch {
       console.log('Share cancelled or failed')
     }
   }
@@ -339,7 +358,7 @@ export default function PostCard({
                       <DropdownMenuItem 
                         onClick={(e) => {
                           e.stopPropagation()
-                          postId && onDelete?.(postId)
+                          if (postId && onDelete) onDelete(postId)
                         }}
                         className="text-red-600 focus:text-red-600"
                       >
@@ -370,7 +389,7 @@ export default function PostCard({
                     userVotes={pollData.options.filter(opt => opt.voters.includes(user?.id || '')).map(opt => opt.id)}
                     onVote={async (optionIds) => {
                       try {
-                        const response = await apiClient.request<any>('/polls/vote', {
+                        const response = await apiClient.request<{ poll: typeof pollData; xpAwarded: number }>('/polls/vote', {
                           method: 'POST',
                           body: JSON.stringify({ postId, optionIds }),
                         })
@@ -381,10 +400,11 @@ export default function PostCard({
                             description: `+${response.data.xpAwarded} XP`,
                           })
                         }
-                      } catch (error: any) {
+                      } catch (error: unknown) {
+                        const errorMessage = error instanceof Error ? error.message : 'Failed to vote';
                         toast({
                           title: "Failed to vote",
-                          description: error.message,
+                          description: errorMessage,
                           variant: "destructive",
                         })
                       }
@@ -423,7 +443,7 @@ export default function PostCard({
                   if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button'))) {
                     return;
                   }
-                  postId && onClick?.(postId)
+                  if (postId && onClick) onClick(postId)
                 }}
               >
                 <PostContent content={content || ""} onCopyCode={handleCopyCode} />
@@ -437,7 +457,7 @@ export default function PostCard({
                   if (e.target instanceof HTMLElement && (e.target.closest('a') || e.target.closest('button') || e.target.closest('video'))) {
                     return;
                   }
-                  postId && onClick?.(postId)
+                  if (postId && onClick) onClick(postId)
                 }}>
                 {imageUrl && (
                   <div className="mb-3 rounded-lg overflow-hidden border border-border">
@@ -454,9 +474,12 @@ export default function PostCard({
                         Your browser does not support the video tag.
                       </video>
                     ) : (
-                      <img
+                      <Image
                         src={imageUrl}
                         alt="Post image"
+                        width={0}
+                        height={0}
+                        sizes="100vw"
                         className="w-full h-auto object-contain rounded-lg"
                       />
                     )}
@@ -480,9 +503,12 @@ export default function PostCard({
                             Your browser does not support the video tag.
                           </video>
                         ) : (
-                          <img
+                          <Image
                             src={imageUrls[0]}
                             alt="Post image"
+                            width={0}
+                            height={0}
+                            sizes="100vw"
                             className="w-full h-auto object-contain rounded-lg"
                           />
                         )}
@@ -500,10 +526,12 @@ export default function PostCard({
                               imageUrls.length === 3 && index === 0 ? 'row-span-2' : ''
                             }`}
                           >
-                            <img
+                            <Image
                               src={imageUrl}
                               alt={`Post image ${index + 1}`}
-                              className="w-full h-full min-h-[200px] object-cover"
+                              fill
+                              sizes="(max-width: 768px) 100vw, 50vw"
+                              className="object-cover"
                             />
                             {index === 3 && imageUrls.length > 4 && (
                               <div className="absolute inset-0 bg-black/50 flex items-center justify-center rounded-md">
@@ -579,10 +607,11 @@ export default function PostCard({
                     try {
                       const response = await apiClient.getComments(postId)
                       if (response.success && response.data) {
-                        setComments((response.data as any).comments || [])
+                        setComments((response.data as { comments: Comment[] }).comments || [])
                       }
                     } catch (error) {
-                      console.error('Failed to fetch comments:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to fetch comments:', errorMessage)
                     } finally {
                       setLoadingComments(false)
                     }
@@ -630,22 +659,27 @@ export default function PostCard({
                     </div>
                   ) : (
                     <div className="space-y-3">
-                      {comments.map((comment: any) => (
+                      {comments.map((comment) => (
                         <div key={comment.id || comment._id} className="flex items-start space-x-2">
-                          <UserLink username={comment.author.username}>
+                          <UserLink username={comment.author?.username || ''}>
                             <UserAvatar 
-                              user={comment.author}
+                              user={{
+                                username: comment.author?.username || '',
+                                displayName: comment.author?.displayName,
+                                avatar: comment.author?.avatar,
+                                level: comment.author?.level
+                              }}
                               className="w-8 h-8 flex-shrink-0"
                             />
                           </UserLink>
                           <div className="flex-1 min-w-0">
                             <div className="flex items-center space-x-2 mb-1">
-                              <UserLink username={comment.author.username}>
+                              <UserLink username={comment.author?.username || ''}>
                                 <span className="font-semibold text-sm hover:text-emerald-600">
-                                  {comment.author.displayName || comment.author.username}
+                                  {comment.author?.displayName || comment.author?.username || 'Unknown'}
                                 </span>
                               </UserLink>
-                              <Badge variant="outline" className="text-xs px-1 py-0">L{comment.author.level}</Badge>
+                              <Badge variant="outline" className="text-xs px-1 py-0">L{comment.author.level || 1}</Badge>
                               <span className="text-xs text-gray-500">{formatTimeAgo(comment.createdAt)}</span>
                             </div>
                             <div className="text-sm text-gray-800">
@@ -657,22 +691,25 @@ export default function PostCard({
                                 size="sm"
                                 onClick={async () => {
                                   try {
-                                    const response = await apiClient.toggleCommentLike(comment.id || comment._id)
+                                    const commentId = (comment.id || comment._id) as string
+                                    const response = await apiClient.toggleCommentLike(commentId)
                                     if (response.success && response.data) {
-                                      setComments(comments.map((c: any) => 
-                                        (c.id || c._id) === (comment.id || comment._id)
-                                          ? { ...c, isLiked: (response.data as any).liked, likesCount: (response.data as any).likesCount }
+                                      const { liked, likesCount } = response.data as { liked: boolean; likesCount: number }
+                                      setComments(comments.map((c) => 
+                                        (c.id || c._id) === commentId
+                                          ? { ...c, isLiked: liked, likesCount }
                                           : c
                                       ))
                                     }
                                   } catch (error) {
-                                    console.error('Failed to like comment:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to like comment:', errorMessage)
                                   }
                                 }}
                                 className={`h-6 px-2 text-xs ${comment.isLiked ? 'text-red-500' : 'text-gray-500'}`}
                               >
                                 <Heart className={`w-3 h-3 ${comment.isLiked ? 'fill-current' : ''}`} />
-                                <span className="ml-1">{comment.likesCount}</span>
+                                <span className="ml-1">{comment.likesCount || 0}</span>
                               </Button>
                             </div>
                           </div>
@@ -710,12 +747,12 @@ export default function PostCard({
                               try {
                                 const response = await apiClient.createComment(postId, commentContent.trim())
                                 if (response.success && response.data) {
-                                  const newComment = (response.data as any).comment
+                                  const newComment = (response.data as { comment: Comment }).comment
                                   setComments([newComment, ...comments])
                                   setCommentContent("")
                                   toast({ title: "Comment posted!" })
                                 }
-                              } catch (error) {
+                              } catch {
                                 toast({ title: "Failed to post comment", variant: "destructive" })
                               } finally {
                                 setSubmittingComment(false)

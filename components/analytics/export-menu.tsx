@@ -6,11 +6,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useToast } from "@/hooks/use-toast"
 
 interface ExportMenuProps {
-  data?: any
   filename?: string
 }
 
-export function ExportMenu({ data, filename = "analytics-report" }: ExportMenuProps) {
+export function ExportMenu({ filename = "analytics-report" }: ExportMenuProps) {
   const { toast } = useToast()
 
   const handleExportCSV = () => {

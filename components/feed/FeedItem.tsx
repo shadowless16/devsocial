@@ -1,19 +1,30 @@
-// components/FeedItem.tsx
-"use client";
-
-import type React from "react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Heart, MessageCircle, Share, MoreHorizontal, Zap, Copy, Trash, Eye, Coins } from "lucide-react";
-import { UserAvatar } from "@/components/ui/user-avatar";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
-import Image from "next/image";
-import ReactMarkdown from "react-markdown";
-import { Textarea } from "@/components/ui/textarea"
-import { apiClient } from "@/lib/api-client"
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import Link from "next/link"
+import Image from "next/image"
+import { useRouter } from "next/navigation"
+import { useState } from "react"
+import { 
+  Heart, 
+  MessageCircle, 
+  Share, 
+  MoreHorizontal, 
+  Trash, 
+  Coins, 
+  Eye, 
+} from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent } from "@/components/ui/card"
+import { UserAvatar } from "@/components/ui/user-avatar"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+// import ReactMarkdown from "react-markdown"; 
+// import { Textarea } from "@/components/ui/textarea"
+import { apiClient } from "@/lib/api/api-client"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/contexts/app-context"
 import { PostContent } from "@/components/shared/PostContent"
@@ -31,12 +42,13 @@ import {
 } from "@/components/ui/dropdown-menu"
 import dynamic from 'next/dynamic'
 import { TipModal } from "@/components/modals/tip-modal"
-import { getAvatarUrl } from "@/lib/avatar-utils"
-import { formatTimeAgo } from "@/lib/time-utils"
+// import { getAvatarUrl } from "@/lib/storage/avatar-utils"
+import { formatTimeAgo } from "@/lib/core/time-utils"
 import { PollDisplay } from "@/components/poll/poll-display"
 import { LinkPreviewCard } from "@/components/ui/link-preview-card"
 
 // Dynamically import CommentSection to avoid SSR issues
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CommentSection = dynamic(
   () => import('react-comments-section').then((mod) => ({ default: mod.CommentSection })),
   { 
@@ -193,7 +205,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         setComments(response.data?.comments || []);
       }
     } catch (error) {
-      console.error("Failed to fetch comments:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to fetch comments:", errorMessage);
     } finally {
       setLoadingComments(false);
     }
@@ -217,7 +230,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           description: "Post link copied to clipboard",
         })
       }
-    } catch (error) {
+    } catch {
       console.log('Share cancelled or failed')
     }
   };
@@ -252,7 +265,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         }
       }
     } catch (error) {
-      console.error("Failed to submit comment:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to submit comment:", errorMessage);
       toast({
         title: "Failed to post comment",
         variant: "destructive",
@@ -284,7 +298,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         );
       }
     } catch (error) {
-      console.error("Failed to toggle comment like:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to toggle comment like:", errorMessage);
     }
   };
 
@@ -323,7 +338,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         }
       }
     } catch (error) {
-      console.error("Failed to delete post:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to delete post:", errorMessage);
       toast({
         title: "Failed to delete post",
         variant: "destructive",
@@ -335,7 +351,11 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
 
   const handlePollVote = async (optionIds: string[]) => {
     try {
-      const response = await apiClient.request<any>('/polls/vote', {
+      interface PollVoteResponse {
+        poll: typeof pollData
+        xpAwarded: number
+      }
+      const response = await apiClient.request<PollVoteResponse>('/polls/vote', {
         method: 'POST',
         body: JSON.stringify({ postId: post.id, optionIds }),
       });
@@ -348,10 +368,11 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
           variant: "success",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Failed to vote';
       toast({
         title: "Failed to vote",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -374,8 +395,9 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
 
   const author = post.isAnonymous ? fallbackAuthor : (post.author || fallbackAuthor);
 
-  // Transform comments data for react-comments-section
-  const formatCommentsForReactSection = (comments: Comment[]) => {
+  // Unused helper functions kept for potential future use
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const transformCommentsForSection = () => {
     return comments.map((comment) => ({
       userId: comment.author.username,
       comId: comment.id,
@@ -388,7 +410,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
     }));
   };
 
-  const handleNewComment = async (data: any) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const handleCommentSubmit = async (data: { text: string }) => {
     try {
       setSubmittingComment(true);
       const response = await apiClient.createComment<CreateCommentResponse>(post.id, data.text);
@@ -406,7 +429,8 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
         }
       }
     } catch (error) {
-      console.error("Failed to submit comment:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to submit comment:", errorMessage);
       toast({
         title: "Failed to post comment",
         variant: "destructive",
@@ -867,7 +891,7 @@ export function FeedItem({ post, onLike, onComment, onDelete, onShowComments }: 
                                               setComments(comments.filter(c => c.id !== comment.id));
                                               toast({ title: "Comment deleted", variant: "success" });
                                             }
-                                          } catch (error) {
+                                          } catch {
                                             toast({ title: "Failed to delete comment", variant: "destructive" });
                                           }
                                         }}

@@ -1,8 +1,10 @@
 "use client"
 
 import React from 'react'
+// import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import { getAvatarUrl } from '@/lib/avatar-utils'
+import { getAvatarUrl } from '@/lib/storage/avatar-utils'
+import NextImage from "next/image"
 
 interface AvatarViewer3DProps {
   isOpen: boolean
@@ -16,12 +18,14 @@ export function AvatarViewer3D({ isOpen, onClose, avatarUrl, username }: AvatarV
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>{username}'s Avatar</DialogTitle>
+          <DialogTitle>{username}&apos;s Avatar</DialogTitle>
         </DialogHeader>
         <div className="flex justify-center p-4">
-          <img 
+          <NextImage 
             src={getAvatarUrl(avatarUrl)} 
             alt={`${username}'s avatar`}
+            width={320}
+            height={320}
             className="w-80 h-80 rounded-full object-cover"
           />
         </div>

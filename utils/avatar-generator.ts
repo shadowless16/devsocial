@@ -9,18 +9,9 @@ export interface AvatarOptions {
 export function generateReadyPlayerMeAvatar(options: AvatarOptions = {}): string {
   const { gender, seed, style = 'casual' } = options;
   
-  const genders = gender ? [gender] : ['male', 'female'];
-  const hairColors = ['blonde', 'brown', 'black', 'red', 'gray', 'white'];
-  const skinTones = ['light', 'medium', 'dark', 'tan'];
-  const outfits = ['casual', 'formal', 'sporty', 'creative'];
   
   // Use seed for consistent generation if provided
-  const seedNum = seed ? seed.split('').reduce((a, b) => a + b.charCodeAt(0), 0) : Math.random() * 1000;
   
-  const selectedGender = genders[Math.floor(seedNum % genders.length)];
-  const hair = hairColors[Math.floor(seedNum % hairColors.length)];
-  const skin = skinTones[Math.floor(seedNum % skinTones.length)];
-  const outfit = style || outfits[Math.floor(seedNum % outfits.length)];
   
   // Return a normalized PNG avatar URL (ReadyPlayerMe supports .png thumbnails)
   // We keep the seed/hints out of the URL to ensure consistent, cacheable PNG links

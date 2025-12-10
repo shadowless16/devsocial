@@ -2,19 +2,19 @@ import { type NextRequest, NextResponse } from "next/server"
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Post from "@/models/Post"
-import { authMiddleware } from "@/middleware/auth"
+import { authMiddleware, type AuthResult } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 
 export async function GET(request: NextRequest) {
   try {
     await connectDB()
 
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
     }
 
     const { searchParams } = new URL(request.url)
@@ -61,7 +61,24 @@ export async function GET(request: NextRequest) {
       dateFilter = { createdAt: { $gte: startDate } }
     }
 
-    const results: any = {
+    interface SearchResults {
+      posts: unknown[];
+      users: unknown[];
+      totalPosts: number;
+      totalUsers: number;
+    }
+    
+    interface PostFilter {
+      $and: unknown[];
+    }
+    
+    interface UserFilter {
+      $or: unknown[];
+      level?: { $gte: number };
+      branch?: string;
+    }
+    
+    const results: SearchResults = {
       posts: [],
       users: [],
       totalPosts: 0,
@@ -70,7 +87,7 @@ export async function GET(request: NextRequest) {
 
     // Advanced post search
     if (type === "all" || type === "posts") {
-      const postFilter: any = {
+      const postFilter: PostFilter = {
         $and: [
           {
             $or: [{ content: searchRegex }, { tags: { $in: [searchRegex] } }],
@@ -95,7 +112,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Build sort criteria
-      let sortCriteria: any = {}
+      let sortCriteria: Record<string, number | { $meta: string }> = {}
       switch (sortBy) {
         case "newest":
           sortCriteria = { createdAt: -1 }
@@ -123,7 +140,7 @@ export async function GET(request: NextRequest) {
           select: "username displayName avatar level branch",
           match: minLevel ? { level: { $gte: Number.parseInt(minLevel) } } : {},
         })
-        .sort(sortCriteria)
+        .sort(sortCriteria as Record<string, 1 | -1>)
         .skip(type === "posts" ? skip : 0)
         .limit(type === "posts" ? limit : 10)
         .lean()
@@ -135,7 +152,7 @@ export async function GET(request: NextRequest) {
 
     // Advanced user search
     if (type === "all" || type === "users") {
-      const userFilter: any = {
+      const userFilter: UserFilter = {
         $or: [{ username: searchRegex }, { displayName: searchRegex }, { bio: searchRegex }],
       }
 
@@ -198,7 +215,8 @@ export async function GET(request: NextRequest) {
       }),
     )
   } catch (error) {
-    console.error("Advanced search error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Advanced search error:", errorMessage)
     return NextResponse.json(errorResponse("Search failed"), { status: 500 })
   }
 }

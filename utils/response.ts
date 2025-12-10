@@ -1,6 +1,6 @@
 // import { NextResponse } from "next/server"
 
-// export function successResponse(data: any, status = 200) {
+// export function successResponse(data: unknown, status = 200) {
 //   return NextResponse.json(
 //     {
 //       success: true,
@@ -10,7 +10,7 @@
 //   )
 // }
 
-// export function errorResponse(message: string, status = 400, errors?: any) {
+// export function errorResponse(message: string, status = 400, errors?: unknown) {
 //   return NextResponse.json(
 //     {
 //       success: false,
@@ -21,7 +21,7 @@
 //   )
 // }
 
-// export function validationErrorResponse(errors: any) {
+// export function validationErrorResponse(errors: unknown) {
 //   return NextResponse.json(
 //     {
 //       success: false,
@@ -36,7 +36,7 @@
 import { NextResponse } from "next/server";
 
 interface ResponseData {
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 /**
@@ -76,7 +76,7 @@ export function errorResponse(message: string, status: number = 500) {
  * @param errors - The formatted Zod errors.
  * @returns A JSON response object.
  */
-export function validationErrorResponse(errors: any, status: number = 400) {
+export function validationErrorResponse(errors: Record<string, unknown>, status: number = 400) {
   return NextResponse.json(
     {
       success: false,

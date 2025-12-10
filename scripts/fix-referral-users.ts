@@ -48,7 +48,7 @@ async function fixReferralUsers() {
     
     console.log(`Found ${usersWithReferralCodes.length} users to check for missing referral records`)
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fixing referral users:", error)
   }
 }

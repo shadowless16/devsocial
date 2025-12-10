@@ -18,7 +18,7 @@ import {
   Tooltip,
 } from "recharts"
 import { TrendingUp, UserMinus, Target, Repeat, RefreshCw, Clock, Users, TestTube, Database } from "lucide-react"
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 
 // Types
 interface CohortData {
@@ -115,7 +115,7 @@ export default function GrowthMetricsPage() {
   const [dataMode, setDataMode] = useState<'all' | 'real' | 'demo'>('all')
   const [userCounts, setUserCounts] = useState<UserCounts | null>(null)
 
-  const fetchGrowthData = async (days: number = 30, userType: string = dataMode): Promise<void> => {
+  const fetchGrowthData = useCallback(async (days: number = 30, userType: string = dataMode): Promise<void> => {
     if (userType === 'demo') {
       setLoading(false)
       return
@@ -158,12 +158,12 @@ export default function GrowthMetricsPage() {
           ]
         })
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error fetching growth data:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [dataMode])
 
   const markGeneratedUsers = async (): Promise<void> => {
     try {
@@ -178,14 +178,14 @@ export default function GrowthMetricsPage() {
         alert(result.message)
         fetchGrowthData()
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error marking users:', error)
     }
   }
 
   useEffect(() => {
     fetchGrowthData()
-  }, [dataMode])
+  }, [dataMode, fetchGrowthData])
 
   if (loading) {
     return (
@@ -533,7 +533,7 @@ export default function GrowthMetricsPage() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="segment" />
                     <YAxis />
-                    <Tooltip formatter={(value: any) => [`$${value}`, 'LTV']} />
+                    <Tooltip formatter={(value: unknown) => [`$${value}`, 'LTV']} />
                     <Bar dataKey="ltv" fill="#10b981" />
                   </BarChart>
                 </div>

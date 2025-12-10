@@ -17,7 +17,7 @@ export function useDataModeAPI() {
     return fetchWithDataMode(url, { ...options, method: 'GET' })
   }, [fetchWithDataMode])
 
-  const post = useCallback((url: string, data?: any, options: RequestInit = {}) => {
+  const post = useCallback((url: string, data?: unknown, options: RequestInit = {}) => {
     return fetchWithDataMode(url, {
       ...options,
       method: 'POST',

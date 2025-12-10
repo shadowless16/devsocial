@@ -1,10 +1,9 @@
 // app/api/posts/summarize/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from '@/lib/auth';
-import { aiService } from '@/lib/ai-service';
-import { errorResponse, successResponse } from '@/utils/response';
-import connectDB from '@/lib/db';
+import { getSession } from '@/lib/auth/server-auth';
+import { geminiPublicService } from '@/lib/ai/gemini-public-service';
+
+import connectDB from '@/lib/core/db';
 import User from '@/models/User';
 
 export async function POST(req: NextRequest) {
@@ -48,7 +47,7 @@ export async function POST(req: NextRequest) {
       }, { status: 429 });
     }
 
-    const summary = await aiService.summarizePost(content);
+    const summary = await geminiPublicService.summarizePost(content);
     
     // Update usage count (skip for AkDavid)
     if (user.username !== 'AkDavid') {
@@ -68,7 +67,8 @@ export async function POST(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Summarization error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Summarization error:', errorMessage);
     return NextResponse.json({
       success: false,
       message: 'Failed to generate summary'

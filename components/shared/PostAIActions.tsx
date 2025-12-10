@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Sparkles, FileText, Loader2, X } from "lucide-react";
@@ -15,7 +15,7 @@ interface PostAIActionsProps {
   className?: string;
 }
 
-export function PostAIActions({ postContent, postId, className = "" }: PostAIActionsProps) {
+export function PostAIActions({ postContent, className = "" }: PostAIActionsProps) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [aiResponse, setAiResponse] = useState<string | null>(null);
   const [actionType, setActionType] = useState<'summarize' | 'explain' | null>(null);
@@ -38,7 +38,8 @@ export function PostAIActions({ postContent, postId, className = "" }: PostAIAct
           }
         }
       } catch (error) {
-        console.error('Failed to fetch summarize usage:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to fetch summarize usage:', errorMessage);
       }
     }
   };

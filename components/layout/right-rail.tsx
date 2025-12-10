@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Loader2, TrendingUp, Hash } from "lucide-react"
@@ -18,7 +18,7 @@ export default function RightRail() {
 }
 
 function Trends() {
-  const [trendingTopics, setTrendingTopics] = useState<any[]>([])
+  const [trendingTopics, setTrendingTopics] = useState<Array<{ tag: string; posts: number | string; trend?: string }>>([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -27,10 +27,10 @@ function Trends() {
         const response = await apiClient.getTrendingData("today")
         console.log("[RightRail] Trending response:", response)
         if (response.success && response.data) {
-          const topics = (response.data as any).trendingTopics || []
+          const topics = ((response.data as { trendingTopics?: Array<{ tag: string; posts: number | string; trend?: string }> }).trendingTopics || [])
           console.log("[RightRail] Setting trending topics:", topics)
-          const uniqueTopics = topics.filter((topic: any, index: number, self: any[]) => 
-            index === self.findIndex((t: any) => t.tag === topic.tag)
+          const uniqueTopics = topics.filter((topic, index, self) => 
+            index === self.findIndex((t) => t.tag === topic.tag)
           )
           setTrendingTopics(uniqueTopics)
         } else {
@@ -38,7 +38,8 @@ function Trends() {
           setTrendingTopics([])
         }
       } catch (error) {
-        console.error("[RightRail] Failed to fetch trending:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("[RightRail] Failed to fetch trending:", errorMessage)
         setTrendingTopics([])
       } finally {
         setLoading(false)
@@ -87,7 +88,7 @@ function Trends() {
 }
 
 function TopDevs() {
-  const [topDevelopers, setTopDevelopers] = useState<any[]>([])
+  const [topDevelopers, setTopDevelopers] = useState<Array<Record<string, unknown>>>([])
   const [loading, setLoading] = useState(true)
   const [currentView, setCurrentView] = useState<'all-time' | 'weekly'>('all-time')
 
@@ -97,12 +98,13 @@ function TopDevs() {
         setLoading(true)
         const response = await apiClient.getLeaderboard({ limit: "3", type: currentView })
         if (response.success && response.data) {
-          const lb = (response.data as any).leaderboard || []
+          const lb = ((response.data as { leaderboard?: Array<Record<string, unknown>> }).leaderboard || [])
           console.debug("[RightRail] leaderboard response:", lb)
           setTopDevelopers(lb)
         }
       } catch (error) {
-        console.error("Failed to fetch leaderboard:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to fetch leaderboard:", errorMessage)
       } finally {
         setLoading(false)
       }
@@ -146,10 +148,26 @@ function TopDevs() {
         ) : (
           <>
             {topDevelopers.map((dev, i) => {
-            const username = dev.user?.username || dev.username
-            const displayName = dev.user?.displayName || dev.displayName || username
-            // Resolve XP from multiple possible shapes returned by different leaderboard APIs
-            const rawXp = dev.user?.points ?? dev.points ?? dev.totalXP ?? dev.xp ?? dev.totalXp ?? 0
+            interface DevUser {
+              username?: string
+              displayName?: string
+              points?: number
+              avatar?: string
+            }
+            interface DevData {
+              user?: DevUser
+              username?: string
+              displayName?: string
+              points?: number
+              totalXP?: number
+              xp?: number
+              totalXp?: number
+              avatar?: string
+            }
+            const devData = dev as DevData;
+            const username = devData.user?.username || devData.username
+            const displayName = devData.user?.displayName || devData.displayName || username
+            const rawXp = devData.user?.points ?? devData.points ?? devData.totalXP ?? devData.xp ?? devData.totalXp ?? 0
             const xp = typeof rawXp === 'number' ? rawXp : parseInt(rawXp || '0', 10) || 0
             const formattedXp = xp > 999 ? `${(xp / 1000).toFixed(1)}k` : xp.toLocaleString()
             return (
@@ -158,8 +176,8 @@ function TopDevs() {
                 <div onClick={() => window.location.href = `/profile/${username}`}>
                   <UserAvatar 
                     user={{
-                      username: username,
-                      avatar: dev.user?.avatar || dev.avatar,
+                      username: username ?? '',
+                      avatar: devData.user?.avatar || devData.avatar,
                       displayName: displayName
                     }}
                     className="h-5 w-5 ring-1 ring-emerald-100 cursor-pointer hover:ring-emerald-200 transition-all"

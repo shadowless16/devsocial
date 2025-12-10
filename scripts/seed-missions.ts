@@ -32,7 +32,7 @@ async function seedMissions() {
     })
 
     console.log("\nMissions seeded successfully!")
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error seeding missions:", error)
   }
 }

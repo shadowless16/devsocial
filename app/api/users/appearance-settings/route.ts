@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
+import { getSession } from '@/lib/auth/server-auth';
 import User from "@/models/User";
-import { authOptions } from "@/lib/auth";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 
 export async function GET(request: NextRequest) {
   try {
@@ -40,7 +39,8 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching appearance settings:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching appearance settings:", errorMessage);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }
@@ -121,7 +121,8 @@ export async function PUT(request: NextRequest) {
       message: "Appearance settings updated successfully",
     });
   } catch (error) {
-    console.error("Error updating appearance settings:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error updating appearance settings:", errorMessage);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }

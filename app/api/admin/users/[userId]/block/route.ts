@@ -1,8 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
 import User from "@/models/User"
-import connectDB from "@/lib/db"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
+import connectDB from "@/lib/core/db"
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from "@/lib/auth/auth"
 
 export const dynamic = 'force-dynamic'
 
@@ -32,11 +33,12 @@ export async function POST(
       data: { isBlocked: user.isBlocked },
       message: `User ${user.isBlocked ? 'blocked' : 'unblocked'} successfully`
     })
-  } catch (error: any) {
-    console.error("Block user error:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Block user error:", errorMessage)
     return NextResponse.json({ 
       success: false, 
-      message: error.message || "Failed to block user" 
+      message: error instanceof Error ? error.message : "Failed to block user" 
     }, { status: 500 })
   }
 }

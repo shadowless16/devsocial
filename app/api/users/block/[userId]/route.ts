@@ -1,9 +1,9 @@
 import { type NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Block from "@/models/Block"
 import Follow from "@/models/Follow"
-import { authMiddleware } from "@/middleware/auth"
+import { authMiddleware, type AuthResult } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 
 // POST /api/user/block/[userId] - Block a user
@@ -14,9 +14,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     await connectDB()
 
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
     }
 
     const { userId } = await params
@@ -62,7 +62,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json(successResponse({ block }))
   } catch (error) {
-    console.error("Block user error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Block user error:", errorMessage)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
   }
 }
@@ -72,9 +73,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     await connectDB()
 
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
     }
 
     const { userId } = await params
@@ -92,7 +93,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     return NextResponse.json(successResponse({ message: "User unblocked successfully" }))
   } catch (error) {
-    console.error("Unblock user error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Unblock user error:", errorMessage)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
   }
 }

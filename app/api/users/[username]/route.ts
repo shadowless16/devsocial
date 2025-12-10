@@ -1,12 +1,11 @@
 // app/api/users/[username]/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
+import { getSession } from '@/lib/auth/server-auth';
 import User from "@/models/User";
 import Post from "@/models/Post";
 import Follow from "@/models/Follow";
-import connectDB from "@/lib/db";
-import { successResponse, errorResponse } from "@/utils/response";
+import connectDB from "@/lib/core/db";
+import { errorResponse } from "@/utils/response";
 
 export const dynamic = 'force-dynamic'
 
@@ -37,7 +36,7 @@ export async function GET(
       username: { $regex: new RegExp(`^${username}$`, 'i') } 
     })
     .select("-password -email")
-    .lean() as any;
+    .lean() as { _id: { toString: () => string }; username: string; displayName?: string; bio?: string; affiliation?: string; branch?: string; avatar?: string; bannerUrl?: string; level?: number; points?: number; location?: string; website?: string; createdAt: Date; badges?: unknown[] };
 
     if (!user) {
       return NextResponse.json(
@@ -84,11 +83,19 @@ export async function GET(
       .lean();
 
     // Transform posts to include necessary fields
-    const transformedPosts = recentPosts.map((post: any) => ({
+    interface PostData {
+      _id: { toString: () => string }
+      likesCount?: number
+      likes?: unknown[]
+      commentsCount?: number
+      createdAt: Date
+    }
+    
+    const transformedPosts = (recentPosts as (PostData & Record<string, unknown>)[]).map((post) => ({
       ...post,
       _id: post._id.toString(),
       id: post._id.toString(),
-      isLiked: false, // Will be updated if user is authenticated
+      isLiked: false,
       likesCount: post.likesCount || post.likes?.length || 0,
       commentsCount: post.commentsCount || 0,
       createdAt: new Date(post.createdAt).toISOString()
@@ -203,7 +210,8 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error("Error fetching user profile:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching user profile:", errorMessage);
     return NextResponse.json(
       errorResponse("Failed to fetch user profile"),
       { status: 500 }

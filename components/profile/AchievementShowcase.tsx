@@ -1,6 +1,7 @@
 "use client"
 
 import React from 'react'
+// import Image from 'next/image';
 import { Award, CheckCircle, ExternalLink, Code2, Users, Trophy, Zap, Bug, GraduationCap } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
@@ -36,7 +37,12 @@ interface AchievementShowcaseProps {
   achievements: AchievementsData
 }
 
-const iconMap: Record<string, React.ComponentType<any>> = {
+interface IconProps {
+  size?: number
+  className?: string
+}
+
+const iconMap: Record<string, React.ComponentType<IconProps>> = {
   Code2,
   Users,
   Trophy,
@@ -117,6 +123,7 @@ export default function AchievementShowcase({ achievements }: AchievementShowcas
                 className="flex items-center gap-1.5 p-1.5 bg-muted rounded-lg hover:bg-muted/80 transition-colors cursor-pointer"
               >
                 <div className="w-5 h-5 rounded-lg overflow-hidden bg-gray-200">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={cert.logo}
                     alt={cert.issuer}

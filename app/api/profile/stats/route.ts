@@ -1,10 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+﻿import { NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Post from "@/models/Post"
 import ChallengeParticipation from "@/models/ChallengeParticipation"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from "@/lib/auth/auth"
 
 export const dynamic = 'force-dynamic'
 
@@ -46,7 +47,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ stats })
   } catch (error) {
-    console.error("Get profile stats error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get profile stats error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

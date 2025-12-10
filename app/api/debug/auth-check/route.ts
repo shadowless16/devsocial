@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import connectDB from '@/lib/db';
+import connectDB from '@/lib/core/db';
 
 export async function GET() {
   try {
@@ -16,8 +16,9 @@ export async function GET() {
     try {
       await connectDB();
       dbConnected = true;
-    } catch (error: any) {
-      dbError = error.message;
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      dbError = errorMessage;
     }
 
     return NextResponse.json({
@@ -27,9 +28,10 @@ export async function GET() {
         error: dbError,
       },
     });
-  } catch (error: any) {
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({
-      error: error.message,
+      error: errorMessage,
     }, { status: 500 });
   }
 }

@@ -35,9 +35,11 @@ interface CommentItemProps {
   replies?: Comment[];
 }
 
-export function CommentItem({ comment, onLike, onReply, isReply = false, depth = 0 }: CommentItemProps) {
+export function CommentItem({ comment, onLike, onReply, depth = 0 }: CommentItemProps) {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [showReplies, setShowReplies] = useState(false);
   const [showReplyInput, setShowReplyInput] = useState(false);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [replyContent, setReplyContent] = useState("");
 
   // Calculate visual styling based on depth

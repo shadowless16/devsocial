@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Post from "@/models/Post"
 import { successResponse, errorResponse } from "@/utils/response"
 
@@ -94,7 +94,8 @@ export async function GET(
     }))
 
   } catch (error) {
-    console.error("Error fetching posts by tag:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching posts by tag:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch posts by tag"), { status: 500 })
   }
 }

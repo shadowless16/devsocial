@@ -8,7 +8,7 @@ import { useAuth } from "./app-context"
 interface WebSocketContextType {
   socket: Socket | null
   isConnected: boolean
-  sendMessage: (event: string, data: any) => void
+  sendMessage: (event: string, data: unknown) => void
   joinConversation: (conversationId: string) => void
   leaveConversation: (conversationId: string) => void
 }
@@ -69,7 +69,7 @@ export function WebSocketProvider({ children }: { children: React.ReactNode }) {
     }
   }, [user])
 
-  const sendMessage = (event: string, data: any) => {
+  const sendMessage = (event: string, data: unknown) => {
     if (socket && isConnected) {
       socket.emit(event, data)
     }

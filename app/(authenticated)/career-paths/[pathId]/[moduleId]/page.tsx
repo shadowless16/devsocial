@@ -46,7 +46,7 @@ Every HTML document has a basic structure:
 - **Headings**: \`<h1>\` to \`<h6>\`
 - **Paragraphs**: \`<p>\`
 - **Links**: \`<a href="url">Link text</a>\`
-- **Images**: \`<img src="image.jpg" alt="Description">\`
+- **Images**: \`<Image src="image.jpg" alt="" width={500} height={300}  alt="Description" />\`
 - **Lists**: \`<ul>\`, \`<ol>\`, \`<li>\`
 
 ## Try It Yourself
@@ -129,7 +129,7 @@ Create a simple HTML page with a heading, paragraph, and link.`,
     <h1>John Doe</h1>
     <p>I'm a web developer learning HTML!</p>
     <a href="https://github.com">Visit GitHub</a>
-    <img src="https://via.placeholder.com/300x200" alt="Placeholder image">
+    <Image src="https://via.placeholder.com/300x200" alt="" width={500} height={300}  alt="Placeholder image" />
 </body>
 </html>`,
       hints: [

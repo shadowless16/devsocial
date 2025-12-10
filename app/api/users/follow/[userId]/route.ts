@@ -1,11 +1,11 @@
 // api/user/follow/[userId]/route.ts
 import { type NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
 import Notification from "@/models/Notification"
 import Activity from "@/models/Activity"
-import { authMiddleware } from "@/middleware/auth"
+import { authMiddleware, type AuthResult } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP, XP_VALUES } from "@/utils/awardXP"
 import MissionProgress from "@/models/MissionProgress"
@@ -17,9 +17,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     await connectDB()
 
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
     }
 
     const { userId } = await params
@@ -61,7 +61,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         following: userId,
       });
       isNewFollow = true;
-    } catch (createError: any) {
+    } catch (createError) {
       console.error("Error creating follow record:", createError);
       if (createError.code === 11000) {
         return NextResponse.json(errorResponse("Already following this user"), { status: 400 });
@@ -163,7 +163,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Emit WebSocket event for real-time updates
     try {
-      const io = (globalThis as any).io;
+      interface GlobalWithIO {
+        io?: {
+          emit: (event: string, data: Record<string, unknown>) => void
+        }
+      }
+      const io = (globalThis as GlobalWithIO).io;
       console.log('WebSocket IO available:', !!io);
       if (io) {
         const updatedFollowedUser = await User.findById(userId);
@@ -188,12 +193,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         });
       }
     } catch (error) {
-      console.error('WebSocket emission error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('WebSocket emission error:', errorMessage);
     }
 
     return NextResponse.json(successResponse({ follow }))
   } catch (error) {
-    console.error("Follow user error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Follow user error:", errorMessage)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
   }
 }
@@ -203,9 +210,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
   try {
     await connectDB()
 
-    const authResult = await authMiddleware(request)
+    const authResult: AuthResult = await authMiddleware(request)
     if (!authResult.success) {
-      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status || 401 })
+      return NextResponse.json(errorResponse(authResult.error), { status: authResult.status })
     }
 
     const { userId } = await params
@@ -236,7 +243,12 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
 
     // Emit WebSocket event for real-time updates
     try {
-      const io = (globalThis as any).io;
+      interface GlobalWithIO {
+        io?: {
+          emit: (event: string, data: Record<string, unknown>) => void
+        }
+      }
+      const io = (globalThis as GlobalWithIO).io;
       console.log('WebSocket IO available for unfollow:', !!io);
       if (io) {
         const updatedUser = await User.findById(userId);
@@ -261,12 +273,14 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
         });
       }
     } catch (error) {
-      console.error('WebSocket emission error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('WebSocket emission error:', errorMessage);
     }
 
-    return NextResponse.json(successResponse({ message: "Unfollowed successfully" }))
+    return NextResponse.json(successResponse({ result: { message: "Unfollowed successfully" } }))
   } catch (error) {
-    console.error("Unfollow user error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Unfollow user error:", errorMessage)
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 })
   }
 }

@@ -1,6 +1,7 @@
 "use client"
 
 import React, { useState, useRef } from 'react'
+// import Image from 'next/image';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,21 +10,30 @@ import { Label } from '@/components/ui/label'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Camera, Image as ImageIcon, Loader2 } from 'lucide-react'
 
+interface ProfileData {
+  name?: string
+  bio?: string
+  location?: string
+  website?: string
+  avatar?: string
+  bannerUrl?: string
+}
+
 interface EditProfileModalProps {
   isOpen: boolean
   onClose: () => void
-  profile: any
-  onSave: (data: any) => void
+  profile: ProfileData
+  onSave: (data: ProfileData) => void
 }
 
 export default function EditProfileModal({ isOpen, onClose, profile, onSave }: EditProfileModalProps) {
   const [formData, setFormData] = useState({
-    displayName: profile?.name || '',
-    bio: profile?.bio || '',
-    location: profile?.location || '',
-    website: profile?.website || '',
-    avatar: profile?.avatar || '',
-    bannerUrl: profile?.bannerUrl || ''
+    displayName: profile.name || '',
+    bio: profile.bio || '',
+    location: profile.location || '',
+    website: profile.website || '',
+    avatar: profile.avatar || '',
+    bannerUrl: profile.bannerUrl || ''
   })
   const [uploading, setUploading] = useState(false)
   const [uploadingBanner, setUploadingBanner] = useState(false)
@@ -60,7 +70,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSave }: E
       } else {
         throw new Error(data.message || 'Upload failed')
       }
-    } catch (error: any) {
+    } catch (error) {
       alert(error.message || 'Failed to upload avatar')
     } finally {
       setUploading(false)
@@ -97,7 +107,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSave }: E
       } else {
         throw new Error(data.message || 'Upload failed')
       }
-    } catch (error: any) {
+    } catch (error) {
       alert(error.message || 'Failed to upload banner')
     } finally {
       setUploadingBanner(false)
@@ -119,7 +129,8 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSave }: E
         window.location.reload()
       }
     } catch (error) {
-      console.error('Failed to update profile:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to update profile:', errorMessage)
     }
   }
 
@@ -135,6 +146,7 @@ export default function EditProfileModal({ isOpen, onClose, profile, onSave }: E
             <Label>Banner Image</Label>
             <div className="relative h-32 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg overflow-hidden group">
               {formData.bannerUrl && (
+                // eslint-disable-next-line @next/next/no-img-element
                 <img src={formData.bannerUrl} alt="Banner" className="w-full h-full object-cover" />
               )}
               <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Search, Filter, User, Hash, FileText, X, Sparkles } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -8,40 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { FeedItem } from "@/components/feed/FeedItem"
 import { UserLink } from "@/components/shared/UserLink"
 import { SearchSkeleton } from "@/components/skeletons/search-skeleton"
-interface Post {
-  id: string
-  _id: string
-  author: {
-    username: string
-    displayName: string
-    avatar: string
-    level: number
-  } | null
-  content: string
-  imageUrl?: string | null
-  tags: string[]
-  likesCount: number
-  commentsCount: number
-  viewsCount: number
-  xpAwarded: number
-  createdAt: string
-  isAnonymous: boolean
-  isLiked: boolean
-}
-
-interface User {
-  _id: string
-  username: string
-  displayName: string
-  avatar: string
-  level: number
-  points: number
-  bio: string
-}
+import { Post, UserSearchResult, AISummary, TrendingData, TopicItem } from "@/types"
 
 interface Tag {
   tag: string
@@ -51,11 +22,9 @@ interface Tag {
 
 interface SearchResults {
   posts: Post[]
-  users: User[]
+  users: UserSearchResult[]
   tags: Tag[]
-  aiInsights?: {
-    keywords?: string[]
-  }
+  aiInsights?: AISummary
 }
 
 interface SearchApiResponse {
@@ -83,10 +52,9 @@ export default function SearchPage() {
   const [hasSearched, setHasSearched] = useState(false)
   const [initialLoad, setInitialLoad] = useState(true)
   const [smartSearch, setSmartSearch] = useState(false)
-  const [aiError, setAiError] = useState(false)
   const [aiSummary, setAiSummary] = useState<string | null>(null)
-  const [aiInsights, setAiInsights] = useState<any>(null)
-  const [trendingData, setTrendingData] = useState<any>(null)
+  const [aiInsights, setAiInsights] = useState<AISummary | null>(null)
+  const [trendingData, setTrendingData] = useState<TrendingData | null>(null)
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -96,7 +64,7 @@ export default function SearchPage() {
     }
     
     // Fetch trending data
-    apiClient.request('/search/trending', { method: 'GET' })
+    apiClient.request<TrendingData>('/search/trending', { method: 'GET' })
       .then(res => {
         if (res.success && res.data) {
           setTrendingData(res.data)
@@ -105,7 +73,7 @@ export default function SearchPage() {
       .catch(err => console.error('Failed to fetch trending data:', err))
   }, [])
 
-  const performSearch = async (query: string, type: string = "all") => {
+  const performSearch = useCallback(async (query: string, type: string = "all") => {
     if (!query.trim()) {
       setSearchResults({ posts: [], users: [], tags: [] })
       setHasSearched(false)
@@ -120,7 +88,7 @@ export default function SearchPage() {
     
     try {
       const endpoint = smartSearch ? '/search/smart' : '/search'
-      const response = await apiClient.request<SearchApiResponse & { aiSummary?: string; aiInsights?: any }>(
+      const response = await apiClient.request<SearchApiResponse & { aiSummary?: string; aiInsights?: unknown }>(
         `${endpoint}?q=${encodeURIComponent(query)}&type=${type}&limit=20`,
         { method: "GET" }
       )
@@ -128,11 +96,10 @@ export default function SearchPage() {
       if (response.success && response.data) {
         setSearchResults(response.data.results)
         setHasSearched(true)
-        setAiError(false)
         
         if (smartSearch && response.data.aiSummary) {
           setAiSummary(response.data.aiSummary)
-          setAiInsights(response.data.results.aiInsights)
+          setAiInsights(response.data.results.aiInsights || null)
         } else {
           setAiSummary(null)
           setAiInsights(null)
@@ -140,15 +107,14 @@ export default function SearchPage() {
       } else {
         throw new Error(response.message || "Search failed")
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Search error:", error)
       if (smartSearch) {
-        setAiError(true)
         setSmartSearch(false)
         performSearch(query, type)
         return
       }
-      setError(error.message || "An error occurred while searching")
+      setError(error instanceof Error ? error.message : "An error occurred while searching")
       setSearchResults({ posts: [], users: [], tags: [] })
       setAiSummary(null)
       setAiInsights(null)
@@ -156,7 +122,7 @@ export default function SearchPage() {
       setIsSearching(false)
       setInitialLoad(false)
     }
-  }
+  }, [smartSearch])
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -172,7 +138,7 @@ export default function SearchPage() {
     }, 500) // Debounce search by 500ms
 
     return () => clearTimeout(timeoutId)
-  }, [searchQuery, activeTab, smartSearch])
+  }, [searchQuery, activeTab, smartSearch, performSearch])
 
   const handleLike = async (postId: string) => {
     if (!postId || postId === 'undefined') {
@@ -197,7 +163,7 @@ export default function SearchPage() {
           )
         }))
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to toggle like:", error)
     }
   }
@@ -355,15 +321,17 @@ export default function SearchPage() {
                   Posts
                 </h3>
                 <div className="space-y-3 md:space-y-4 overflow-hidden">
-                  {searchResults.posts.slice(0, 3).map((post: any) => (
+                {searchResults.posts.slice(0, 3).map((post) => {
+                    const postWithExtras = post as Post & { relevanceScore?: number; aiReason?: string }
+                    return (
                     <div key={post._id || post.id} className="w-full overflow-hidden">
-                      {smartSearch && post.relevanceScore && (
+                      {smartSearch && postWithExtras.relevanceScore && (
                         <div className="mb-2 flex items-center gap-2">
                           <Badge variant="outline" className="text-xs">
-                            {post.relevanceScore}% match
+                            {postWithExtras.relevanceScore}% match
                           </Badge>
-                          {post.aiReason && (
-                            <span className="text-xs text-gray-500">{post.aiReason}</span>
+                          {postWithExtras.aiReason && (
+                            <span className="text-xs text-gray-500">{postWithExtras.aiReason}</span>
                           )}
                         </div>
                       )}
@@ -376,7 +344,7 @@ export default function SearchPage() {
                         onLike={handleLike} 
                       />
                     </div>
-                  ))}
+                  )})}
                   {searchResults.posts.length > 3 && (
                     <div className="text-center">
                       <Button 
@@ -498,15 +466,17 @@ export default function SearchPage() {
           <TabsContent value="posts" className="mt-6 overflow-hidden">
             {searchResults.posts.length > 0 ? (
               <div className="space-y-4 overflow-hidden">
-                {searchResults.posts.map((post: any) => (
+                {searchResults.posts.map((post) => {
+                  const postWithExtras = post as Post & { relevanceScore?: number; aiReason?: string }
+                  return (
                   <div key={post._id || post.id} className="w-full overflow-hidden">
-                    {smartSearch && post.relevanceScore && (
+                    {smartSearch && postWithExtras.relevanceScore && (
                       <div className="mb-2 flex items-center gap-2">
                         <Badge variant="outline" className="text-xs">
-                          {post.relevanceScore}% match
+                          {postWithExtras.relevanceScore}% match
                         </Badge>
-                        {post.aiReason && (
-                          <span className="text-xs text-gray-500">{post.aiReason}</span>
+                        {postWithExtras.aiReason && (
+                          <span className="text-xs text-gray-500">{postWithExtras.aiReason}</span>
                         )}
                       </div>
                     )}
@@ -519,7 +489,7 @@ export default function SearchPage() {
                       onLike={handleLike} 
                     />
                   </div>
-                ))}
+                )})}
               </div>
             ) : (
               <div className="text-center py-12">
@@ -630,7 +600,7 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {(trendingData?.trending || ['Next.js', 'TypeScript', 'React', 'AI/ML', 'Web3', 'DevOps']).map((term: string, i: number) => (
+                {(trendingData?.trending ? trendingData.trending.map(t => t.name) : ['Next.js', 'TypeScript', 'React', 'AI/ML', 'Web3', 'DevOps']).map((term: string, i: number) => (
                   <button
                     key={term}
                     onClick={() => setSearchQuery(term)}
@@ -656,15 +626,15 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               <div className="flex flex-wrap gap-2">
-                {(trendingData?.topics || []).map((topic: any) => (
+                {(trendingData?.topics || []).map((topic: TopicItem) => (
                   <Badge
-                    key={topic.tag}
+                    key={topic.tag || topic.name}
                     variant="outline"
                     className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors px-3 py-2 text-sm"
-                    onClick={() => setSearchQuery(topic.tag)}
+                    onClick={() => setSearchQuery(topic.tag || topic.name)}
                   >
-                    #{topic.tag}
-                    <span className="ml-2 text-xs opacity-70">{topic.count > 1000 ? `${(topic.count/1000).toFixed(1)}k` : topic.count}</span>
+                    #{topic.tag || topic.name}
+                    <span className="ml-2 text-xs opacity-70">{(topic.count || topic.postCount) > 1000 ? `${((topic.count || topic.postCount)/1000).toFixed(1)}k` : (topic.count || topic.postCount)}</span>
                   </Badge>
                 ))}
               </div>
@@ -719,7 +689,7 @@ export default function SearchPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {(trendingData?.users || []).map((dev: any) => (
+                {(trendingData?.users || []).map((dev: UserSearchResult) => (
                   <div
                     key={dev.username}
                     className="flex items-center justify-between p-3 rounded-lg border border-border hover:border-primary hover:bg-primary/5 transition-all cursor-pointer"

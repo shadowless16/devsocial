@@ -1,9 +1,9 @@
 
 // // middleware/auth-middleware.ts
 // import { type NextRequest, NextResponse } from "next/server";
-// import { AuthService } from "@/lib/auth";
+// import { AuthService } from "@/lib/auth/auth";
 // import User from "@/models/User";
-// import connectDB from "@/lib/db";
+// import connectDB from "@/lib/core/db";
 
 // export interface AuthenticatedRequest extends NextRequest {
 //   user: {
@@ -58,7 +58,7 @@
 // }
 
 // middleware/auth-middleware.ts
-import { getUserFromRequest } from '@/lib/jwt-auth';
+import { getUserFromRequest } from '@/lib/auth/jwt-auth';
 import { NextResponse, type NextRequest } from "next/server";
 ;
 

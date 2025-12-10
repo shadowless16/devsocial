@@ -12,7 +12,7 @@ interface WalletConnectState {
   isConnecting: boolean
   error: string | null
   uri: string | null
-  client: any | null
+  client: unknown | null
 }
 
 const PROJECT_ID = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || 'your-project-id'
@@ -57,7 +57,7 @@ export function useWalletConnect() {
               ...prev,
               isConnected: true,
               accountId,
-              publicKey: (session.peer.metadata as any).publicKey || null
+              publicKey: (session.peer.metadata as { publicKey?: string }).publicKey || null
             }))
           }
         }
@@ -120,7 +120,7 @@ export function useWalletConnect() {
 
       const session = await approval()
       const accountId = session.namespaces.hedera?.accounts[0]?.split(':')[2]
-      const publicKey = (session.peer.metadata as any).publicKey
+      const publicKey = (session.peer.metadata as { publicKey?: string }).publicKey || null
 
       if (accountId) {
         setState(prev => ({

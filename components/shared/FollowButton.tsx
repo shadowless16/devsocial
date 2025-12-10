@@ -3,13 +3,11 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { UserPlus, UserMinus, Loader2 } from "lucide-react";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api/api-client";
 import { useToast } from "@/hooks/use-toast";
-import { useWebSocket } from "@/contexts/websocket-context";
 import { useFollow } from "@/contexts/follow-context";
-import { useAuth } from "@/contexts/app-context";
 import { useMissionTracker } from "@/hooks/use-mission-tracker";
-import { getFollowActionText, getFollowingActionText, getFollowTooltip } from "@/lib/gamified-terms";
+import { getFollowActionText, getFollowingActionText, getFollowTooltip } from "@/lib/ui/gamified-terms";
 
 interface FollowButtonProps {
   userId: string;
@@ -35,9 +33,7 @@ export function FollowButton({
   const [isFollowing, setIsFollowing] = useState(initialIsFollowing);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { socket } = useWebSocket();
   const { updateFollowState, getFollowState } = useFollow();
-  const { user } = useAuth();
   const { trackFollow } = useMissionTracker();
 
   // Update local state when prop changes or from context
@@ -94,7 +90,7 @@ export function FollowButton({
           variant: "default",
         });
       }
-    } catch (error: any) {
+    } catch (error) {
       // Revert optimistic update on error
       setIsFollowing(previousState);
       updateFollowState(userId, previousState);
@@ -102,7 +98,7 @@ export function FollowButton({
       
       toast({
         title: "Error",
-        description: error.message || "Something went wrong",
+        description: error instanceof Error ? error.message : "Something went wrong",
         variant: "destructive",
       });
     } finally {

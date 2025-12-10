@@ -50,7 +50,7 @@ export function AITextEnhancer({ content, onEnhance }: AITextEnhancerProps) {
       } else {
         throw new Error(data.message || "Enhancement failed");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Enhancement failed",
         description: error.message || "Failed to enhance text",

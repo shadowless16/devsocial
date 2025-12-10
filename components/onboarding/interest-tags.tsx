@@ -27,10 +27,14 @@ const availableTags = [
   "#devops",
 ]
 
+interface OnboardingData {
+  interests?: string[]
+}
+
 interface InterestTagsProps {
-  data: any
-  onNext: (data: any) => void
-  onChange?: (data: any) => void
+  data: OnboardingData
+  onNext: (data: OnboardingData) => void
+  onChange?: (data: OnboardingData) => void
   onBack?: () => void
 }
 

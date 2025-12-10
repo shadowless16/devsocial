@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useAuth } from "./app-context";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api/api-client";
 
 interface AppearanceSettings {
   theme: "light" | "dark" | "system";
@@ -50,6 +50,7 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
   }, [user]);
 
   // Apply theme changes to document
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     applyTheme();
   }, [settings.theme, settings.fontSize, settings.compactMode, settings.highContrast, settings.colorScheme]);
@@ -61,7 +62,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         setSettings({ ...defaultSettings, ...response.data });
       }
     } catch (error) {
-      console.error("Failed to load appearance settings:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to load appearance settings:", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -77,7 +79,8 @@ export function AppearanceProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify(updatedSettings),
       });
     } catch (error) {
-      console.error("Failed to save appearance settings:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to save appearance settings:", errorMessage);
       // Revert on error
       setSettings(settings);
       throw error;

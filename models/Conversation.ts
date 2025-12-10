@@ -1,7 +1,6 @@
 import mongoose, { Schema, type Document } from "mongoose"
 
 export interface IConversation extends Document {
-  _id: string
   participants: mongoose.Types.ObjectId[]
   lastMessage: mongoose.Types.ObjectId
   lastActivity: Date

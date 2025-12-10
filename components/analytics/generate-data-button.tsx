@@ -28,7 +28,6 @@ export function GenerateDataButton() {
         throw new Error('Failed to generate data')
       }
 
-      const result = await response.json()
       toast.success('Analytics data generated for 30 days! Page will refresh to show updated metrics.')
       
       // Refresh the page to show new data
@@ -37,7 +36,8 @@ export function GenerateDataButton() {
       }, 2000)
       
     } catch (error) {
-      console.error('Error generating data:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error generating data:', errorMessage)
       toast.error('Failed to generate sample data')
     } finally {
       setIsGenerating(false)

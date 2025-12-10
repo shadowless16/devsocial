@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
 import Message from "@/models/Message"
 import Conversation from "@/models/Conversation"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Verify user is part of conversation
     const conversation = await Conversation.findById(conversationId)
-    if (!conversation || !conversation.participants.includes(userId as any)) {
+    if (!conversation || !conversation.participants.includes(userId as unknown)) {
       return NextResponse.json(errorResponse("Conversation not found"), { status: 404 })
     }
 
@@ -93,7 +93,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       }),
     )
   } catch (error) {
-    console.error("Error fetching messages:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching messages:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch messages"), { status: 500 })
   }
 }
@@ -114,7 +115,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Verify user is part of conversation
     const conversation = await Conversation.findById(conversationId)
-    if (!conversation || !conversation.participants.includes(userId as any)) {
+    if (!conversation || !conversation.participants.includes(userId as unknown)) {
       return NextResponse.json(errorResponse("Conversation not found"), { status: 404 })
     }
 
@@ -143,7 +144,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     ])
 
     // Update conversation
-    conversation.lastMessage = message._id as any
+    conversation.lastMessage = message._id as unknown
     conversation.lastActivity = new Date()
 
     // Update unread count for recipient
@@ -153,7 +154,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json(successResponse({ message }), { status: 201 })
   } catch (error) {
-    console.error("Error sending message:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error sending message:", errorMessage)
     return NextResponse.json(errorResponse("Failed to send message"), { status: 500 })
   }
 }

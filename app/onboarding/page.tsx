@@ -9,7 +9,7 @@ import { TechProfile } from "@/components/onboarding/tech-profile"
 import { InterestTags } from "@/components/onboarding/interest-tags"
 import { StarterBadge } from "@/components/onboarding/starter-badge"
 import { WelcomeGamification } from "@/components/onboarding/welcome-gamification"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { useAuth } from "@/contexts/app-context"
 
 const steps = [
@@ -20,11 +20,36 @@ const steps = [
   { id: 5, title: "Welcome to DevSocial!", component: WelcomeGamification },
 ]
 
+interface OnboardingData {
+  avatar: string
+  bio: string
+  gender: string
+  userType: string
+  socials: { twitter: string; linkedin: string }
+  techCareerPath: string
+  experienceLevel: string
+  techStack: string[]
+  githubUsername: string
+  linkedinUrl: string
+  portfolioUrl: string
+  interests: string[]
+  starterBadge: string
+  xp: number
+  completed?: boolean
+}
+
+interface ApiResponse {
+  success: boolean
+  message?: string
+  data?: OnboardingData
+  error?: string
+}
+
 export default function OnboardingPage() {
   const { updateUser } = useAuth()
   const router = useRouter()
   const [currentStep, setCurrentStep] = useState(1)
-  const [onboardingData, setOnboardingData] = useState({
+  const [onboardingData, setOnboardingData] = useState<OnboardingData>({
     avatar: "",
     bio: "",
     gender: "",
@@ -32,11 +57,11 @@ export default function OnboardingPage() {
     socials: { twitter: "", linkedin: "" },
     techCareerPath: "",
     experienceLevel: "beginner",
-    techStack: [] as string[],
+    techStack: [],
     githubUsername: "",
     linkedinUrl: "",
     portfolioUrl: "",
-    interests: [] as string[],
+    interests: [],
     starterBadge: "",
     xp: 10,
   })
@@ -46,43 +71,31 @@ export default function OnboardingPage() {
     const loadOnboardingData = async () => {
       try {
         // Try to load from database first
-        const response = await apiClient.request('/users/onboarding', { method: 'GET' })
-        const res = response as any
-        if (res && typeof res === 'object') {
-          const dbData = {
-            avatar: res.avatar || "",
-            bio: res.bio || "",
-            gender: res.gender || "",
-            userType: res.userType || "",
-            socials: res.socials || { twitter: "", linkedin: "" },
-            techCareerPath: res.techCareerPath || "",
-            experienceLevel: res.experienceLevel || "beginner",
-            techStack: res.techStack || [],
-            githubUsername: res.githubUsername || "",
-            linkedinUrl: res.linkedinUrl || "",
-            portfolioUrl: res.portfolioUrl || "",
-            interests: res.interests || [],
-            starterBadge: res.starterBadge || "",
-            xp: res.xp || 10,
-          }
-          setOnboardingData(dbData)
+        const response = await apiClient.request<ApiResponse>('/users/onboarding', { method: 'GET' })
+        if (response.success && response.data) {
+          const data = response.data as unknown as OnboardingData;
+          setOnboardingData(data)
           // Save to localStorage as backup
-          localStorage.setItem('onboarding-data', JSON.stringify(dbData))
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('onboarding-data', JSON.stringify(response.data))
+          }
           return
         }
-      } catch (error) {
+      } catch {
         console.log('No database data found, checking localStorage')
       }
       
       // Fallback to localStorage
-      const savedData = localStorage.getItem('onboarding-data')
-      const savedStep = localStorage.getItem('onboarding-step')
-      
-      if (savedData) {
-        setOnboardingData(JSON.parse(savedData))
-      }
-      if (savedStep) {
-        setCurrentStep(parseInt(savedStep))
+      if (typeof window !== 'undefined') {
+        const savedData = localStorage.getItem('onboarding-data')
+        const savedStep = localStorage.getItem('onboarding-step')
+        
+        if (savedData) {
+          setOnboardingData(JSON.parse(savedData))
+        }
+        if (savedStep) {
+          setCurrentStep(parseInt(savedStep))
+        }
       }
     }
     
@@ -92,7 +105,7 @@ export default function OnboardingPage() {
   const progress = (currentStep / steps.length) * 100
   const CurrentStepComponent = steps.find((step) => step.id === currentStep)?.component
 
-  const handleNext = (stepData: any) => {
+  const handleNext = (stepData: Partial<OnboardingData>) => {
     const updatedData = { ...onboardingData, ...stepData }
     setOnboardingData(updatedData)
     
@@ -104,15 +117,19 @@ export default function OnboardingPage() {
       // Move to next step
       const nextStep = currentStep + 1
       setCurrentStep(nextStep)
-      localStorage.setItem('onboarding-step', nextStep.toString())
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('onboarding-step', nextStep.toString())
+      }
     }
   }
 
-  const handleChange = (partialData: any) => {
+  const handleChange = (partialData: Partial<OnboardingData>) => {
     setOnboardingData((prev) => {
       const updated = { ...prev, ...partialData }
       // Save to localStorage immediately
-      localStorage.setItem('onboarding-data', JSON.stringify(updated))
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('onboarding-data', JSON.stringify(updated))
+      }
       
       // Save to database (async, non-blocking)
       apiClient.request('/users/onboarding', {
@@ -128,16 +145,18 @@ export default function OnboardingPage() {
     if (currentStep > 1) {
       const prevStep = currentStep - 1
       setCurrentStep(prevStep)
-      localStorage.setItem('onboarding-step', prevStep.toString())
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('onboarding-step', prevStep.toString())
+      }
     }
   }
 
-  const handleComplete = async (data: any) => {
-    try {
+  const handleComplete = async (data: OnboardingData) => {
+    try{
       console.log("Onboarding completed:", data);
       
       // Call the onboarding API to save the data
-      const response = await apiClient.request('/users/onboarding', {
+      const response = await apiClient.request<ApiResponse>('/users/onboarding', {
         method: 'PUT',
         body: JSON.stringify({
           bio: data.bio,
@@ -152,39 +171,43 @@ export default function OnboardingPage() {
           interests: data.interests,
           starterBadge: data.starterBadge,
           socials: data.socials,
-          avatar: data.avatar // Include avatar in the request
+          avatar: data.avatar
         })
-      }) as any;
+      });
       
       console.log('Onboarding API response:', response);
       
-      // Check multiple success indicators
-      const isSuccess = response?.success === true || 
-                       response?.status === 'success' || 
-                       response?.message?.includes('success') ||
-                       response?.data || 
-                       !response?.error;
+      // Check success
+      const isSuccess = response.success === true || 
+                       (response.message && response.message.includes('success')) ||
+                       response.data !== undefined || 
+                       (response as { error?: string }).error === undefined;
       
       if (isSuccess) {
         console.log('Onboarding data saved successfully');
         // Clear saved data after successful completion
-        localStorage.removeItem('onboarding-data')
-        localStorage.removeItem('onboarding-step')
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('onboarding-data')
+          localStorage.removeItem('onboarding-step')
+        }
         updateUser({ onboardingCompleted: true });
         router.push('/');
       } else {
-        throw new Error((response as any)?.message || (response as any)?.error || 'Failed to save onboarding data');
+        throw new Error(response.message || 'Failed to save onboarding data');
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Failed to complete onboarding:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error'
       // Only show error if it's a real API error
-      if (error?.message && !error.message.includes('Failed to save onboarding data')) {
-        alert(`There was an issue: ${error.message}. Please update your profile later.`);
+      if (errorMessage && !errorMessage.includes('Failed to save onboarding data')) {
+        alert(`There was an issue: ${errorMessage}. Please update your profile later.`);
       } else {
         console.log('Onboarding likely succeeded, proceeding...');
         // Clear saved data even on error to prevent loops
-        localStorage.removeItem('onboarding-data')
-        localStorage.removeItem('onboarding-step')
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('onboarding-data')
+          localStorage.removeItem('onboarding-step')
+        }
         updateUser({ onboardingCompleted: true });
       }
       router.push('/');

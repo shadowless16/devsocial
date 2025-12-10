@@ -12,15 +12,13 @@ import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 import Link from "next/link"
 import {
   Bell,
   Compass,
-  FolderOpen,
   Grid2X2,
   Home,
-  ListOrdered,
   Moon,
   Plus,
   Search,
@@ -36,10 +34,9 @@ import {
   UserCog,
 } from "lucide-react"
 import { SimplePostModal } from "@/components/modals/simple-post-modal"
-import { InstallButton } from "@/components/pwa/install-button"
 
 import { useRouter } from "next/navigation"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { useToast } from "@/hooks/use-toast"
 
 type NavItem = {
@@ -86,11 +83,13 @@ export default function SideNav() {
   
   useEffect(() => {
     // Initialize theme from localStorage
-    const savedTheme = localStorage.getItem('theme')
-    if (savedTheme === 'dark') {
-      document.documentElement.classList.add('dark')
-    } else if (savedTheme === 'light') {
-      document.documentElement.classList.remove('dark')
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('theme')
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.add('dark')
+      } else if (savedTheme === 'light') {
+        document.documentElement.classList.remove('dark')
+      }
     }
   }, [])
   
@@ -115,9 +114,13 @@ export default function SideNav() {
     }
 
     // Listen for user updates from AuthProvider
-    const handleUserUpdated = (e: any) => {
+    interface UserUpdatedEvent extends Event {
+      detail: { points?: number; level?: number }
+    }
+    const handleUserUpdated = (e: Event) => {
       try {
-        const updatedUser = e?.detail;
+        const customEvent = e as UserUpdatedEvent;
+        const updatedUser = customEvent.detail;
         if (!updatedUser) return;
         setPoints(updatedUser.points ?? 0);
         setLevel(updatedUser.level ?? 1);
@@ -125,16 +128,12 @@ export default function SideNav() {
         console.debug('Error handling user:updated in SideNav', err);
       }
     };
-    window.addEventListener('user:updated', handleUserUpdated as EventListener);
+    window.addEventListener('user:updated', handleUserUpdated);
 
     return () => {
-      window.removeEventListener('user:updated', handleUserUpdated as EventListener);
+      window.removeEventListener('user:updated', handleUserUpdated);
     };
   }, [user]);
-
-  const getInitials = (name: string) => {
-    return name.split(' ').map(n => n[0]).join('').toUpperCase()
-  }
 
   const calculateProgress = (currentXP: number, level: number) => {
     const currentLevelXP = (level - 1) * 1000
@@ -247,8 +246,10 @@ export default function SideNav() {
           variant="ghost" 
           className="justify-start gap-1 text-red-600 hover:text-red-600 text-xs h-7"
           onClick={() => {
-            localStorage.clear()
-            window.location.href = '/auth/login'
+            if (typeof window !== 'undefined') {
+              localStorage.clear()
+              window.location.href = '/auth/login'
+            }
           }}
         >
           <LogOut className="h-3 w-3" />
@@ -263,11 +264,14 @@ function CreateButton() {
   const [showPostModal, setShowPostModal] = useState(false)
   const { toast } = useToast()
 
-  const handleCreatePost = async (postData: any) => {
+  const handleCreatePost = async (postData: Record<string, unknown>) => {
     try {
       const response = await apiClient.createPost(postData)
       if (response.success && response.data) {
-        const createdPost = (response.data as any).post || response.data
+        interface PostResponse {
+          post?: unknown
+        }
+        const createdPost = (response.data as PostResponse).post || response.data
         // Dispatch optimistic update event for feeds to consume
         try {
           window.dispatchEvent(new CustomEvent('post:created', { detail: createdPost }))
@@ -279,7 +283,7 @@ function CreateButton() {
         setShowPostModal(false)
         // No full reload - optimistic UI will update feed
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({ title: "Error", description: error.message || "Failed to create post", variant: "destructive" })
     }
   }

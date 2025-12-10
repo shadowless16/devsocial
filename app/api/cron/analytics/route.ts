@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AnalyticsService } from '@/lib/analytics-service'
+import { AnalyticsService } from '@/lib/analytics/analytics-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -24,7 +24,8 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Cron analytics generation error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Cron analytics generation error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to generate analytics', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

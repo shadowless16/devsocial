@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import { connectWithRetry } from '@/lib/connect-with-retry'
+import { connectWithRetry } from '@/lib/core/connect-with-retry'
+import { getSession } from '@/lib/auth/server-auth'
 import User from '@/models/User'
 
 export async function POST(request: NextRequest) {
@@ -18,7 +17,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Unsubscribe error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Unsubscribe error:', errorMessage)
     return NextResponse.json({ error: 'Failed to unsubscribe' }, { status: 500 })
   }
 }

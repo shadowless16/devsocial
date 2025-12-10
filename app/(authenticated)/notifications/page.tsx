@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -13,7 +13,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { formatDistanceToNow } from 'date-fns'
-import Link from 'next/link'
+
 import { useRouter } from 'next/navigation'
 import { useNotifications } from '@/contexts/notification-context'
 
@@ -30,22 +30,7 @@ function TimeAgo({ timestamp }: { timestamp: string }) {
   return <span className="flex-shrink-0">{time}</span>
 }
 
-interface Notification {
-  _id: string
-  type: string
-  title: string
-  message: string
-  read: boolean
-  createdAt: string
-  actionUrl?: string
-  sender: {
-    _id: string
-    username: string
-    displayName: string
-    avatar?: string
-    level: number
-  }
-}
+
 
 export default function NotificationsPage() {
   const router = useRouter()
@@ -60,7 +45,7 @@ export default function NotificationsPage() {
       fetchNotifications()
     }, 1800000)
     return () => clearInterval(interval)
-  }, [])
+  }, [fetchNotifications])
 
   useEffect(() => {
     if (filter === 'unread') {

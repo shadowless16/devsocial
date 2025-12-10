@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
+import { getSession } from '@/lib/auth/server-auth';
 import User from "@/models/User";
 import Post from "@/models/Post";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -78,7 +77,8 @@ export async function POST(request: NextRequest) {
       data: exportData,
     });
   } catch (error) {
-    console.error("Error exporting user data:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error exporting user data:", errorMessage);
     return NextResponse.json(
       { success: false, message: "Internal server error" },
       { status: 500 }

@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { connectWithRetry } from '@/lib/connect-with-retry'
+import { connectWithRetry } from '@/lib/core/connect-with-retry'
 import User from '@/models/User'
 import UserStats from '@/models/UserStats'
 import Referral from '@/models/Referral'
 import XPLog from '@/models/XPLog'
-import { cache } from '@/lib/cache'
+import { cache } from '@/lib/core/cache'
 
 // Helper function to get start of current week (Monday)
 function getStartOfWeek() {
@@ -29,7 +29,7 @@ export async function GET(request: NextRequest) {
     const type = searchParams.get('type') || 'all-time'
     const limit = parseInt(searchParams.get('limit') || '50')
 
-    // Check cache first
+    // Aggressive caching - 5 minutes for leaderboard
     const cacheKey = `leaderboard_${type}_${limit}`
     const cached = cache.get(cacheKey)
     if (cached) {
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
   
     await connectWithRetry()
 
-    let leaderboard: any[] = []
+    let leaderboard: unknown[] = []
 
     switch (type) {
       case 'weekly': {
@@ -87,20 +87,37 @@ export async function GET(request: NextRequest) {
           { $limit: limit }
         ])
 
-        leaderboard = weeklyXP.map((entry: any, index) => ({
-          _id: entry._id.toString(),
+        interface WeeklyEntry {
+          _id: { toString: () => string };
+          weeklyXP: number;
           user: {
-            _id: entry.user._id.toString(),
-            username: entry.user.username,
-            displayName: entry.user.displayName || 
-              (entry.user.firstName && entry.user.lastName ? `${entry.user.firstName} ${entry.user.lastName}` : entry.user.username),
-            avatar: entry.user.avatar || "/placeholder.svg",
-            level: entry.user.level || 1
-          },
-          totalXP: entry.weeklyXP || 0,
-          rank: index + 1,
-          level: entry.user.level || 1
-        }))
+            _id: { toString: () => string };
+            username: string;
+            displayName?: string;
+            firstName?: string;
+            lastName?: string;
+            avatar?: string;
+            level: number;
+          };
+        }
+        
+        leaderboard = weeklyXP.map((entry: unknown, index) => {
+          const typedEntry = entry as WeeklyEntry;
+          return {
+            _id: typedEntry._id.toString(),
+            user: {
+              _id: typedEntry.user._id.toString(),
+              username: typedEntry.user.username,
+              displayName: typedEntry.user.displayName || 
+                (typedEntry.user.firstName && typedEntry.user.lastName ? `${typedEntry.user.firstName} ${typedEntry.user.lastName}` : typedEntry.user.username),
+              avatar: typedEntry.user.avatar || "/placeholder.svg",
+              level: typedEntry.user.level || 1
+            },
+            totalXP: typedEntry.weeklyXP || 0,
+            rank: index + 1,
+            level: typedEntry.user.level || 1
+          };
+        })
         break
       }
 
@@ -150,20 +167,37 @@ export async function GET(request: NextRequest) {
           { $limit: limit }
         ])
 
-        leaderboard = monthlyXP.map((entry: any, index) => ({
-          _id: entry._id.toString(),
+        interface MonthlyEntry {
+          _id: { toString: () => string };
+          monthlyXP: number;
           user: {
-            _id: entry.user._id.toString(),
-            username: entry.user.username,
-            displayName: entry.user.displayName || 
-              (entry.user.firstName && entry.user.lastName ? `${entry.user.firstName} ${entry.user.lastName}` : entry.user.username),
-            avatar: entry.user.avatar || "/placeholder.svg",
-            level: entry.user.level || 1
-          },
-          totalXP: entry.monthlyXP || 0,
-          rank: index + 1,
-          level: entry.user.level || 1
-        }))
+            _id: { toString: () => string };
+            username: string;
+            displayName?: string;
+            firstName?: string;
+            lastName?: string;
+            avatar?: string;
+            level: number;
+          };
+        }
+        
+        leaderboard = monthlyXP.map((entry: unknown, index) => {
+          const typedEntry = entry as MonthlyEntry;
+          return {
+            _id: typedEntry._id.toString(),
+            user: {
+              _id: typedEntry.user._id.toString(),
+              username: typedEntry.user.username,
+              displayName: typedEntry.user.displayName || 
+                (typedEntry.user.firstName && typedEntry.user.lastName ? `${typedEntry.user.firstName} ${typedEntry.user.lastName}` : typedEntry.user.username),
+              avatar: typedEntry.user.avatar || "/placeholder.svg",
+              level: typedEntry.user.level || 1
+            },
+            totalXP: typedEntry.monthlyXP || 0,
+            rank: index + 1,
+            level: typedEntry.user.level || 1
+          };
+        })
         break
       }
 
@@ -209,21 +243,39 @@ export async function GET(request: NextRequest) {
           { $limit: limit }
         ])
 
-        leaderboard = referralStats.map((entry: any, index) => ({
-          _id: entry._id.toString(),
+        interface ReferralEntry {
+          _id: { toString: () => string };
+          referralCount: number;
           user: {
-            _id: entry.user._id.toString(),
-            username: entry.user.username,
-            displayName: entry.user.displayName || 
-              (entry.user.firstName && entry.user.lastName ? `${entry.user.firstName} ${entry.user.lastName}` : entry.user.username),
-            avatar: entry.user.avatar || "/placeholder.svg",
-            level: entry.user.level || 1
-          },
-          totalXP: entry.user.points || 0,
-          referralCount: entry.referralCount || 0,
-          rank: index + 1,
-          level: entry.user.level || 1
-        }))
+            _id: { toString: () => string };
+            username: string;
+            displayName?: string;
+            firstName?: string;
+            lastName?: string;
+            avatar?: string;
+            level: number;
+            points: number;
+          };
+        }
+        
+        leaderboard = referralStats.map((entry: unknown, index) => {
+          const typedEntry = entry as ReferralEntry;
+          return {
+            _id: typedEntry._id.toString(),
+            user: {
+              _id: typedEntry.user._id.toString(),
+              username: typedEntry.user.username,
+              displayName: typedEntry.user.displayName || 
+                (typedEntry.user.firstName && typedEntry.user.lastName ? `${typedEntry.user.firstName} ${typedEntry.user.lastName}` : typedEntry.user.username),
+              avatar: typedEntry.user.avatar || "/placeholder.svg",
+              level: typedEntry.user.level || 1
+            },
+            totalXP: typedEntry.user.points || 0,
+            referralCount: typedEntry.referralCount || 0,
+            rank: index + 1,
+            level: typedEntry.user.level || 1
+          };
+        })
         break
       }
 
@@ -263,21 +315,39 @@ export async function GET(request: NextRequest) {
           { $limit: limit }
         ])
 
-        leaderboard = challengeStats.map((entry: any, index) => ({
-          _id: entry._id.toString(),
+        interface ChallengeEntry {
+          _id: { toString: () => string };
+          challengesCompleted: number;
           user: {
-            _id: entry.user._id.toString(),
-            username: entry.user.username,
-            displayName: entry.user.displayName || 
-              (entry.user.firstName && entry.user.lastName ? `${entry.user.firstName} ${entry.user.lastName}` : entry.user.username),
-            avatar: entry.user.avatar || "/placeholder.svg",
-            level: entry.user.level || 1
-          },
-          totalXP: entry.user.points || 0,
-          challengesCompleted: entry.challengesCompleted || 0,
-          rank: index + 1,
-          level: entry.user.level || 1
-        }))
+            _id: { toString: () => string };
+            username: string;
+            displayName?: string;
+            firstName?: string;
+            lastName?: string;
+            avatar?: string;
+            level: number;
+            points: number;
+          };
+        }
+        
+        leaderboard = challengeStats.map((entry: unknown, index) => {
+          const typedEntry = entry as ChallengeEntry;
+          return {
+            _id: typedEntry._id.toString(),
+            user: {
+              _id: typedEntry.user._id.toString(),
+              username: typedEntry.user.username,
+              displayName: typedEntry.user.displayName || 
+                (typedEntry.user.firstName && typedEntry.user.lastName ? `${typedEntry.user.firstName} ${typedEntry.user.lastName}` : typedEntry.user.username),
+              avatar: typedEntry.user.avatar || "/placeholder.svg",
+              level: typedEntry.user.level || 1
+            },
+            totalXP: typedEntry.user.points || 0,
+            challengesCompleted: typedEntry.challengesCompleted || 0,
+            rank: index + 1,
+            level: typedEntry.user.level || 1
+          };
+        })
         break
       }
 
@@ -299,20 +369,34 @@ export async function GET(request: NextRequest) {
           { $limit: limit }
         ])
 
-        leaderboard = users.map((user: any, index) => ({
-          _id: user._id.toString(),
-          user: {
-            _id: user._id.toString(),
-            username: user.username,
-            displayName: user.displayName || 
-              (user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.username),
-            avatar: user.avatar || "/placeholder.svg",
-            level: user.level || 1
-          },
-          totalXP: user.points || 0,
-          rank: index + 1,
-          level: user.level || 1
-        }))
+        interface UserEntry {
+          _id: { toString: () => string };
+          username: string;
+          displayName?: string;
+          firstName?: string;
+          lastName?: string;
+          avatar?: string;
+          level: number;
+          points: number;
+        }
+        
+        leaderboard = users.map((user: unknown, index) => {
+          const typedUser = user as UserEntry;
+          return {
+            _id: typedUser._id.toString(),
+            user: {
+              _id: typedUser._id.toString(),
+              username: typedUser.username,
+              displayName: typedUser.displayName || 
+                (typedUser.firstName && typedUser.lastName ? `${typedUser.firstName} ${typedUser.lastName}` : typedUser.username),
+              avatar: typedUser.avatar || "/placeholder.svg",
+              level: typedUser.level || 1
+            },
+            totalXP: typedUser.points || 0,
+            rank: index + 1,
+            level: typedUser.level || 1
+          };
+        })
         break
       }
     }
@@ -326,13 +410,14 @@ export async function GET(request: NextRequest) {
       }
     }
     
-    // Cache for 2 minutes for better real-time updates
-    cache.set(cacheKey, responseData, 120000)
+    // Cache for 5 minutes to reduce DB load
+    cache.set(cacheKey, responseData, 300000)
 
     return NextResponse.json(responseData)
 
   } catch (error) {
-    console.error('Leaderboard error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Leaderboard error:', errorMessage)
     // Return fallback data when database is unavailable
     const fallbackData = {
       success: true,

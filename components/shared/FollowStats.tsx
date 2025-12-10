@@ -2,11 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Users } from 'lucide-react';
 import { FollowListModal } from '@/components/shared/FollowListModal';
-import { useWebSocket } from '@/contexts/websocket-context';
-import { useFollow } from '@/contexts/follow-context';
-import { getConnectionText, GAMIFIED_TERMS } from '@/lib/gamified-terms';
+import { getConnectionText, GAMIFIED_TERMS } from '@/lib/ui/gamified-terms';
 
 interface FollowStatsProps {
   userId: string;
@@ -17,7 +14,6 @@ interface FollowStatsProps {
 }
 
 export function FollowStats({
-  userId,
   username,
   initialFollowersCount,
   initialFollowingCount,
@@ -27,10 +23,6 @@ export function FollowStats({
   const [modalTab, setModalTab] = useState<"followers" | "following">("followers");
   const [followersCount, setFollowersCount] = useState(initialFollowersCount);
   const [followingCount, setFollowingCount] = useState(initialFollowingCount);
-  const { socket } = useWebSocket();
-  const { getFollowState, updateFollowState } = useFollow();
-
-
 
   // Update counts from props when they change
   useEffect(() => {

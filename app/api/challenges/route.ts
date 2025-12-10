@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server"
+﻿import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
 import { ChallengeSystem } from "@/utils/challenge-system"
 import { successResponse, errorResponse } from "@/utils/response"
@@ -6,12 +6,14 @@ import { successResponse, errorResponse } from "@/utils/response"
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function GET(__request: NextRequest) {
   try {
     const challenges = await ChallengeSystem.getActiveChallenges()
     return NextResponse.json(successResponse({ challenges }))
   } catch (error) {
-    console.error("Error fetching challenges:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching challenges:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch challenges"), { status: 500 })
   }
 }
@@ -33,7 +35,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(successResponse({ challenge }), { status: 201 })
   } catch (error) {
-    console.error("Error creating challenge:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error creating challenge:", errorMessage)
     return NextResponse.json(errorResponse("Failed to create challenge"), { status: 500 })
   }
 }
