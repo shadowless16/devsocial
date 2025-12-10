@@ -1,12 +1,11 @@
 // app/api/likes/comments/[commentId]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
+import { getSession } from '@/lib/auth/server-auth';
 import Like from "@/models/Like";
 import Comment from "@/models/Comment";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 import { errorResponse } from "@/utils/response";
-import { handleDatabaseError } from "@/lib/api-error-handler";
+import { handleDatabaseError } from "@/lib/api/api-error-handler";
 
 export const dynamic = 'force-dynamic'
 
@@ -53,8 +52,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         likesCount,
       }
     });
-  } catch (error: any) {
-    console.error("Error toggling comment like:", error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error toggling comment like:", errorMessage);
     return handleDatabaseError(error);
   }
 }

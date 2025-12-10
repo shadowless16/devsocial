@@ -22,7 +22,8 @@ export async function GET(request: NextRequest) {
       timestamp: new Date().toISOString()
     })
   } catch (error) {
-    console.error('Cron overtake check error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Cron overtake check error:', errorMessage)
     return NextResponse.json({ 
       success: false, 
       error: 'Failed to check overtakes' 

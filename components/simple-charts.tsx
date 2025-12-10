@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import {useState, useEffect } from 'react'
 
 interface ActivityChartProps {
   data: Array<{
@@ -105,7 +105,6 @@ export function XPChart({ data }: XPChartProps) {
           <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
             {data.map((item, index) => {
               const percentage = (item.value / total) * 100
-              const strokeDasharray = `${percentage} ${100 - percentage}`
               const strokeDashoffset = data.slice(0, index).reduce((sum, prev) => sum + (prev.value / total) * 100, 0)
               
               return (

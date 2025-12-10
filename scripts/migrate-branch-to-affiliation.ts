@@ -44,7 +44,7 @@
 //           await usersCollection.createIndex({ affiliation: 1 });
 //           console.log("Index updated successfully");
 //         }
-//       } catch (indexError) {
+//       } catch (indexError: unknown) {
 //         console.log("No index updates needed");
 //       }
 //     } else {
@@ -80,7 +80,7 @@
 //     await mongoose.connection.close();
 //     console.log("\nMigration script completed. Database connection closed.");
     
-//   } catch (error) {
+//   } catch (error: unknown) {
 //     console.error("Migration failed:", error);
 //     process.exit(1);
 //   }

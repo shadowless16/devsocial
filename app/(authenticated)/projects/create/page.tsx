@@ -13,7 +13,7 @@ import { ArrowLeft, ArrowRight, Check, Plus, X, ChevronDown, ChevronUp, Search }
 import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 import { ImageUpload } from "@/components/ui/image-upload"
-import { TECH_STACK, PROJECT_ROLES, PROJECT_TYPES, EXPERIENCE_LEVELS, TIME_COMMITMENTS } from "@/lib/project-data"
+import { TECH_STACK, PROJECT_ROLES, PROJECT_TYPES, EXPERIENCE_LEVELS, TIME_COMMITMENTS } from "@/lib/projects/project-data"
 
 type ProjectFormData = {
   title: string
@@ -89,7 +89,7 @@ export default function CreateProjectPage() {
     }))
   }
 
-  const updatePosition = (index: number, field: string, value: any) => {
+  const updatePosition = (index: number, field: string, value: unknown) => {
     setFormData((prev) => ({
       ...prev,
       openPositions: prev.openPositions.map((pos, i) => (i === index ? { ...pos, [field]: value } : pos)),
@@ -142,7 +142,7 @@ export default function CreateProjectPage() {
       } else {
         toast.error(data.details || data.error || 'Failed to create project', { id: 'create-project' })
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating project:', error)
       toast.error('Network error. Please try again.', { id: 'create-project' })
     }
@@ -469,7 +469,7 @@ export default function CreateProjectPage() {
 
                   {formData.openPositions.length === 0 && (
                     <div className="text-center py-8 text-muted-foreground">
-                      No positions added yet. Click "Add Position" to get started.
+                      No positions added yet. Click &quot;Add Position&quot; to get started.
                     </div>
                   )}
                 </div>

@@ -1,9 +1,9 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { connectWithRetry } from '@/lib/connect-with-retry'
+import { connectWithRetry } from '@/lib/core/connect-with-retry'
 import User from '@/models/User'
 import Notification from '@/models/Notification'
 import LeaderboardSnapshot from '@/models/LeaderboardSnapshot'
 import { XPOvertakeService } from '@/utils/xp-overtake-service'
+import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
   try {
@@ -96,7 +96,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
 
   } catch (error) {
-    console.error('Test overtake error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Test overtake error:', errorMessage)
     return NextResponse.json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error'
@@ -104,7 +105,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await connectWithRetry()
 
@@ -132,7 +133,8 @@ export async function GET(request: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Test overtake status error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Test overtake status error:', errorMessage)
     return NextResponse.json({ 
       success: false, 
       error: error instanceof Error ? error.message : 'Unknown error'

@@ -1,8 +1,8 @@
-import { type NextRequest, NextResponse } from "next/server"
+﻿import { NextRequest, NextResponse } from "next/server"
 import User from "@/models/User"
 import Post from "@/models/Post"
-import connectDB from "@/lib/db"
-import { analyzeSearchQuery, rankSearchResults, generateSearchSummary } from "@/lib/gemini-service"
+import connectDB from "@/lib/core/db"
+import { geminiPublicService } from "@/lib/ai/gemini-public-service"
 
 export const dynamic = 'force-dynamic'
 
@@ -27,8 +27,12 @@ export async function GET(request: NextRequest) {
     // Analyze query with AI (rate-limited)
     let analysis
     try {
-      analysis = await analyzeSearchQuery(query.trim())
-    } catch (error) {
+      analysis = await geminiPublicService.generateSearchKeywords(query.trim()).then(keywords => ({
+        intent: query.trim(),
+        keywords,
+        expandedQuery: keywords.join(' ')
+      }))
+    } catch {
       analysis = {
         intent: query.trim(),
         keywords: query.trim().toLowerCase().split(/\s+/).filter(Boolean),
@@ -45,7 +49,7 @@ export async function GET(request: NextRequest) {
     
     const searchRegex = new RegExp(searchTerms.join('|'), "i")
     
-    const results: any = {
+    const results: { posts: unknown[]; users: unknown[]; tags: unknown[]; aiInsights: { intent: string; keywords: string[]; expandedQuery: string } } = {
       posts: [],
       users: [],
       tags: [],
@@ -72,8 +76,8 @@ export async function GET(request: NextRequest) {
       // AI ranking with fallback
       let rankedPosts
       try {
-        rankedPosts = await rankSearchResults(query, posts)
-      } catch (error) {
+        rankedPosts = await geminiPublicService.semanticSearch(query, posts)
+      } catch {
         rankedPosts = posts
       }
       
@@ -102,8 +106,8 @@ export async function GET(request: NextRequest) {
 
       let rankedUsers
       try {
-        rankedUsers = await rankSearchResults(query, users)
-      } catch (error) {
+        rankedUsers = await geminiPublicService.semanticSearch(query, users)
+      } catch {
         rankedUsers = users
       }
       
@@ -135,8 +139,8 @@ export async function GET(request: NextRequest) {
     // AI summary with fallback
     let summary
     try {
-      summary = await generateSearchSummary(query, results)
-    } catch (error) {
+      summary = await geminiPublicService.summarizeSearchResults(query, results.posts as Record<string, unknown>[])
+    } catch {
       summary = `Found ${results.posts.length} posts, ${results.users.length} users, and ${results.tags.length} tags.`
     }
 
@@ -154,11 +158,12 @@ export async function GET(request: NextRequest) {
         },
       }
     })
-  } catch (error: any) {
-    console.error("Smart search error:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Smart search error:", errorMessage)
     return NextResponse.json({ 
       success: false, 
-      message: error.message || "Smart search failed" 
+      message: error instanceof Error ? error.message : "Smart search failed" 
     }, { status: 500 })
   }
 }

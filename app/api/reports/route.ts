@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import Report from '@/models/Report'
+import { getSession } from '@/lib/auth/server-auth'
 
 export async function GET(request: NextRequest) {
   try {
@@ -29,7 +28,8 @@ export async function GET(request: NextRequest) {
       data: { reports }
     })
   } catch (error) {
-    console.error('Reports fetch error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Reports fetch error:', errorMessage)
     return NextResponse.json({ error: 'Failed to fetch reports' }, { status: 500 })
   }
 }
@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
       data: { report }
     })
   } catch (error) {
-    console.error('Report creation error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Report creation error:', errorMessage)
     return NextResponse.json({ error: 'Failed to create report' }, { status: 500 })
   }
 }

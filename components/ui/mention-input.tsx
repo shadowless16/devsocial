@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
+// import Image from 'next/image';
 import { Textarea } from "./textarea"
 
 interface User {
@@ -16,7 +17,7 @@ interface MentionInputProps {
   className?: string
 }
 
-import { getAvatarUrl } from "@/lib/avatar-utils"
+import { getAvatarUrl } from "@/lib/storage/avatar-utils"
 
 export function MentionInput({ value, onChange, placeholder, className }: MentionInputProps) {
   const [suggestions, setSuggestions] = useState<User[]>([])
@@ -34,7 +35,8 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
         setSuggestions(data.users || [])
       }
     } catch (error) {
-      console.error("Error loading followed users:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error loading followed users:", errorMessage)
     }
   }
 
@@ -46,7 +48,8 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
         setSuggestions(data.users || [])
       }
     } catch (error) {
-      console.error("Error searching users:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error searching users:", errorMessage)
     }
   }
 
@@ -150,6 +153,7 @@ export function MentionInput({ value, onChange, placeholder, className }: Mentio
                 insertMention(user)
               }}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={getAvatarUrl(user.avatar) || "/placeholder.svg"}
                 alt={user.username}

@@ -56,7 +56,7 @@ async function checkMyReferrals() {
     if (stats.recentReferrals.length === 0) {
       console.log("📭 No referrals found")
     } else {
-      stats.recentReferrals.forEach((referral: any, index: number) => {
+      stats.recentReferrals.forEach((referral: unknown, index: number) => {
         console.log(`${index + 1}. ${referral.referred.displayName || referral.referred.username} (@${referral.referred.username})`)
         console.log(`   Status: ${referral.status}`)
         console.log(`   Created: ${new Date(referral.createdAt).toLocaleDateString()}`)
@@ -72,7 +72,7 @@ async function checkMyReferrals() {
     console.log("🔗 Your Referral Link:")
     console.log(`https://yourapp.com/auth/signup?ref=${myUser.referralCode}`)
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("❌ Error:", error)
   } finally {
     process.exit(0)

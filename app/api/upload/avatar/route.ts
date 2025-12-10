@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/server-auth';
-import cloudinary from '@/lib/cloudinary-server';
+import { getSession } from '@/lib/auth/server-auth';
+import cloudinary from '@/lib/storage/cloudinary-server';
 import { type UploadApiResponse } from 'cloudinary';
 
 export const dynamic = 'force-dynamic'
@@ -53,7 +53,8 @@ export async function POST(req: NextRequest) {
       height: result.height,
     });
   } catch (error) {
-    console.error('Avatar upload error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Avatar upload error:', errorMessage);
     return NextResponse.json(
       { success: false, message: 'Upload failed', error: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

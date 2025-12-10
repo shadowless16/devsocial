@@ -1,13 +1,13 @@
-import Referral from "@/models/Referral"
+import Referral, { IReferral } from "@/models/Referral"
 import User from "@/models/User"
 import UserStats from "@/models/UserStats"
 import { awardXP } from "./awardXP"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export class ReferralSystemFixed {
   static async getReferralCode(userId: string): Promise<string> {
     await connectDB()
-    const user = await User.findById(userId)
+    const user = await User.findById(userId) as typeof User.prototype | null
     if (!user) throw new Error("User not found")
 
     if (!user.referralCode) {
@@ -21,21 +21,21 @@ export class ReferralSystemFixed {
     return user.referralCode
   }
 
-  static async validateReferralCode(referralCode: string): Promise<{ valid: boolean; referrer?: any }> {
+  static async validateReferralCode(referralCode: string): Promise<{ valid: boolean; referrer?: { id: string; username: string } }> {
     await connectDB()
     
     if (!referralCode || referralCode.trim() === '') {
       return { valid: false }
     }
 
-    const referrer = await User.findOne({ referralCode: referralCode.trim() })
+    const referrer = await User.findOne({ referralCode: referralCode.trim() } as any) as typeof User.prototype | null
     return { 
       valid: !!referrer, 
       referrer: referrer ? { id: referrer._id.toString(), username: referrer.username } : undefined 
     }
   }
 
-  static async createReferral(referrerId: string, referredUserId: string, referralCode: string): Promise<any> {
+  static async createReferral(referrerId: string, referredUserId: string, referralCode: string): Promise<IReferral> {
     await connectDB()
 
     // Prevent self-referral
@@ -49,7 +49,7 @@ export class ReferralSystemFixed {
         { referrer: referrerId, referred: referredUserId },
         { referred: referredUserId } // Prevent multiple referrals for same user
       ]
-    })
+    } as any)
 
     if (existingReferral) {
       throw new Error("Referral already exists for this user")
@@ -85,11 +85,11 @@ export class ReferralSystemFixed {
       referred: userId,
       status: "pending",
       expiresAt: { $gt: new Date() },
-    })
+    } as any)
 
     for (const referral of pendingReferrals) {
       try {
-        const user = await User.findById(userId)
+        const user = await User.findById(userId) as typeof User.prototype | null
         if (!user) continue
 
         // Check user.points directly (more reliable than UserStats)
@@ -116,7 +116,8 @@ export class ReferralSystemFixed {
           console.log(`✅ Referral completed: ${user.username} (${user.points} XP)`)
         }
       } catch (error) {
-        console.error(`Error processing referral completion for ${userId}:`, error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing referral completion for ${userId}:`, errorMessage)
       }
     }
   }
@@ -132,7 +133,7 @@ export class ReferralSystemFixed {
       }
 
       // CRITICAL: Check if referral already exists
-      const existingReferral = await Referral.findOne({ referred: newUserId })
+      const existingReferral = await Referral.findOne({ referred: newUserId } as any)
       if (existingReferral) {
         console.log(`⚠️ Referral already exists for user ${newUserId}`)
         return true
@@ -143,12 +144,13 @@ export class ReferralSystemFixed {
       console.log(`✅ Referral created: ${validation.referrer.username} -> new user ${newUserId} with code ${referralCode}`)
       return true
     } catch (error) {
-      console.error("❌ Error processing referral from signup:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("❌ Error processing referral from signup:", errorMessage)
       return false
     }
   }
 
-  static async getReferralStats(userId: string): Promise<any> {
+  static async getReferralStats(userId: string): Promise<{ stats: Record<string, { count: number, rewards: number }>, recentReferrals: Record<string, unknown>[] }> {
     await connectDB()
 
     // Check for any pending referrals that should be completed
@@ -166,7 +168,7 @@ export class ReferralSystemFixed {
       },
     ])
 
-    const recentReferrals = await Referral.find({ referrer: userObjectId })
+    const recentReferrals = await Referral.find({ referrer: userObjectId } as any)
       .populate("referred", "username displayName avatar")
       .sort({ createdAt: -1 })
       .limit(10)
@@ -201,11 +203,11 @@ export class ReferralSystemFixed {
       referrer: referrerId,
       status: "pending",
       expiresAt: { $gt: new Date() },
-    }).populate("referred", "_id")
+    } as any).populate("referred", "_id")
 
     for (const referral of pendingReferrals) {
       try {
-        const referredUser = await User.findById(referral.referred._id)
+        const referredUser = await User.findById(referral.referred._id) as typeof User.prototype | null
         if (!referredUser) continue
 
         // Check user.points directly (more reliable)
@@ -227,7 +229,8 @@ export class ReferralSystemFixed {
           console.log(`✅ Referral completed: ${referredUser.username} (${referredUser.points} XP)`)
         }
       } catch (error) {
-        console.error(`Error processing referral ${referral._id}:`, error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing referral ${referral._id}:`, errorMessage)
       }
     }
   }
@@ -236,9 +239,9 @@ export class ReferralSystemFixed {
     await connectDB()
     
     const totalReferrals = await Referral.countDocuments()
-    const pendingReferrals = await Referral.countDocuments({ status: "pending" })
-    const completedReferrals = await Referral.countDocuments({ status: "completed" })
-    const expiredReferrals = await Referral.countDocuments({ status: "expired" })
+    const pendingReferrals = await Referral.countDocuments({ status: "pending" } as any)
+    const completedReferrals = await Referral.countDocuments({ status: "completed" } as any)
+    const expiredReferrals = await Referral.countDocuments({ status: "expired" } as any)
     
     const recentReferrals = await Referral.find()
       .populate("referrer", "username")

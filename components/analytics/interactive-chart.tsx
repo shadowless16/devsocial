@@ -5,7 +5,6 @@ import type React from "react"
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
 import { ZoomIn, ZoomOut, Maximize2 } from "lucide-react"
 import {
   Dialog,
@@ -20,8 +19,6 @@ interface InteractiveChartProps {
   title: string
   description?: string
   children: React.ReactNode
-  data?: any[]
-  onDataPointClick?: (data: any) => void
   showZoomControls?: boolean
   showExpandButton?: boolean
 }
@@ -30,18 +27,10 @@ export function InteractiveChart({
   title,
   description,
   children,
-  data,
-  onDataPointClick,
   showZoomControls = true,
   showExpandButton = true,
 }: InteractiveChartProps) {
   const [isExpanded, setIsExpanded] = useState(false)
-  const [selectedDataPoint, setSelectedDataPoint] = useState<any>(null)
-
-  const handleDataPointClick = (dataPoint: any) => {
-    setSelectedDataPoint(dataPoint)
-    onDataPointClick?.(dataPoint)
-  }
 
   return (
     <>

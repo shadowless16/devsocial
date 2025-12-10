@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from '@/lib/auth';
-import { aiService } from '@/lib/ai-service';
-import connectDB from '@/lib/db';
+import { getSession } from '@/lib/auth/server-auth';
+import { geminiPublicService } from '@/lib/ai/gemini-public-service';
+import connectDB from '@/lib/core/db';
 import User from '@/models/User';
 
 export async function POST(req: NextRequest) {
@@ -47,7 +46,7 @@ export async function POST(req: NextRequest) {
     const arrayBuffer = await audioFile.arrayBuffer();
     const base64Audio = Buffer.from(arrayBuffer).toString('base64');
     
-    const transcription = await aiService.transcribeAudio(base64Audio, audioFile.type);
+    const transcription = await geminiPublicService.transcribeAudio(base64Audio, audioFile.type);
     
     if (user.username !== 'AkDavid') {
       await User.findByIdAndUpdate(session.user.id, {
@@ -64,7 +63,8 @@ export async function POST(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Transcription error:', error);
-    return NextResponse.json({ success: false, message: 'Failed to transcribe audio' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'Failed to transcribe audio';
+    console.error('Transcription error:', errorMessage);
+    return NextResponse.json({ success: false, message: errorMessage }, { status: 500 });
   }
 }

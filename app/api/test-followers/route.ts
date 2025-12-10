@@ -1,7 +1,7 @@
 // app/api/test-followers/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest) {
+export async function GET() {
   console.log('DEBUG - Test followers API called');
   
   try {
@@ -32,7 +32,8 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(testData);
     
   } catch (error) {
-    console.error('DEBUG - Test API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('DEBUG - Test API error:', errorMessage);
     return NextResponse.json({ error: 'Test failed' }, { status: 500 });
   }
 }

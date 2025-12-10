@@ -11,7 +11,7 @@ if (typeof global.TextEncoder === 'undefined') {
 // Polyfill Web APIs for Next.js
 if (typeof global.Request === 'undefined') {
   global.Request = class Request {
-    constructor(public url: string, public init?: any) {}
+    constructor(public url: string, public init?: unknown) {}
     headers = new Map()
     method = 'GET'
     body = null
@@ -22,7 +22,7 @@ if (typeof global.Request === 'undefined') {
 
 if (typeof global.Response === 'undefined') {
   global.Response = class Response {
-    constructor(public body?: any, public init?: any) {
+    constructor(public body?: unknown, public init?: unknown) {
       this.status = init?.status || 200
     }
     headers = new Map()
@@ -52,7 +52,7 @@ if (typeof global.fetch === 'undefined') {
 // Mock next/server modules
 jest.mock('next/server', () => ({
   NextRequest: class NextRequest {
-    constructor(public url: string, public init?: any) {
+    constructor(public url: string, public init?: unknown) {
       this.method = init?.method || 'GET'
       this.body = init?.body || null
     }
@@ -66,19 +66,19 @@ jest.mock('next/server', () => ({
     }
   },
   NextResponse: class NextResponse {
-    constructor(public body?: any, public init?: any) {
+    constructor(public body?: unknown, public init?: unknown) {
       this.status = init?.status || 200
       this._data = body
     }
     status = 200
-    _data: any
+    _data: unknown
     headers = new Map()
     
     async json() {
       return this._data
     }
     
-    static json: (data: any, init?: any) => NextResponse = (data: any, init?: any) => {
+    static json: (data: unknown, init?: unknown) => NextResponse = (data: unknown, init?: unknown) => {
       const response = new NextResponse(data, init)
       response.status = init?.status || 200
       return response

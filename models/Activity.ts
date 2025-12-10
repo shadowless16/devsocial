@@ -1,11 +1,10 @@
 import mongoose, { Schema, type Document } from "mongoose"
 
 export interface IActivity extends Document {
-  _id: string
   user: mongoose.Types.ObjectId
   type: "post_created" | "comment_created" | "like_given" | "user_followed" | "badge_earned" | "level_up"
   description: string
-  metadata: any
+  metadata: unknown
   xpEarned?: number
   createdAt: Date
 }

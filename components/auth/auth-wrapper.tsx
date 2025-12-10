@@ -5,7 +5,7 @@ import React, { memo, useMemo } from 'react';
 import { useAuth } from '@/contexts/app-context';
 
 interface AuthWrapperProps {
-  children: (auth: { user: any; loading: boolean }) => React.ReactNode;
+  children: (auth: { user: unknown; loading: boolean }) => React.ReactNode;
 }
 
 /**
@@ -19,7 +19,7 @@ export const AuthWrapper = memo(({ children }: AuthWrapperProps) => {
   const authState = useMemo(() => ({
     user,
     loading
-  }), [user?.id, loading]); // Only re-create when user ID or loading state changes
+  }), [user, loading]); // Only re-create when user or loading state changes
   
   return <>{children(authState)}</>;
 });
@@ -30,10 +30,13 @@ AuthWrapper.displayName = 'AuthWrapper';
  * HOC version for class components or when you prefer HOC pattern
  */
 export function withAuth<P extends object>(
-  Component: React.ComponentType<P & { user: any; loading: boolean }>
+  Component: React.ComponentType<P & { user: unknown; loading: boolean }>
 ) {
-  return memo((props: P) => {
+  const WrappedComponent = memo((props: P) => {
     const { user, loading } = useAuth();
     return <Component {...props} user={user} loading={loading} />;
   });
+
+  WrappedComponent.displayName = `withAuth(${Component.displayName || Component.name || 'Component'})`;
+  return WrappedComponent;
 }

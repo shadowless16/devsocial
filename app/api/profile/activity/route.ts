@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from "@/lib/core/db"
 import Activity from "@/models/Activity"
 import Post from "@/models/Post"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
 
 export const dynamic = 'force-dynamic'
 
@@ -76,7 +75,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ activities: filtered })
   } catch (error) {
-    console.error("Get profile activity error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get profile activity error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

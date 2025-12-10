@@ -1,8 +1,9 @@
-import { NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+﻿import { NextRequest, NextResponse } from "next/server"
+import connectDB from "@/lib/core/db"
 import Tag from "@/models/Tag"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from "@/lib/auth/auth"
 
 
 export const dynamic = 'force-dynamic'
@@ -28,7 +29,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ tags })
   } catch (error) {
-    console.error("Get tags error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get tags error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
@@ -61,7 +63,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ tag }, { status: 201 })
   } catch (error) {
-    console.error("Create tag error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Create tag error:", errorMessage)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }

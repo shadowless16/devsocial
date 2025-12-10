@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from '@/lib/auth/auth'
+import connectDB from '@/lib/core/db'
 import Feedback from '@/models/Feedback'
 import FeedbackComment from '@/models/FeedbackComment'
 import User from '@/models/User'
@@ -34,7 +35,8 @@ export async function GET(
 
     return NextResponse.json({ feedback, comments })
   } catch (error) {
-    console.error('Feedback fetch error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Feedback fetch error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -63,7 +65,7 @@ export async function PATCH(
       return NextResponse.json({ error: 'Invalid status' }, { status: 400 })
     }
 
-    const updateData: any = { status }
+    const updateData: { status: string; solvedBy?: string; solvedAt?: Date } = { status }
     if (status === 'solved') {
       updateData.solvedBy = session.user.id
       updateData.solvedAt = new Date()
@@ -82,7 +84,8 @@ export async function PATCH(
 
     return NextResponse.json({ feedback })
   } catch (error) {
-    console.error('Feedback update error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Feedback update error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

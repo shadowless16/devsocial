@@ -2,7 +2,7 @@ import WeeklyChallenge from "@/models/WeeklyChallenge"
 import ChallengeParticipation from "@/models/ChallengeParticipation"
 import UserStats from "@/models/UserStats"
 import { awardXP } from "./awardXP"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export class ChallengeSystem {
   static async getActiveChallenges(): Promise<any[]> {
@@ -13,13 +13,13 @@ export class ChallengeSystem {
       isActive: true,
       startDate: { $lte: now },
       endDate: { $gte: now },
-    }).sort({ createdAt: -1 })
+    } as any).sort({ createdAt: -1 })
   }
 
-  static async joinChallenge(userId: string, challengeId: string): Promise<any> {
+  static async joinChallenge(userId: string, challengeId: string): Promise<unknown> {
     await connectDB()
 
-    const challenge = await WeeklyChallenge.findById(challengeId)
+    const challenge = await WeeklyChallenge.findById(challengeId) as typeof WeeklyChallenge.prototype | null
     if (!challenge || !challenge.isActive) {
       throw new Error("Challenge not found or inactive")
     }
@@ -28,7 +28,7 @@ export class ChallengeSystem {
     const existingParticipation = await ChallengeParticipation.findOne({
       user: userId,
       challenge: challengeId,
-    })
+    } as any)
 
     if (existingParticipation) {
       throw new Error("Already participating in this challenge")
@@ -47,38 +47,40 @@ export class ChallengeSystem {
     // Update challenge participant count
     await WeeklyChallenge.findByIdAndUpdate(challengeId, {
       $inc: { participantCount: 1 },
-    })
+    } as any)
 
     return participation
   }
 
-  static async updateProgress(userId: string, challengeId: string, progressData: any): Promise<void> {
+  static async updateProgress(userId: string, challengeId: string, progressData: unknown): Promise<void> {
     await connectDB()
 
     const participation = await ChallengeParticipation.findOne({
       user: userId,
       challenge: challengeId,
       status: "active",
-    })
+    } as any)
 
     if (!participation) return
 
-    const challenge = await WeeklyChallenge.findById(challengeId)
+    const challenge = await WeeklyChallenge.findById(challengeId) as typeof WeeklyChallenge.prototype | null
     if (!challenge) return
+
+    const data = progressData as { engagementCount?: number; progress?: number }
 
     // Calculate progress based on challenge type
     let newProgress = 0
 
     switch (challenge.type) {
       case "post_creation":
-        const userStats = await UserStats.findOne({ user: userId })
+        const userStats = await UserStats.findOne({ user: userId } as any)
         newProgress = Math.min(100, ((userStats?.totalPosts || 0) / challenge.requirements.target) * 100)
         break
       case "engagement":
-        newProgress = Math.min(100, (progressData.engagementCount / challenge.requirements.target) * 100)
+        newProgress = Math.min(100, ((data.engagementCount || 0) / challenge.requirements.target) * 100)
         break
       default:
-        newProgress = progressData.progress || 0
+        newProgress = data.progress || 0
     }
 
     participation.progress = newProgress
@@ -97,9 +99,9 @@ export class ChallengeSystem {
     const participation = await ChallengeParticipation.findOne({
       user: userId,
       challenge: challengeId,
-    })
+    } as any)
 
-    const challenge = await WeeklyChallenge.findById(challengeId)
+    const challenge = await WeeklyChallenge.findById(challengeId) as typeof WeeklyChallenge.prototype | null
 
     if (!participation || !challenge) return
 
@@ -107,7 +109,7 @@ export class ChallengeSystem {
     const completionCount = await ChallengeParticipation.countDocuments({
       challenge: challengeId,
       status: "completed",
-    })
+    } as any)
 
     const isFirstCompletion = completionCount === 0
 
@@ -132,7 +134,7 @@ export class ChallengeSystem {
     // Update challenge completion count
     await WeeklyChallenge.findByIdAndUpdate(challengeId, {
       $inc: { completionCount: 1 },
-    })
+    } as any)
 
     // Update user stats
     await UserStats.findOneAndUpdate({ user: userId }, { $inc: { challengesCompleted: 1 } }, { upsert: true })
@@ -141,7 +143,7 @@ export class ChallengeSystem {
   static async getUserChallenges(userId: string): Promise<any[]> {
     await connectDB()
 
-    return await ChallengeParticipation.find({ user: userId }).populate("challenge").sort({ createdAt: -1 })
+    return await ChallengeParticipation.find({ user: userId } as any).populate("challenge").sort({ createdAt: -1 })
   }
 
   static async getChallengeLeaderboard(challengeId: string): Promise<any[]> {
@@ -150,17 +152,17 @@ export class ChallengeSystem {
     return await ChallengeParticipation.find({
       challenge: challengeId,
       status: { $in: ["active", "completed"] },
-    })
+    } as any)
       .populate("user", "username displayName avatar level")
       .sort({ progress: -1, completedAt: 1 })
       .limit(50)
   }
 
-  static async createWeeklyChallenge(challengeData: any, creatorId: string): Promise<any> {
+  static async createWeeklyChallenge(challengeData: unknown, creatorId: string): Promise<unknown> {
     await connectDB()
 
     const challenge = new WeeklyChallenge({
-      ...challengeData,
+      ...(challengeData as any),
       createdBy: creatorId,
     })
 

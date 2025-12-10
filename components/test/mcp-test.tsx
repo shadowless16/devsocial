@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 
 export function MCPTest() {
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<unknown>(null)
   const [loading, setLoading] = useState(false)
 
   const testLeaderboard = async () => {
@@ -22,7 +22,7 @@ export function MCPTest() {
       
       const data = await response.json()
       setResult(data)
-    } catch (error: any) {
+    } catch (error) {
       setResult({ error: error?.message || 'Unknown error' })
     } finally {
       setLoading(false)

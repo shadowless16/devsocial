@@ -9,10 +9,9 @@ export default function DisablePrefetch() {
       try {
         // next/link exposes prefetch on the default export in some Next versions.
         // Silence prefetching in development to avoid extra network noise.
-        ;(Link as any).prefetch = () => {}
-      } catch (e) {
+        ;(Link as { prefetch?: () => void }).prefetch = () => {}
+      } catch {
         // best-effort, don't crash client
-        // console.debug('Unable to disable Link.prefetch', e)
       }
     }
   }, [])

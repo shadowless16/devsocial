@@ -3,22 +3,32 @@
 import type React from "react"
 
 import { useState, useEffect } from "react"
-import { User, Upload, Camera } from "lucide-react"
+import { User, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { getAvatarUrl } from "@/lib/avatar-utils"
 import { useAuth } from "@/contexts/app-context"
 
 import { toast } from "sonner"
 
+export interface AvatarSetupData {
+  avatar?: string;
+  bio?: string;
+  gender?: string;
+  userType?: string;
+  socials?: {
+    twitter?: string;
+    linkedin?: string;
+  };
+}
+
 interface AvatarSetupProps {
-  data: any
-  onNext: (data: any) => void
-  onChange?: (data: any) => void
+  data: AvatarSetupData
+  onNext: (data: AvatarSetupData) => void
+  onChange?: (data: AvatarSetupData) => void
   onBack?: () => void
 }
 
@@ -44,14 +54,15 @@ export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps
         socials: data.socials || { twitter: "", linkedin: "" },
       })
     }
-  }, [data.avatar, data.bio, data.gender, data.userType, data.socials?.twitter, data.socials?.linkedin, user?.avatar])
+  }, [data.avatar, data.bio, data.gender, data.userType, data.socials, user?.avatar])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onNext(formData)
   }
 
-  const handleAvatarSelect = (avatarUrl: string) => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const _handleAvatarSelect = (avatarUrl: string) => {
     const next = { ...formData, avatar: avatarUrl }
     setFormData(next)
     onChange?.(next)
@@ -94,7 +105,8 @@ export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps
       onChange?.(next)
       toast.success('Profile picture uploaded successfully!');
     } catch (error) {
-      console.error('Upload failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Upload failed:', errorMessage);
       toast.error(error instanceof Error ? error.message : 'Failed to upload image. Please try again.');
     } finally {
       setIsUploading(false);
@@ -113,7 +125,7 @@ export function AvatarSetup({ data, onNext, onChange, onBack }: AvatarSetupProps
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="text-center">
-        <h3 className="text-xl font-semibold mb-2">Let's set up your profile!</h3>
+        <h3 className="text-xl font-semibold mb-2">Let&apos;s set up your profile!</h3>
         <p className="text-gray-600">Upload an avatar and tell us about yourself</p>
       </div>
 

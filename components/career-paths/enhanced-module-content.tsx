@@ -125,7 +125,7 @@ export function EnhancedModuleContent({ module, onComplete, onSkip, isCompleted 
         {/* Skills & Actions */}
         <div className="flex items-center justify-between">
           <div className="flex flex-wrap gap-2">
-            <span className="text-sm font-medium">You'll learn:</span>
+            <span className="text-sm font-medium">You&apos;ll learn:</span>
             {module.skillsLearned.map((skill) => (
               <Badge key={skill} variant="secondary" className="text-xs">
                 {skill}
@@ -178,16 +178,15 @@ export function EnhancedModuleContent({ module, onComplete, onSkip, isCompleted 
                 <ReactMarkdown
                   remarkPlugins={[remarkGfm]}
                   components={{
-                    code({ node, inline, className, children, ...props }: any) {
+                    code({ className, children, ...props }) {
                       const match = /language-(\w+)/.exec(className || '')
-                      return !inline && match ? (
+                      const isInline = !match;
+                      return !isInline && match ? (
                         <div className="relative">
                           <SyntaxHighlighter
-                            style={oneDark as any}
                             language={match[1]}
                             PreTag="div"
                             className="rounded-lg"
-                            {...props}
                           >
                             {String(children).replace(/\n$/, '')}
                           </SyntaxHighlighter>

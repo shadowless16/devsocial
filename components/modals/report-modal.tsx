@@ -59,7 +59,7 @@ export function ReportModal({ isOpen, onClose, postId }: ReportModalProps) {
       } else {
         toast.error(data.error || 'Failed to submit report')
       }
-    } catch (error) {
+    } catch {
       toast.error('Failed to submit report')
     } finally {
       setSubmitting(false)

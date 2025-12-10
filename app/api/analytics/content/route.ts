@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth/server-auth'
 import { ContentAnalytics } from '@/models/Analytics'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import Post from '@/models/Post'
 
 // Types
@@ -91,8 +90,9 @@ export async function GET(request: NextRequest) {
         count: tag.count,
         growth: Math.floor(Math.random() * 20)
       }))
-    } catch (error: any) {
-      console.error('Error fetching tags:', error)
+    } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error fetching tags:', errorMessage)
       topTags = []
     }
     
@@ -109,12 +109,18 @@ export async function GET(request: NextRequest) {
     .lean()
     
     // Calculate viral scores and add engagement metrics
-    const viralContentWithScores = viralContent.map((post: any) => {
-      const engagement = (post.likesCount || 0) + (post.commentsCount || 0)
+    interface PostWithEngagement {
+      likesCount?: number;
+      commentsCount?: number;
+    }
+    
+    const viralContentWithScores = viralContent.map((post: unknown) => {
+      const typedPost = post as PostWithEngagement;
+      const engagement = (typedPost.likesCount || 0) + (typedPost.commentsCount || 0)
       const viralScore = Math.min(10, Math.round((engagement / 10) * 10) / 10)
       
       return {
-        ...post,
+        ...(post as Record<string, unknown>),
         viralScore,
         views: Math.floor(engagement * 2.5), // Estimate views
         sharesCount: Math.floor(engagement * 0.1) // Estimate shares
@@ -129,20 +135,27 @@ export async function GET(request: NextRequest) {
     const engagementDistribution = [
       {
         name: "High Engagement",
-        value: Math.round((allPosts.filter((p: any) => (p.likesCount || 0) + (p.commentsCount || 0) > 20).length / Math.max(allPosts.length, 1)) * 100),
+        value: Math.round((allPosts.filter((p: unknown) => {
+          const typedP = p as PostWithEngagement;
+          return (typedP.likesCount || 0) + (typedP.commentsCount || 0) > 20;
+        }).length / Math.max(allPosts.length, 1)) * 100),
         color: "#22c55e"
       },
       {
         name: "Medium Engagement",
-        value: Math.round((allPosts.filter((p: any) => {
-          const eng = (p.likesCount || 0) + (p.commentsCount || 0)
+        value: Math.round((allPosts.filter((p: unknown) => {
+          const typedP = p as PostWithEngagement;
+          const eng = (typedP.likesCount || 0) + (typedP.commentsCount || 0)
           return eng >= 5 && eng <= 20
         }).length / Math.max(allPosts.length, 1)) * 100),
         color: "#3b82f6"
       },
       {
         name: "Low Engagement",
-        value: Math.round((allPosts.filter((p: any) => (p.likesCount || 0) + (p.commentsCount || 0) < 5).length / Math.max(allPosts.length, 1)) * 100),
+        value: Math.round((allPosts.filter((p: unknown) => {
+          const typedP = p as PostWithEngagement;
+          return (typedP.likesCount || 0) + (typedP.commentsCount || 0) < 5;
+        }).length / Math.max(allPosts.length, 1)) * 100),
         color: "#f59e0b"
       }
     ]
@@ -181,8 +194,9 @@ export async function GET(request: NextRequest) {
     
     return NextResponse.json(response)
     
-  } catch (error: any) {
-    console.error('Content analytics error:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Content analytics error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to fetch content analytics' },
       { status: 500 }

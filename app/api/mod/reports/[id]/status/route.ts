@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Report from "@/models/Report"
 import { authMiddleware, authorizeRoles } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
@@ -40,7 +40,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     return successResponse(updatedReport)
   } catch (error) {
-    console.error("Update report status error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Update report status error:", errorMessage)
     return errorResponse("Internal server error", 500)
   }
 }

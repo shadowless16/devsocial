@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import User from '@/models/User'
 import Post from '@/models/Post'
 
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 })
     
   } catch (error) {
-    console.error('User management error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('User management error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to manage users' },
       { status: 500 }

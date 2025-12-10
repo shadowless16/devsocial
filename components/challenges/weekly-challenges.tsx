@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -48,11 +48,7 @@ export function WeeklyChallenges() {
   const [loading, setLoading] = useState(true)
   const { toast } = useToast()
 
-  useEffect(() => {
-    fetchChallenges()
-  }, [])
-
-  const fetchChallenges = async () => {
+  const fetchChallenges = useCallback(async () => {
     try {
       const [challengesRes, userChallengesRes] = await Promise.all([
         fetch("/api/challenges"),
@@ -70,7 +66,8 @@ export function WeeklyChallenges() {
         setUserChallenges(userChallengesData.data.challenges)
       }
     } catch (error) {
-      console.error("Error fetching challenges:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching challenges:", errorMessage)
       toast({
         title: "Error",
         description: "Failed to load challenges",
@@ -79,9 +76,13 @@ export function WeeklyChallenges() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [toast])
 
-  const joinChallenge = async (challengeId: string) => {
+  useEffect(() => {
+    fetchChallenges()
+  }, [fetchChallenges])
+
+  const joinChallenge = useCallback(async (challengeId: string) => {
     try {
       const response = await fetch(`/api/challenges/${challengeId}/join`, {
         method: "POST",
@@ -103,14 +104,15 @@ export function WeeklyChallenges() {
         })
       }
     } catch (error) {
-      console.error("Error joining challenge:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error joining challenge:", errorMessage)
       toast({
         title: "Error",
         description: "Failed to join challenge",
         variant: "destructive",
       })
     }
-  }
+  }, [fetchChallenges, toast])
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {

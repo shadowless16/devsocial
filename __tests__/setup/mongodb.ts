@@ -1,7 +1,7 @@
 import mongoose from 'mongoose'
 import path from 'path'
 import os from 'os'
-let mongoServer: any = null
+let mongoServer: unknown = null
 
 // If the user provides a MONGODB_TEST_URI or MONGODB_URI, prefer that
 // This avoids downloading MongoMemoryServer binaries in CI or local where a DB is available.
@@ -47,7 +47,7 @@ export const teardownMongoDB = async () => {
     await mongoose.disconnect()
   }
   if (mongoServer) {
-    try { await mongoServer.stop() } catch (e) { /* ignore */ }
+    try { await mongoServer.stop() } catch (e: unknown) { /* ignore */ }
     mongoServer = null
   }
 }
@@ -57,6 +57,6 @@ export const clearDatabase = async () => {
 
   const collections = mongoose.connection.collections
   for (const key in collections) {
-    try { await collections[key].deleteMany({}) } catch (e) { /* ignore */ }
+    try { await collections[key].deleteMany({}) } catch (e: unknown) { /* ignore */ }
   }
 }

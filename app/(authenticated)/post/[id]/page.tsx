@@ -4,18 +4,18 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Send, Trash, Coins, Eye, Bookmark, Flag } from "lucide-react"
+import Image from "next/image"
+import { ArrowLeft, Heart, MessageCircle, Share, MoreHorizontal, Trash, Coins, Eye, Bookmark, Flag } from "lucide-react"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
 import { PostContent } from "@/components/shared/PostContent"
 import { PostAIActions } from "@/components/shared/PostAIActions"
 import { EnhancedCommentInput } from "@/components/ui/enhanced-comment-input"
 import { UserLink } from "@/components/shared/UserLink"
 import { MentionText } from "@/components/ui/mention-text"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { useAuth } from "@/contexts/app-context"
 import { useToast } from "@/hooks/use-toast"
 import { Loader2 } from "lucide-react"
@@ -26,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { TipModal } from "@/components/modals/tip-modal"
-import { getAvatarUrl } from "@/lib/avatar-utils"
 import { PollDisplay } from "@/components/poll/poll-display"
 
 interface Post {
@@ -93,13 +92,11 @@ export default function PostPage() {
   
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
-  const [newComment, setNewComment] = useState("")
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
   const [loadingComments, setLoadingComments] = useState(false)
   const [replyingTo, setReplyingTo] = useState<string | null>(null)
-  const [replyText, setReplyText] = useState("")
   const [showTipModal, setShowTipModal] = useState(false)
   const [isBookmarked, setIsBookmarked] = useState(false)
 
@@ -108,31 +105,31 @@ export default function PostPage() {
     const fetchPost = async () => {
       try {
         setLoading(true)
-        const response = await apiClient.getPost<{ post: any }>(postId)
+        const response = await apiClient.getPost<{ post: Record<string, unknown> }>(postId)
         if (response.success && response.data) {
-          const postData = response.data.post || response.data
+          const postData = (response.data.post || response.data) as Record<string, unknown>
           setPost({
-            id: postData._id || postData.id,
-            author: postData.author,
-            content: postData.content,
-            imageUrl: postData.imageUrl || null,
-            imageUrls: postData.imageUrls || [],
-            videoUrls: postData.videoUrls || [],
-            tags: postData.tags || [],
-            likesCount: postData.likesCount || postData.likes?.length || 0,
-            commentsCount: postData.commentsCount || postData.comments?.length || 0,
-            xpAwarded: postData.xpAwarded || 0,
-            createdAt: postData.createdAt,
-            isAnonymous: postData.isAnonymous || false,
-            isLiked: postData.isLiked || false,
-            viewsCount: postData.viewsCount || 0,
-            poll: postData.poll || undefined,
+            id: (postData._id || postData.id) as string,
+            author: postData.author as Post['author'],
+            content: postData.content as string,
+            imageUrl: (postData.imageUrl as string) || null,
+            imageUrls: (postData.imageUrls as string[]) || [],
+            videoUrls: (postData.videoUrls as string[]) || [],
+            tags: (postData.tags as string[]) || [],
+            likesCount: (postData.likesCount as number) || ((postData.likes as unknown[])?.length || 0),
+            commentsCount: (postData.commentsCount as number) || ((postData.comments as unknown[])?.length || 0),
+            xpAwarded: (postData.xpAwarded as number) || 0,
+            createdAt: postData.createdAt as string,
+            isAnonymous: (postData.isAnonymous as boolean) || false,
+            isLiked: (postData.isLiked as boolean) || false,
+            viewsCount: (postData.viewsCount as number) || 0,
+            poll: postData.poll as Post['poll'] || undefined,
           })
         } else {
           setError("Post not found")
         }
-      } catch (error: any) {
-        setError(error.message || "Failed to load post")
+      } catch (error: unknown) {
+        setError((error as Error).message || "Failed to load post")
       } finally {
         setLoading(false)
       }
@@ -148,20 +145,20 @@ export default function PostPage() {
     const fetchComments = async () => {
       try {
         setLoadingComments(true)
-        const response = await apiClient.getComments<{ comments: any[] }>(postId)
+        const response = await apiClient.getComments<{ comments: Record<string, unknown>[] }>(postId)
         if (response.success && response.data) {
-          setComments(response.data.comments.map((comment: any) => ({
-            ...comment,
-            id: comment._id,
-            likesCount: comment.likesCount || comment.likes?.length || 0,
-            replies: (comment.replies || []).map((reply: any) => ({
-              ...reply,
-              id: reply._id,
-              likesCount: reply.likesCount || reply.likes?.length || 0
+          setComments(response.data.comments.map((comment: Record<string, unknown>) => ({
+            ...(comment as unknown as Comment),
+            id: (comment._id || comment.id) as string,
+            likesCount: (comment.likesCount as number) || ((comment.likes as unknown[])?.length || 0),
+            replies: ((comment.replies as Record<string, unknown>[]) || []).map((reply: Record<string, unknown>) => ({
+              ...(reply as unknown as Comment),
+              id: (reply._id || reply.id) as string,
+              likesCount: (reply.likesCount as number) || ((reply.likes as unknown[])?.length || 0)
             }))
           })))
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Failed to fetch comments:", error)
       } finally {
         setLoadingComments(false)
@@ -186,34 +183,8 @@ export default function PostPage() {
           likesCount: likesCount,
         } : null)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to toggle like:", error)
-    }
-  }
-
-  const handleCommentSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!newComment.trim() || !post) return
-
-    setIsSubmitting(true)
-
-    try {
-      const response = await apiClient.createComment<{ comment: any }>(post.id, newComment.trim())
-      if (response.success && response.data) {
-        const newCommentData = response.data.comment
-        setComments(prev => [...prev, {
-          ...newCommentData,
-          id: newCommentData._id,
-          likesCount: 0,
-          replies: []
-        }])
-        setNewComment("")
-        setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : null)
-      }
-    } catch (error) {
-      console.error("Failed to submit comment:", error)
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
@@ -221,18 +192,18 @@ export default function PostPage() {
     if (!post) return
 
     try {
-      const response = await apiClient.createComment<{ comment: any }>(post.id, content, parentCommentId)
+      const response = await apiClient.createComment<{ comment: Record<string, unknown> }>(post.id, content, parentCommentId)
       if (response.success && response.data) {
-        const commentsResponse = await apiClient.getComments<{ comments: any[] }>(post.id)
+        const commentsResponse = await apiClient.getComments<{ comments: Record<string, unknown>[] }>(post.id)
         if (commentsResponse.success && commentsResponse.data) {
-          setComments(commentsResponse.data.comments.map((comment: any) => ({
-            ...comment,
-            id: comment._id,
-            likesCount: comment.likesCount || comment.likes?.length || 0,
-            replies: (comment.replies || []).map((reply: any) => ({
-              ...reply,
-              id: reply._id,
-              likesCount: reply.likesCount || reply.likes?.length || 0
+          setComments(commentsResponse.data.comments.map((comment: Record<string, unknown>) => ({
+            ...(comment as unknown as Comment),
+            id: (comment._id || comment.id) as string,
+            likesCount: (comment.likesCount as number) || ((comment.likes as unknown[])?.length || 0),
+            replies: ((comment.replies as Record<string, unknown>[]) || []).map((reply: Record<string, unknown>) => ({
+              ...(reply as unknown as Comment),
+              id: (reply._id || reply.id) as string,
+              likesCount: (reply.likesCount as number) || ((reply.likes as unknown[])?.length || 0)
             }))
           })))
         }
@@ -241,7 +212,7 @@ export default function PostPage() {
           title: "Reply posted!",
         })
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to submit reply:", error)
       toast({
         title: "Failed to submit reply",
@@ -282,7 +253,7 @@ export default function PostPage() {
           }),
         )
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to toggle comment like:", error)
     }
   }
@@ -333,7 +304,7 @@ export default function PostPage() {
         })
         router.push('/')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to delete post:", error)
       toast({
         title: "Failed to delete post",
@@ -504,21 +475,21 @@ export default function PostPage() {
                     userVotes={post.poll.options.filter(opt => opt.voters.includes(user?.id || '')).map(opt => opt.id)}
                     onVote={async (optionIds) => {
                       try {
-                        const response = await apiClient.request<any>('/polls/vote', {
+                        const response = await apiClient.request<{ poll: Post['poll']; xpAwarded: number }>('/polls/vote', {
                           method: 'POST',
                           body: JSON.stringify({ postId: post.id, optionIds }),
                         })
                         if (response.success && response.data) {
-                          setPost(prev => prev ? { ...prev, poll: response.data.poll } : null)
+                          setPost(prev => prev ? { ...prev, poll: (response.data as { poll: Post['poll'] }).poll } : null)
                           toast({
                             title: "Vote recorded!",
-                            description: `+${response.data.xpAwarded} XP`,
+                            description: `+${(response.data as { xpAwarded: number }).xpAwarded} XP`,
                           })
                         }
-                      } catch (error: any) {
+                      } catch (error: unknown) {
                         toast({
                           title: "Failed to vote",
-                          description: error.message,
+                          description: (error as Error).message,
                           variant: "destructive",
                         })
                       }
@@ -554,10 +525,12 @@ export default function PostPage() {
                         'grid-cols-2'
                       }`}>
                         {images.map((url, index) => (
-                          <img 
+                          <Image 
                             key={index}
                             src={url}
                             alt={`Post image ${index + 1}`} 
+                            width={800}
+                            height={600}
                             className="w-full h-auto object-contain rounded-md"
                           />
                         ))}
@@ -713,9 +686,11 @@ export default function PostPage() {
                       </div>
                       {comment.imageUrl && (
                         <div className="mb-3 rounded-lg overflow-hidden">
-                          <img
+                          <Image
                             src={comment.imageUrl}
                             alt="Comment image"
+                            width={800}
+                            height={400}
                             className="w-full h-auto rounded-lg"
                             style={{ maxHeight: '400px' }}
                           />
@@ -790,9 +765,11 @@ export default function PostPage() {
                                 </div>
                                 {reply.imageUrl && (
                                   <div className="mb-2 rounded-lg overflow-hidden">
-                                    <img
+                                    <Image
                                       src={reply.imageUrl}
                                       alt="Reply image"
+                                      width={800}
+                                      height={300}
                                       className="w-full h-auto rounded-lg"
                                       style={{ maxHeight: '300px' }}
                                     />
@@ -834,7 +811,7 @@ export default function PostPage() {
                                   setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount - 1 } : null);
                                   toast({ title: "Comment deleted", variant: "success" });
                                 }
-                              } catch (error) {
+                              } catch {
                                 toast({ title: "Failed to delete comment", variant: "destructive" });
                               }
                             }}
@@ -873,18 +850,18 @@ export default function PostPage() {
                   onSubmit={async (content, imageUrl) => {
                     setIsSubmitting(true)
                     try {
-                      const response = await apiClient.createComment<{ comment: any }>(post.id, content, undefined, imageUrl)
+                      const response = await apiClient.createComment<{ comment: Record<string, unknown> }>(post.id, content, undefined, imageUrl)
                       if (response.success && response.data) {
-                        const newCommentData = response.data.comment
+                        const newCommentData = response.data.comment as Record<string, unknown>
                         setComments(prev => [...prev, {
-                          ...newCommentData,
-                          id: newCommentData._id,
+                          ...(newCommentData as unknown as Comment),
+                          id: (newCommentData._id || newCommentData.id) as string,
                           likesCount: 0,
                           replies: []
                         }])
                         setPost(prev => prev ? { ...prev, commentsCount: prev.commentsCount + 1 } : null)
                       }
-                    } catch (error) {
+                    } catch (error: unknown) {
                       console.error("Failed to submit comment:", error)
                       toast({
                         title: "Failed to post comment",

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import KnowledgeEntry from '@/models/KnowledgeEntry'
 import User from '@/models/User'
 
@@ -18,7 +17,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get('limit') || '20')
 
     // Build query
-    const query: any = {}
+    interface KnowledgeQuery {
+      technology?: string;
+      $or?: Array<Record<string, unknown>>;
+    }
+    
+    const query: KnowledgeQuery = {}
     if (technology && technology !== 'All') {
       query.technology = technology
     }
@@ -34,7 +38,7 @@ export async function GET(request: NextRequest) {
     const userId = session?.user?.id
 
     // Fetch entries with pagination
-    const entries = await KnowledgeEntry.find(query)
+    const entries = await KnowledgeEntry.find(query as Record<string, unknown>)
       .populate('author', 'username profilePicture')
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -45,10 +49,10 @@ export async function GET(request: NextRequest) {
     const entriesWithLikes = entries.map(entry => ({
       ...entry,
       likes: entry.likes.length,
-      isLiked: userId ? entry.likes.some((like: any) => like.toString() === userId) : false
+      isLiked: userId ? entry.likes.some((like: unknown) => like.toString() === userId) : false
     }))
 
-    const total = await KnowledgeEntry.countDocuments(query)
+    const total = await KnowledgeEntry.countDocuments(query as Record<string, unknown>)
 
     return NextResponse.json({
       success: true,
@@ -61,7 +65,8 @@ export async function GET(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Error fetching knowledge entries:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error fetching knowledge entries:', errorMessage)
     return NextResponse.json(
       { success: false, message: 'Failed to fetch entries' },
       { status: 500 }
@@ -109,7 +114,7 @@ export async function POST(request: NextRequest) {
     // Award XP to user
     await User.findByIdAndUpdate(session.user.id, {
       $inc: { xp: 15 } // 15 XP for creating knowledge entry
-    })
+    } as Record<string, unknown>)
 
     return NextResponse.json({
       success: true,
@@ -120,7 +125,8 @@ export async function POST(request: NextRequest) {
       }
     })
   } catch (error) {
-    console.error('Error creating knowledge entry:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error creating knowledge entry:', errorMessage)
     return NextResponse.json(
       { success: false, message: 'Failed to create entry' },
       { status: 500 }

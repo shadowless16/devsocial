@@ -1,6 +1,6 @@
-import connectDB from "@/lib/db"
-import MissionProgress from "@/models/MissionProgress"
-import Mission from "@/models/Mission"
+import connectDB from "@/lib/core/db"
+import MissionProgress, { IMissionProgress } from "@/models/MissionProgress"
+import Mission, { IMission } from "@/models/Mission"
 import User from "@/models/User"
 import { awardXP } from "./awardXP"
 
@@ -9,7 +9,7 @@ export class MissionTracker {
     userId: string,
     metric: string,
     increment: number = 1,
-    metadata?: any
+    metadata?: Record<string, unknown>
   ) {
     try {
       await connectDB()
@@ -21,13 +21,14 @@ export class MissionTracker {
       }).populate("mission")
 
       for (const missionProgress of activeMissions) {
-        const mission = missionProgress.mission as any
+        // Cast mission to IMission (since populate fills it)
+        const mission = missionProgress.mission as unknown as IMission
         let updated = false
 
         // Update progress for relevant steps
         for (let i = 0; i < missionProgress.progress.length; i++) {
           const stepProgress = missionProgress.progress[i]
-          const missionStep = mission.steps.find((s: any) => s.id === stepProgress.stepId)
+          const missionStep = mission.steps.find((s) => s.id === stepProgress.stepId)
 
           if (missionStep && missionStep.metric === metric && !stepProgress.completed) {
             stepProgress.current = Math.min(stepProgress.current + increment, stepProgress.target)
@@ -41,7 +42,7 @@ export class MissionTracker {
         }
 
         // Check if mission is completed
-        const allStepsCompleted = missionProgress.progress.every((p: any) => p.completed)
+        const allStepsCompleted = missionProgress.progress.every((p: { completed: boolean }) => p.completed)
         if (allStepsCompleted && missionProgress.status === "active") {
           missionProgress.status = "completed"
           missionProgress.completedAt = new Date()
@@ -59,7 +60,7 @@ export class MissionTracker {
           // Update mission completion count
           await Mission.findByIdAndUpdate(mission._id, {
             $inc: { completionCount: 1 }
-          })
+          } as any)
 
           updated = true
         }
@@ -69,7 +70,8 @@ export class MissionTracker {
         }
       }
     } catch (error) {
-      console.error("Mission progress update error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Mission progress update error:", errorMessage)
     }
   }
 
@@ -77,13 +79,14 @@ export class MissionTracker {
     try {
       await connectDB()
 
-      const userMissions = await MissionProgress.find({ user: userId })
+      const userMissions = await MissionProgress.find({ user: userId } as any)
         .populate("mission")
         .sort({ createdAt: -1 })
 
       return userMissions
     } catch (error) {
-      console.error("Get user missions error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get user missions error:", errorMessage)
       return []
     }
   }
@@ -93,17 +96,18 @@ export class MissionTracker {
       await connectDB()
 
       // Get missions user hasn't joined yet
-      const userMissionIds = await MissionProgress.find({ user: userId })
+      const userMissionIds = await MissionProgress.find({ user: userId } as any)
         .distinct("mission")
 
       const availableMissions = await Mission.find({
         _id: { $nin: userMissionIds },
         isActive: true
-      }).populate("createdBy", "username avatar")
+      } as any).populate("createdBy", "username avatar")
 
       return availableMissions
     } catch (error) {
-      console.error("Get available missions error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Get available missions error:", errorMessage)
       return []
     }
   }

@@ -3,13 +3,13 @@
 import React, { createContext, useContext, useCallback, useRef } from "react";
 
 interface SessionCache {
-  data: any;
+  data: unknown;
   timestamp: number;
 }
 
 interface SessionCacheContextType {
   getCachedSession: () => any | null;
-  setCachedSession: (session: any) => void;
+  setCachedSession: (session: unknown) => void;
   clearCache: () => void;
 }
 
@@ -35,7 +35,7 @@ export function SessionCacheProvider({ children }: { children: React.ReactNode }
     return cacheRef.current.data;
   }, []);
 
-  const setCachedSession = useCallback((session: any) => {
+  const setCachedSession = useCallback((session: unknown) => {
     cacheRef.current = {
       data: session,
       timestamp: Date.now(),

@@ -2,8 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import User from "@/models/User"
 import Post from "@/models/Post"
 import Comment from "@/models/Comment"
-import connectDB from "@/lib/db"
-import { getSession } from '@/lib/server-auth'
+import connectDB from "@/lib/core/db"
 
 export const dynamic = 'force-dynamic'
 
@@ -48,8 +47,9 @@ export async function GET(
         xpBreakdown
       }
     })
-  } catch (error: any) {
-    console.error("User detail fetch error:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("User detail fetch error:", errorMessage)
     return NextResponse.json({ 
       success: false, 
       message: error.message || "Failed to fetch user details" 

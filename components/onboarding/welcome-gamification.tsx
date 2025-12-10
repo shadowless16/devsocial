@@ -1,15 +1,20 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Trophy, Star, Users, Target } from "lucide-react"
 
+interface GamificationData {
+  xp?: number
+  completed?: boolean
+}
+
 interface WelcomeGamificationProps {
-  data: any
-  onNext: (data: any) => void
-  onChange?: (data: any) => void
+  data: GamificationData
+  onNext: (data: GamificationData) => void
+  onChange?: (data: GamificationData) => void
   onBack?: () => void
 }
 
@@ -42,7 +47,7 @@ export function WelcomeGamification({ data, onNext, onChange, onBack }: WelcomeG
         <div className="text-center">
           <div className="text-6xl mb-4">🎉</div>
           <h3 className="text-2xl font-bold text-emerald-600 mb-2">Welcome to DevSocial!</h3>
-          <p className="text-gray-600">You've earned your first 10 XP!</p>
+          <p className="text-gray-600">You&apos;ve earned your first 10 XP!</p>
         </div>
       )}
 

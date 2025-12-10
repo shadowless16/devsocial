@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from '@/lib/auth';
-import connectDB from '@/lib/db';
+import { getSession } from '@/lib/auth/server-auth';
+import connectDB from '@/lib/core/db';
 import User from '@/models/User';
-import { aiService } from '@/lib/ai-service';
+import { geminiPublicService } from '@/lib/ai/gemini-public-service';
 
 const EXPLAIN_LIMIT = 5; // Daily limit
 
@@ -32,9 +31,16 @@ export async function POST(request: NextRequest) {
 
     // Check daily usage (unlimited for AkDavid)
     const today = new Date().toDateString();
-    const todayUsage = user.aiUsage?.explain?.filter((usage: any) => 
-      new Date(usage.date).toDateString() === today
-    ).length || 0;
+    
+    interface ExplainUsage {
+      date: Date;
+      contentLength: number;
+    }
+    
+    const todayUsage = user.aiUsage?.explain?.filter((usage: unknown) => {
+      const typedUsage = usage as ExplainUsage;
+      return new Date(typedUsage.date).toDateString() === today;
+    }).length || 0;
 
     if (user.username !== 'AkDavid' && todayUsage >= EXPLAIN_LIMIT) {
       return NextResponse.json({ 
@@ -44,7 +50,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Generate explanation using AI service
-    const explanation = await aiService.explainPost(content);
+    const explanation = await geminiPublicService.explainPost(content);
 
     // Update user usage (skip for AkDavid)
     if (user.username !== 'AkDavid') {
@@ -71,7 +77,8 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('Explain API error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Explain API error:', errorMessage);
     return NextResponse.json({ 
       success: false, 
       message: 'Internal server error' 

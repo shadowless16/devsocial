@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { TrendingUp, FlameIcon as Fire, Heart, Eye, Loader2 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { FeedItem } from "@/components/feed/FeedItem"
 import { UserLink } from "@/components/shared/UserLink"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import { TrendingSkeleton } from "@/components/skeletons/trending-skeleton"
-import { formatTimeAgo } from "@/lib/time-utils"
+import { formatTimeAgo } from "@/lib/core/time-utils"
 
 interface TrendingPost {
   id: string
@@ -89,11 +89,7 @@ export default function TrendingPage() {
   const [error, setError] = useState("")
   const [initialLoad, setInitialLoad] = useState(true)
 
-  useEffect(() => {
-    fetchTrendingData()
-  }, [timeFilter])
-
-  const fetchTrendingData = async () => {
+  const fetchTrendingData = useCallback(async () => {
     try {
       setLoading(true)
       setError("")
@@ -106,13 +102,17 @@ export default function TrendingPage() {
       } else {
         setError("No trending data available")
       }
-    } catch (error: any) {
+    } catch {
       setError("Unable to load trending data. Please try again later.")
     } finally {
       setLoading(false)
       setInitialLoad(false)
     }
-  }
+  }, [timeFilter, stats])
+
+  useEffect(() => {
+    fetchTrendingData()
+  }, [timeFilter, fetchTrendingData])
 
   const handleLike = async (postId: string) => {
     if (!postId || postId === 'undefined') return
@@ -129,8 +129,8 @@ export default function TrendingPage() {
           )
         )
       }
-    } catch (error) {
-      console.error("Failed to toggle like:", error)
+    } catch {
+      console.error("Failed to toggle like")
     }
   }
 
@@ -147,7 +147,7 @@ export default function TrendingPage() {
           </div>
         </div>
         <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-navy-900 mb-1 md:mb-2">Trending</h1>
-        <p className="text-sm md:text-base text-gray-600 px-4">Discover what's hot in the developer community</p>
+        <p className="text-sm md:text-base text-gray-600 px-4">Discover what&apos;s hot in the developer community</p>
       </div>
 
       <div className="flex justify-center mb-4 md:mb-6">

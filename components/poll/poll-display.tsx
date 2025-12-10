@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 
 interface PollOption {
   id: string
@@ -37,7 +37,8 @@ interface PollDisplayProps {
   currentUserId?: string
 }
 
-export function PollDisplay({ poll, userVotes = [], onVote, currentUserId }: PollDisplayProps) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export function PollDisplay({ poll, userVotes = [], onVote, currentUserId: _currentUserId }: PollDisplayProps) {
   const [selectedOptions, setSelectedOptions] = useState<string[]>(userVotes)
   const [hasVoted, setHasVoted] = useState(userVotes.length > 0)
   const [timeLeft, setTimeLeft] = useState<string>("")

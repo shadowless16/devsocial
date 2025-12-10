@@ -4,9 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { Button } from '@/components/ui/button';
-import { User } from 'lucide-react';
-import { apiClient } from '@/lib/api-client';
-import type { User as UserType } from '@/contexts/app-context';
+import { apiClient } from '@/lib/api/api-client';
 import { UserLink } from '@/components/shared/UserLink';
 
 interface FollowModalProps {
@@ -17,7 +15,7 @@ interface FollowModalProps {
 }
 
 export function FollowModal({ isOpen, onClose, type, username }: FollowModalProps) {
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<Array<{ id: string; username: string; displayName?: string; avatar?: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState<number | null>(null);
 
@@ -29,28 +27,39 @@ export function FollowModal({ isOpen, onClose, type, username }: FollowModalProp
       try {
         console.log(`[FollowModal] fetching ${type} for username=`, username);
         if (type === 'followers') {
-          const response = await apiClient.getFollowers<any>(username, { limit: '100' });
+          interface FollowersData {
+            followers: Array<{ id: string; username: string; displayName?: string; avatar?: string }>
+            pagination?: { totalCount?: number }
+          }
+          const response = await apiClient.getFollowers<unknown>(username, { limit: '100' });
           console.log('[FollowModal] followers response=', response);
           if (response.success && response.data) {
-            setUsers(response.data.followers || []);
-            setTotalCount(response.data.pagination?.totalCount ?? null);
+            const data = response.data as FollowersData;
+            setUsers(data.followers || []);
+            setTotalCount(data.pagination?.totalCount ?? null);
           } else {
             setUsers([]);
             setTotalCount(null);
           }
         } else {
-          const response = await apiClient.getFollowing<any>(username, { limit: '100' });
+          interface FollowingData {
+            following: Array<{ id: string; username: string; displayName?: string; avatar?: string }>
+            pagination?: { totalCount?: number }
+          }
+          const response = await apiClient.getFollowing<unknown>(username, { limit: '100' });
           console.log('[FollowModal] following response=', response);
           if (response.success && response.data) {
-            setUsers(response.data.following || []);
-            setTotalCount(response.data.pagination?.totalCount ?? null);
+            const data = response.data as FollowingData;
+            setUsers(data.following || []);
+            setTotalCount(data.pagination?.totalCount ?? null);
           } else {
             setUsers([]);
             setTotalCount(null);
           }
         }
       } catch (error) {
-        console.error(`Failed to fetch ${type} for ${username}`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Failed to fetch ${type} for ${username}`, errorMessage);
         setUsers([]);
       } finally {
         setLoading(false);

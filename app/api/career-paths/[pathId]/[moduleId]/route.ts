@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import Module from '@/models/Module'
 import CareerPath from '@/models/CareerPath'
 import UserProgress from '@/models/UserProgress'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from '@/lib/auth/auth'
 
 interface Props {
   params: Promise<{ pathId: string; moduleId: string }>
@@ -20,7 +21,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get career path first
     const path = await CareerPath.findOne({
-      $or: [{ slug: pathId }, { _id: pathId }],
+      $or: [{ slug: pathId }, { _id: pathId }] as never,
       isActive: true
     })
 
@@ -33,7 +34,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get module by slug or ID
     const moduleData = await Module.findOne({
-      $or: [{ slug: moduleId }, { _id: moduleId }],
+      $or: [{ slug: moduleId }, { _id: moduleId }] as never,
       pathId: path._id,
       isActive: true
     })
@@ -56,7 +57,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       })
 
       moduleProgress = userProgress?.moduleProgress.find(
-(mp: any) => mp.moduleId.toString() === moduleData._id.toString()
+(mp: { moduleId: { toString: () => string } }) => mp.moduleId.toString() === moduleData._id.toString()
       )
     }
 
@@ -82,8 +83,9 @@ export async function GET(request: NextRequest, { params }: Props) {
       success: true,
       data: responseData
     })
-  } catch (error: any) {
-    console.error('Error fetching module:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error fetching module:', errorMessage)
     return NextResponse.json(
       { success: false, message: 'Failed to fetch module' },
       { status: 500 }
@@ -110,7 +112,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     // Get career path and module
     const path = await CareerPath.findOne({
-      $or: [{ slug: pathId }, { _id: pathId }],
+      $or: [{ slug: pathId }, { _id: pathId }] as never,
       isActive: true
     })
 
@@ -122,7 +124,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     }
 
     const moduleData = await Module.findOne({
-      $or: [{ slug: moduleId }, { _id: moduleId }],
+      $or: [{ slug: moduleId }, { _id: moduleId }] as never,
       pathId: path._id,
       isActive: true
     })
@@ -150,7 +152,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     // Check if module is already completed
     const existingProgress = userProgress.moduleProgress.find(
-(mp: any) => mp.moduleId.toString() === moduleData._id.toString()
+(mp: { moduleId: { toString: () => string }; completedAt?: Date }) => mp.moduleId.toString() === moduleData._id.toString()
     )
 
     if (existingProgress && existingProgress.completedAt) {
@@ -173,7 +175,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     }
 
     // Update progress stats
-    const completedModules = userProgress.moduleProgress.filter((m: any) => m.completedAt).length
+    const completedModules = userProgress.moduleProgress.filter((m: { completedAt?: Date }) => m.completedAt).length
     const totalModules = await Module.countDocuments({ pathId: path._id, isActive: true })
     
     userProgress.completionPercentage = (completedModules / totalModules) * 100
@@ -199,8 +201,9 @@ export async function POST(request: NextRequest, { params }: Props) {
         pathCompleted: !!userProgress.completedAt
       }
     })
-  } catch (error: any) {
-    console.error('Error completing module:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error completing module:', errorMessage)
     return NextResponse.json(
       { success: false, message: 'Failed to complete module' },
       { status: 500 }

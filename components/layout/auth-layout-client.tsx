@@ -10,7 +10,7 @@ import SideNav from "@/components/layout/side-nav"
 import RightRail from "@/components/layout/right-rail"
 import { XPBar } from "@/components/gamification/xp-bar"
 import { ThemeToggle } from "@/components/ui/theme-toggle"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 
 
 export function AuthLayoutClient({

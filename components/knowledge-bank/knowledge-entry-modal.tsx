@@ -13,14 +13,14 @@ import { useToast } from '@/hooks/use-toast'
 
 interface Technology {
   name: string
-  icon: any
+  icon: unknown
   color: string
 }
 
 interface KnowledgeEntryModalProps {
   isOpen: boolean
   onClose: () => void
-  onEntryCreated: (entry: any) => void
+  onEntryCreated: (entry: unknown) => void
   technologies: Technology[]
 }
 
@@ -87,7 +87,7 @@ export function KnowledgeEntryModal({ isOpen, onClose, onEntryCreated, technolog
       } else {
         throw new Error(data.message)
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error",
         description: error.message || "Failed to create entry",

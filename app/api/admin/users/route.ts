@@ -1,9 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getSession } from '@/lib/auth/server-auth'
 import User from "@/models/User"
 import Post from "@/models/Post"
-import connectDB from "@/lib/db"
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
+import connectDB from "@/lib/core/db"
 
 export const dynamic = 'force-dynamic'
 
@@ -22,7 +21,12 @@ export async function GET(request: NextRequest) {
     const limit = parseInt(searchParams.get("limit") || "50")
     const skip = (page - 1) * limit
 
-    let query: any = {}
+    interface UserQuery {
+      isBlocked?: boolean;
+      role?: string;
+    }
+    
+    const query: UserQuery = {}
     if (filter === "blocked") query.isBlocked = true
     if (filter === "active") query.isBlocked = false
     if (filter === "moderators") query.role = "moderator"
@@ -58,8 +62,9 @@ export async function GET(request: NextRequest) {
         }
       }
     })
-  } catch (error: any) {
-    console.error("Admin users fetch error:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Admin users fetch error:", errorMessage)
     return NextResponse.json({ 
       success: false, 
       message: error.message || "Failed to fetch users" 

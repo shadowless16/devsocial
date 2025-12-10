@@ -50,9 +50,9 @@ export class FeedAlgorithm {
     try {
       // Get user preferences and blocked users
       const [user, blockedUsers, followedUsers] = await Promise.all([
-        User.findById(userId).lean(),
-        Block.find({ blocker: userId }).select("blocked").lean(),
-        Follow.find({ follower: userId }).select("following").lean(),
+        User.findById(userId).lean() as Promise<any>,
+        Block.find({ blocker: userId } as any).select("blocked").lean(),
+        Follow.find({ follower: userId } as any).select("following").lean(),
       ])
 
       if (!user) throw new Error("User not found")
@@ -76,7 +76,7 @@ export class FeedAlgorithm {
       const candidatePosts = await Post.find({
         ...baseQuery,
         createdAt: { $gte: sevenDaysAgo },
-      })
+      } as any)
         .populate("author", "username level points followersCount")
         .lean()
 
@@ -105,7 +105,7 @@ export class FeedAlgorithm {
       // Paginate results
       const paginatedPosts = rankedPosts.slice(skip, skip + limit)
       const posts = paginatedPosts
-        .map((scored) => candidatePosts.find((p) => (p._id as any).toString() === scored.postId))
+        .map((scored) => candidatePosts.find((p) => (p._id as any)?.toString() === scored.postId))
         .filter(Boolean)
 
       return {
@@ -124,20 +124,21 @@ export class FeedAlgorithm {
             : undefined,
       }
     } catch (error) {
-      console.error("Feed generation error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Feed generation error:", errorMessage)
       throw error
     }
   }
 
-  private static async getChronologicalFeed(baseQuery: any, skip: number, limit: number) {
-    const posts = await Post.find(baseQuery)
+  private static async getChronologicalFeed(baseQuery: unknown, skip: number, limit: number) {
+    const posts = await Post.find(baseQuery as any)
       .populate("author", "username displayName avatar level")
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
       .lean()
 
-    const totalCount = await Post.countDocuments(baseQuery)
+    const totalCount = await Post.countDocuments(baseQuery as any)
 
     return {
       posts,
@@ -148,8 +149,8 @@ export class FeedAlgorithm {
 
   private static async getUserInteractions(userId: string) {
     const [likedPosts, activities] = await Promise.all([
-      Like.find({ user: userId, itemType: "post" }).populate("item", "tags author").limit(100).lean(),
-      Activity.find({ user: userId }).sort({ createdAt: -1 }).limit(200).lean(),
+      Like.find({ user: userId, itemType: "post" } as any).populate("item", "tags author").limit(100).lean(),
+      Activity.find({ user: userId } as any).sort({ createdAt: -1 }).limit(200).lean(),
     ])
 
     // Extract user preferences
@@ -172,14 +173,16 @@ export class FeedAlgorithm {
     }
   }
 
-  private static async scorePost(post: any, context: any): Promise<PostScore> {
+  private static async scorePost(post: Record<string, unknown>, context: Record<string, unknown>): Promise<PostScore> {
     const { user, followedUserIds, userInteractions, algorithm } = context
 
+    const postAuthor = post.author as Record<string, unknown> | undefined
+
     const factors = {
-      recency: this.calculateRecencyScore(post.createdAt),
+      recency: this.calculateRecencyScore(post.createdAt as Date),
       engagement: this.calculateEngagementScore(post),
-      author: this.calculateAuthorScore(post.author, followedUserIds),
-      relevance: this.calculateRelevanceScore(post, userInteractions),
+      author: this.calculateAuthorScore(postAuthor || {}, followedUserIds as string[]),
+      relevance: this.calculateRelevanceScore(post, userInteractions as Record<string, unknown>),
       diversity: 1.0, // Will be adjusted in diversity filter
     }
 
@@ -202,12 +205,13 @@ export class FeedAlgorithm {
           factors.relevance * this.WEIGHTS.RELEVANCE +
           factors.diversity * this.WEIGHTS.DIVERSITY
 
+    const author = post.author as { _id?: any } | undefined
     return {
       postId: (post._id as any).toString(),
       score: Math.max(baseScore, this.MIN_SCORE),
       factors,
-      authorId: post.author?._id ? (post.author._id as any).toString() : undefined,
-      tags: Array.isArray(post.tags) ? post.tags : [],
+      authorId: author?._id ? author._id.toString() : undefined,
+      tags: Array.isArray(post.tags) ? post.tags as string[] : [],
     }
   }
 
@@ -218,8 +222,10 @@ export class FeedAlgorithm {
     return Math.exp(-hoursAgo / this.DECAY_HOURS)
   }
 
-  private static calculateEngagementScore(post: any): number {
-    const { likesCount = 0, commentsCount = 0, xpAwarded = 0 } = post
+  private static calculateEngagementScore(post: Record<string, unknown>): number {
+    const likesCount = (post.likesCount as number) || 0
+    const commentsCount = (post.commentsCount as number) || 0
+    const xpAwarded = (post.xpAwarded as number) || 0
 
     // Weighted engagement score
   const engagementPoints = likesCount * 1 + commentsCount * 2 + xpAwarded * 0.2
@@ -230,39 +236,42 @@ export class FeedAlgorithm {
   return Math.min(Math.max(normalized, 0), 1)
   }
 
-  private static calculateAuthorScore(author: any, followedUserIds: string[]): number {
+  private static calculateAuthorScore(author: Record<string, unknown>, followedUserIds: string[]): number {
     if (!author) return 0
 
     let score = 0
 
     // Boost for followed users
-    if (followedUserIds.includes((author._id as any).toString())) {
+    if (followedUserIds.includes((author._id as any)?.toString())) {
       score += 0.5
     }
 
     // Boost for high-level users
-    const levelBoost = Math.min(author.level / 50, 0.3) // Max 0.3 boost
+    const levelBoost = Math.min((author.level as number || 0) / 50, 0.3) // Max 0.3 boost
     score += levelBoost
 
     // Boost for users with good reputation (followers)
-    const reputationBoost = Math.min(author.followersCount / 1000, 0.2) // Max 0.2 boost
+    const reputationBoost = Math.min((author.followersCount as number || 0) / 1000, 0.2) // Max 0.2 boost
     score += reputationBoost
 
     return Math.min(score, 1.0)
   }
 
-  private static calculateRelevanceScore(post: any, userInteractions: any): number {
-    const { preferredTags, preferredAuthors } = userInteractions
+  private static calculateRelevanceScore(post: Record<string, unknown>, userInteractions: Record<string, unknown>): number {
+    const preferredTags = (userInteractions.preferredTags as string[]) || []
+    const preferredAuthors = (userInteractions.preferredAuthors as string[]) || []
     let score = 0
 
     // Tag relevance
-    if (post.tags && preferredTags.length > 0) {
-      const matchingTags = post.tags.filter((tag: string) => preferredTags.includes(tag)).length
-      score += (matchingTags / Math.max(post.tags.length, 1)) * 0.6
+    const postTags = post.tags as string[] | undefined
+    if (postTags && preferredTags.length > 0) {
+      const matchingTags = postTags.filter((tag: string) => preferredTags.includes(tag)).length
+      score += (matchingTags / Math.max(postTags.length, 1)) * 0.6
     }
 
     // Author relevance
-    if (preferredAuthors.includes((post.author._id as any).toString())) {
+    const author = post.author as { _id?: any } | undefined
+    if (author?._id && preferredAuthors.includes(author._id.toString())) {
       score += 0.4
     }
 
@@ -337,7 +346,8 @@ export class FeedAlgorithm {
       // Update user's interaction patterns (could be cached in Redis)
       // This would update user preferences for better personalization
     } catch (error) {
-      console.error("Error updating user preferences:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error updating user preferences:", errorMessage)
     }
   }
 }

@@ -1,11 +1,11 @@
-import { type NextRequest, NextResponse } from "next/server"
+﻿import { NextResponse } from "next/server"
 import Post from "@/models/Post"
 import User from "@/models/User"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await connectDB()
 
@@ -37,8 +37,9 @@ export async function GET(request: NextRequest) {
         users: suggestedUsers
       }
     })
-  } catch (error: any) {
-    console.error("Trending data error:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Trending data error:", errorMessage)
     return NextResponse.json({ 
       success: false, 
       message: error.message || "Failed to fetch trending data" 

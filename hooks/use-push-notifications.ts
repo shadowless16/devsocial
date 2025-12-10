@@ -19,7 +19,8 @@ export function usePushNotifications() {
       setSubscription(sub)
       setIsSubscribed(!!sub)
     } catch (error) {
-      console.error('Error checking subscription:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error checking subscription:', errorMessage)
     }
   }
 
@@ -56,8 +57,9 @@ export function usePushNotifications() {
       setSubscription(sub)
       setIsSubscribed(true)
       return { success: true }
-    } catch (error: any) {
-      console.error('Error subscribing to push notifications:', error)
+    } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error subscribing to push notifications:', errorMessage)
       return { success: false, error: error.message || String(error) }
     }
   }
@@ -76,7 +78,8 @@ export function usePushNotifications() {
       }
       return { success: true }
     } catch (error) {
-      console.error('Error unsubscribing from push notifications:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error unsubscribing from push notifications:', errorMessage)
       return { success: false, error }
     }
   }

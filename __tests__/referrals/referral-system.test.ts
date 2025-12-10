@@ -57,7 +57,7 @@ describe('ReferralSystem', () => {
   })
 
   describe('createReferral', () => {
-    let referrer: any, referred: any
+    let referrer: unknown, referred: unknown
 
     beforeEach(async () => {
       referrer = await User.create({
@@ -117,7 +117,7 @@ describe('ReferralSystem', () => {
   })
 
   describe('checkReferralCompletion', () => {
-    let referrer: any, referred: any, referral: any
+    let referrer: unknown, referred: unknown, referral: unknown
 
     beforeEach(async () => {
       referrer = await User.create({
@@ -198,7 +198,7 @@ describe('ReferralSystem', () => {
   })
 
   describe('getReferralStats', () => {
-    let referrer: any, referred1: any, referred2: any
+    let referrer: unknown, referred1: unknown, referred2: unknown
 
     beforeEach(async () => {
       referrer = await User.create({
@@ -343,7 +343,7 @@ describe('ReferralSystem', () => {
   })
 
   describe('Integration with XP System', () => {
-    let referrer: any, referred: any
+    let referrer: unknown, referred: unknown
 
     beforeEach(async () => {
       referrer = await User.create({

@@ -1,12 +1,11 @@
-// app/api/users/profile/route.ts
+﻿// app/api/users/profile/route.ts
 import { type NextRequest, NextResponse } from "next/server"
-import { getSession } from '@/lib/server-auth';
+import { getSession } from '@/lib/auth/server-auth';
 import bcrypt from "bcryptjs";
-import { authOptions } from "@/lib/auth";
 import User, { IUser } from "@/models/User";
-import { connectWithRetry } from "@/lib/connect-with-retry";
-import { successResponse, errorResponse } from "@/utils/response";
-import logger from "@/lib/logger";
+import { connectWithRetry } from "@/lib/core/connect-with-retry";
+import { errorResponse } from "@/utils/response";
+import logger from "@/lib/core/logger";
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
@@ -28,8 +27,9 @@ export async function GET(req: NextRequest) {
     try {
       await connectWithRetry();
       logger.info('Database connected successfully');
-    } catch (dbError: any) {
-      logger.error('Database connection failed:', dbError.message);
+    } catch (dbError) {
+      const errorMessage = dbError instanceof Error ? dbError.message : 'Database connection failed'
+      logger.error('Database connection failed:', { error: errorMessage });
       return NextResponse.json({ 
         success: false, 
         error: "Database connection failed" 
@@ -64,12 +64,14 @@ export async function GET(req: NextRequest) {
       success: true,
       data: { user }
     });
-  } catch (error: any) {
-    logger.error('Profile API error:', { message: error.message, stack: error.stack });
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Profile API error'
+    const errorStack = error instanceof Error ? error.stack : undefined
+    logger.error('Profile API error:', { error: { message: errorMessage, stack: errorStack } });
     return NextResponse.json({ 
       success: false, 
       error: "Internal server error",
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
     }, { status: 500 });
   }
 }
@@ -159,11 +161,13 @@ export async function PUT(req: NextRequest) {
         reward: earnedXP > 0 ? {
           xp: earnedXP,
           badge: earnedBadge,
-          message: "🎉 First Impression badge earned! +50 XP"
+          message: "ðŸŽ‰ First Impression badge earned! +50 XP"
         } : null
       }
     });
   } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error'
+    logger.error('Profile update error:', { error: errorMessage });
     return NextResponse.json(errorResponse("Internal server error"), { status: 500 });
   }
 }

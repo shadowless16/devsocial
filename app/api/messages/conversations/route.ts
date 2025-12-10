@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
 import Conversation from "@/models/Conversation"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 
 export const dynamic = 'force-dynamic'
@@ -48,10 +48,14 @@ export async function GET(request: NextRequest) {
       isArchived: false,
     })
 
+    interface Participant {
+      _id: { toString: () => string };
+    }
+    
     const conversationsWithUnread = conversations.map((conv) => ({
       ...conv.toObject(),
       unreadCount: conv.unreadCount.get(userId) || 0,
-      otherParticipant: conv.participants.find((p: any) => p._id.toString() !== userId),
+      otherParticipant: conv.participants.find((p: unknown) => (p as Participant)._id.toString() !== userId),
     }))
 
     return NextResponse.json(
@@ -66,7 +70,8 @@ export async function GET(request: NextRequest) {
       }),
     )
   } catch (error) {
-    console.error("Error fetching conversations:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching conversations:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch conversations"), { status: 500 })
   }
 }

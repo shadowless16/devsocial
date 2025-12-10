@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import Feedback from '@/models/Feedback'
 
 export async function POST(request: NextRequest) {
@@ -31,7 +30,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, id: feedback._id })
   } catch (error) {
-    console.error('Feedback submission error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Feedback submission error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     }
     // For 'all' view, no filter - shows all feedback
     
-    const feedback = await Feedback.find(query)
+    const feedback = await Feedback.find(query as Record<string, unknown>)
       .populate('userId', 'username avatar role')
       .populate('solvedBy', 'username')
       .sort({ createdAt: -1 })
@@ -62,7 +62,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ feedback })
   } catch (error) {
-    console.error('Feedback fetch error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Feedback fetch error:', errorMessage)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

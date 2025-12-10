@@ -6,11 +6,10 @@ import { Progress } from "@/components/ui/progress"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { RealTimeIndicator } from "@/components/analytics/real-time-indicator"
-import { Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts"
+import { Tooltip, PieChart, Pie, Cell } from "recharts"
 import { Activity, Users, MessageSquare, Eye, Heart, Share2, Clock, MapPin, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { GenerateDataButton } from "@/components/analytics/generate-data-button"
-import { ClientChart } from "@/components/analytics/client-chart"
 import { useEffect, useState } from "react"
 
 // Types
@@ -65,7 +64,7 @@ const fetchRealtimeData = async (): Promise<RealtimeData> => {
       throw new Error('Failed to fetch real-time data')
     }
     return await response.json() as RealtimeData
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Error fetching realtime data:', error)
     throw error
   }
@@ -149,7 +148,7 @@ export default function RealtimePage() {
       const data = await fetchRealtimeData()
       setRealtimeData(data)
       setLastUpdate(new Date())
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error loading realtime data:', error)
       setRealtimeData(null)
     } finally {
@@ -193,7 +192,7 @@ export default function RealtimePage() {
   }
 
   // Use API data with null checks
-  const realtimeStats = realtimeData as any || {}
+  const realtimeStats = (realtimeData as RealtimeData) || {}
   const deviceData = realtimeData?.deviceDistribution || defaultDeviceData
   const topPages = (realtimeData?.topPages?.length || 0) > 0 ? (realtimeData.topPages || defaultTopPages) : defaultTopPages
   const recentActivity = realtimeData?.recentActivity || defaultRecentActivity
@@ -339,7 +338,7 @@ export default function RealtimePage() {
               <div style={{ width: '100%', height: '200px' }}>
                 <PieChart width={300} height={200}>
                   <Pie
-                    data={deviceData as any}
+                    data={deviceData as unknown as Array<Record<string, unknown>>}
                     cx={150}
                     cy={100}
                     innerRadius={40}
@@ -351,7 +350,7 @@ export default function RealtimePage() {
                       <Cell key={`cell-${index}`} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(value: any) => [`${value}%`, 'Usage']} />
+                  <Tooltip formatter={(value: unknown) => [`${value}%`, 'Usage']} />
                 </PieChart>
               </div>
             </div>

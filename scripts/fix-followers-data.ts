@@ -32,7 +32,7 @@ async function fixFollowersData() {
       .lean();
 
     console.log("Follower records:");
-    followerRecords.forEach((record: any) => {
+    followerRecords.forEach((record: unknown) => {
       console.log(`- ${record.follower?.username || 'Unknown'} (${record.follower?.displayName || 'No display name'})`);
     });
 
@@ -44,7 +44,7 @@ async function fixFollowersData() {
 
     console.log(`Updated AkDavid's counts - Followers: ${actualFollowers}, Following: ${actualFollowing}`);
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error fixing followers data:", error);
   } finally {
     process.exit(0);

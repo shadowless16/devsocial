@@ -42,7 +42,7 @@ export function ImageAnalyzer({ imageUrl, onAnalysis }: ImageAnalyzerProps) {
       } else {
         throw new Error(data.message || "Analysis failed");
       }
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Analysis failed",
         description: error.message || "Failed to analyze image",

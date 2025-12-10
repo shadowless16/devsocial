@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import mongoose from "mongoose"
 
 export async function GET() {
@@ -19,8 +19,9 @@ export async function GET() {
       message: "Database connection test",
       data: dbStatus
     })
-  } catch (error: any) {
-    console.error("Database connection error:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Database connection error:", errorMessage)
     return NextResponse.json({
       success: false,
       message: error.message || "Failed to connect to database",

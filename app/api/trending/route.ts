@@ -4,9 +4,9 @@ import { type NextRequest, NextResponse } from "next/server"
 export const dynamic = 'force-dynamic'
 import Post from "@/models/Post"
 import User from "@/models/User"
-import connectDB from "@/lib/db"
-import { successResponse, errorResponse } from "@/utils/response"
-import { cache } from "@/lib/cache"
+import connectDB from "@/lib/core/db"
+
+import { cache } from "@/lib/core/cache"
 
 export async function GET(request: NextRequest) {
   try {
@@ -240,7 +240,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(responseData)
   } catch (error) {
-    console.error("Error fetching trending data:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching trending data:", errorMessage)
     // Return fallback data when database is unavailable
     const fallbackData = {
       success: true,

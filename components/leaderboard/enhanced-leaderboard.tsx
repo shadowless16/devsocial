@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo, useCallback, memo } from "react"
+import { useState, useEffect, useCallback, memo } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { SmartAvatar } from "@/components/ui/smart-avatar"
@@ -38,12 +38,12 @@ const leaderboardTypes = [
   { key: "challenges", label: "Challenges", icon: Target },
 ]
 
-const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStatLabel }: {
+const LeaderboardContent = memo(function LeaderboardContent({ leaderboard, activeTab, getStatValue, getStatLabel }: {
   leaderboard: LeaderboardEntry[]
   activeTab: string
   getStatValue: (entry: LeaderboardEntry, type: string) => number
   getStatLabel: (type: string) => string
-}) => {
+}) {
   if (leaderboard.length === 0) {
     return (
       <div className="mt-4">
@@ -70,7 +70,6 @@ const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStat
                   : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
               }`}
             >
-              {/* Rank */}
               <div className="flex-shrink-0 w-5 sm:w-6 flex justify-center">
                 {position <= 3 ? (
                   position === 1 ? <Crown className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" /> :
@@ -81,7 +80,6 @@ const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStat
                 )}
               </div>
 
-              {/* Avatar */}
               <UserLink username={entry.user.username}>
                 <SmartAvatar
                   src={entry.user.avatar}
@@ -93,7 +91,6 @@ const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStat
                 />
               </UserLink>
 
-              {/* User Info */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1 sm:gap-2">
                   <UserLink username={entry.user.username}>
@@ -112,7 +109,6 @@ const LeaderboardContent = memo(({ leaderboard, activeTab, getStatValue, getStat
                 </UserLink>
               </div>
 
-              {/* Stats */}
               <div className="text-right flex-shrink-0 min-w-0">
                 <div className="flex items-center justify-end gap-0.5 sm:gap-1">
                   <Zap className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-yellow-500 flex-shrink-0" />
@@ -138,18 +134,7 @@ export function EnhancedLeaderboard() {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([])
   const [loading, setLoading] = useState(true)
 
-  // Use real-time leaderboard hook
   const { realtimeData, isConnected } = useRealtimeLeaderboard(activeTab)
-
-  useEffect(() => {
-    fetchLeaderboard(activeTab)
-  }, [activeTab])
-
-  useEffect(() => {
-    if (realtimeData) {
-      setLeaderboard(realtimeData)
-    }
-  }, [realtimeData])
 
   const fetchLeaderboard = useCallback(async (type: string) => {
     setLoading(true)
@@ -160,32 +145,22 @@ export function EnhancedLeaderboard() {
         setLeaderboard(data.data.leaderboard)
       }
     } catch (error) {
-      console.error("Error fetching leaderboard:", error)
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed'
+      console.error("Error fetching leaderboard:", errorMessage)
     } finally {
       setLoading(false)
     }
   }, [])
 
-  const getRankIcon = (position: number) => {
-    switch (position) {
-      case 1:
-        return <Crown className="w-5 h-5 text-yellow-500" />
-      case 2:
-        return <Medal className="w-5 h-5 text-gray-400" />
-      case 3:
-        return <Award className="w-5 h-5 text-amber-600" />
-      default:
-        return (
-          <span className="w-5 h-5 flex items-center justify-center text-sm font-bold text-gray-500">#{position}</span>
-        )
-    }
-  }
+  useEffect(() => {
+    fetchLeaderboard(activeTab)
+  }, [activeTab, fetchLeaderboard])
 
-  const getRankBadgeColor = (position: number) => {
-    if (position <= 3) return "bg-gradient-to-r from-yellow-400 to-yellow-600 text-white"
-    if (position <= 10) return "bg-gradient-to-r from-emerald-400 to-emerald-600 text-white"
-    return "bg-gray-100 text-gray-700"
-  }
+  useEffect(() => {
+    if (realtimeData) {
+      setLeaderboard(realtimeData)
+    }
+  }, [realtimeData])
 
   const getStatLabel = useCallback((type: string) => {
     switch (type) {
@@ -231,45 +206,35 @@ export function EnhancedLeaderboard() {
         </div>
       </CardHeader>
 
-      <CardContent className="px-3 sm:px-4 md:px-6 pb-4">
-        <div className="w-full">
-          {/* Mobile-optimized tabs */}
-          <div className="overflow-x-auto scrollbar-hide mb-3 sm:mb-4">
-            <div className="flex gap-1 sm:gap-2 min-w-max pb-1">
-              {leaderboardTypes.map((type) => {
-                const Icon = type.icon
-                const isActive = activeTab === type.key
-                return (
-                  <button
-                    key={type.key}
-                    onClick={() => setActiveTab(type.key)}
-                    className={`flex items-center gap-1 px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-[10px] sm:text-xs font-medium transition-colors whitespace-nowrap ${
-                      isActive 
-                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
-                    }`}
-                  >
-                    <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 flex-shrink-0" />
-                    <span className="hidden sm:inline">{type.label}</span>
-                    <span className="sm:hidden">
-                      {type.key === 'weekly' ? 'Week' : 
-                       type.key === 'monthly' ? 'Month' : 
-                       type.key === 'all-time' ? 'All' : 
-                       type.key === 'referrals' ? 'Refs' : 'Quest'}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </div>
+      <CardContent className="px-3 sm:px-6 pb-3 sm:pb-6">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="grid w-full grid-cols-5 h-auto gap-1 bg-gray-100 dark:bg-gray-800 p-1">
+            {leaderboardTypes.map((type) => {
+              const Icon = type.icon
+              return (
+                <TabsTrigger
+                  key={type.key}
+                  value={type.key}
+                  className="text-[9px] sm:text-xs py-1.5 sm:py-2 px-1 sm:px-2 data-[state=active]:bg-white dark:data-[state=active]:bg-gray-700"
+                >
+                  <Icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+                  <span className="hidden sm:inline">{type.label}</span>
+                </TabsTrigger>
+              )
+            })}
+          </TabsList>
 
-          <LeaderboardContent 
-            leaderboard={leaderboard} 
-            activeTab={activeTab} 
-            getStatValue={getStatValue}
-            getStatLabel={getStatLabel}
-          />
-        </div>
+          {leaderboardTypes.map((type) => (
+            <TabsContent key={type.key} value={type.key} className="mt-0">
+              <LeaderboardContent
+                leaderboard={leaderboard}
+                activeTab={activeTab}
+                getStatValue={getStatValue}
+                getStatLabel={getStatLabel}
+              />
+            </TabsContent>
+          ))}
+        </Tabs>
       </CardContent>
     </Card>
   )

@@ -42,7 +42,7 @@ export function RankDisplay({ userXP, showProgress = true, size = "md" }: RankDi
       </div>
 
       {/* Naija Meaning */}
-      <p className={`${sizeClasses[size]} text-gray-600 italic`}>"{currentRank.naijaMeaning}"</p>
+      <p className={`${sizeClasses[size]} text-gray-600 italic`}>&quot;{currentRank.naijaMeaning}&quot;</p>
 
       {/* Progress to Next Rank */}
       {showProgress && nextRank && (

@@ -3,7 +3,7 @@
 import React from 'react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Avatar, AvatarImage } from '@/components/ui/avatar'
-import { getAvatarUrl } from '@/lib/avatar-utils'
+import { getAvatarUrl } from '@/lib/storage/avatar-utils'
 
 interface AvatarModalProps {
   isOpen: boolean
@@ -17,12 +17,12 @@ export function AvatarModal({ isOpen, onClose, avatarUrl, username }: AvatarModa
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md w-full">
         <DialogHeader>
-          <DialogTitle>{username}'s Avatar</DialogTitle>
+          <DialogTitle>{username}&apos;s Avatar</DialogTitle>
         </DialogHeader>
         
         <div className="flex justify-center p-4">
           <Avatar className="w-80 h-80">
-            <AvatarImage src={getAvatarUrl(avatarUrl)} alt={`${username}'s avatar`} />
+            <AvatarImage src={getAvatarUrl(avatarUrl)} alt={`${username}&apos;s avatar`} />
           </Avatar>
         </div>
       </DialogContent>

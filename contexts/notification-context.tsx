@@ -47,7 +47,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(data.data.unreadCount)
       }
     } catch (error) {
-      console.error('Error fetching notifications:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error fetching notifications:', errorMessage)
     } finally {
       setLoading(false)
     }
@@ -61,7 +62,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(data.data.unreadCount || 0)
       }
     } catch (error) {
-      console.error('Error fetching unread count:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error fetching unread count:', errorMessage)
       setUnreadCount(0)
     }
   }
@@ -81,7 +83,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(prev => Math.max(0, prev - 1))
       }
     } catch (error) {
-      console.error('Error marking notification as read:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error marking notification as read:', errorMessage)
     }
   }
 
@@ -100,7 +103,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(prev => prev + 1)
       }
     } catch (error) {
-      console.error('Error marking notification as unread:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error marking notification as unread:', errorMessage)
     }
   }
 
@@ -117,7 +121,8 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
         setUnreadCount(0)
       }
     } catch (error) {
-      console.error('Error marking all notifications as read:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error marking all notifications as read:', errorMessage)
     }
   }
 

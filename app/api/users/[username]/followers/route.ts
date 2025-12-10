@@ -1,11 +1,9 @@
 // app/api/users/[username]/followers/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
 import User from "@/models/User";
 import Follow from "@/models/Follow";
-import connectDB from "@/lib/db";
-import { successResponse, errorResponse } from "@/utils/response";
+import connectDB from "@/lib/core/db";
+import { errorResponse } from "@/utils/response";
 
 export const dynamic = 'force-dynamic'
 
@@ -53,10 +51,25 @@ export async function GET(
     // Get total count for pagination
     const totalFollowers = await Follow.countDocuments({ following: user._id });
 
+    interface FollowData {
+      follower: {
+        _id: { toString: () => string };
+        username: string;
+        displayName?: string;
+        firstName?: string;
+        lastName?: string;
+        avatar?: string;
+        level?: number;
+        bio?: string;
+      };
+      createdAt: Date;
+    }
+    
     // Transform the data
-    const followers = followersData
-      .filter((follow: any) => follow.follower)
-      .map((follow: any) => ({
+    const typedFollowersData = followersData as FollowData[];
+    const followers = typedFollowersData
+      .filter((follow) => follow.follower)
+      .map((follow) => ({
         _id: follow.follower._id.toString(),
         username: follow.follower.username,
         displayName: follow.follower.displayName || 
@@ -85,7 +98,8 @@ export async function GET(
     });
 
   } catch (error) {
-    console.error("Error fetching followers:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching followers:", errorMessage);
     return NextResponse.json(
       errorResponse("Failed to fetch followers"),
       { status: 500 }

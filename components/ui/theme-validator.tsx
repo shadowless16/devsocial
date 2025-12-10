@@ -139,6 +139,7 @@ export function ThemeValidator() {
         <div className="pt-4 border-t border-border">
           <Button
             onClick={() => {
+              if (typeof window === 'undefined') return
               const html = document.documentElement
               if (html.classList.contains('dark')) {
                 html.classList.remove('dark')

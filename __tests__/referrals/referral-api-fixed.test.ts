@@ -88,7 +88,7 @@ describe('Referral API Endpoints', () => {
   });
 
   describe('POST /api/referrals/create', () => {
-    let referrer: any, referred: any;
+    let referrer: unknown, referred: unknown;
 
     beforeEach(async () => {
       referrer = await User.create({
@@ -179,7 +179,7 @@ describe('Referral API Endpoints', () => {
   });
 
   describe('GET /api/referrals/stats', () => {
-    let referrer: any, referred1: any, referred2: any;
+    let referrer: unknown, referred1: unknown, referred2: unknown;
 
     beforeEach(async () => {
       referrer = await User.create({

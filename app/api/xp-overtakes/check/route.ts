@@ -5,11 +5,13 @@ export async function POST(request: NextRequest) {
   try {
     const { type = 'all-time' } = await request.json().catch(() => ({}))
     
-    const result = await XPOvertakeService.checkAndNotifyOvertakes(type as any)
+    const validType = type as 'weekly' | 'monthly' | 'all-time'
+    const result = await XPOvertakeService.checkAndNotifyOvertakes(validType)
     
     return NextResponse.json(result)
   } catch (error) {
-    console.error('XP overtake check error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('XP overtake check error:', errorMessage)
     return NextResponse.json({ success: false, error: 'Failed to check overtakes' }, { status: 500 })
   }
 }
@@ -19,11 +21,13 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const type = searchParams.get('type') || 'all-time'
     
-    const result = await XPOvertakeService.checkAndNotifyOvertakes(type as any)
+    const validType = type as 'weekly' | 'monthly' | 'all-time'
+    const result = await XPOvertakeService.checkAndNotifyOvertakes(validType)
     
     return NextResponse.json(result)
   } catch (error) {
-    console.error('XP overtake check error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('XP overtake check error:', errorMessage)
     return NextResponse.json({ success: false, error: 'Failed to check overtakes' }, { status: 500 })
   }
 }

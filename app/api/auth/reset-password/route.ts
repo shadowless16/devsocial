@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 
 import { successResponse, errorResponse } from "@/utils/response"
@@ -56,7 +56,8 @@ export async function POST(request: NextRequest) {
       message: "Password reset successfully",
     })
   } catch (error) {
-    console.error("Reset password error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Reset password error:", errorMessage)
     return errorResponse("Failed to reset password", 500)
   }
 }

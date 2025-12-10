@@ -1,18 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { getSession } from '@/lib/auth/server-auth'
 
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from "@/lib/auth"
 import User from "@/models/User"
 import Post from "@/models/Post"
-import Like from "@/models/Like"
-import Comment from "@/models/Comment"
 import Activity from "@/models/Activity"
 import Notification from "@/models/Notification"
 import XPLog from "@/models/XPLog"
-import { connectWithRetry } from "@/lib/connect-with-retry"
-import { successResponse, errorResponse } from "@/utils/response"
+import { connectWithRetry } from "@/lib/core/connect-with-retry"
+import { errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 
 export async function GET(request: NextRequest) {
@@ -50,9 +47,17 @@ export async function GET(request: NextRequest) {
         break
     }
 
+    interface UserType {
+      points: number
+      level: number
+      badges: Array<{ name: string }>
+      createdAt: Date
+      toObject: () => { points: number; level: number; badges: Array<{ name: string }>; createdAt: Date }
+    }
+    
     // Get user's basic stats
     console.log("[Dashboard] Fetching user stats...")
-    const user = await User.findById(userObjectId).select("points level badges createdAt")
+    const user = await User.findById(userObjectId).select("points level badges createdAt") as UserType | null
     console.log("[Dashboard] User found:", user ? "Yes" : "No")
 
     // Get user's posts count and engagement in single aggregation
@@ -142,13 +147,13 @@ export async function GET(request: NextRequest) {
       user: userObjectId,
       type: { $in: ["badge_earned", "level_up"] },
       createdAt: { $gte: startDate },
-    })
+    } as Record<string, unknown>)
       .sort({ createdAt: -1 })
       .limit(5)
 
     // Engagement metrics - get top post engagement efficiently
     console.log("[Dashboard] Fetching engagement stats...")
-    const topPostResult = await Post.findOne({ author: userObjectId })
+    const topPostResult = await Post.findOne({ author: userObjectId } as Record<string, unknown>)
       .select('likesCount commentsCount')
       .sort({ likesCount: -1, commentsCount: -1 })
       .lean() as { likesCount: number; commentsCount: number } | null
@@ -165,7 +170,7 @@ export async function GET(request: NextRequest) {
     const userPoints = user?.points || 0
     const userRank = (await User.countDocuments({
       points: { $gt: userPoints },
-    })) + 1
+    } as Record<string, unknown>)) + 1
     
     console.log("[Dashboard] User points:", userPoints, "Rank:", userRank)
 
@@ -197,7 +202,7 @@ export async function GET(request: NextRequest) {
     // Compile dashboard data
     const dashboardData = {
       user: {
-        ...user?.toObject(),
+        ...(user?.toObject() || {}),
         rank: userRank,
       },
       stats: {
@@ -224,7 +229,8 @@ export async function GET(request: NextRequest) {
       data: dashboardData
     })
   } catch (error) {
-    console.error("Error fetching dashboard data:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching dashboard data:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch dashboard data"), { status: 500 })
   }
 }

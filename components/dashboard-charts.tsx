@@ -131,7 +131,7 @@ export function XPChart({ data }: XPChartProps) {
                 borderRadius: '6px',
                 fontSize: '12px'
               }}
-              formatter={(value: any, name: string) => [`${value} XP`, name]}
+              formatter={(value: unknown, name: string) => [`${value} XP`, name]}
             />
           </PieChart>
         </ResponsiveContainer>

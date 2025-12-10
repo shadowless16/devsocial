@@ -20,7 +20,7 @@ function testResponseUtil() {
     const response = successResponse(testData);
     console.log('Response object:', response);
     console.log('Response body:', response.body);
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error creating response:', error);
   }
 }

@@ -91,7 +91,7 @@ async function testReferralFlow() {
         referred._id.toString()
       )
       console.log("❌ Should have thrown error for duplicate referral")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(`✅ Correctly prevented duplicate referral: ${error.message}`)
     }
 
@@ -99,13 +99,13 @@ async function testReferralFlow() {
     try {
       await ReferralSystem.getReferralCode('507f1f77bcf86cd799439011')
       console.log("❌ Should have thrown error for non-existent user")
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.log(`✅ Correctly handled non-existent user: ${error.message}`)
     }
 
     console.log("\n🎉 All tests completed successfully!")
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("❌ Test failed:", error)
   } finally {
     process.exit(0)

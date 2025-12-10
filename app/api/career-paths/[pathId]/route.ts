@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import CareerPath from '@/models/CareerPath'
 import Module from '@/models/Module'
 import UserProgress from '@/models/UserProgress'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from '@/lib/auth/auth'
+import mongoose from 'mongoose'
 
 interface Props {
   params: Promise<{ pathId: string }>
@@ -19,10 +21,13 @@ export async function GET(request: NextRequest, { params }: Props) {
     const userId = session?.user?.id
 
     // Get career path by slug or ID
-    const path = await CareerPath.findOne({
-      $or: [{ slug: pathId }, { _id: pathId }],
-      isActive: true
-    })
+    const isValidObjectId = mongoose.Types.ObjectId.isValid(pathId)
+    const query: Record<string, unknown> = { slug: pathId, isActive: true }
+    if (isValidObjectId) {
+      query.$or = [{ slug: pathId }, { _id: pathId }]
+      delete query.slug
+    }
+    const path = await CareerPath.findOne(query)
 
     if (!path) {
       return NextResponse.json(
@@ -38,7 +43,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     }).sort({ order: 1 })
 
     // Get user progress if logged in
-    let userProgress: any = null
+    let userProgress: unknown = null
     let modulesWithProgress = modules
     
     if (userId) {
@@ -49,8 +54,9 @@ export async function GET(request: NextRequest, { params }: Props) {
 
       // Add progress info to each module
       modulesWithProgress = modules.map(module => {
-        const moduleProgress = userProgress?.moduleProgress.find(
-(mp: any) => mp.moduleId.toString() === module._id.toString()
+        const userProgressData = userProgress as { moduleProgress?: Array<{ moduleId: { toString: () => string }; completedAt?: Date }> } | null
+        const moduleProgress = userProgressData?.moduleProgress?.find(
+(mp) => mp.moduleId.toString() === module._id.toString()
         )
         
         return {
@@ -73,15 +79,16 @@ export async function GET(request: NextRequest, { params }: Props) {
       userProgress,
       moduleCount: modules.length,
       completedModules: userProgress ? 
-        userProgress.moduleProgress.filter((m: any) => m.completedAt).length : 0
+        ((userProgress as { moduleProgress?: Array<{ completedAt?: Date }> }).moduleProgress?.filter((m) => m.completedAt).length || 0) : 0
     }
 
     return NextResponse.json({
       success: true,
       data: pathData
     })
-  } catch (error: any) {
-    console.error('Error fetching career path:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error fetching career path:', errorMessage)
     return NextResponse.json(
       { success: false, message: 'Failed to fetch career path' },
       { status: 500 }

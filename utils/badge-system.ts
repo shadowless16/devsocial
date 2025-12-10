@@ -131,41 +131,53 @@ export const BADGES: Badge[] = [
   },
 ]
 
-export function checkBadgeEligibility(userId: string, userStats: any): Badge[] {
+interface UserStats {
+  accountCreated?: boolean
+  onboardingCompleted?: boolean
+  postsCount?: number
+  maxPostLikes?: number
+  helpfulSolutions?: number
+  loginStreak?: number
+  bugsReported?: number
+  hasCustomAvatar?: boolean
+}
+
+export function checkBadgeEligibility(userId: string, userStats: unknown): Badge[] {
   const earnedBadges: Badge[] = []
+  const stats = userStats as UserStats
 
   // Check each badge condition
   BADGES.forEach((badge) => {
     switch (badge.condition) {
       case "account_created":
-        if (userStats.accountCreated) earnedBadges.push(badge)
+        if (stats.accountCreated) earnedBadges.push(badge)
         break
       case "onboarding_completed":
-        if (userStats.onboardingCompleted) earnedBadges.push(badge)
+        if (stats.onboardingCompleted) earnedBadges.push(badge)
         break
       case "first_post":
-        if (userStats.postsCount >= 1) earnedBadges.push(badge)
+        if ((stats.postsCount || 0) >= 1) earnedBadges.push(badge)
         break
       case "posts_count_50":
-        if (userStats.postsCount >= 50) earnedBadges.push(badge)
+        if ((stats.postsCount || 0) >= 50) earnedBadges.push(badge)
         break
       case "post_likes_100":
-        if (userStats.maxPostLikes >= 100) earnedBadges.push(badge)
+        if ((stats.maxPostLikes || 0) >= 100) earnedBadges.push(badge)
         break
       case "helpful_solutions_25":
-        if (userStats.helpfulSolutions >= 25) earnedBadges.push(badge)
+        if ((stats.helpfulSolutions || 0) >= 25) earnedBadges.push(badge)
         break
       case "login_streak_7":
-        if (userStats.loginStreak >= 7) earnedBadges.push(badge)
+        if ((stats.loginStreak || 0) >= 7) earnedBadges.push(badge)
         break
       case "login_streak_30":
-        if (userStats.loginStreak >= 30) earnedBadges.push(badge)
+        if ((stats.loginStreak || 0) >= 30) earnedBadges.push(badge)
         break
       case "bugs_reported_5":
-        if (userStats.bugsReported >= 5) earnedBadges.push(badge)
+        if ((stats.bugsReported || 0) >= 5) earnedBadges.push(badge)
         break
       case "profile_picture_uploaded":
-        if (userStats.hasCustomAvatar) earnedBadges.push(badge)
+        if (stats.hasCustomAvatar) earnedBadges.push(badge)
         break
       // Add more conditions as needed
     }

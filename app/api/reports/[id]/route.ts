@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from '@/lib/auth/auth'
+import connectDB from '@/lib/core/db'
 import Report from '@/models/Report'
 
 export async function PUT(
@@ -47,7 +48,8 @@ export async function PUT(
       data: { report }
     })
   } catch (error) {
-    console.error('Report update error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Report update error:', errorMessage)
     return NextResponse.json({ error: 'Failed to update report' }, { status: 500 })
   }
 }

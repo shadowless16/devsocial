@@ -38,6 +38,7 @@ export function useMCP<T>({ tool, args, enabled = true }: MCPHookOptions) {
     }
   };
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     execute();
   }, [tool, JSON.stringify(args), enabled]);

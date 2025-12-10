@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useSession } from 'next-auth/react'
 import { Button } from '@/components/ui/button'
 import { Bell, BellOff } from 'lucide-react'
@@ -52,7 +52,8 @@ export default function PushNotificationManager() {
 
       setSubscription(sub)
     } catch (error) {
-      console.error('Subscribe error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Subscribe error:', errorMessage)
     }
     setLoading(false)
   }
@@ -64,7 +65,8 @@ export default function PushNotificationManager() {
       await fetch('/api/notifications/unsubscribe', { method: 'POST' })
       setSubscription(null)
     } catch (error) {
-      console.error('Unsubscribe error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Unsubscribe error:', errorMessage)
     }
     setLoading(false)
   }

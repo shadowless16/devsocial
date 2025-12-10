@@ -66,7 +66,7 @@ export function UserManagement() {
           variant: "destructive"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to search users",
@@ -103,7 +103,7 @@ export function UserManagement() {
           variant: "destructive"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to update user role",

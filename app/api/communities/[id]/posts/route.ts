@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getUserFromRequest } from '@/lib/jwt-auth'
-import dbConnect from "@/lib/db"
+import { getUserFromRequest } from '@/lib/auth/jwt-auth'
+import dbConnect from "@/lib/core/db"
 import Post from "@/models/Post"
 import Community from "@/models/Community"
 
@@ -9,14 +9,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params
     await dbConnect()
     
-    const posts = await Post.find({ community: id })
+    const posts = await Post.find({ community: id } as Record<string, unknown>)
       .populate('author', 'username displayName avatar level points')
       .populate('community', 'name')
       .sort({ createdAt: -1 })
       .limit(20)
     
     return NextResponse.json({ success: true, data: posts })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }
@@ -31,15 +31,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id } = await params
     await dbConnect()
     
-    const community = await Community.findById(id)
+    interface CommunityType {
+      creator: { toString: () => string }
+      members: Array<{ toString: () => string; _id?: { toString: () => string } }>
+    }
+    
+    const community = await Community.findById(id) as CommunityType | null
     if (!community) {
       return NextResponse.json({ success: false, message: "Community not found" }, { status: 404 })
     }
 
     const isCreator = community.creator.toString() === user.userId
-    const isMember = community.members.some((member: any) => 
-      member.toString() === user.userId || member._id?.toString() === user.userId
-    )
+    
+    const isMember = community.members.some((member) => {
+      return member.toString() === user.userId || member._id?.toString() === user.userId;
+    })
     
     if (!isCreator && !isMember) {
       return NextResponse.json({ success: false, message: "Must be a member to post" }, { status: 403 })
@@ -56,13 +62,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     })
 
     // Update community post count
-    await Community.findByIdAndUpdate(id, { $inc: { postCount: 1 } })
+    await Community.findByIdAndUpdate(id, { $inc: { postCount: 1 } } as Record<string, unknown>)
 
     await post.populate('author', 'username displayName avatar level points')
     await post.populate('community', 'name')
     
     return NextResponse.json({ success: true, data: post })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }

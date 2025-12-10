@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AnalyticsService } from '@/lib/analytics-service'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth/server-auth'
+import { AnalyticsService } from '@/lib/analytics/analytics-service'
 
 export async function POST(request: NextRequest) {
   try {
@@ -32,7 +31,8 @@ export async function POST(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Generate sample analytics error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Generate sample analytics error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to generate sample analytics data' },
       { status: 500 }

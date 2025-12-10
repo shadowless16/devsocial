@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 import Follow from "@/models/Follow";
 import User from "@/models/User";
 import { successResponse, errorResponse } from "@/utils/response";
@@ -74,7 +74,8 @@ export async function GET(req: NextRequest) {
     );
 
   } catch (error) {
-    console.error("Debug follows error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Debug follows error:", errorMessage);
     return NextResponse.json(
       errorResponse("Failed to fetch debug data"),
       { status: 500 }

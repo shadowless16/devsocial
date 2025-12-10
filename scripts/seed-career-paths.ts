@@ -104,7 +104,7 @@ Every HTML document has a basic structure:
 - **Headings**: \`<h1>\` to \`<h6>\`
 - **Paragraphs**: \`<p>\`
 - **Links**: \`<a href="url">Link text</a>\`
-- **Images**: \`<img src="image.jpg" alt="Description">\`
+- **Images**: \`<Image src="image.jpg" alt="" width={500} height={300}  alt="Description" />\`
 - **Lists**: \`<ul>\`, \`<ol>\`, \`<li>\`
 
 ## Semantic HTML
@@ -218,7 +218,7 @@ Create a simple HTML page with a heading, paragraph, and link.`,
     <main>
         <p>I'm a web developer learning HTML! I love creating websites and learning new technologies.</p>
         <a href="https://github.com">Visit my GitHub</a>
-        <img src="https://via.placeholder.com/300x200" alt="Placeholder image">
+        <Image src="https://via.placeholder.com/300x200" alt="" width={500} height={300}  alt="Placeholder image" />
     </main>
 </body>
 </html>`,
@@ -483,7 +483,7 @@ export async function seedCareerPaths() {
     await createdPath.save()
     console.log('Career path seeding completed successfully!')
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error seeding career paths:', error)
   }
 }

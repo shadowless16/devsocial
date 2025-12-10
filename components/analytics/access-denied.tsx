@@ -14,7 +14,7 @@ export function AccessDenied() {
           </div>
           <CardTitle>Access Denied</CardTitle>
           <CardDescription>
-            You don't have permission to view analytics data
+            You don&apos;t have permission to view analytics data
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

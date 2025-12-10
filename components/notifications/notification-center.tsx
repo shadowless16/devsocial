@@ -59,7 +59,7 @@ const mockNotifications: Notification[] = [
     id: "5",
     type: "achievement",
     title: "Achievement Unlocked!",
-    message: "You've earned the 'Network Builder' badge for getting 50 boosts!",
+    message: "You&apos;ve earned the 'Network Builder' badge for getting 50 boosts!",
     timestamp: "1 day ago",
     isRead: true,
   },
@@ -142,7 +142,7 @@ export function NotificationCenter({ isOpen, onClose }: NotificationCenterProps)
             <div className="p-8 text-center">
               <Bell className="w-12 h-12 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-gray-900 mb-2">No notifications</h3>
-              <p className="text-gray-600">You're all caught up!</p>
+              <p className="text-gray-600">You&apos;re all caught up!</p>
             </div>
           ) : (
             <div className="divide-y divide-gray-100">

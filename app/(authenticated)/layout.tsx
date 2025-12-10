@@ -1,60 +1,9 @@
-"use client"
-
-import { useEffect, Suspense } from "react"
-import { useRouter, usePathname } from "next/navigation"
-import { TooltipProvider } from "@/components/ui/tooltip"
-import SideNav from "@/components/layout/side-nav"
-import RightRail from "@/components/layout/right-rail"
-import { MobileNav } from "@/components/layout/mobile-nav"
-import { Skeleton } from "@/components/ui/skeleton"
-import { InstallPrompt } from "@/components/pwa/install-prompt"
-import PushNotificationManager from "@/components/push-notification-manager"
-import { PushNotificationPrompt } from "@/components/notifications/push-notification-prompt"
-
-export const dynamic = 'force-dynamic'
-export const runtime = 'nodejs'
+import { Providers } from "./providers"
 
 export default function AuthenticatedLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const router = useRouter()
-  const pathname = usePathname()
-  
-  return (
-    <TooltipProvider>
-      <main className="h-screen overflow-hidden bg-muted/30 pb-16 md:pb-0 w-full">
-        <div className="mx-auto flex w-full max-w-[1400px] gap-4 md:gap-6 px-2 sm:px-4 md:px-6 lg:px-8 py-2 md:py-4 h-full">
-          
-          {/* Left Sidebar */}
-          <aside className="hidden md:block w-[240px] lg:w-[260px] xl:w-[280px] flex-shrink-0 h-full overflow-y-auto">
-            <div className="sticky top-0">
-              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <SideNav />
-              </Suspense>
-            </div>
-          </aside>
-
-          {/* Main Feed - Scrollable */}
-          <section aria-label="Feed" className="flex-1 max-w-[600px] lg:max-w-[600px] xl:max-w-[650px] mx-auto w-full h-full overflow-y-auto scrollbar-hide">
-            {children}
-          </section>
-
-          {/* Right Sidebar */}
-          <aside className="hidden lg:block w-[300px] xl:w-[320px] flex-shrink-0 h-full overflow-y-auto">
-            <div className="sticky top-0">
-              <Suspense fallback={<Skeleton className="h-96 w-full" />}>
-                <RightRail />
-              </Suspense>
-            </div>
-          </aside>
-        </div>
-        <MobileNav />
-        <InstallPrompt />
-        <PushNotificationManager />
-        <PushNotificationPrompt />
-      </main>
-    </TooltipProvider>
-  )
+  return <Providers>{children}</Providers>
 }

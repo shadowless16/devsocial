@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { authOptions } from '@/lib/auth/auth'
+import connectDB from '@/lib/core/db'
 import KnowledgeEntry from '@/models/KnowledgeEntry'
 import User from '@/models/User'
 
@@ -36,7 +37,7 @@ export async function POST(
 
     if (isLiked) {
       // Unlike
-      entry.likes = entry.likes.filter((like: any) => like.toString() !== userId)
+      entry.likes = entry.likes.filter((like: Record<string, unknown>) => like.toString() !== userId)
     } else {
       // Like
       entry.likes.push(userId)
@@ -57,7 +58,8 @@ export async function POST(
       likesCount: entry.likes.length
     })
   } catch (error) {
-    console.error('Error toggling like:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error toggling like:', errorMessage)
     return NextResponse.json(
       { success: false, message: 'Failed to toggle like' },
       { status: 500 }

@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 import Notification from '@/models/Notification'
+import { getSession } from '@/lib/auth/server-auth'
 
 export async function PUT(request: NextRequest) {
   try {
@@ -32,7 +31,8 @@ export async function PUT(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Error marking notifications as read:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error marking notifications as read:', errorMessage)
     return NextResponse.json({ success: false, error: 'Internal server error' }, { status: 500 })
   }
 }

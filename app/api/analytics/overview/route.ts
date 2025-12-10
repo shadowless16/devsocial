@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { AnalyticsService } from '@/lib/analytics-service'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
+import { getSession } from '@/lib/auth/server-auth'
+import { AnalyticsService } from '@/lib/analytics/analytics-service'
 
 export async function GET(request: NextRequest) {
   try {
@@ -26,57 +25,91 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '30')
-    const period = searchParams.get('period') || 'daily'
     
     const analyticsData = await AnalyticsService.getAnalyticsOverview(days)
     
+    interface AnalyticsDay {
+      totalUsers?: number
+      newUsers?: number
+      dailyActiveUsers?: number
+      date?: string
+      totalPosts?: number
+      engagementRate?: number
+      newPosts?: number
+      newComments?: number
+      newLikes?: number
+      pageViews?: number
+      sessionDuration?: number
+      bounceRate?: number
+      demographics?: { countries: unknown[]; devices: unknown[] }
+      topTags?: unknown[]
+      topPages?: unknown[]
+      xpDistribution?: unknown[]
+      badgeStats?: unknown[]
+      challengeStats?: Record<string, unknown>
+    }
+
+    interface GrowthDay {
+      growthRate?: { daily?: number }
+    }
+
     // Process data for overview dashboard
     const overview = {
       summary: {
-        totalUsers: analyticsData.userAnalytics[0]?.totalUsers || 0,
-        newUsers: analyticsData.userAnalytics.reduce((sum, day) => sum + (day.newUsers || 0), 0),
-        totalPosts: analyticsData.contentAnalytics[0]?.totalPosts || 0,
-        engagementRate: analyticsData.contentAnalytics[0]?.engagementRate || 0,
-        growthRate: analyticsData.growthAnalytics[0]?.growthRate?.daily || 0,
-        activeUsers: analyticsData.userAnalytics[0]?.dailyActiveUsers || 0
+        totalUsers: (analyticsData.userAnalytics[0] as AnalyticsDay)?.totalUsers || 0,
+        newUsers: analyticsData.userAnalytics.reduce((sum, day) => sum + ((day as AnalyticsDay).newUsers || 0), 0),
+        totalPosts: (analyticsData.contentAnalytics[0] as AnalyticsDay)?.totalPosts || 0,
+        engagementRate: (analyticsData.contentAnalytics[0] as AnalyticsDay)?.engagementRate || 0,
+        growthRate: (analyticsData.growthAnalytics[0] as GrowthDay)?.growthRate?.daily || 0,
+        activeUsers: (analyticsData.userAnalytics[0] as AnalyticsDay)?.dailyActiveUsers || 0
       },
       trends: {
-        userGrowth: analyticsData.userAnalytics.map(day => ({
-          date: day.date,
-          newUsers: day.newUsers,
-          totalUsers: day.totalUsers,
-          activeUsers: day.dailyActiveUsers
-        })).reverse(),
-        contentGrowth: analyticsData.contentAnalytics.map(day => ({
-          date: day.date,
-          posts: day.newPosts,
-          comments: day.newComments,
-          likes: day.newLikes,
-          engagement: day.engagementRate
-        })).reverse(),
-        platformMetrics: analyticsData.platformAnalytics.map(day => ({
-          date: day.date,
-          pageViews: day.pageViews,
-          sessionDuration: day.sessionDuration,
-          bounceRate: day.bounceRate
-        })).reverse()
+        userGrowth: analyticsData.userAnalytics.map((day: unknown) => {
+          const d = day as AnalyticsDay
+          return {
+            date: d.date,
+            newUsers: d.newUsers,
+            totalUsers: d.totalUsers,
+            activeUsers: d.dailyActiveUsers
+          }
+        }).reverse(),
+        contentGrowth: analyticsData.contentAnalytics.map((day: unknown) => {
+          const d = day as AnalyticsDay
+          return {
+            date: d.date,
+            posts: d.newPosts,
+            comments: d.newComments,
+            likes: d.newLikes,
+            engagement: d.engagementRate
+          }
+        }).reverse(),
+        platformMetrics: analyticsData.platformAnalytics.map((day: unknown) => {
+          const d = day as AnalyticsDay
+          return {
+            date: d.date,
+            pageViews: d.pageViews,
+            sessionDuration: d.sessionDuration,
+            bounceRate: d.bounceRate
+          }
+        }).reverse()
       },
-      demographics: analyticsData.userAnalytics[0]?.demographics || { countries: [], devices: [] },
+      demographics: (analyticsData.userAnalytics[0] as AnalyticsDay)?.demographics || { countries: [], devices: [] },
       topContent: {
-        tags: analyticsData.contentAnalytics[0]?.topTags || [],
-        pages: analyticsData.platformAnalytics[0]?.topPages || []
+        tags: (analyticsData.contentAnalytics[0] as AnalyticsDay)?.topTags || [],
+        pages: (analyticsData.platformAnalytics[0] as AnalyticsDay)?.topPages || []
       },
       gamification: {
-        xpDistribution: analyticsData.gamificationAnalytics[0]?.xpDistribution || [],
-        badgeStats: analyticsData.gamificationAnalytics[0]?.badgeStats || [],
-        challengeStats: analyticsData.gamificationAnalytics[0]?.challengeStats || {}
+        xpDistribution: (analyticsData.gamificationAnalytics[0] as AnalyticsDay)?.xpDistribution || [],
+        badgeStats: (analyticsData.gamificationAnalytics[0] as AnalyticsDay)?.badgeStats || [],
+        challengeStats: (analyticsData.gamificationAnalytics[0] as AnalyticsDay)?.challengeStats || {}
       }
     }
     
     return NextResponse.json(overview)
     
   } catch (error) {
-    console.error('Analytics overview error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Analytics overview error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to fetch analytics overview' },
       { status: 500 }

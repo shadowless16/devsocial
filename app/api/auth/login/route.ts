@@ -1,19 +1,21 @@
 // app/api/auth/login/route.ts - Pure JWT Authentication
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 import User from "@/models/User";
-import { createToken, setAuthCookie } from "@/lib/jwt-auth";
+import { createToken, setAuthCookie } from "@/lib/auth/jwt-auth";
+import type { ApiResponse, LoginRequest, LoginResponse } from "@/types/api";
+import { getErrorMessage } from "@/types/errors";
 
 export async function POST(request: NextRequest) {
   try {
     await connectDB();
 
-    const body = await request.json();
+    const body = await request.json() as LoginRequest;
     const { usernameOrEmail, password } = body;
 
     if (!usernameOrEmail || !password) {
-      return NextResponse.json(
+      return NextResponse.json<ApiResponse>(
         { success: false, message: "Missing credentials" },
         { status: 400 }
       );
@@ -28,7 +30,7 @@ export async function POST(request: NextRequest) {
     }).select("+password");
 
     if (!user) {
-      return NextResponse.json(
+      return NextResponse.json<ApiResponse>(
         { success: false, message: "Invalid credentials" },
         { status: 401 }
       );
@@ -37,7 +39,7 @@ export async function POST(request: NextRequest) {
     // Compare password
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
-      return NextResponse.json(
+      return NextResponse.json<ApiResponse>(
         { success: false, message: "Invalid credentials" },
         { status: 401 }
       );
@@ -66,14 +68,20 @@ export async function POST(request: NextRequest) {
       xp: user.xp,
       level: user.level,
       badges: user.badges,
+      techStack: user.techStack || [],
+      points: user.points || 0,
+      followersCount: user.followersCount || 0,
+      followingCount: user.followingCount || 0,
+      displayName: user.displayName || `${user.username}`
     };
 
     // Create response with auth cookie
-    const response = NextResponse.json({
+    const responseData: ApiResponse<LoginResponse> = {
       success: true,
       message: "Login successful",
-      data: { user: userData }
-    });
+      data: { user: userData, token, expiresIn: 30 * 24 * 60 * 60 }
+    };
+    const response = NextResponse.json(responseData);
 
     // Set auth cookie
     setAuthCookie(response, token);
@@ -81,9 +89,10 @@ export async function POST(request: NextRequest) {
     return response;
 
   } catch (error) {
-    console.error("Login error:", error);
-    return NextResponse.json(
-      { success: false, message: "Internal server error" },
+    const errorMessage = getErrorMessage(error);
+    console.error("Login error:", errorMessage);
+    return NextResponse.json<ApiResponse>(
+      { success: false, message: "Internal server error", error: errorMessage },
       { status: 500 }
     );
   }

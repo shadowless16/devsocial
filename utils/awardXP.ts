@@ -1,6 +1,6 @@
 import User from "@/models/User"
 import XPLog from "@/models/XPLog"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { ReferralSystemFixed } from "./referral-system-fixed"
 import { checkDailyLimit } from "./check-daily-limit"
 
@@ -58,7 +58,7 @@ export async function awardXP(
     })
 
     // Update user points
-    const user = await User.findById(userId)
+    const user = await User.findById(userId) as typeof User.prototype | null
     if (!user) {
       throw new Error("User not found")
     }
@@ -89,7 +89,8 @@ export async function awardXP(
       try {
         await ReferralSystemFixed.checkReferralCompletion(userId)
       } catch (error) {
-        console.error("Error checking referral completion:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error checking referral completion:", errorMessage)
         // Don't fail the XP award if referral check fails
       }
     }
@@ -100,7 +101,8 @@ export async function awardXP(
       levelUp,
     }
   } catch (error) {
-    console.error("Error awarding XP:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error awarding XP:", errorMessage)
     return { success: false }
   }
 }
@@ -110,11 +112,12 @@ export async function checkFirstTimeAction(userId: string, type: "post" | "comme
     // await connectDB() // Remove in tests, connection already exists
 
     const logType = type === "post" ? "first_post" : "first_comment"
-    const existingLog = await XPLog.findOne({ userId, type: logType })
+    const existingLog = await XPLog.findOne({ userId, type: logType } as any)
 
     return !existingLog
   } catch (error) {
-    console.error("Error checking first time action:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error checking first time action:", errorMessage)
     return false
   }
 }

@@ -46,7 +46,7 @@ export default function FeedbackPage() {
         const data = await response.json()
         setPreviousFeedback(data.feedback || [])
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to fetch previous feedback:', error)
     } finally {
       setIsLoading(false)
@@ -84,7 +84,7 @@ export default function FeedbackPage() {
       } else {
         throw new Error('Failed to submit feedback')
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to submit feedback. Please try again.",

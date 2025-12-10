@@ -52,7 +52,7 @@ export function TransferForm() {
           variant: "destructive"
         })
       }
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to process transfer",

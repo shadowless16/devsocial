@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import { connectWithRetry } from '@/lib/connect-with-retry'
+import { connectWithRetry } from '@/lib/core/connect-with-retry'
 import User from '@/models/User'
+import { getSession } from '@/lib/auth/server-auth'
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,7 +19,8 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error('Subscribe error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Subscribe error:', errorMessage)
     return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 })
   }
 }

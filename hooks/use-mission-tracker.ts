@@ -1,14 +1,15 @@
 "use client"
 
 import { useCallback } from "react"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 
 export function useMissionTracker() {
-  const trackProgress = useCallback(async (metric: string, increment: number = 1, metadata?: any) => {
+  const trackProgress = useCallback(async (metric: string, increment: number = 1, metadata?: unknown) => {
     try {
-      await apiClient.trackMissionProgress(metric, increment, metadata)
+      await apiClient.trackMissionProgress(metric, increment, metadata as Record<string, unknown>)
     } catch (error) {
-      console.error("Failed to track mission progress:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Failed to track mission progress:", errorMessage)
     }
   }, [])
 

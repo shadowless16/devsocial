@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/app-context";
-import { apiClient } from "@/lib/api-client";
+import { apiClient } from "@/lib/api/api-client";
 
 interface NotificationPreferences {
   email: {
@@ -79,7 +79,7 @@ export function NotificationSettings() {
         if (response.success && response.data) {
           setPreferences({ ...defaultPreferences, ...response.data });
         }
-      } catch (error) {
+      } catch (error: unknown) {
         console.error("Failed to load notification preferences:", error);
       }
     };
@@ -115,7 +115,7 @@ export function NotificationSettings() {
       if (response.success) {
         setHasChanges(false);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error("Failed to save notification preferences:", error);
     } finally {
       setIsSaving(false);

@@ -35,7 +35,7 @@ const UserProgressSchema = new Schema<IUserProgress>({
   startedAt: { type: Date, default: Date.now },
   lastAccessedAt: { type: Date, default: Date.now },
   completedAt: { type: Date },
-  currentModuleId: { type: Schema.Types.ObjectId, ref: 'Module' },
+  currentModuleId: { type: Schema.Types.ObjectId as any, ref: 'Module' },
   moduleProgress: [ModuleProgressSchema],
   totalXpEarned: { type: Number, default: 0 },
   totalTimeSpent: { type: Number, default: 0 },

@@ -2,11 +2,11 @@ import Referral from "@/models/Referral"
 import User from "@/models/User"
 import UserStats from "@/models/UserStats"
 import { awardXP } from "./awardXP"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 
 export class ReferralSystem {
   static async getReferralCode(userId: string): Promise<string> {
-    const user = await User.findById(userId)
+    const user = await User.findById(userId) as typeof User.prototype | null
     if (!user) throw new Error("User not found")
 
     // Return the user's existing referral code
@@ -22,14 +22,14 @@ export class ReferralSystem {
     return user.referralCode
   }
 
-  static async createReferral(referrerId: string, referredUserId: string): Promise<any> {
+  static async createReferral(referrerId: string, referredUserId: string): Promise<unknown> {
     // connectDB() // Remove in tests, connection already exists
 
     // Check if referral already exists
     const existingReferral = await Referral.findOne({
       referrer: referrerId,
       referred: referredUserId,
-    })
+    } as any)
 
     if (existingReferral) {
       throw new Error("Referral already exists")
@@ -62,15 +62,15 @@ export class ReferralSystem {
       referred: userId,
       status: "pending",
       expiresAt: { $gt: new Date() }, // Only check non-expired referrals
-    })
+    } as any)
 
     for (const referral of pendingReferrals) {
       try {
-        const user = await User.findById(userId)
+        const user = await User.findById(userId) as typeof User.prototype | null
         if (!user) continue
 
         // Ensure UserStats exists
-        let userStats = await UserStats.findOne({ user: userId })
+        let userStats = await UserStats.findOne({ user: userId } as any)
         if (!userStats) {
           userStats = await UserStats.create({
             user: userId,
@@ -102,13 +102,14 @@ export class ReferralSystem {
           )
         }
       } catch (error) {
-        console.error(`Error processing referral completion for ${userId}:`, error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing referral completion for ${userId}:`, errorMessage)
         // Continue with other referrals
       }
     }
   }
 
-  static async getReferralStats(userId: string): Promise<any> {
+  static async getReferralStats(userId: string): Promise<unknown> {
     // connectDB() // Remove in tests, connection already exists
 
     // First, check for any pending referrals that should be completed
@@ -126,7 +127,7 @@ export class ReferralSystem {
       },
     ])
 
-    const recentReferrals = await Referral.find({ referrer: userObjectId })
+    const recentReferrals = await Referral.find({ referrer: userObjectId } as any)
       .populate("referred", "username displayName avatar")
       .sort({ createdAt: -1 })
       .limit(10)
@@ -160,15 +161,15 @@ export class ReferralSystem {
       referrer: referrerId,
       status: "pending",
       expiresAt: { $gt: new Date() },
-    }).populate("referred", "_id")
+    } as any).populate("referred", "_id")
 
     for (const referral of pendingReferrals) {
       try {
-        const referredUser = await User.findById(referral.referred._id)
+        const referredUser = await User.findById(referral.referred._id) as typeof User.prototype | null
         if (!referredUser) continue
 
         // Ensure UserStats exists
-        let userStats = await UserStats.findOne({ user: referral.referred._id })
+        let userStats = await UserStats.findOne({ user: referral.referred._id } as any)
         if (!userStats) {
           userStats = await UserStats.create({
             user: referral.referred._id,
@@ -198,7 +199,8 @@ export class ReferralSystem {
           )
         }
       } catch (error) {
-        console.error(`Error processing referral ${referral._id}:`, error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing referral ${referral._id}:`, errorMessage)
       }
     }
   }

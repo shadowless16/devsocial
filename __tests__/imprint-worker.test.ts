@@ -15,7 +15,7 @@ jest.mock('@/models/Post')
 // Mock canonicalizer
 jest.mock('@/lib/canonicalizer')
 
-const mockHederaAdapter = require('@/lib/hedera-adapter')
+import mockHederaAdapter from "@/lib/hedera-adapter"
 const mockPost = Post as jest.Mocked<typeof Post>
 const mockHashPost = hashPost as jest.MockedFunction<typeof hashPost>
 

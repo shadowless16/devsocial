@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { ReferralSystemFixed } from "@/utils/referral-system-fixed";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 import Referral from "@/models/Referral";
 
 export const dynamic = 'force-dynamic';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
     await connectDB();
     
@@ -27,7 +27,8 @@ export async function GET(request: NextRequest) {
           completed++;
         }
       } catch (error) {
-        console.error(`Error processing referral ${referral._id}:`, error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing referral ${referral._id}:`, errorMessage);
       }
     }
 
@@ -38,8 +39,9 @@ export async function GET(request: NextRequest) {
       completed
     });
 
-  } catch (error: any) {
-    console.error("Cron job error:", error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Cron job error:", errorMessage);
     return NextResponse.json({
       success: false,
       error: error?.message || 'Unknown error'

@@ -40,15 +40,18 @@ interface BadgeConditionCheck {
 }
 
 class MistralBackgroundService {
-  private client: any
+  private client: Mistral | null = null
   private model = 'mistral-small-latest'
 
-  constructor() {
-    const apiKey = process.env.MISTRAL_API_KEY
-    if (!apiKey) {
-      throw new Error('MISTRAL_API_KEY is required for background AI service')
+  private getClient(): Mistral {
+    if (!this.client) {
+      const apiKey = process.env.MISTRAL_API_KEY
+      if (!apiKey) {
+        throw new Error('MISTRAL_API_KEY is required for background AI service')
+      }
+      this.client = new Mistral({ apiKey })
     }
-    this.client = new Mistral({ apiKey })
+    return this.client
   }
 
   /**
@@ -78,14 +81,16 @@ Respond ONLY with JSON:
   "suggestedAction": "approve" | "flag" | "auto-remove"
 }`
 
-      const response = await this.client.chat.complete({
+      const client = this.getClient()
+      const response = await client.chat.complete({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
         maxTokens: 200
       })
 
-      const text = response.choices?.[0]?.message?.content || '{}'
+      const rawContent = response.choices?.[0]?.message?.content
+      const text = typeof rawContent === 'string' ? rawContent : '{}'
       const result = JSON.parse(text.replace(/```json\n?|\n?```/g, ''))
 
       const moderationResult = {
@@ -109,7 +114,8 @@ Respond ONLY with JSON:
 
       return moderationResult
     } catch (error) {
-      console.error('Mistral moderation failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Mistral moderation failed:', errorMessage)
       await logAIAction({
         service: 'mistral',
         aiModel: this.model,
@@ -166,14 +172,16 @@ XP Bonus Guide:
 - 35-45: Excellent tutorial/guide
 - 50: Exceptional educational content`
 
-      const response = await this.client.chat.complete({
+      const client = this.getClient()
+      const response = await client.chat.complete({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.2,
         maxTokens: 250
       })
 
-      const text = response.choices?.[0]?.message?.content || '{}'
+      const rawContent = response.choices?.[0]?.message?.content
+      const text = typeof rawContent === 'string' ? rawContent : '{}'
       const result = JSON.parse(text.replace(/```json\n?|\n?```/g, ''))
 
       const qualityResult = {
@@ -197,7 +205,8 @@ XP Bonus Guide:
 
       return qualityResult
     } catch (error) {
-      console.error('Mistral quality analysis failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Mistral quality analysis failed:', errorMessage)
       await logAIAction({
         service: 'mistral',
         aiModel: this.model,
@@ -246,14 +255,16 @@ Respond ONLY with JSON:
   "suggestedBadge": "alternative badge if not eligible (optional)"
 }`
 
-      const response = await this.client.chat.complete({
+      const client = this.getClient()
+      const response = await client.chat.complete({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
         maxTokens: 200
       })
 
-      const text = response.choices?.[0]?.message?.content || '{}'
+      const rawContent = response.choices?.[0]?.message?.content
+      const text = typeof rawContent === 'string' ? rawContent : '{}'
       const result = JSON.parse(text.replace(/```json\n?|\n?```/g, ''))
 
       return {
@@ -263,7 +274,8 @@ Respond ONLY with JSON:
         suggestedBadge: result.suggestedBadge
       }
     } catch (error) {
-      console.error('Mistral badge check failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Mistral badge check failed:', errorMessage)
       return {
         eligible: false,
         confidence: 0,
@@ -302,17 +314,20 @@ Is this comment a helpful solution or answer? Consider:
 
 Respond ONLY: true or false`
 
-      const response = await this.client.chat.complete({
+      const client = this.getClient()
+      const response = await client.chat.complete({
         model: this.model,
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.1,
         maxTokens: 10
       })
 
-      const text = response.choices?.[0]?.message?.content?.toLowerCase() || 'false'
+      const rawContent = response.choices?.[0]?.message?.content
+      const text = typeof rawContent === 'string' ? rawContent.toLowerCase() : 'false'
       return text.includes('true')
     } catch (error) {
-      console.error('Mistral solution detection failed:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Mistral solution detection failed:', errorMessage)
       return false
     }
   }

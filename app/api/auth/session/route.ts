@@ -1,7 +1,7 @@
 // app/api/auth/session/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { getUserFromRequest } from "@/lib/jwt-auth";
-import connectDB from "@/lib/db";
+import { getUserFromRequest } from "@/lib/auth/jwt-auth";
+import connectDB from "@/lib/core/db";
 import User from "@/models/User";
 
 export async function GET(request: NextRequest) {
@@ -41,7 +41,8 @@ export async function GET(request: NextRequest) {
       }
     });
   } catch (error) {
-    console.error("Session error:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Session error:", errorMessage);
     return NextResponse.json({
       success: false,
       user: null

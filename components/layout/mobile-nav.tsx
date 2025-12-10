@@ -3,16 +3,16 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
+import { cn } from "@/lib/core/utils"
 import { 
   Home, 
-  Search, 
+   
   Plus, 
   Bell, 
   User,
-  Trophy,
-  Grid2X2,
-  MessageCircle,
+  
+  
+  
   Menu
 } from "lucide-react"
 import { SimplePostModal } from "@/components/modals/simple-post-modal"
@@ -73,7 +73,8 @@ export function MobileNav({ className }: MobileNavProps) {
         console.error('Failed to create post')
       }
     } catch (error) {
-      console.error('Error creating post:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Error creating post:', errorMessage)
     }
   }
 

@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react'
 import { useAuth } from '@/contexts/app-context'
-import type { User } from '@/contexts/app-context'
 import FollowModal from '@/components/modals/follow-modal'
 import { MapPin, Calendar, Edit2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -10,7 +9,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { FollowStats } from '@/components/shared/FollowStats'
 import { FollowButton } from '@/components/shared/FollowButton'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import dynamic from 'next/dynamic'
 
 const SmartAvatar = dynamic(() => import('@/components/ui/smart-avatar').then(mod => ({ default: mod.SmartAvatar })), {
@@ -34,37 +33,39 @@ const EditProfileModal = dynamic(() => import('@/components/modals/edit-profile-
   ssr: false
 })
 
+interface ProfileData {
+  name: string
+  title: string
+  location: string
+  joinDate: string
+  bio: string
+  avatar: string
+  techStack: string[]
+  socialLinks: { platform: string; icon: string; url: string }[]
+  userId: string
+  username: string
+  followersCount: number
+  followingCount: number
+  isFollowing: boolean
+  xp?: number
+  level?: number
+  badges?: string[]
+}
+
 type ProfileHeaderProps = {
-  profile: {
-    name: string;
-    title: string;
-    location: string;
-    joinDate: string;
-    bio: string;
-    avatar: string;
-    techStack: string[];
-    socialLinks: { platform: string; icon: string; url: string }[];
-    userId: string;
-    username: string;
-    followersCount: number;
-    followingCount: number;
-    isFollowing: boolean;
-    xp?: number;
-    level?: number;
-    badges?: string[];
-  };
-  onEdit: () => void;
-  isOwnProfile: boolean;
-  setProfileData: React.Dispatch<React.SetStateAction<any>>;
+  profile: ProfileData
+  onEdit: () => void
+  isOwnProfile: boolean
+  setProfileData: React.Dispatch<React.SetStateAction<ProfileData>>
 };
 
-export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfileData }: ProfileHeaderProps) {
-  const [isEditing, setIsEditing] = useState(false)
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export default function ProfileHeader({ profile, onEdit: _onEdit, isOwnProfile, setProfileData }: ProfileHeaderProps) {
+  const [isEditing] = useState(false)
   const [showRPMModal, setShowRPMModal] = useState(false)
   const [showViewerModal, setShowViewerModal] = useState(false)
   const [showEditModal, setShowEditModal] = useState(false)
   const { user: currentUser } = useAuth();
-  const [isFollowing, setIsFollowing] = useState(profile.isFollowing);
   const [followersCount, setFollowersCount] = useState(profile.followersCount);
   const [followingCount, setFollowingCount] = useState(profile.followingCount);
   const [isFollowModalOpen, setFollowModalOpen] = useState(false);
@@ -74,9 +75,9 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
     setShowEditModal(true)
   }
 
-  const handleProfileSave = (data: any) => {
+  const handleProfileSave = (data: Partial<ProfileData>) => {
     if (setProfileData) {
-      setProfileData((prev: any) => ({ ...prev, ...data }))
+      setProfileData((prev) => ({ ...prev, ...data }))
     }
   }
 
@@ -89,8 +90,7 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
   React.useEffect(() => {
     setFollowersCount(profile.followersCount || 0);
     setFollowingCount(profile.followingCount || 0);
-    setIsFollowing(profile.isFollowing || false);
-  }, [profile.followersCount, profile.followingCount, profile.isFollowing]);
+  }, [profile.followersCount, profile.followingCount]);
 
   return (
     <Card className="w-full mb-3">
@@ -108,7 +108,6 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
                 username={profile.username}
                 fallback={profile.name.split(' ').map(n => n[0]).join('')}
                 className="w-16 h-16 sm:w-20 sm:h-20 border-2 border-primary/20"
-                size={80}
                 showLevelFrame={false}
               />
             </div>
@@ -142,10 +141,10 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
                       size="sm"
                       onFollowChange={(isFollowing, delta) => {
                         if (setProfileData) {
-                          setProfileData((prev: any) => ({
+                          setProfileData((prev) => ({
                             ...prev,
                             isFollowing,
-                            followersCount: Math.max(0, (prev?.followersCount || 0) + delta)
+                            followersCount: Math.max(0, prev.followersCount + delta)
                           }));
                         }
                       }}
@@ -262,11 +261,12 @@ export default function ProfileHeader({ profile, onEdit, isOwnProfile, setProfil
                 console.log('Avatar saved successfully')
                 // Update profile data
                 if (setProfileData) {
-                  setProfileData((prev: any) => ({ ...prev, avatar: avatarUrl }))
+                  setProfileData((prev) => ({ ...prev, avatar: avatarUrl }))
                 }
               }
             } catch (error) {
-              console.error('Failed to save avatar:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to save avatar:', errorMessage)
             }
             setShowRPMModal(false)
           }}

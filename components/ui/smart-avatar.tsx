@@ -1,8 +1,8 @@
 "use client"
 
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar"
-import { getAvatarUrl } from "@/lib/avatar-utils"
-import { generateDiceBearAvatar, getAvatarStyleForUser } from "@/lib/dicebear-avatar"
+import { getAvatarUrl } from "@/lib/storage/avatar-utils"
+import { generateDiceBearAvatar } from "@/lib/storage/dicebear-avatar"
 import { LevelFrame } from "./level-frame"
 import { User } from "lucide-react"
 import { useMemo } from "react"
@@ -14,7 +14,6 @@ interface SmartAvatarProps {
   level?: number
   className?: string
   fallback?: React.ReactNode
-  size?: number
   showLevelFrame?: boolean
   gender?: 'male' | 'female' | 'other'
 }
@@ -26,12 +25,11 @@ export function SmartAvatar({
   level = 1,
   className = "", 
   fallback,
-  size,
   showLevelFrame = true,
   gender
 }: SmartAvatarProps) {
   const displaySrc = useMemo(() => {
-    let avatarSrc = getAvatarUrl(src)
+    const avatarSrc = getAvatarUrl(src)
     
     // If no avatar or empty string, generate DiceBear
     if (!avatarSrc || avatarSrc === '' || avatarSrc === '/placeholder.svg' || avatarSrc === '/placeholder-user.jpg') {

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import User from '@/models/User'
 
 export async function PUT(req: NextRequest) {
@@ -42,7 +41,7 @@ export async function PUT(req: NextRequest) {
       success: true,
       data: { user: updatedUser }
     })
-  } catch (error: any) {
+  } catch (error) {
     return NextResponse.json({ success: false, message: error.message }, { status: 500 })
   }
 }

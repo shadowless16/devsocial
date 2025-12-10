@@ -25,7 +25,7 @@ async function checkUserFields() {
       console.log(`${user.username}: followers=${user.followersCount || 'undefined'}, following=${user.followingCount || 'undefined'}`);
     });
 
-  } catch (error) {
+  } catch (error: unknown) {
     console.error('Error checking user fields:', error);
   } finally {
     await mongoose.disconnect();

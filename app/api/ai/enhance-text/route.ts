@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from '@/lib/auth';
-import { aiService } from '@/lib/ai-service';
-import connectDB from '@/lib/db';
+import { getSession } from '@/lib/auth/server-auth';
+import { geminiPublicService } from '@/lib/ai/gemini-public-service';
+import connectDB from '@/lib/core/db';
 import User from '@/models/User';
 
 export async function POST(req: NextRequest) {
@@ -48,16 +47,16 @@ export async function POST(req: NextRequest) {
     
     switch (action) {
       case 'professional':
-        enhanced = await aiService.enhanceText(content, 'Rewrite this in a professional, formal tone suitable for business communication');
+        enhanced = await geminiPublicService.enhanceText(content, 'Rewrite this in a professional, formal tone suitable for business communication');
         break;
       case 'funny':
-        enhanced = await aiService.enhanceText(content, 'Rewrite this in a funny, humorous tone while keeping the main message');
+        enhanced = await geminiPublicService.enhanceText(content, 'Rewrite this in a funny, humorous tone while keeping the main message');
         break;
       case 'casual':
-        enhanced = await aiService.enhanceText(content, 'Rewrite this in a casual, friendly tone');
+        enhanced = await geminiPublicService.enhanceText(content, 'Rewrite this in a casual, friendly tone');
         break;
       case 'hashtags':
-        enhanced = await aiService.enhanceText(content, 'Add 3-5 relevant hashtags at the end of this text. Keep the original text and just append hashtags');
+        enhanced = await geminiPublicService.enhanceText(content, 'Add 3-5 relevant hashtags at the end of this text. Keep the original text and just append hashtags');
         break;
       default:
         enhanced = content;
@@ -78,7 +77,8 @@ export async function POST(req: NextRequest) {
       }
     });
   } catch (error) {
-    console.error('Text enhancement error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Text enhancement error:', errorMessage);
     return NextResponse.json({ success: false, message: 'Failed to enhance text' }, { status: 500 });
   }
 }

@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+﻿import { NextRequest } from "next/server";
 import { successResponse, errorResponse } from "@/utils/response";
 import { MongoClient } from "mongodb";
 
@@ -12,7 +12,8 @@ let clientPromise = client.connect();
 
 export const dynamic = 'force-dynamic'
 
-export async function GET(req: NextRequest) {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+export async function GET(__req: NextRequest) {
   try {
     // Ensure the client is connected
     await clientPromise;
@@ -29,7 +30,8 @@ export async function GET(req: NextRequest) {
     // Return the affiliations data
     return successResponse({ affiliations: affiliationRecord.data });
   } catch (error) {
-    console.error("Error fetching affiliations:", error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error fetching affiliations:", errorMessage);
     // In case of connection errors, try to reconnect.
     clientPromise = client.connect();
     return errorResponse(`Failed to fetch affiliations: ${(error as Error).message}`, 500);

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -51,11 +51,7 @@ export default function ProjectDetailPage() {
   const [joiningPosition, setJoiningPosition] = useState<number | null>(null)
   const { user } = useAuth()
 
-  useEffect(() => {
-    fetchProject()
-  }, [params.id])
-
-  const fetchProject = async () => {
+  const fetchProject = useCallback(async () => {
     try {
       const response = await fetch(`/api/projects/${params.id}`)
       const data = await response.json()
@@ -68,13 +64,17 @@ export default function ProjectDetailPage() {
         toast.error('Project not found')
         router.push('/projects')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error fetching project:', error)
       toast.error('Failed to load project')
     } finally {
       setLoading(false)
     }
-  }
+  }, [params.id, router])
+
+  useEffect(() => {
+    fetchProject()
+  }, [params.id, fetchProject])
 
   const handleLike = async () => {
     if (!project) return
@@ -93,7 +93,7 @@ export default function ProjectDetailPage() {
           likes: data.data.project.likes
         } : null)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error liking project:', error)
       toast.error('Failed to like project')
     }
@@ -118,7 +118,7 @@ export default function ProjectDetailPage() {
       } else {
         toast.error(data.error || 'Failed to update status')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error updating status:', error)
       toast.error('Failed to update status')
     } finally {
@@ -143,7 +143,7 @@ export default function ProjectDetailPage() {
       } else {
         toast.error(data.error || 'Failed to delete project')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error deleting project:', error)
       toast.error('Failed to delete project')
     } finally {
@@ -169,7 +169,7 @@ export default function ProjectDetailPage() {
       } else {
         toast.error(data.error || 'Failed to join position')
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error joining position:', error)
       toast.error('Failed to join position')
     } finally {
@@ -253,7 +253,7 @@ export default function ProjectDetailPage() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Project</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete "{project.title}"? This action cannot be undone.
+                          Are you sure you want to delete &quot;{project.title}&quot;? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>

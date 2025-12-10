@@ -3,10 +3,9 @@
 import { useEffect } from 'react'
 import { UserAvatar } from '@/components/ui/user-avatar'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatDistanceToNow } from 'date-fns'
-import { Check, CheckCheck, Bell, MoreHorizontal } from 'lucide-react'
+import { CheckCheck, Bell, MoreHorizontal } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,7 +15,6 @@ import {
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useNotifications } from '@/contexts/notification-context'
-import { UserLink } from '@/components/shared/UserLink'
 
 export function NotificationList() {
   const router = useRouter()
@@ -24,7 +22,7 @@ export function NotificationList() {
 
   useEffect(() => {
     fetchNotifications()
-  }, [])
+  }, [fetchNotifications])
 
   const getNotificationIcon = (type: string) => {
     switch (type) {

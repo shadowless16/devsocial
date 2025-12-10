@@ -1,8 +1,9 @@
-import React, { useState, useCallback } from 'react'
+﻿import React, { useState, useCallback } from 'react'
+// import Image from 'next/image';
 import { Upload, X, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Progress } from '@/components/ui/progress'
-import { uploadToCloudinary, getHighQualityImageUrl } from '@/lib/cloudinary'
+import { uploadToCloudinary, getHighQualityImageUrl } from '@/lib/storage/cloudinary'
 import { toast } from 'sonner'
 
 interface ImageUploadProps {
@@ -29,6 +30,58 @@ export function ImageUpload({
 }: ImageUploadProps) {
   const [uploadingFiles, setUploadingFiles] = useState<UploadingFile[]>([])
   const [uploadedUrls, setUploadedUrls] = useState<string[]>([])
+
+  const uploadFiles = useCallback(async (filesToUpload: UploadingFile[]) => {
+    for (const uploadingFile of filesToUpload) {
+      try {
+        // Simulate progress for better UX
+        const progressInterval = setInterval(() => {
+          setUploadingFiles(prev => 
+            prev.map(f => 
+              f.file === uploadingFile.file 
+                ? { ...f, progress: Math.min(f.progress + 10, 90) }
+                : f
+            )
+          )
+        }, 200)
+
+        const result = await uploadToCloudinary(uploadingFile.file, folder)
+        
+        clearInterval(progressInterval)
+        
+        setUploadingFiles(prev => 
+          prev.map(f => 
+            f.file === uploadingFile.file 
+              ? { ...f, progress: 100, url: result.secure_url }
+              : f
+          )
+        )
+
+        setUploadedUrls(prev => {
+          const newUrls = [...prev, result.secure_url]
+          onUpload(newUrls)
+          return newUrls
+        })
+
+      } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Upload failed:', errorMessage)
+        setUploadingFiles(prev => 
+          prev.map(f => 
+            f.file === uploadingFile.file 
+              ? { ...f, error: 'Upload failed' }
+              : f
+          )
+        )
+        toast.error(`Failed to upload ${uploadingFile.file.name}`)
+      }
+    }
+
+    // Clean up completed uploads after a delay
+    setTimeout(() => {
+      setUploadingFiles(prev => prev.filter(f => f.progress < 100 && !f.error))
+    }, 2000)
+  }, [folder, onUpload]);
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return
@@ -58,58 +111,7 @@ export function ImageUpload({
 
     setUploadingFiles(prev => [...prev, ...newUploadingFiles])
     uploadFiles(newUploadingFiles)
-  }, [uploadedUrls.length, maxFiles, maxSizeMB])
-
-  const uploadFiles = async (filesToUpload: UploadingFile[]) => {
-    for (const uploadingFile of filesToUpload) {
-      try {
-        // Simulate progress for better UX
-        const progressInterval = setInterval(() => {
-          setUploadingFiles(prev => 
-            prev.map(f => 
-              f.file === uploadingFile.file 
-                ? { ...f, progress: Math.min(f.progress + 10, 90) }
-                : f
-            )
-          )
-        }, 200)
-
-        const result = await uploadToCloudinary(uploadingFile.file, 'devsocial', folder)
-        
-        clearInterval(progressInterval)
-        
-        setUploadingFiles(prev => 
-          prev.map(f => 
-            f.file === uploadingFile.file 
-              ? { ...f, progress: 100, url: result.secure_url }
-              : f
-          )
-        )
-
-        setUploadedUrls(prev => {
-          const newUrls = [...prev, result.secure_url]
-          onUpload(newUrls)
-          return newUrls
-        })
-
-      } catch (error) {
-        console.error('Upload failed:', error)
-        setUploadingFiles(prev => 
-          prev.map(f => 
-            f.file === uploadingFile.file 
-              ? { ...f, error: 'Upload failed' }
-              : f
-          )
-        )
-        toast.error(`Failed to upload ${uploadingFile.file.name}`)
-      }
-    }
-
-    // Clean up completed uploads after a delay
-    setTimeout(() => {
-      setUploadingFiles(prev => prev.filter(f => f.progress < 100 && !f.error))
-    }, 2000)
-  }
+  }, [uploadedUrls.length, maxFiles, maxSizeMB, uploadFiles])
 
   const removeUploadedImage = (urlToRemove: string) => {
     setUploadedUrls(prev => {
@@ -213,6 +215,7 @@ export function ImageUpload({
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {uploadedUrls.map((url, index) => (
               <div key={index} className="relative group">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={getHighQualityImageUrl(url)}
                   alt={`Upload ${index + 1}`}

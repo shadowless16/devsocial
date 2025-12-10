@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { getSession } from '@/lib/auth/server-auth'
 import { UserAnalytics } from '@/models/Analytics'
 import User from '@/models/User'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import connectDB from '@/lib/core/db'
 
 export async function GET(request: NextRequest) {
   try {
@@ -21,7 +20,6 @@ export async function GET(request: NextRequest) {
     
     const { searchParams } = new URL(request.url)
     const days = parseInt(searchParams.get('days') || '30')
-    const period = searchParams.get('period') || 'daily'
     
     const endDate = new Date()
     const startDate = new Date()
@@ -29,7 +27,7 @@ export async function GET(request: NextRequest) {
     
     const userAnalytics = await UserAnalytics.find({
       date: { $gte: startDate, $lte: endDate }
-    }).sort({ date: -1 }).limit(days)
+    } as Record<string, unknown>).sort({ date: -1 }).limit(days)
     
     // Format date helper
     const formatDate = (date: Date) => {
@@ -116,7 +114,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(response)
     
   } catch (error) {
-    console.error('User analytics error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('User analytics error:', errorMessage)
     return NextResponse.json(
       { error: 'Failed to fetch user analytics' },
       { status: 500 }

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
-import { AuthService } from "@/lib/auth"
+import { AuthService } from "@/lib/auth/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 import { z } from "zod"
 
@@ -48,7 +48,8 @@ export async function POST(request: NextRequest) {
       message: "If an account with that email exists, we've sent a password reset link.",
     })
   } catch (error) {
-    console.error("Forgot password error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Forgot password error:", errorMessage)
     return errorResponse("Failed to process request", 500)
   }
 }

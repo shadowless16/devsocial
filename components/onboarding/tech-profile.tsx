@@ -9,10 +9,19 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Code2, Briefcase, Github, Linkedin, Globe } from "lucide-react"
 
+interface TechProfileData {
+  techCareerPath?: string
+  experienceLevel?: string
+  techStack?: string[]
+  githubUsername?: string
+  linkedinUrl?: string
+  portfolioUrl?: string
+}
+
 interface TechProfileProps {
-  data: any
-  onNext: (data: any) => void
-  onChange?: (data: any) => void
+  data: TechProfileData
+  onNext: (data: TechProfileData) => void
+  onChange?: (data: TechProfileData) => void
   onBack?: () => void
 }
 
@@ -69,13 +78,15 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
     })
   }, [data])
 
-  const [techStackInput, setTechStackInput] = useState("")
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [_techStackInput, _setTechStackInput] = useState("")
 
   const handleAddTech = (tech: string) => {
-    if (!techData.techStack.includes(tech) && techData.techStack.length < 10) {
+    const stack = techData.techStack || []
+    if (!stack.includes(tech) && stack.length < 10) {
       const next = {
         ...techData,
-        techStack: [...techData.techStack, tech]
+        techStack: [...stack, tech]
       }
       setTechData(next)
       onChange?.(next)
@@ -85,7 +96,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
   const handleRemoveTech = (tech: string) => {
     const next = {
       ...techData,
-      techStack: techData.techStack.filter((t: string) => t !== tech)
+      techStack: (techData.techStack || []).filter((t: string) => t !== tech)
     }
     setTechData(next)
     onChange?.(next)
@@ -115,7 +126,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
                 Career Path
               </Label>
               <Select
-                value={techData.techCareerPath}
+                value={techData.techCareerPath as string}
                 onValueChange={(value) => {
                   const next = { ...techData, techCareerPath: value }
                   setTechData(next)
@@ -138,7 +149,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
             <div className="space-y-2">
               <Label htmlFor="experience">Experience Level</Label>
               <Select
-                value={techData.experienceLevel}
+                value={techData.experienceLevel as string}
                 onValueChange={(value) => {
                   const next = { ...techData, experienceLevel: value }
                   setTechData(next)
@@ -166,7 +177,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
                 {techStackOptions
-                  .filter((tech) => !techData.techStack.includes(tech))
+                  .filter((tech) => !(techData.techStack || []).includes(tech))
                   .map((tech) => (
                     <SelectItem key={tech} value={tech}>
                       {tech}
@@ -175,7 +186,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
               </SelectContent>
             </Select>
             <div className="flex flex-wrap gap-2 mt-2">
-              {techData.techStack.map((tech: string) => (
+              {(techData.techStack || []).map((tech: string) => (
                 <Badge
                   key={tech}
                   variant="secondary"
@@ -199,7 +210,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
               <Input
                 id="github"
                 placeholder="johndoe"
-                value={techData.githubUsername}
+                value={techData.githubUsername as string}
                 onChange={(e) => {
                   const next = { ...techData, githubUsername: e.target.value }
                   setTechData(next)
@@ -216,7 +227,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
               <Input
                 id="linkedin"
                 placeholder="https://linkedin.com/in/johndoe"
-                value={techData.linkedinUrl}
+                value={techData.linkedinUrl as string}
                 onChange={(e) => {
                   const next = { ...techData, linkedinUrl: e.target.value }
                   setTechData(next)
@@ -233,7 +244,7 @@ export function TechProfile({ data, onNext, onChange, onBack }: TechProfileProps
               <Input
                 id="portfolio"
                 placeholder="https://johndoe.dev"
-                value={techData.portfolioUrl}
+                value={techData.portfolioUrl as string}
                 onChange={(e) => {
                   const next = { ...techData, portfolioUrl: e.target.value }
                   setTechData(next)

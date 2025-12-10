@@ -6,11 +6,19 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { useToast } from '@/hooks/use-toast'
 
+interface TransactionResult {
+  success: boolean
+  transactionId?: string
+  status?: string
+  explorerUrl?: string
+  error?: string
+}
+
 export function TestTransaction() {
   const [loading, setLoading] = useState(false)
   const [toAccountId, setToAccountId] = useState('0.0.4')
   const [amount, setAmount] = useState('1')
-  const [result, setResult] = useState<any>(null)
+  const [result, setResult] = useState<TransactionResult | null>(null)
   const { toast } = useToast()
 
   const sendTestTransaction = async () => {
@@ -25,7 +33,7 @@ export function TestTransaction() {
         })
       })
       
-      const data = await response.json()
+      const data = await response.json() as TransactionResult
       setResult(data)
       
       if (data.success) {
@@ -40,10 +48,11 @@ export function TestTransaction() {
           variant: "destructive"
         })
       }
-    } catch (error: any) {
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed'
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive"
       })
     } finally {

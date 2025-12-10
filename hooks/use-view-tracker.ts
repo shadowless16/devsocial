@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/api/api-client';
 
 export function useViewTracker(postId: string, enabled: boolean = true) {
   const hasTracked = useRef(false);

@@ -66,7 +66,7 @@ export default function TestPushPage() {
       <Card className="p-6">
         <h2 className="font-semibold mb-2">Instructions:</h2>
         <ol className="list-decimal list-inside space-y-2">
-          <li>Click "Subscribe to Push Notifications"</li>
+          <li>Click &quot;Subscribe to Push Notifications&quot;</li>
           <li>Accept the browser permission when prompted</li>
           <li>Run: <code className="bg-muted px-2 py-1 rounded">pnpm tsx scripts/test-push-notification.ts</code></li>
           <li>You should receive a test notification!</li>

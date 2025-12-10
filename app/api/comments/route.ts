@@ -1,12 +1,12 @@
 // app/api/comments/route.ts
 import { type NextRequest, NextResponse } from "next/server";
-import { authMiddleware, type AuthenticatedRequest } from "@/middleware/auth";
+import { authMiddleware } from "@/middleware/auth";
 import Comment from "@/models/Comment";
 import Post from "@/models/Post";
-import connectDB from "@/lib/db";
-import { successResponse, errorResponse } from "@/utils/response";
+import connectDB from "@/lib/core/db";
+import { errorResponse, successResponse } from "@/utils/response";
 import { awardXP } from "@/utils/awardXP";
-import { getWebSocketServer } from "@/lib/websocket";
+import { getWebSocketServer } from "@/lib/realtime/websocket";
 import Notification from "@/models/Notification";
 import { processMentions } from "@/utils/mention-utils";
 
@@ -25,14 +25,15 @@ export async function GET(req: NextRequest) {
       return errorResponse("Post ID is required.", 400);
     }
 
-    const comments = await Comment.find({ post: postId })
+    const comments = await Comment.find({ post: postId } as Record<string, unknown>)
       .populate("author", "username displayName avatar level")
       .sort({ createdAt: 1 })
       .lean();
 
     return NextResponse.json(successResponse({ comments }));
-  } catch (error: any) {
-    console.error("[API_COMMENTS_GET_ERROR]", error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("[API_COMMENTS_GET_ERROR]", errorMessage);
     return errorResponse("Failed to fetch comments due to a server error.", 500);
   }
 }
@@ -57,7 +58,7 @@ export async function POST(req: NextRequest) {
 
     await connectDB();
 
-    const post = await Post.findById(postId);
+    const post = await Post.findById(postId) as { author: { toString: () => string }; commentsCount?: number; save: () => Promise<unknown> } | null;
     if (!post) {
       return errorResponse("Post not found.", 404);
     }
@@ -73,7 +74,7 @@ export async function POST(req: NextRequest) {
       mentionIds,
     });
 
-    post.commentsCount = (post.commentsCount || 0) + 1;
+    (post as { commentsCount: number }).commentsCount = (post.commentsCount || 0) + 1;
     await post.save();
 
     // Process mentions with actual comment ID
@@ -107,7 +108,7 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    const populatedComment = await Comment.findById(newComment._id)
+    const populatedComment = await (Comment.findById(newComment._id) as unknown as { populate: (path: string, select: string) => { lean: () => Promise<unknown> } })
       .populate("author", "username displayName avatar level")
       .lean();
 
@@ -115,8 +116,9 @@ export async function POST(req: NextRequest) {
       successResponse({ comment: populatedComment }),
       { status: 201 }
     );
-  } catch (error: any) {
-    console.error("[API_COMMENTS_POST_ERROR]", error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("[API_COMMENTS_POST_ERROR]", errorMessage);
     return errorResponse("Failed to create comment due to a server error.", 500);
   }
 }

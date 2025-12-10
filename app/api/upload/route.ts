@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import cloudinary from '@/lib/cloudinary-server';
+import cloudinary from '@/lib/storage/cloudinary-server';
 import { type UploadApiResponse } from 'cloudinary';
 
 
@@ -68,7 +68,8 @@ export async function POST(req: NextRequest) {
       resource_type: result.resource_type,
     });
   } catch (error) {
-    console.error('Upload error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Upload error:', errorMessage);
     return NextResponse.json(
       { error: 'Upload failed', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }

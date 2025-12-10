@@ -4,12 +4,12 @@ import { toast } from 'sonner'
 interface WalletData {
   balance: number
   currency: string
-  recentTransactions?: any[]
+  recentTransactions?: unknown[]
 }
 
 interface TransactionResult {
   success: boolean
-  transaction?: any
+  transaction?: unknown
   balance?: number
   message: string
 }

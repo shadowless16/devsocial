@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Palette, Monitor, Sun, Moon, Type, Layout, Eye, Contrast, Check } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
+
 import { Separator } from "@/components/ui/separator";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAppearance } from "@/contexts/appearance-context";
@@ -25,7 +25,7 @@ export function AppearanceSettings() {
   const { settings, updateSettings, loading } = useAppearance();
   const [isSaving, setIsSaving] = useState(false);
 
-  const handlePreferenceChange = async (key: keyof typeof settings, value: any) => {
+  const handlePreferenceChange = async (key: keyof typeof settings, value: unknown) => {
     setIsSaving(true);
     try {
       await updateSettings({ [key]: value });
@@ -33,7 +33,7 @@ export function AppearanceSettings() {
         title: "Settings updated",
         description: "Your appearance preferences have been saved.",
       });
-    } catch (error) {
+    } catch {
       toast({
         title: "Error",
         description: "Failed to save appearance settings. Please try again.",

@@ -1,0 +1,50 @@
+// @ts-nocheck
+// app/(authenticated)/settings/page.tsx
+"use client";
+
+import { useState, useEffect } from "react";
+// FIX 1: Import the 'User' type directly from the context file.
+import { useAuth } from "@/contexts/app-context";
+import type { User } from "@/contexts/app-context";
+import { apiClient } from "@/lib/api/api-client";
+import { Settings, Save, Upload, User as UserIcon, Bell, Shield, Palette, Sparkles } from "lucide-react"; // Renamed User to UserIcon to avoid conflict
+import { AIUsageSettings } from "./ai-usage";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { SettingsSkeleton } from "@/components/skeletons/settings-skeleton";
+import dynamic from 'next/dynamic';
+import { NotificationSettings } from "./notification-settings";
+import { PrivacySettings } from "./privacy-settings";
+import { AppearanceSettings } from "./appearance-settings";
+import { UserManagement } from "@/components/admin/user-management";
+
+const WalletConnect = dynamic(() => import('@/components/wallet-connect').then(mod => mod.WalletConnect), {
+  loading: () => <p>Loading WalletConnect...</p>,
+  ssr: false
+});
+
+// Use the imported 'User' type here.
+type ProfileFormData = Pick<
+  User,
+  | "firstName"
+  | "lastName"
+  | "displayName"
+  | "username"
+  | "email"
+  | "bio"
+  | "affiliation"
+  | "location"
+  | "website"
+  | "avatar"
+>;
+
+interface AffiliationsData {
+  affiliations: {
+    techBootcamps

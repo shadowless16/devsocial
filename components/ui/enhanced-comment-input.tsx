@@ -4,7 +4,7 @@ import React, { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { MentionInput } from "@/components/ui/mention-input";
 import EmojiPicker from "emoji-picker-react";
-import { Smile, Code, Image, X } from "lucide-react";
+import { Smile, Code, Image as ImageIcon, X } from "lucide-react";
 
 interface EnhancedCommentInputProps {
   placeholder?: string;
@@ -123,18 +123,14 @@ export function EnhancedCommentInput({
         setImagePreview(data.url);
       }
     } catch (error) {
-      console.error('Upload failed:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Upload failed:', errorMessage);
     } finally {
       setUploading(false);
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit();
-    }
-  };
+
 
   const handleCodeFormat = () => {
     if (content.trim() && !content.includes('```')) {
@@ -160,6 +156,7 @@ export function EnhancedCommentInput({
           {/* Image Preview */}
           {imagePreview && (
             <div className="relative mt-2 inline-block">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={imagePreview} alt="Preview" className="max-h-32 rounded-lg" />
               <Button
                 type="button"
@@ -193,7 +190,7 @@ export function EnhancedCommentInput({
               disabled={uploading}
               className="h-7 w-7 p-0 rounded-full hover:bg-blue-50 hover:text-blue-600 dark:hover:bg-blue-900/20 shrink-0"
             >
-              <Image className="h-3 w-3" />
+              <ImageIcon className="h-3 w-3" />
             </Button>
 
             <Button

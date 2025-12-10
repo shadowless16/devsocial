@@ -139,7 +139,7 @@ export default function MessagesPage() {
 //       if (response.success) {
 //         setConversations(response.data.conversations)
 //       }
-//     } catch (error) {
+//     } catch (error: unknown) {
 //       console.error("Error fetching conversations:", error)
 //     } finally {
 //       setLoading(false)
@@ -152,7 +152,7 @@ export default function MessagesPage() {
 //       if (response.success) {
 //         setMessages(response.data.messages)
 //       }
-//     } catch (error) {
+//     } catch (error: unknown) {
 //       console.error("Error fetching messages:", error)
 //     }
 //   }
@@ -180,7 +180,7 @@ export default function MessagesPage() {
 //     )
 //   }
 
-//   const handleMessageReaction = (data: { messageId: string; reactions: any[] }) => {
+//   const handleMessageReaction = (data: { messageId: string; reactions: unknown[] }) => {
 //     setMessages((prev) => prev.map((msg) => (msg._id === data.messageId ? { ...msg, reactions: data.reactions } : msg)))
 //   }
 
@@ -220,7 +220,7 @@ export default function MessagesPage() {
 //         setNewMessage("")
 //         // Message will be added via WebSocket event
 //       }
-//     } catch (error) {
+//     } catch (error: unknown) {
 //       console.error("Error sending message:", error)
 //     } finally {
 //       setSendingMessage(false)
@@ -247,7 +247,7 @@ export default function MessagesPage() {
 //     try {
 //       await apiClient.addMessageReaction(messageId, emoji)
 //       // Reaction will be updated via WebSocket event
-//     } catch (error) {
+//     } catch (error: unknown) {
 //       console.error("Error adding reaction:", error)
 //     }
 //   }

@@ -56,7 +56,8 @@ export async function POST(req: NextRequest) {
     })
 
   } catch (error) {
-    console.error('Link preview error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Link preview error:', errorMessage)
     return NextResponse.json({ error: 'Failed to fetch link preview' }, { status: 500 })
   }
 }

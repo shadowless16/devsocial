@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+
 import Link from 'next/link'
 import { BookOpen, Clock, Trophy, Users } from 'lucide-react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'

@@ -1,7 +1,7 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
 import bcrypt from "bcryptjs"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
 import { signupSchema } from "@/utils/validation"
@@ -60,7 +60,8 @@ export async function POST(request: NextRequest) {
           referrerInfo = validation.referrer
         }
       } catch (error) {
-        console.error("Referral validation error:", error)
+        const errorMessage = error instanceof Error ? error.message : 'Referral validation error'
+        console.error("Referral validation error:", errorMessage)
       }
     }
 
@@ -94,7 +95,8 @@ export async function POST(request: NextRequest) {
         })
       }
     } catch (error) {
-      console.error("Auto-follow AkDavid error:", error)
+      const errorMessage = error instanceof Error ? error.message : 'Auto-follow AkDavid error'
+      console.error("Auto-follow AkDavid error:", errorMessage)
     }
 
     // Handle referral if code was provided and validated
@@ -108,7 +110,8 @@ export async function POST(request: NextRequest) {
           console.log(`❌ Referral processing failed for user ${user.username} with code ${referralCode}`)
         }
       } catch (error) {
-        console.error("❌ Referral creation error:", error)
+        const errorMessage = error instanceof Error ? error.message : 'Referral creation error'
+        console.error("❌ Referral creation error:", errorMessage)
         // Don't fail the signup if referral fails
       }
     } else if (referralCode) {
@@ -142,7 +145,8 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
-    console.error("Signup error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Signup error'
+    console.error("Signup error:", errorMessage)
     return errorResponse("Internal server error", 500)
   }
 }

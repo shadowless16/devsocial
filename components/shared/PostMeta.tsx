@@ -1,7 +1,4 @@
-"use client"
-
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { ExternalLink, Shield, Clock, CheckCircle, XCircle, AlertCircle } from "lucide-react"
 
 interface PostMetaProps {
@@ -11,9 +8,10 @@ interface PostMetaProps {
     topicId?: string
     seq?: number
   } | null
+  onExplorerClick?: (url: string) => void
 }
 
-export function PostMeta({ imprintStatus, onChainProof }: PostMetaProps) {
+export function PostMeta({ imprintStatus, onChainProof, onExplorerClick }: PostMetaProps) {
   const getStatusConfig = () => {
     switch (imprintStatus) {
       case "pending":
@@ -73,18 +71,22 @@ export function PostMeta({ imprintStatus, onChainProof }: PostMetaProps) {
       </Badge>
       
       {explorerUrl && (
-        <Button
-          variant="ghost"
-          size="sm"
-          className="h-6 px-2 text-xs text-blue-600 hover:text-blue-700"
+        <a
+          href={explorerUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center h-6 px-2 text-xs text-blue-600 hover:text-blue-700 hover:underline"
           onClick={(e) => {
             e.stopPropagation()
-            window.open(explorerUrl, '_blank')
+            if (onExplorerClick) {
+              e.preventDefault()
+              onExplorerClick(explorerUrl)
+            }
           }}
         >
           <ExternalLink className="h-3 w-3 mr-1" />
           Explorer
-        </Button>
+        </a>
       )}
     </div>
   )

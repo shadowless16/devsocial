@@ -132,7 +132,7 @@ export function SkillAssessment({ pathTitle, questions, onComplete, onSkip }: Pr
           </div>
           <CardTitle className="text-2xl">Assessment Complete!</CardTitle>
           <p className="text-muted-foreground">
-            Here's your personalized learning recommendation for {pathTitle}
+            Here&apos;s your personalized learning recommendation for {pathTitle}
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -181,7 +181,7 @@ export function SkillAssessment({ pathTitle, questions, onComplete, onSkip }: Pr
                 </p>
               )}
               <p className="text-sm text-muted-foreground">
-                Based on your assessment, we've customized your learning path to focus on areas where you can grow the most.
+                Based on your assessment, we&apos;ve customized your learning path to focus on areas where you can grow the most.
               </p>
             </div>
           </div>

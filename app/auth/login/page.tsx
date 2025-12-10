@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -16,7 +15,6 @@ export default function LoginPage() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
-  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,8 +37,9 @@ export default function LoginPage() {
         setError(data.message || "Invalid credentials")
         setLoading(false)
       }
-    } catch (err: any) {
-      setError(err.message || "Login failed")
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : "Login failed"
+      setError(errorMessage)
       setLoading(false)
     }
   }
@@ -133,7 +132,7 @@ export default function LoginPage() {
           
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Don't have an account?{" "}
+              Don&apos;t have an account?{" "}
               <Link href="/auth/signup" className="font-medium text-primary hover:text-primary/80 transition-colors">
                 Sign up
               </Link>

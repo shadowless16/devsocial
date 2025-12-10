@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -36,11 +36,7 @@ export default function AILogsPage() {
   const [service, setService] = useState<string>('all')
   const [taskType, setTaskType] = useState<string>('all')
 
-  useEffect(() => {
-    fetchLogs()
-  }, [page, service, taskType])
-
-  const fetchLogs = async () => {
+  const fetchLogs = useCallback(async () => {
     setLoading(true)
     try {
       const params = new URLSearchParams({ page: page.toString(), limit: '50' })
@@ -54,12 +50,16 @@ export default function AILogsPage() {
         setStats(data.stats)
         setTotal(data.pagination.total)
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to fetch logs:', error)
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, service, taskType])
+
+  useEffect(() => {
+    fetchLogs()
+  }, [fetchLogs])
 
   return (
     <div className="container mx-auto p-6 space-y-6">

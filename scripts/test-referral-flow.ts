@@ -57,7 +57,7 @@ async function testReferralFlow() {
     const stats = await ReferralSystemFixed.getReferralStats(referrerUser._id.toString())
     console.log(`\nReferral stats for ${referrerUser.username}:`, JSON.stringify(stats, null, 2))
     
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error testing referral flow:", error)
   }
 }

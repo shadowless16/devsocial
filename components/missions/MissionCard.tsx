@@ -93,7 +93,7 @@ export default function MissionCard({ mission, onJoin }: MissionCardProps) {
         {/* Steps */}
         <div className="space-y-2">
           <h4 className="font-medium text-sm">Mission Steps:</h4>
-          {mission.steps.map((step, index) => {
+          {mission.steps.map((step) => {
             const stepProgress = mission.userProgress?.progress.find(p => p.stepId === step.id)
             const stepCompleted = stepProgress?.completed || false
             

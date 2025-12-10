@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import Post from "@/models/Post"
 import User from "@/models/User"
 
@@ -81,8 +81,9 @@ export async function POST() {
         tags: [...new Set(samplePosts.flatMap(post => post.tags))]
       }
     })
-  } catch (error: any) {
-    console.error("Error creating test data:", error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error creating test data:", errorMessage)
     return NextResponse.json({
       success: false,
       message: "Failed to create test data",

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import Project from '@/models/Project'
 import User from '@/models/User'
 import Notification from '@/models/Notification'
@@ -65,7 +64,7 @@ export async function POST(
     
     const updatedProject = await Project.findById(id)
       .populate('author', 'username displayName avatar level')
-      .lean() as any
+      .lean() as { _id: unknown; title: string; author: unknown; likes?: string[] } | null
     
     if (!updatedProject) {
       return NextResponse.json(
@@ -82,7 +81,7 @@ export async function POST(
         likesCount: updatedProject.likes?.length || 0
       }
     })
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { success: false, error: 'Failed to toggle like' },
       { status: 500 }

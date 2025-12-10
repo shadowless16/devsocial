@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
@@ -39,7 +39,8 @@ export async function POST(request: NextRequest) {
       message: "Email verified successfully",
     })
   } catch (error) {
-    console.error("Email verification error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Email verification error:", errorMessage)
     return errorResponse("Failed to verify email", 500)
   }
 }

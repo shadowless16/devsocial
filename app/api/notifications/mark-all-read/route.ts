@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
 import Notification from "@/models/Notification"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 
 
@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
       }),
     )
   } catch (error) {
-    console.error("Error marking all notifications as read:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error marking all notifications as read:", errorMessage)
     return NextResponse.json(errorResponse("Failed to mark notifications as read"), { status: 500 })
   }
 }

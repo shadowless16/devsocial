@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { authMiddleware } from "@/middleware/auth"
 import Message from "@/models/Message"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 
@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Add new reaction
     message.reactions.push({
-      user: userId as any,
+      user: userId as unknown,
       emoji,
       createdAt: new Date(),
     })
@@ -51,7 +51,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       }),
     )
   } catch (error) {
-    console.error("Error adding reaction:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error adding reaction:", errorMessage)
     return NextResponse.json(errorResponse("Failed to add reaction"), { status: 500 })
   }
 }
@@ -95,7 +96,8 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
       }),
     )
   } catch (error) {
-    console.error("Error removing reaction:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error removing reaction:", errorMessage)
     return NextResponse.json(errorResponse("Failed to remove reaction"), { status: 500 })
   }
 }

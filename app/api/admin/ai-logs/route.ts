@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { requireAdmin } from '@/lib/server-auth'
-import connectDB from '@/lib/db'
+import { requireAdmin } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import AILog from '@/models/AILog'
 
 export async function GET(req: NextRequest) {
@@ -17,7 +17,12 @@ export async function GET(req: NextRequest) {
     const taskType = searchParams.get('taskType')
     const skip = (page - 1) * limit
 
-    const filter: any = {}
+    interface FilterQuery {
+      service?: string;
+      taskType?: string;
+    }
+    
+    const filter: FilterQuery = {}
     if (service) filter.service = service
     if (taskType) filter.taskType = taskType
 
@@ -53,7 +58,8 @@ export async function GET(req: NextRequest) {
       stats
     })
   } catch (error) {
-    console.error('AI logs fetch error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('AI logs fetch error:', errorMessage)
     return NextResponse.json({ error: 'Failed to fetch logs' }, { status: 500 })
   }
 }

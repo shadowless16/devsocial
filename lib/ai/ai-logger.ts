@@ -26,6 +26,7 @@ export async function logAIAction(params: LogParams): Promise<void> {
       executionTime: params.executionTime
     })
   } catch (error) {
-    console.error('Failed to log AI action:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to log AI action:', errorMessage)
   }
 }

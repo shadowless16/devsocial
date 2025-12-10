@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
 
-import { apiClient } from '@/lib/api-client';
+import { apiClient } from '@/lib/api/api-client';
 import { useSessionCache } from './session-cache-context';
 // User type definition
 export interface User {
@@ -38,14 +38,14 @@ interface AppState {
   authLoading: boolean;
   
   // Posts state
-  posts: any[];
+  posts: unknown[];
   postsLoading: boolean;
   
   // Follow state
   followState: { [userId: string]: { isFollowing: boolean; followersCount: number; followingCount: number } };
   
   // Notifications state
-  notifications: any[];
+  notifications: unknown[];
   unreadCount: number;
   
   // UI state
@@ -57,14 +57,14 @@ interface AppState {
 type AppAction =
   | { type: 'SET_USER'; payload: User | null }
   | { type: 'SET_AUTH_LOADING'; payload: boolean }
-  | { type: 'SET_POSTS'; payload: any[] }
-  | { type: 'ADD_POST'; payload: any }
-  | { type: 'UPDATE_POST'; payload: { id: string; updates: any } }
+  | { type: 'SET_POSTS'; payload: unknown[] }
+  | { type: 'ADD_POST'; payload: unknown }
+  | { type: 'UPDATE_POST'; payload: { id: string; updates: unknown } }
   | { type: 'DELETE_POST'; payload: string }
   | { type: 'SET_POSTS_LOADING'; payload: boolean }
   | { type: 'UPDATE_FOLLOW_STATE'; payload: { userId: string; isFollowing: boolean; followersCount?: number; followingCount?: number } }
-  | { type: 'SET_NOTIFICATIONS'; payload: any[] }
-  | { type: 'ADD_NOTIFICATION'; payload: any }
+  | { type: 'SET_NOTIFICATIONS'; payload: unknown[] }
+  | { type: 'ADD_NOTIFICATION'; payload: unknown }
   | { type: 'SET_UNREAD_COUNT'; payload: number }
   | { type: 'SET_THEME'; payload: 'light' | 'dark' | 'system' }
   | { type: 'TOGGLE_SIDEBAR' };
@@ -96,12 +96,13 @@ function appReducer(state: AppState, action: AppAction): AppState {
     case 'UPDATE_POST':
       return {
         ...state,
-        posts: state.posts.map(post =>
-          post.id === action.payload.id ? { ...post, ...action.payload.updates } : post
-        ),
+        posts: state.posts.map(post => {
+          const p = post as { id: string }
+          return p.id === action.payload.id ? { ...(post as Record<string, unknown>), ...(action.payload.updates as Record<string, unknown>) } : post
+        }),
       };
     case 'DELETE_POST':
-      return { ...state, posts: state.posts.filter(post => post.id !== action.payload) };
+      return { ...state, posts: state.posts.filter(post => (post as { id: string }).id !== action.payload) };
     case 'SET_POSTS_LOADING':
       return { ...state, postsLoading: action.payload };
     case 'UPDATE_FOLLOW_STATE':
@@ -140,7 +141,7 @@ interface AppContextType {
   login: (credentials: { usernameOrEmail: string; password: string }) => Promise<void>;
   logout: () => Promise<void>;
   updateUser: (userData: Partial<User>) => void;
-  signup: (userData: any) => Promise<void>;
+  signup: (userData: unknown) => Promise<void>;
   
   // Posts actions
   fetchPosts: (page?: number, reset?: boolean) => Promise<void>;
@@ -177,7 +178,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const signup = useCallback(async (userData: any) => {
+  const signup = useCallback(async (userData: unknown) => {
     try {
       const response = await apiClient.request("/auth/signup", {
         method: "POST",
@@ -188,12 +189,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const isSuccess = response?.success === true || response?.status === 'success' || response?.message?.includes('success') || hasUserData;
       
       if (!isSuccess && response?.error) {
-        const error: any = new Error(response?.message || response?.error || "Signup failed");
-        error.error = response?.error;
-        throw error;
+        const err: any = new Error(response?.message || response?.error || "Signup failed");
+        err.error = response?.error;
+        throw err;
       }
-    } catch (error: any) {
-      console.error('Signup error:', error);
+    } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Signup error:', errorMessage);
       throw error;
     }
   }, []);
@@ -205,7 +207,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       clearCache();
       window.location.href = '/auth/login';
     } catch (error) {
-      console.error('Logout error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Logout error:', errorMessage);
     }
   }, [clearCache]);
 
@@ -221,7 +224,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const response = await apiClient.getPosts({ page: page.toString(), limit: '10' });
       if (response.success && response.data) {
-        const posts = (response.data as any)?.posts || [];
+        const posts = (response.data as { posts?: unknown[] })?.posts || [];
         if (reset) {
           dispatch({ type: 'SET_POSTS', payload: posts });
         } else {
@@ -229,7 +232,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-      console.error('Failed to fetch posts:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to fetch posts:', errorMessage);
     } finally {
       dispatch({ type: 'SET_POSTS_LOADING', payload: false });
     }
@@ -244,14 +248,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           payload: {
             id: postId,
             updates: {
-              isLiked: (response.data as any)?.liked,
-              likesCount: (response.data as any)?.likesCount,
+              isLiked: (response.data as { liked?: boolean })?.liked,
+              likesCount: (response.data as { likesCount?: number })?.likesCount,
             },
           },
         });
       }
     } catch (error) {
-      console.error('Failed to like post:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to like post:', errorMessage);
     }
   }, []);
 
@@ -262,7 +267,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'DELETE_POST', payload: postId });
       }
     } catch (error) {
-      console.error('Failed to delete post:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to delete post:', errorMessage);
     }
   }, []);
 
@@ -287,7 +293,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-      console.error('Failed to toggle follow:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to toggle follow:', errorMessage);
     }
   }, [state.followState]);
 
@@ -311,7 +318,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
             dispatch({ type: 'SET_UNREAD_COUNT', payload: data.data.unreadCount || 0 })
           }
         } catch (error) {
-          console.error('Failed to fetch unread count:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to fetch unread count:', errorMessage)
         }
       }
       
@@ -365,7 +373,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           setSessionStatus('unauthenticated');
         }
       } catch (error) {
-        console.error('Failed to load session:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to load session:', errorMessage);
         dispatch({ type: 'SET_USER', payload: null });
         setSessionStatus('unauthenticated');
       } finally {

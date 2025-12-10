@@ -173,7 +173,7 @@
 
 //     console.log("🎉 Database seeding completed successfully!")
 //     console.log(`📊 Created: ${createdUsers.length} users, ${createdPosts.length} posts`)
-//   } catch (error) {
+//   } catch (error: unknown) {
 //     console.error("❌ Database seeding failed:", error)
 //     throw error
 //   }

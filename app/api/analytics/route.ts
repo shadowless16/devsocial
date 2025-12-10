@@ -1,5 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
-import connectDB from "@/lib/db"
+import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Post from "@/models/Post"
 import Activity from "@/models/Activity"
@@ -204,7 +204,8 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(successResponse(analytics))
   } catch (error) {
-    console.error("Analytics error:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Analytics error:", errorMessage)
     return NextResponse.json(errorResponse("Failed to fetch analytics"), { status: 500 })
   }
 }

@@ -7,7 +7,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { BookOpen, Star, Trophy } from "lucide-react"
 import { useState } from "react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { apiClient } from "@/lib/api-client"
+import { apiClient } from "@/lib/api/api-client"
 import type { Density } from "./density-toggle"
 
 export type Mission = {
@@ -93,7 +93,6 @@ export default function MissionCard({
               const stepId = typeof s === 'string' ? s : s.id
               const stepCompleted = userProgress?.stepsCompleted?.includes(stepId) || false
               const stepTarget = typeof s === 'object' ? s.target : 1
-              const stepMetric = typeof s === 'object' ? s.metric : ''
               const stepTitle = typeof s === 'string' ? s : s.title
               
               // Get current progress for this step
@@ -225,13 +224,18 @@ export default function MissionCard({
               if (!isJoined) {
                 setJoining(true)
                 try {
-                  const response = await apiClient.joinMission((mission as any)._id || mission.id)
+                  interface MissionWithId extends Mission {
+                    _id?: string
+                  }
+                  const missionWithId = mission as MissionWithId;
+                  const response = await apiClient.joinMission(missionWithId._id || mission.id)
                   if (response.success) {
                     setUserProgress({ status: 'active', stepsCompleted: [] })
                     onProgressUpdate?.()
                   }
                 } catch (error) {
-                  console.error('Failed to join mission:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Failed to join mission:', errorMessage)
                 } finally {
                   setJoining(false)
                 }

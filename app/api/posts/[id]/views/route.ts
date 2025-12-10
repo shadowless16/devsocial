@@ -1,10 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import connectDB from "@/lib/db";
+import connectDB from "@/lib/core/db";
 import Post from "@/models/Post";
 import View from "@/models/View";
-import { getSession } from '@/lib/server-auth';
-import { authOptions } from "@/lib/auth";
-import { handleDatabaseError } from "@/lib/api-error-handler";
+import { getSession } from '@/lib/auth/server-auth';
+import { handleDatabaseError } from "@/lib/api/api-error-handler";
 
 export const dynamic = 'force-dynamic'
 
@@ -36,7 +35,15 @@ export async function POST(
 
     // Check for recent views to prevent spam (within last 5 minutes for better UX)
     const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
-    const recentViewQuery: any = {
+    
+    interface RecentViewQuery {
+      post: string;
+      createdAt: { $gte: Date };
+      user?: string;
+      ipAddress?: string;
+    }
+    
+    const recentViewQuery: RecentViewQuery = {
       post: id,
       createdAt: { $gte: fiveMinutesAgo }
     };
@@ -55,7 +62,14 @@ export async function POST(
     }
 
     // Create view data
-    const viewData: any = {
+    interface ViewData {
+      post: string;
+      ipAddress: string;
+      userAgent: string;
+      user?: string;
+    }
+    
+    const viewData: ViewData = {
       post: id,
       ipAddress,
       userAgent,
@@ -68,7 +82,7 @@ export async function POST(
     // Use upsert to prevent duplicate key errors
     try {
       await View.create(viewData);
-    } catch (error: any) {
+    } catch (error) {
       if (error.code === 11000) {
         // Duplicate key error - view already exists, just return success
         console.log(`Duplicate view prevented for post ${id}`);
@@ -88,8 +102,9 @@ export async function POST(
       message: "View recorded", 
       newCount: updatedPost?.viewsCount || 0 
     });
-  } catch (error: any) {
-    console.error("Error recording view:", error);
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error recording view:", errorMessage);
     return handleDatabaseError(error);
   }
 }

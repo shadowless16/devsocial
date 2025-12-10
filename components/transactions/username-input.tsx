@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
+// import Image from 'next/image';
 import { Input } from "@/components/ui/input"
 
 interface User {
@@ -38,7 +39,8 @@ export function UsernameInput({ value, onChange, placeholder, className }: Usern
         setSelectedIndex(0)
       }
     } catch (error) {
-      console.error("Error searching users:", error)
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Error searching users:", errorMessage)
     }
   }
 
@@ -54,28 +56,7 @@ export function UsernameInput({ value, onChange, placeholder, className }: Usern
     setSuggestions([])
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (!showSuggestions || suggestions.length === 0) return
 
-    switch (e.key) {
-      case "ArrowDown":
-        e.preventDefault()
-        setSelectedIndex(prev => (prev + 1) % suggestions.length)
-        break
-      case "ArrowUp":
-        e.preventDefault()
-        setSelectedIndex(prev => (prev - 1 + suggestions.length) % suggestions.length)
-        break
-      case "Enter":
-      case "Tab":
-        e.preventDefault()
-        selectUser(suggestions[selectedIndex])
-        break
-      case "Escape":
-        setShowSuggestions(false)
-        break
-    }
-  }
 
   return (
     <div className="relative">
@@ -83,7 +64,7 @@ export function UsernameInput({ value, onChange, placeholder, className }: Usern
         ref={inputRef}
         value={value}
         onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
+
         onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
         onFocus={() => value && searchUsers(value)}
         placeholder={placeholder}
@@ -100,6 +81,7 @@ export function UsernameInput({ value, onChange, placeholder, className }: Usern
               }`}
               onClick={() => selectUser(user)}
             >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={user.avatar}
                 alt={user.username}

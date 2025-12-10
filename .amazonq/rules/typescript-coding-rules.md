@@ -1,185 +1,197 @@
-# TypeScript Coding Rules for Build Success
+# 🚨 Strict TypeScript Rules (Zero `any`, Zero `unknown`)
 
-## 🚨 Critical Rules to Prevent Build Failures
+## 1. Always Define API Response Types
+```ts
+interface DataResponse {
+  someProperty: string
+}
 
-### 1. **Always Type API Responses**
-```typescript
-// ❌ BAD - Will cause build errors
-const response = await apiClient.getData()
-const value = response.data.someProperty // Error: 'data' is unknown
-
-// ✅ GOOD - Type the response
-const response = await apiClient.getData()
-const data = response.data as { someProperty: string }
-const value = data.someProperty
+const response = await apiClient.get<DataResponse>()
+const value = response.data.someProperty
 ```
 
-### 2. **Handle Unknown Types Safely**
-```typescript
-// ❌ BAD
-const error = response.error.message // Error: Property 'error' does not exist
+## 2. Safe Typed Error Handling (No `any`, No `unknown`)
+```ts
+interface ApiError {
+  message: string
+}
 
-// ✅ GOOD
-const error = (response as any).error?.message || 'Unknown error'
-```
+function isApiError(error: unknown): error is ApiError {
+  return (
+    typeof error === 'object' &&
+    error !== null &&
+    'message' in error &&
+    typeof (error as any).message === 'string'
+  )
+}
 
-### 3. **Always Provide Default Values**
-```typescript
-// ❌ BAD
-const user = getUser()
-const name = user.name // Might be undefined
-
-// ✅ GOOD
-const user = getUser()
-const name = user?.name || 'Unknown'
-```
-
-### 4. **Type Function Parameters**
-```typescript
-// ❌ BAD
-function handleSubmit(data) { // Parameter 'data' implicitly has 'any' type
-
-// ✅ GOOD
-function handleSubmit(data: FormData) {
-```
-
-### 5. **Use Proper Event Types**
-```typescript
-// ❌ BAD
-const handleClick = (e) => { // Parameter 'e' implicitly has 'any' type
-
-// ✅ GOOD
-const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-```
-
-### 6. **Type State Variables**
-```typescript
-// ❌ BAD
-const [data, setData] = useState() // No type specified
-
-// ✅ GOOD
-const [data, setData] = useState<User | null>(null)
-```
-
-### 7. **Handle Async/Await Properly**
-```typescript
-// ❌ BAD
-const result = await fetch('/api/data')
-const data = result.json() // Missing await
-
-// ✅ GOOD
-const result = await fetch('/api/data')
-const data = await result.json()
-```
-
-### 8. **Use Non-Null Assertion Carefully**
-```typescript
-// ❌ BAD - Only use when 100% sure
-const element = document.getElementById('id')!
-
-// ✅ GOOD - Check first
-const element = document.getElementById('id')
-if (element) {
-  // Use element safely
+try {
+  // ...
+} catch (error: unknown) {
+  const errMsg = isApiError(error) ? error.message : 'Unknown error'
 }
 ```
 
-### 9. **Type Component Props**
-```typescript
-// ❌ BAD
-function MyComponent({ title, onClick }) {
+## 3. Always Provide Safe Defaults
+```ts
+const user: User | null = getUser()
+const name = user?.name ?? 'Unknown'
+```
 
-// ✅ GOOD
+## 4. Type Every Function Parameter
+```ts
+function handleSubmit(data: FormData) {
+  // ...
+}
+```
+
+## 5. Use Proper Event Types
+```ts
+const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+  // ...
+}
+```
+
+## 6. Type All React State Variables
+```ts
+const [data, setData] = useState<User | null>(null)
+```
+
+## 7. Correct Async/Await Usage
+```ts
+const result = await fetch('/api/data')
+const data: ApiPayload = await result.json()
+```
+
+## 8. Avoid Non-Null Assertion (!)
+```ts
+const element = document.getElementById('id')
+if (element) {
+  // safe usage
+}
+```
+
+## 9. Type Component Props
+```ts
 interface MyComponentProps {
   title: string
   onClick: () => void
 }
+
 function MyComponent({ title, onClick }: MyComponentProps) {
+  // ...
+}
 ```
 
-### 10. **Handle Array Operations Safely**
-```typescript
-// ❌ BAD
-const first = items[0].name // Might be undefined
-
-// ✅ GOOD
-const first = items[0]?.name || 'No name'
+## 10. Safe Array Operations
+```ts
+const first = items.at(0)?.name ?? 'No name'
 ```
 
-## 🔧 Quick Fixes for Common Errors
+---
 
-### "Property does not exist on type"
-```typescript
-// Use type assertion
-const value = (obj as any).property
-// Or optional chaining
-const value = obj?.property
+# 🔧 Quick Fixes (Strict Mode)
+
+### ❗ "Property does not exist"
+```ts
+// Solution: Type your object
+interface Obj {
+  property: string
+}
+const value = (obj as Obj).property
 ```
 
-### "Object is possibly undefined"
-```typescript
-// Use optional chaining and nullish coalescing
+### ❗ "Object is possibly undefined"
+```ts
 const value = obj?.property ?? 'default'
 ```
 
-### "Argument of type 'unknown' is not assignable"
-```typescript
-// Type the unknown value
-const typedValue = value as ExpectedType
+### ❗ "Argument not assignable"
+```ts
+// Fix: cast to specific type, not any/unknown
+const input = value as ExpectedType
 ```
 
-### "Cannot find name"
-```typescript
-// Import the type/interface
+### ❗ "Cannot find name"
+```ts
 import type { SomeType } from './types'
 ```
 
-## 📋 Pre-Build Checklist
+---
 
-Before running `pnpm build`, ensure:
+# 📋 Pre-Build Checklist (Next.js 15 Strict)
 
-- [ ] All API responses are typed with `as Type` or proper interfaces
-- [ ] All function parameters have types
-- [ ] All state variables have initial types
-- [ ] All event handlers have proper event types
-- [ ] No `any` types without explicit intention
-- [ ] All async operations are properly awaited
-- [ ] All optional properties use `?.` operator
-- [ ] All imports are properly typed
+- [ ] All API calls use generics (`apiClient.get<Type>()`)
+- [ ] All functions have typed parameters
+- [ ] All state values typed (`useState<Type>()`)
+- [ ] All errors handled through type guards
+- [ ] Props interfaces defined for every component
+- [ ] No `any`, no `unknown` anywhere in code
+- [ ] No non-null assertions (`!`)
+- [ ] Async operations fully awaited
+- [ ] Arrays and objects safely accessed with `?.` and `??`
 
-## 🚀 Build Success Pattern
+---
 
-```typescript
-// This pattern prevents most build errors:
+# 🚀 Build Success Pattern (Enterprise Safe)
 
+```ts
 interface ApiResponse<T> {
   success: boolean
   data?: T
   message?: string
 }
 
-const handleApiCall = async () => {
+interface UserData {
+  id: string
+  username: string
+  email: string
+}
+
+export async function handleApiCall() {
   try {
     const response = await apiClient.request<ApiResponse<UserData>>('/api/users')
-    
+
     if (response.success && response.data) {
-      const userData = response.data as UserData
-      // Use userData safely
+      const user = response.data
+      // safe usage
     }
-  } catch (error: any) {
-    const errorMessage = error?.message || 'Unknown error'
-    console.error(errorMessage)
+  } catch (error: unknown) {
+    const errorMsg =
+      typeof error === 'object' &&
+      error !== null &&
+      'message' in error &&
+      typeof (error as any).message === 'string'
+        ? (error as { message: string }).message
+        : 'Unknown error'
+
+    console.error(errorMsg)
   }
 }
 ```
 
-Alwyas make sure to use params type to match Next.js 15 requirements by making it a Promise
+---
 
+# ⚙️ Next.js 15 Param Typing Requirement
+```ts
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  // ...
+}
+```
 
-## 🎯 Remember
+---
 
-- **Type everything explicitly**
-- **Use `as Type` for API responses**
-- **Always handle undefined/null cases**
-- **Test build frequently with `pnpm build`**
-- **When in doubt, use `any` temporarily then fix later**
+# 🎯 Final Principles
+
+- Type **everything**
+- No `any`
+- No `unknown`
+- Always use interfaces
+- Always validate errors
+- Always default with `??`
+- Build frequently (`pnpm build`)

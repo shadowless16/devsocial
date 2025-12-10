@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getSession } from '@/lib/server-auth'
-import { authOptions } from '@/lib/auth'
-import connectDB from '@/lib/db'
+import { getSession } from '@/lib/auth/server-auth'
+import connectDB from '@/lib/core/db'
 import Project from '@/models/Project'
 import User from '@/models/User'
 
@@ -20,7 +19,7 @@ export async function GET(request: NextRequest) {
     const skip = (page - 1) * limit
     
     // Build query
-    const query: any = { visibility: 'public' }
+    const query: { visibility: string; status?: string; technologies?: { $in: string[] }; author?: string; featured?: boolean } = { visibility: 'public' }
     
     if (status) query.status = status
     if (tech) query.technologies = { $in: [tech] }
@@ -48,10 +47,11 @@ export async function GET(request: NextRequest) {
         }
       }
     })
-  } catch (error: any) {
-    console.error('Project fetch error:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Project fetch error:', errorMessage)
     return NextResponse.json(
-      { success: false, error: 'Failed to fetch projects', details: error?.message || 'Unknown error' },
+      { success: false, error: 'Failed to fetch projects', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     const { title, description, technologies, githubUrl, liveUrl, images, openPositions, status } = body
     
     // Filter out empty positions
-    const validPositions = (openPositions || []).filter((pos: any) => 
+    const validPositions = (openPositions || []).filter((pos: { title?: string; description?: string }) => 
       pos.title && pos.title.trim() && pos.description && pos.description.trim()
     )
     
@@ -104,12 +104,13 @@ export async function POST(request: NextRequest) {
       success: true,
       data: populatedProject
     })
-  } catch (error: any) {
-    console.error('Project creation error:', error)
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error('Project creation error:', errorMessage)
     
     // Handle validation errors
-    if (error.name === 'ValidationError') {
-      const validationErrors = Object.values(error.errors).map((err: any) => err.message)
+    if (error instanceof Error && error.name === 'ValidationError' && 'errors' in error) {
+      const validationErrors = Object.values((error as unknown as { errors: Record<string, { message: string }> }).errors).map((err) => err.message)
       return NextResponse.json(
         { 
           success: false, 
@@ -121,7 +122,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { success: false, error: 'Failed to create project', details: error.message },
+      { success: false, error: 'Failed to create project', details: error instanceof Error ? error.message : 'Unknown error' },
       { status: 500 }
     )
   }

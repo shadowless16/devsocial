@@ -27,10 +27,6 @@ export default function CommunitiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchCommunities();
-  }, []);
-
   const fetchCommunities = async () => {
     try {
       const response = await fetch('/api/communities');
@@ -38,12 +34,16 @@ export default function CommunitiesPage() {
       if (data.success) {
         setCommunities(data.data);
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to fetch communities:', error);
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchCommunities();
+  }, []);
 
   const filteredCommunities = communities.filter((community) => 
     community.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -71,7 +71,7 @@ export default function CommunitiesPage() {
             : community
         ));
       }
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Failed to join/leave community:', error);
     }
   };

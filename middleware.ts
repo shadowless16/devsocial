@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server"
 import type { NextRequest } from "next/server"
-import { getUserFromRequest } from "@/lib/jwt-auth"
+import { getUserFromRequest } from "@/lib/auth/jwt-auth"
 import { apiRateLimiter, authRateLimiter } from "@/middleware/rate-limit"
 
 export async function middleware(req: NextRequest) {
