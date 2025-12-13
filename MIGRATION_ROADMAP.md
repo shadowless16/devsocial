@@ -7,9 +7,9 @@ Separate backend APIs from Next.js frontend to support both web and mobile clien
 
 ### Phase 1: Documentation & Setup (Week 1)
 - [x] Create migration branch
-- [ ] Generate OpenAPI specs for existing APIs
-- [ ] Set up backend service structure
-- [ ] Configure CORS and API gateway
+- [x] Generate OpenAPI specs for existing APIs
+- [x] Set up backend service structure
+- [x] Configure CORS and API gateway
 
 ### Phase 2: Extract Gamification Service (Week 2)
 **Why First:** Self-contained, high value for mobile, minimal dependencies
