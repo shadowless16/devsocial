@@ -1,0 +1,11 @@
+node_modules
+.next
+.git
+.gitignore
+Dockerfile
+docker-compose.yml
+.env
+.env.local
+.env.production
+npm-debug.log
+yarn-error.log
