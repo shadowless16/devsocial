@@ -9,3 +9,16 @@ docker-compose.yml
 .env.production
 npm-debug.log
 yarn-error.log
+README.md
+.vscode
+.idea
+*.md
+test_documentation
+.amazonq
+.bun-cache
+.turbo
+.cache
+dist
+build
+coverage
+.DS_Store
