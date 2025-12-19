@@ -2,10 +2,8 @@
 import NextAuth, { AuthOptions, Session, User } from "next-auth";
 import { JWT } from "next-auth/jwt";
 import CredentialsProvider from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import connectDB from "@/lib/core/db";
-import UserModel from "@/models/User";
 
+// Removed Mongoose model and connectDB imports to reduce frontend load time
  
 declare module "next-auth" {
   interface User {
@@ -21,6 +19,7 @@ declare module "next-auth" {
       email: string;
       role: string;
       isAdmin: boolean;
+      accessToken?: string;
     };
   }
 }
@@ -30,9 +29,10 @@ declare module "next-auth/jwt" {
     id?: string;
     role?: string;
     username?: string;
+    accessToken?: string;
   }
 }
-//done
+
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -48,40 +48,35 @@ export const authOptions: AuthOptions = {
             return null;
           }
 
-          await connectDB();
+          const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
           
-          interface UserFilter {
-            $or: Array<{ email?: string; username?: string }>
-          }
+          const response = await fetch(`${backendUrl}/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: credentials.usernameOrEmail, // The backend login expects 'email' or handles both?
+              password: credentials.password,
+            }),
+          });
 
-          const user = await UserModel.findOne({
-            $or: [
-              { email: credentials.usernameOrEmail.toLowerCase() },
-              { username: credentials.usernameOrEmail }
-            ]
-          } as UserFilter).select('+password').maxTimeMS(10000);
+          const data = await response.json();
           
-          if (!user) {
-            console.error("[Auth] User not found:", credentials.usernameOrEmail);
+          if (!response.ok || !data.success) {
+            console.error("[Auth] Backend login failed:", data.message || data.error);
             return null;
           }
 
-          const isValid = await bcrypt.compare(credentials.password, user.password as string);
-          if (!isValid) {
-            console.error("[Auth] Invalid password for user:", credentials.usernameOrEmail);
-            return null;
-          }
-
-          console.log("[Auth] Login successful for user:", user.username);
+          console.log("[Auth] Login successful via backend for user:", data.user.username);
           return {
-            id: user._id.toString(),
-            email: user.email,
-            username: user.username,
-            role: user.role || 'user',
-          };
+            id: data.user.id.toString(),
+            email: data.user.email,
+            username: data.user.username,
+            role: data.user.role || 'user',
+            accessToken: data.token, // Store the JWT here
+          } as any;
         } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error("[Auth] Authorization error:", errorMessage);
+          const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+          console.error("[Auth] Authorization error calling backend:", errorMessage);
           return null;
         }
       },
@@ -166,11 +161,12 @@ export const authOptions: AuthOptions = {
       
       return base + "/home";
     },
-    async jwt({ token, user }: { token: JWT; user?: User }) {
+    async jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
         token.id = user.id;
         token.role = user.role;
         token.username = user.username;
+        token.accessToken = user.accessToken;
       }
       return token;
     },
@@ -180,6 +176,7 @@ export const authOptions: AuthOptions = {
         session.user.role = token.role as string;
         session.user.username = token.username as string;
         session.user.isAdmin = token.role === 'admin';
+        (session.user as any).accessToken = token.accessToken;
       }
       return session;
     },

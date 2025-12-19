@@ -1,0 +1,62 @@
+import User from "../models/User"
+import UserMention from "../models/UserMention"
+import Notification from "../models/Notification"
+import { connectDB } from "../config/database"
+
+export function extractMentions(content: string): string[] {
+  const mentionRegex = /@(\w+)/g
+  const matches = content.match(mentionRegex) || []
+  return matches.map(mention => mention.substring(1)) // Remove @ symbol
+}
+
+export async function processMentions(
+  content: string,
+  postId: string,
+  mentionerId: string,
+  commentId?: string
+) {
+  await connectDB()
+  
+  const usernames = extractMentions(content)
+  if (usernames.length === 0) return { mentions: [], mentionIds: [] }
+
+  const mentions: string[] = []
+  const mentionIds: string[] = []
+
+  for (const username of usernames) {
+    try {
+      const mentionedUser = await User.findOne({ username })
+      if (!mentionedUser || mentionedUser._id.toString() === mentionerId) continue
+
+      mentions.push(username)
+      mentionIds.push(mentionedUser._id.toString())
+
+      // Create mention record
+      await UserMention.create({
+        post: postId,
+        comment: commentId,
+        mentioner: mentionerId,
+        mentioned: mentionedUser._id
+      })
+
+      // Create notification
+      const mentioner = await User.findById(mentionerId)
+      await Notification.create({
+        recipient: mentionedUser._id,
+        sender: mentionerId,
+        type: "mention",
+        title: "You were mentioned",
+        message: `${mentioner?.displayName || mentioner?.username} mentioned you in a ${commentId ? 'comment' : 'post'}`,
+        actionUrl: `/post/${postId}`,
+        relatedPost: postId,
+        relatedComment: commentId,
+        metadata: { postId, commentId }
+      })
+    } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error(`Error processing mention for ${username}:`, errorMessage)
+    }
+  }
+
+  return { mentions, mentionIds }
+}

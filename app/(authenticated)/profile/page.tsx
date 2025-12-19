@@ -50,27 +50,33 @@ export default function MyProfile() {
         setLoadingMore(true)
       }
       
-      const response = await fetch(`/api/posts?limit=50&page=${pageNum}`)
+      const currentUser = user as { id?: string; _id?: string } | null
+      const userId = currentUser?.id || currentUser?._id
+      
+      if (!userId) return
+
+      const response = await fetch(`/api/posts?limit=10&page=${pageNum}&author=${userId}`)
       
       if (response.ok) {
         const result = await response.json()
         
-        if (result.success && result.data?.posts) {
-          const userSpecificPosts = result.data.posts.filter((post: Post) => {
-            const author = post.author as { id?: string; _id?: string } | null
-            const authorId = author?.id || author?._id
-            const currentUser = user as { id?: string; _id?: string } | null
-            const userId = currentUser?.id || currentUser?._id
-            return authorId === userId
-          })
+        if (result.success && result.data) {
+          // Backend now returns array directly in data for this endpoint structure in simple express route
+          // But based on route implementation: res.json({ success: true, data: posts })
+          // So result.data IS the posts array
+          const rawPosts = Array.isArray(result.data) ? result.data : (result.data.posts || [])
+          const posts = rawPosts.map((post: any) => ({
+            ...post,
+            id: post.id || post._id
+          }))
           
           if (reset) {
-            setUserPosts(userSpecificPosts)
+            setUserPosts(posts)
           } else {
-            setUserPosts(prev => [...prev, ...userSpecificPosts])
+            setUserPosts(prev => [...prev, ...posts])
           }
           
-          setHasMore(result.data.posts.length === 50)
+          setHasMore(posts.length === 10)
           setPage(pageNum)
         }
       }

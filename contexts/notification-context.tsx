@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { apiClient } from '@/lib/api/api-client'
 
 interface Notification {
   _id: string
@@ -40,15 +41,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const fetchNotifications = async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/notifications?limit=50')
-      const data = await response.json()
-      if (data.success) {
-        setNotifications(data.data.notifications)
-        setUnreadCount(data.data.unreadCount)
+      const response = await apiClient.request<any>('/notifications?limit=50')
+      if (response.success && response.data) {
+        setNotifications(response.data.notifications || [])
+        setUnreadCount(response.data.unreadCount || 0)
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error fetching notifications:', errorMessage)
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Error fetching notifications:', errorMessage)
     } finally {
       setLoading(false)
     }
@@ -56,73 +56,68 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
 
   const refreshUnreadCount = async () => {
     try {
-      const response = await fetch('/api/notifications?unread=true&limit=1')
-      const data = await response.json()
-      if (data.success) {
-        setUnreadCount(data.data.unreadCount || 0)
+      const response = await apiClient.request<any>('/notifications?unread=true&limit=1')
+      if (response.success && response.data) {
+        setUnreadCount(response.data.unreadCount || 0)
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error fetching unread count:', errorMessage)
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Error fetching unread count:', errorMessage)
       setUnreadCount(0)
     }
   }
 
   const markAsRead = async (notificationId: string) => {
     try {
-      const response = await fetch('/api/notifications/mark-read', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await apiClient.request<any>('/notifications/mark-read', {
+        method: 'PUT', // Fixed to PUT as supported by backend
         body: JSON.stringify({ notificationIds: [notificationId] })
       })
       
-      if (response.ok) {
+      if (response.success) {
         setNotifications(prev => 
           prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
         )
         setUnreadCount(prev => Math.max(0, prev - 1))
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error marking notification as read:', errorMessage)
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Error marking notification as read:', errorMessage)
     }
   }
 
   const markAsUnread = async (notificationId: string) => {
     try {
-      const response = await fetch('/api/notifications/mark-unread', {
+      const response = await apiClient.request<any>('/notifications/mark-unread', {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ notificationIds: [notificationId] })
       })
       
-      if (response.ok) {
+      if (response.success) {
         setNotifications(prev => 
           prev.map(n => n._id === notificationId ? { ...n, read: false } : n)
         )
         setUnreadCount(prev => prev + 1)
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error marking notification as unread:', errorMessage)
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Error marking notification as unread:', errorMessage)
     }
   }
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch('/api/notifications/mark-read', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({})
+      const response = await apiClient.request<any>('/notifications/mark-all-read', {
+        method: 'POST'
       })
       
-      if (response.ok) {
+      if (response.success) {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })))
         setUnreadCount(0)
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error marking all notifications as read:', errorMessage)
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Error marking all notifications as read:', errorMessage)
     }
   }
 

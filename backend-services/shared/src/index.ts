@@ -1,6 +1,0 @@
-export { default as User } from './models/User'
-export { default as UserStats } from './models/UserStats'
-export { default as XPLog } from './models/XPLog'
-export type { IUser } from './models/User'
-export type { IUserStats } from './models/UserStats'
-export type { IXPLog } from './models/XPLog'

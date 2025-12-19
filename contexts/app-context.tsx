@@ -1,9 +1,10 @@
 "use client";
 
 import React, { createContext, useContext, useReducer, useCallback, useEffect } from 'react';
-
+import { useSession, signIn, signOut } from 'next-auth/react';
 import { apiClient } from '@/lib/api/api-client';
 import { useSessionCache } from './session-cache-context';
+
 // User type definition
 export interface User {
   id: string;
@@ -160,22 +161,21 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
-  const { getCachedSession, setCachedSession, clearCache } = useSessionCache();
-  const [sessionStatus, setSessionStatus] = React.useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+  const { clearCache } = useSessionCache();
+  const { data: session, status } = useSession();
 
   // Auth actions
   const login = useCallback(async (credentials: { usernameOrEmail: string; password: string }) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(credentials),
+    const result = await signIn('credentials', {
+      ...credentials,
+      redirect: false,
     });
-    const data = await response.json();
-    if (data.success) {
-      window.location.href = '/home';
-    } else {
-      throw new Error(data.message || 'Login failed');
+    
+    if (result?.error) {
+      throw new Error(result.error || 'Login failed');
     }
+    
+    window.location.href = '/home';
   }, []);
 
   const signup = useCallback(async (userData: unknown) => {
@@ -194,21 +194,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         throw err;
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Signup error:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Signup error:', errorMessage);
       throw error;
     }
   }, []);
 
   const logout = useCallback(async () => {
     try {
-      await fetch('/api/auth/logout', { method: 'POST' });
+      await signOut({ redirect: false });
       dispatch({ type: 'SET_USER', payload: null });
       clearCache();
       window.location.href = '/auth/login';
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Logout error:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Logout error:', errorMessage);
     }
   }, [clearCache]);
 
@@ -217,6 +217,81 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_USER', payload: { ...state.user, ...userData } });
     }
   }, [state.user]);
+
+  // Sync session with App State
+  useEffect(() => {
+    const loadFullProfile = async () => {
+      if (status === 'authenticated' && session?.user) {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: true });
+        try {
+          // Use apiClient with backend token already configured via NextAuth
+          const response = await apiClient.getCurrentUserProfile<any>();
+          
+          if (response.success && response.data?.user) {
+            const userData = response.data.user;
+            const user: User = {
+              id: userData._id?.toString() || userData.id,
+              username: userData.username,
+              email: userData.email,
+              firstName: userData.firstName,
+              lastName: userData.lastName,
+              bio: userData.bio || '',
+              affiliation: userData.affiliation || '',
+              avatar: userData.avatar || '',
+              bannerUrl: userData.bannerUrl || '',
+              role: userData.role || 'user',
+              points: userData.points || 0,
+              badges: userData.badges || [],
+              level: userData.level || 1,
+              isVerified: userData.isVerified || false,
+              displayName: userData.displayName || userData.username,
+              location: userData.location,
+              website: userData.website,
+              refreshTokens: userData.refreshTokens || [],
+              loginStreak: userData.loginStreak || 0,
+              onboardingCompleted: userData.onboardingCompleted === true,
+              demoWalletBalance: userData.demoWalletBalance || 100,
+              xpToNext: userData.xpToNext || 0,
+              totalXpForLevel: userData.totalXpForLevel || 1000,
+            };
+            dispatch({ type: 'SET_USER', payload: user });
+          }
+        } catch (error) {
+          console.error('Failed to load full profile:', error);
+          // Fallback to basic session info if profile fetch fails
+          const basicUser: User = {
+            id: session.user.id,
+            username: (session.user as any).username || 'User',
+            email: session.user.email || '',
+            role: (session.user as any).role || 'user',
+            bio: '',
+            affiliation: '',
+            avatar: '',
+            bannerUrl: '',
+            points: 0,
+            badges: [],
+            level: 1,
+            isVerified: false,
+            refreshTokens: [],
+            loginStreak: 0,
+            onboardingCompleted: false,
+            xpToNext: 0,
+            totalXpForLevel: 1000
+          };
+          dispatch({ type: 'SET_USER', payload: basicUser });
+        } finally {
+          dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+        }
+      } else if (status === 'unauthenticated') {
+        dispatch({ type: 'SET_USER', payload: null });
+        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
+      } else if (status === 'loading') {
+        dispatch({ type: 'SET_AUTH_LOADING', payload: true });
+      }
+    };
+
+    loadFullProfile();
+  }, [session, status]);
 
   // Posts actions
   const fetchPosts = useCallback(async (page = 1, reset = false) => {
@@ -232,8 +307,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         }
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Failed to fetch posts:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Failed to fetch posts:', errorMessage);
     } finally {
       dispatch({ type: 'SET_POSTS_LOADING', payload: false });
     }
@@ -255,8 +330,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         });
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Failed to like post:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Failed to like post:', errorMessage);
     }
   }, []);
 
@@ -267,8 +342,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'DELETE_POST', payload: postId });
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Failed to delete post:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Failed to delete post:', errorMessage);
     }
   }, []);
 
@@ -288,13 +363,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           payload: {
             userId,
             isFollowing: !isCurrentlyFollowing,
-            followersCount: currentState?.followersCount + (isCurrentlyFollowing ? -1 : 1),
+            followersCount: (currentState?.followersCount || 0) + (isCurrentlyFollowing ? -1 : 1),
           },
         });
       }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Failed to toggle follow:', errorMessage);
+      const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+      console.error('Failed to toggle follow:', errorMessage);
     }
   }, [state.followState]);
 
@@ -312,14 +387,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     if (state.user) {
       const fetchUnreadCount = async () => {
         try {
-          const response = await fetch('/api/notifications?unread=true&limit=1')
-          const data = await response.json()
-          if (data.success) {
-            dispatch({ type: 'SET_UNREAD_COUNT', payload: data.data.unreadCount || 0 })
+          const response = await apiClient.request<any>('/notifications?unread=true&limit=1')
+          if (response.success && response.data) {
+            dispatch({ type: 'SET_UNREAD_COUNT', payload: response.data.unreadCount || 0 })
           }
         } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Failed to fetch unread count:', errorMessage)
+          const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+          console.error('Failed to fetch unread count:', errorMessage)
         }
       }
       
@@ -328,62 +402,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       return () => clearInterval(interval)
     }
   }, [state.user])
-
-  // Load user data on mount
-  useEffect(() => {
-    const loadUser = async () => {
-      setSessionStatus('loading');
-      dispatch({ type: 'SET_AUTH_LOADING', payload: true });
-      
-      try {
-        const response = await fetch('/api/auth/session');
-        const data = await response.json();
-        
-        if (data.success && data.user) {
-          const userData = data.user;
-          const user: User = {
-            id: userData._id?.toString() || userData.id,
-            username: userData.username,
-            email: userData.email,
-            firstName: userData.firstName,
-            lastName: userData.lastName,
-            bio: userData.bio || '',
-            affiliation: userData.affiliation || '',
-            avatar: userData.avatar || '',
-            bannerUrl: userData.bannerUrl || '',
-            role: userData.role || 'user',
-            points: userData.points || 0,
-            badges: userData.badges || [],
-            level: userData.level || 1,
-            isVerified: userData.isVerified || false,
-            displayName: userData.displayName || userData.username,
-            location: userData.location,
-            website: userData.website,
-            refreshTokens: userData.refreshTokens || [],
-            loginStreak: userData.loginStreak || 0,
-            onboardingCompleted: userData.onboardingCompleted === true,
-            demoWalletBalance: userData.demoWalletBalance || 100,
-            xpToNext: userData.xpToNext || 0,
-            totalXpForLevel: userData.totalXpForLevel || 1000,
-          };
-          dispatch({ type: 'SET_USER', payload: user });
-          setSessionStatus('authenticated');
-        } else {
-          dispatch({ type: 'SET_USER', payload: null });
-          setSessionStatus('unauthenticated');
-        }
-      } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Failed to load session:', errorMessage);
-        dispatch({ type: 'SET_USER', payload: null });
-        setSessionStatus('unauthenticated');
-      } finally {
-        dispatch({ type: 'SET_AUTH_LOADING', payload: false });
-      }
-    };
-    
-    loadUser();
-  }, []);
 
   const value: AppContextType = {
     state,
@@ -418,11 +436,13 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AppProvider');
   }
   const { state, updateUser, logout, signup } = context;
+  const { status } = useSession();
+  
   return {
     user: state.user,
     loading: state.authLoading,
-    isAuthenticated: !!state.user,
-    status: state.authLoading ? 'loading' : state.user ? 'authenticated' : 'unauthenticated',
+    isAuthenticated: !!state.user && status === 'authenticated',
+    status: status,
     updateUser,
     logout,
     signup,

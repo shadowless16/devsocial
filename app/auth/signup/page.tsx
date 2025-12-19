@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { signIn } from "next-auth/react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -179,6 +180,13 @@ useEffect(() => {
         birthDay: parseInt(formData.birthDay),
         affiliation: formData.affiliation || "Other",
         referralCode: referralCode || undefined,
+      })
+      
+      // Auto-login after signup
+      await signIn('credentials', {
+        usernameOrEmail: formData.username,
+        password: formData.password,
+        redirect: false
       })
       
       toast.success("Account created successfully! Welcome to DevSocial!")

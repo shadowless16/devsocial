@@ -74,7 +74,7 @@ export function useRealtimeLeaderboard(type: string) {
 
   const fetchLeaderboardUpdate = async () => {
     try {
-      const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
+      const response = await fetch(`/api/gamification/leaderboard?type=${type}&limit=50`)
       const data = await response.json()
 
       if (data.success) {

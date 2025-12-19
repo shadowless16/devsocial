@@ -1,0 +1,46 @@
+import type { NextRequest } from "next/server"
+import connectDB from "@/lib/core/db"
+import User from "@/models/User"
+import { successResponse, errorResponse } from "@/utils/response"
+import { awardXP } from "@/utils/awardXP"
+
+
+export const dynamic = 'force-dynamic'
+
+export async function POST(request: NextRequest) {
+  try {
+    await connectDB()
+
+    const { token } = await request.json()
+
+    if (!token) {
+      return errorResponse("Verification token is required", 400)
+    }
+
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationTokenExpires: { $gt: new Date() },
+    })
+
+    if (!user) {
+      return errorResponse("Invalid or expired verification token", 400)
+    }
+
+    // Verify user
+    user.isVerified = true
+    user.verificationToken = undefined
+    user.verificationTokenExpires = undefined
+    await user.save()
+
+    // Award XP for email verification
+    await awardXP(user._id.toString(), "email_verified")
+
+    return successResponse({
+      message: "Email verified successfully",
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
+    console.error("Email verification error:", errorMessage)
+    return errorResponse("Failed to verify email", 500)
+  }
+}

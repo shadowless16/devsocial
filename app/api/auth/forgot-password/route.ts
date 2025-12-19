@@ -1,55 +1,28 @@
-import type { NextRequest } from "next/server"
-import connectDB from "@/lib/core/db"
-import User from "@/models/User"
-import { AuthService } from "@/lib/auth/auth"
-import { successResponse, errorResponse } from "@/utils/response"
-import { z } from "zod"
+// app/api/auth/forgot-password/route.ts - Proxy to Backend
+import { NextRequest, NextResponse } from "next/server";
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address"),
-})
-
-
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
+    const body = await request.json();
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
 
-    const body = await request.json()
-    const validation = forgotPasswordSchema.safeParse(body)
+    const response = await fetch(`${backendUrl}/auth/forgot-password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-    if (!validation.success) {
-      return errorResponse("Invalid email address", 400)
-    }
+    const data = await response.json();
+    
+    return NextResponse.json(data, { status: response.status });
 
-    const { email } = validation.data
-
-    const user = await User.findOne({ email: email.toLowerCase() })
-    if (!user) {
-      // Don't reveal if email exists or not
-      return successResponse({
-        message: "If an account with that email exists, we've sent a password reset link.",
-      })
-    }
-
-    // Generate reset token
-    const resetToken = AuthService.generateResetToken()
-    const resetExpires = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
-
-    user.resetPasswordToken = resetToken
-    user.resetPasswordExpires = resetExpires
-    await user.save()
-
-    // Send reset email
-    await AuthService.sendPasswordResetEmail(user.email, resetToken, user.username)
-
-    return successResponse({
-      message: "If an account with that email exists, we've sent a password reset link.",
-    })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error("Forgot password error:", errorMessage)
-    return errorResponse("Failed to process request", 500)
+    console.error("Forgot password proxy error:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

@@ -12,22 +12,52 @@ export function PushNotificationPrompt() {
 
   useEffect(() => {
     if (typeof window === 'undefined') return
-    const dismissed = localStorage.getItem('push-notification-dismissed')
-    if (isSupported && !isSubscribed && !dismissed) {
-      setTimeout(() => setShowPrompt(true), 5000)
+
+    const checkStatus = () => {
+      if (Notification.permission === 'granted') {
+        setShowPrompt(false)
+        return
+      }
+
+      if (Notification.permission === 'denied') {
+        setShowPrompt(false)
+        return
+      }
+      const dismissedTime = localStorage.getItem('push-notification-dismissed-time')
+      
+      if (dismissedTime) {
+        const daysSince = (Date.now() - parseInt(dismissedTime)) / (1000 * 60 * 60 * 24)
+        if (daysSince < 3) {
+          return 
+        }
+      }
+
+      // If supported and not subscribed (which we know is true if permission is 'default'), show it
+      if (isSupported) {
+        // Small delay to not overwhelm on immediate load
+        const timer = setTimeout(() => setShowPrompt(true), 3000)
+        return () => clearTimeout(timer)
+      }
     }
+
+    checkStatus()
   }, [isSupported, isSubscribed])
 
   const handleEnable = async () => {
+    // Immediate feedback
+    setShowPrompt(false)
     const result = await subscribe()
-    if (result.success) {
-      setShowPrompt(false)
+    if (!result.success) {
+      // If failed (e.g. user clicked block on browser prompt), re-evaluate?
+      // For now, if they blocked it, the effect will run again and hide it.
+      console.log('Subscription failed or rejected')
     }
   }
 
   const handleDismiss = () => {
     if (typeof window !== 'undefined') {
-      localStorage.setItem('push-notification-dismissed', 'true')
+      // Store timestamp to ask again later
+      localStorage.setItem('push-notification-dismissed-time', Date.now().toString())
     }
     setShowPrompt(false)
   }

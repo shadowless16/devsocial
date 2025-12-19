@@ -2,7 +2,8 @@
 "use client";
 
 // Intercept and cache NextAuth session calls
-let sessionCache: unknown = null;
+let sessionCache: any = null;
+let sessionPromise: Promise<any> | null = null;
 let cacheTimestamp = 0;
 const CACHE_DURATION = 30 * 1000; // 30 seconds only
 
@@ -24,14 +25,31 @@ if (typeof window !== 'undefined') {
           headers: { 'Content-Type': 'application/json' }
         });
       }
+
+      // If a request is already in progress, wait for it
+      if (sessionPromise) {
+        const data = await sessionPromise;
+        return new Response(JSON.stringify(data), {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' }
+        });
+      }
       
       // Make actual request and cache result
+      sessionPromise = (async () => {
+        const response = await originalFetch(input, init);
+        if (response.ok) {
+          const data = await response.clone().json();
+          sessionCache = data;
+          cacheTimestamp = Date.now();
+          sessionPromise = null;
+          return data;
+        }
+        sessionPromise = null;
+        return null;
+      })();
+
       const response = await originalFetch(input, init);
-      if (response.ok) {
-        const data = await response.clone().json();
-        sessionCache = data;
-        cacheTimestamp = now;
-      }
       return response;
     }
     

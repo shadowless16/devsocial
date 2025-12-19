@@ -139,7 +139,7 @@ export function EnhancedLeaderboard() {
   const fetchLeaderboard = useCallback(async (type: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/leaderboard?type=${type}&limit=50`)
+      const response = await fetch(`/api/gamification/leaderboard?type=${type}&limit=50`)
       const data = await response.json()
       if (data.success) {
         setLeaderboard(data.data.leaderboard)

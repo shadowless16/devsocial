@@ -8,15 +8,12 @@ export function OfflineIndicator() {
   const [isOffline, setIsOffline] = useState(false)
 
   useEffect(() => {
-    // Check if we're getting database errors
+    // Simplified check - just check navigator.onLine or a basic health check
     const checkConnectivity = async () => {
       try {
-        const response = await fetch('/api/auth/session')
-        if (!response.ok && response.status >= 500) {
-          setIsOffline(true)
-        } else {
-          setIsOffline(false)
-        }
+        // Use a lightweight health check to the actual backend instead of session
+        const response = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:4000/api'}/health`)
+        setIsOffline(!response.ok)
       } catch {
         setIsOffline(true)
       }

@@ -8,6 +8,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
+import { signIn } from "next-auth/react"
 
 export default function LoginPage() {
   const [usernameOrEmail, setUsernameOrEmail] = useState("")
@@ -22,20 +23,18 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ usernameOrEmail, password }),
+      const result = await signIn('credentials', {
+        usernameOrEmail,
+        password,
+        redirect: false
       })
 
-      const data = await response.json()
-
-      if (data.success) {
+      if (result?.error) {
+        setError(result.error)
+        setLoading(false)
+      } else {
         // Redirect to home
         window.location.href = "/home"
-      } else {
-        setError(data.message || "Invalid credentials")
-        setLoading(false)
       }
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : "Login failed"

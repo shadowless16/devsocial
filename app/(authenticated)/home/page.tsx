@@ -62,16 +62,31 @@ export default function HomePage() {
         setLoadingMore(true)
       }
       
+      console.log('Fetching posts for page:', pageNum)
       const response = await apiClient.getPosts({ 
         page: pageNum.toString(), 
         limit: "10"
       })
+      console.log('Posts API Response:', response)
       
       if (response.success && response.data) {
-        const newPosts = ((response.data as { posts?: Post[] }).posts || []) as Post[]
+        const data = response.data as any
+        const rawPosts = (Array.isArray(data) ? data : (data.posts || [])) as any[]
+        const newPosts = rawPosts.map(post => ({
+          ...post,
+          id: post.id || post._id,
+          author: {
+             ...post.author,
+             // Ensure author id is also available if needed
+             id: post.author?.id || post.author?._id
+          }
+        })) as Post[]
+        console.log('Parsed new posts:', newPosts.length)
         setPosts(prev => reset ? newPosts : [...prev, ...newPosts])
         setHasMore(newPosts.length === 10)
         setPage(pageNum)
+      } else {
+        console.warn('Posts API failed or returned no data', response)
       }
     } catch (error: unknown) {
       console.error("Failed to fetch posts:", error)

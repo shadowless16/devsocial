@@ -1,7 +1,7 @@
 
 "use client";
 
-import { signOut } from "next-auth/react";
+import { signOut, getSession } from "next-auth/react";
 
 import type { User } from '@/types'
 
@@ -37,7 +37,7 @@ class ApiClient {
     '/users/profile': { ttl: 2 * 60 * 1000 }, // 2 minutes
     '/profile': { ttl: 2 * 60 * 1000 },
     '/trending': { ttl: 30 * 1000, staleWhileRevalidate: true }, // 30 seconds with SWR
-    '/leaderboard': { ttl: 1 * 60 * 1000, staleWhileRevalidate: true }, // 1 minute
+    '/gamification/leaderboard': { ttl: 1 * 60 * 1000, staleWhileRevalidate: true }, // 1 minute
     // Posts, dashboard, and dynamic content are NOT cached
   };
 
@@ -83,10 +83,16 @@ class ApiClient {
   }
 
   private async fetchRequest<T>(endpoint: string, options: RequestInit = {}): Promise<ApiResponse<T>> {
-    // const session = await getSession();
+    const session = await getSession();
     
     const headers = new Headers(options.headers);
     if (!headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+    
+    // Add Authorization header if session exists
+    const accessToken = (session?.user as any)?.accessToken;
+    if (accessToken) {
+      headers.set("Authorization", `Bearer ${accessToken}`);
+    }
     
     // Handle body serialization
     let body = options.body;
@@ -101,11 +107,13 @@ class ApiClient {
       body
     };
     
-    const fullUrl = `${this.baseUrl}${endpoint}`;
+    // Ensure we use the absolute backend URL
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
+    const fullUrl = `${backendUrl}${endpoint}`;
     const response = await fetch(fullUrl, config);
     
     // Only redirect to login for protected endpoints, not public ones like trending
-    if (response.status === 401 && !endpoint.includes('/trending')) {
+    if (response.status === 401 && !endpoint.includes('/trending') && !endpoint.includes('/auth/login')) {
       await signOut({ redirect: false });
       window.location.href = "/auth/login";
       throw new Error("Unauthorized");
@@ -323,7 +331,7 @@ class ApiClient {
 
   public getLeaderboard<T>(params?: Record<string, string>): Promise<ApiResponse<T>> {
     const query = params ? "?" + new URLSearchParams(params).toString() : "";
-    return this.request<T>(`/leaderboard${query}`, { method: "GET" });
+    return this.request<T>(`/gamification/leaderboard${query}`, { method: "GET" });
   }
 
   public searchPosts<T>(params: Record<string, string>): Promise<ApiResponse<T>> {

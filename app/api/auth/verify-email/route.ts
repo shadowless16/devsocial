@@ -1,46 +1,28 @@
-import type { NextRequest } from "next/server"
-import connectDB from "@/lib/core/db"
-import User from "@/models/User"
-import { successResponse, errorResponse } from "@/utils/response"
-import { awardXP } from "@/utils/awardXP"
+// app/api/auth/verify-email/route.ts - Proxy to Backend
+import { NextRequest, NextResponse } from "next/server";
 
-
-export const dynamic = 'force-dynamic'
+export const dynamic = 'force-dynamic';
 
 export async function POST(request: NextRequest) {
   try {
-    await connectDB()
+    const body = await request.json();
+    const backendUrl = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
 
-    const { token } = await request.json()
+    const response = await fetch(`${backendUrl}/auth/verify-email`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
 
-    if (!token) {
-      return errorResponse("Verification token is required", 400)
-    }
+    const data = await response.json();
+    
+    return NextResponse.json(data, { status: response.status });
 
-    const user = await User.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: new Date() },
-    })
-
-    if (!user) {
-      return errorResponse("Invalid or expired verification token", 400)
-    }
-
-    // Verify user
-    user.isVerified = true
-    user.verificationToken = undefined
-    user.verificationTokenExpires = undefined
-    await user.save()
-
-    // Award XP for email verification
-    await awardXP(user._id.toString(), "email_verified")
-
-    return successResponse({
-      message: "Email verified successfully",
-    })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error("Email verification error:", errorMessage)
-    return errorResponse("Failed to verify email", 500)
+    console.error("Verify email proxy error:", error);
+    return NextResponse.json(
+      { success: false, message: "Internal server error" },
+      { status: 500 }
+    );
   }
 }

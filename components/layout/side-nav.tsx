@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import { useAuth, useApp } from "@/contexts/app-context"
+import { signOut } from "next-auth/react"
 import { useUIState } from "@/hooks/use-ui-state"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
@@ -245,10 +246,10 @@ export default function SideNav() {
         <Button 
           variant="ghost" 
           className="justify-start gap-1 text-red-600 hover:text-red-600 text-xs h-7"
-          onClick={() => {
+          onClick={async () => {
             if (typeof window !== 'undefined') {
               localStorage.clear()
-              window.location.href = '/auth/login'
+              await signOut({ redirect: true, callbackUrl: '/auth/login' })
             }
           }}
         >
