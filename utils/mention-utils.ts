@@ -1,7 +1,7 @@
 import User from "@/models/User"
 import UserMention from "@/models/UserMention"
-import Notification from "@/models/Notification"
 import connectDB from "@/lib/core/db"
+import { notifyMention } from "@/lib/notifications/notification-helper"
 
 export function extractMentions(content: string): string[] {
   const mentionRegex = /@(\w+)/g
@@ -39,19 +39,14 @@ export async function processMentions(
         mentioned: mentionedUser._id
       })
 
-      // Create notification
+      // Create notification with push
       const mentioner = await User.findById(mentionerId)
-      await Notification.create({
-        recipient: mentionedUser._id,
-        sender: mentionerId,
-        type: "mention",
-        title: "You were mentioned",
-        message: `${mentioner?.displayName || mentioner?.username} mentioned you in a ${commentId ? 'comment' : 'post'}`,
-        actionUrl: `/post/${postId}`,
-        relatedPost: postId,
-        relatedComment: commentId,
-        metadata: { postId, commentId }
-      })
+      await notifyMention(
+        mentionedUser._id.toString(),
+        mentionerId,
+        postId,
+        mentioner?.displayName || mentioner?.username || 'Someone'
+      )
     } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error(`Error processing mention for ${username}:`, errorMessage)

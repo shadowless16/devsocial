@@ -5,6 +5,7 @@ import Conversation from "@/models/Conversation"
 import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
+import { notifyMessage } from "@/lib/notifications/notification-helper"
 
 
 export const dynamic = 'force-dynamic'
@@ -151,6 +152,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const currentUnread = conversation.unreadCount.get(recipientId!.toString()) || 0
     conversation.unreadCount.set(recipientId!.toString(), currentUnread + 1)
     await conversation.save()
+
+    // Send push notification to recipient
+    if (recipientId) {
+      await notifyMessage(
+        recipientId.toString(),
+        userId,
+        authResult.user!.username || 'Someone',
+        content || 'Sent a file'
+      ).catch(err => console.error('Failed to send message notification:', err))
+    }
 
     return NextResponse.json(successResponse({ message }), { status: 201 })
   } catch (error) {

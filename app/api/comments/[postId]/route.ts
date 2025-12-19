@@ -3,11 +3,11 @@ import { authMiddleware } from "@/middleware/auth"
 import Comment from "@/models/Comment"
 import Post from "@/models/Post"
 import Activity from "@/models/Activity"
-import Notification from "@/models/Notification"
 import connectDB from "@/lib/core/db"
 import { errorResponse } from "@/utils/response"
 import { awardXP } from "@/utils/awardXP"
 import { getWebSocketServer } from "@/lib/realtime/websocket"
+import { notifyComment } from "@/lib/notifications/notification-helper"
 // Only import mission models if needed
 let MissionProgress: typeof import("@/models/MissionProgress").default | null = null;
 
@@ -139,29 +139,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Create notification for post author (if not commenting on own post)
     if (post.author._id.toString() !== userId) {
-      const notification = new Notification({
-        recipient: post.author._id,
-        sender: userId,
-        type: "comment",
-        title: `${authResult.user!.displayName} commented on your post`,
-        message: content.substring(0, 100),
-        actionUrl: `/post/${postId}`,
-        data: {
-          postId,
-          commentId: comment._id,
-        },
-      })
-      await notification.save()
+      await notifyComment(
+        post.author._id.toString(),
+        userId,
+        postId,
+        authResult.user!.displayName || authResult.user!.username || 'Someone',
+        content
+      )
 
       // Send real-time notification
       const wsServer = getWebSocketServer()
       if (wsServer) {
         wsServer.sendNotificationToUser(post.author._id.toString(), {
           type: "comment",
-          title: notification.title,
-          message: notification.message,
+          title: `${authResult.user!.displayName} commented on your post`,
+          message: content.substring(0, 100),
           sender: authResult.user,
-          createdAt: notification.createdAt,
+          createdAt: new Date(),
         })
       }
     }

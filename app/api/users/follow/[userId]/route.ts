@@ -3,12 +3,12 @@ import { type NextRequest, NextResponse } from "next/server"
 import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import Follow from "@/models/Follow"
-import Notification from "@/models/Notification"
 import Activity from "@/models/Activity"
 import { authMiddleware, type AuthResult } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP, XP_VALUES } from "@/utils/awardXP"
 import MissionProgress from "@/models/MissionProgress"
+import { notifyFollow } from "@/lib/notifications/notification-helper"
 
 // POST /api/user/follow/[userId] - Follow a user
 
@@ -73,13 +73,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     await User.findByIdAndUpdate(userId, { $inc: { followersCount: 1 } })
 
     // Create a notification for the user who was followed
-    await Notification.create({
-      recipient: userId,
-      sender: currentUserId,
-      type: "follow",
-      title: "New Follower",
-      message: `${authResult.user.displayName || authResult.user.username} started following you`,
-    })
+    await notifyFollow(
+      userId,
+      currentUserId,
+      authResult.user.displayName || authResult.user.username || 'Someone'
+    )
 
     // Create an activity record for the user who followed
     await Activity.create({
