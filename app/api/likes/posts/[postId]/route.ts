@@ -4,13 +4,12 @@ import { getSession } from '@/lib/auth/server-auth';
 import Like from "@/models/Like";
 import Post from "@/models/Post";
 import Activity from "@/models/Activity";
-import Notification from "@/models/Notification";
 import connectDB from "@/lib/core/db";
 import { errorResponse } from "@/utils/response";
 import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/realtime/websocket";
 import { handleDatabaseError } from "@/lib/api/api-error-handler";
-// Only import mission models if needed
+import { notifyLike } from "@/lib/notifications/notification-helper";
 
 
 export const dynamic = 'force-dynamic'
@@ -78,26 +77,23 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
               })
             ]);
 
-            // Create notification if not self-like
+            // Create notification with push if not self-like
             if (post.author._id.toString() !== userId) {
-              const notification = await Notification.create({
-                recipient: post.author._id,
-                sender: userId,
-                type: "like",
-                title: `${session.user.username} liked your post`,
-                message: post.content.substring(0, 100),
-                actionUrl: `/post/${postId}`,
-                data: { postId },
-              });
+              await notifyLike(
+                post.author._id.toString(),
+                userId,
+                postId,
+                session.user.username || 'Someone'
+              );
 
               const wsServer = getWebSocketServer();
               if (wsServer) {
                 wsServer.sendNotificationToUser(post.author._id.toString(), {
                   type: "like",
-                  title: notification.title,
-                  message: notification.message,
+                  title: `${session.user.username} liked your post`,
+                  message: post.content.substring(0, 100),
                   sender: { id: session.user.id, username: session.user.username },
-                  createdAt: notification.createdAt,
+                  createdAt: new Date(),
                 });
               }
             }
