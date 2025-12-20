@@ -21,9 +21,9 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get career path first
     const path = await CareerPath.findOne({
-      $or: [{ slug: pathId }, { _id: pathId }] as never,
+      $or: [{ slug: pathId }, { _id: pathId }],
       isActive: true
-    })
+    } as any)
 
     if (!path) {
       return NextResponse.json(
@@ -34,10 +34,10 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get module by slug or ID
     const moduleData = await Module.findOne({
-      $or: [{ slug: moduleId }, { _id: moduleId }] as never,
+      $or: [{ slug: moduleId }, { _id: moduleId }],
       pathId: path._id,
       isActive: true
-    })
+    } as any)
 
     if (!moduleData) {
       return NextResponse.json(
@@ -112,9 +112,9 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     // Get career path and module
     const path = await CareerPath.findOne({
-      $or: [{ slug: pathId }, { _id: pathId }] as never,
+      $or: [{ slug: pathId }, { _id: pathId }],
       isActive: true
-    })
+    } as any)
 
     if (!path) {
       return NextResponse.json(
@@ -124,10 +124,10 @@ export async function POST(request: NextRequest, { params }: Props) {
     }
 
     const moduleData = await Module.findOne({
-      $or: [{ slug: moduleId }, { _id: moduleId }] as never,
+      $or: [{ slug: moduleId }, { _id: moduleId }],
       pathId: path._id,
       isActive: true
-    })
+    } as any)
 
     if (!moduleData) {
       return NextResponse.json(
