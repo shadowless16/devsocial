@@ -90,7 +90,7 @@ export class FeedAlgorithm {
       // Score all posts
       const scoredPosts = await Promise.all(
         candidatePosts.map((post) =>
-          this.scorePost(post, {
+          this.scorePost(post as unknown as Record<string, unknown>, {
             user,
             followedUserIds,
             userInteractions,
