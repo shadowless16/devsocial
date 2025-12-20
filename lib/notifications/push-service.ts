@@ -28,8 +28,16 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
       return { success: false, reason: 'No subscription' }
     }
 
+    const subscription = user.pushSubscription as any
+    
+    // Check if it's a mock subscription (localhost fallback)
+    if (subscription.endpoint?.includes('mock-push') || subscription.keys?.p256dh === 'mock-key') {
+      console.log('Mock subscription detected - skipping actual push (localhost mode)')
+      return { success: true, mock: true, message: 'Mock notification (localhost mode)' }
+    }
+
     const result = await webpush.sendNotification(
-      user.pushSubscription as webpush.PushSubscription,
+      subscription as webpush.PushSubscription,
       JSON.stringify(payload)
     )
 
