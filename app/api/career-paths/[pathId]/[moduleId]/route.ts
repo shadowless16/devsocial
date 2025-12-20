@@ -54,7 +54,7 @@ export async function GET(request: NextRequest, { params }: Props) {
       userProgress = await UserProgress.findOne({ 
         userId, 
         pathId: path._id 
-      })
+      } as any)
 
       moduleProgress = userProgress?.moduleProgress.find(
 (mp: { moduleId: { toString: () => string } }) => mp.moduleId.toString() === moduleData._id.toString()
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest, { params }: Props) {
     let userProgress = await UserProgress.findOne({ 
       userId, 
       pathId: path._id 
-    })
+    } as any)
 
     if (!userProgress) {
       userProgress = new UserProgress({
