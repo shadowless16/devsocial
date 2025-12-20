@@ -37,9 +37,9 @@ export class GamificationService {
       const user = await User.findById(userId)
       if (!user) throw new Error("User not found")
 
-      let userStats = await UserStats.findOne({ userId })
+      let userStats = await UserStats.findOne({ user: userId })
       if (!userStats) {
-        userStats = await UserStats.create({ userId })
+        userStats = await UserStats.create({ user: userId })
       }
 
       // Check daily cap
@@ -201,7 +201,7 @@ export class GamificationService {
     const sortField = type === "all-time" ? "totalXP" : type === "weekly" ? "weeklyXP" : "monthlyXP"
 
     const leaderboard = await UserStats.find()
-      .populate("userId", "username avatar")
+      .populate("user", "username avatar")
       .sort({ [sortField]: -1 })
       .limit(limit)
       .lean()
@@ -220,7 +220,7 @@ export class GamificationService {
   static async getUserProgress(userId: string) {
     await connectDB()
 
-    const userStats = await UserStats.findOne({ userId }).populate("userId", "username avatar")
+    const userStats = await UserStats.findOne({ user: userId }).populate("user", "username avatar")
     if (!userStats) return null
 
     const currentRank = getRankByXP(userStats.totalXP)
@@ -273,7 +273,7 @@ export class GamificationService {
 
   // Method to check and award streak bonuses
   static async checkStreakBonuses(userId: string): Promise<number> {
-    const userStats = await UserStats.findOne({ userId })
+    const userStats = await UserStats.findOne({ user: userId })
     if (!userStats) return 0
     
     const streakBonus = getStreakBonus(userStats.loginStreak)
