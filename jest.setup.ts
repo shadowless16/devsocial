@@ -22,7 +22,7 @@ if (typeof global.Request === 'undefined') {
 
 if (typeof global.Response === 'undefined') {
   global.Response = class Response {
-    constructor(public body?: unknown, public init?: unknown) {
+    constructor(public body?: unknown, public init?: { status?: number }) {
       this.status = init?.status || 200
     }
     headers = new Map()
@@ -52,7 +52,7 @@ if (typeof global.fetch === 'undefined') {
 // Mock next/server modules
 jest.mock('next/server', () => ({
   NextRequest: class NextRequest {
-    constructor(public url: string, public init?: unknown) {
+    constructor(public url: string, public init?: { method?: string; body?: string | null }) {
       this.method = init?.method || 'GET'
       this.body = init?.body || null
     }
@@ -66,7 +66,7 @@ jest.mock('next/server', () => ({
     }
   },
   NextResponse: class NextResponse {
-    constructor(public body?: unknown, public init?: unknown) {
+    constructor(public body?: unknown, public init?: { status?: number }) {
       this.status = init?.status || 200
       this._data = body
     }
@@ -78,7 +78,7 @@ jest.mock('next/server', () => ({
       return this._data
     }
     
-    static json: (data: unknown, init?: unknown) => NextResponse = (data: unknown, init?: unknown) => {
+    static json: (data: unknown, init?: { status?: number }) => NextResponse = (data: unknown, init?: { status?: number }) => {
       const response = new NextResponse(data, init)
       response.status = init?.status || 200
       return response

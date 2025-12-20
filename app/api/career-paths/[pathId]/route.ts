@@ -38,7 +38,7 @@ export async function GET(request: NextRequest, { params }: Props) {
 
     // Get all modules for this path
     const modules = await Module.find({ 
-      pathId: path._id, 
+      pathId: path._id.toString(), 
       isActive: true 
     }).sort({ order: 1 })
 
@@ -49,7 +49,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     if (userId) {
       userProgress = await UserProgress.findOne({ 
         userId, 
-        pathId: path._id 
+        pathId: path._id.toString() 
       })
 
       // Add progress info to each module
