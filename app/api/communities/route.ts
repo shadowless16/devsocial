@@ -25,7 +25,7 @@ export async function POST(request: NextRequest) {
     }
 
     await dbConnect()
-    const { name, description, category, longDescription, rules } = await request.json()
+    const { name, description, category, rules } = await request.json()
 
     // Generate slug from name
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
@@ -35,7 +35,6 @@ export async function POST(request: NextRequest) {
       slug,
       description,
       category,
-      longDescription,
       rules: rules?.filter((rule: string) => rule?.trim()) || [],
       creator: new mongoose.Types.ObjectId(user.userId),
       members: [new mongoose.Types.ObjectId(user.userId)],
