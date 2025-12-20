@@ -65,7 +65,7 @@ export async function GET(request: NextRequest, { params }: Props) {
     const allModules = await Module.find({ 
       pathId: path._id, 
       isActive: true 
-    }).sort({ order: 1 }).select('_id title slug order')
+    } as any).sort({ order: 1 }).select('_id title slug order')
 
     const responseData = {
       ...moduleData.toObject(),
@@ -176,7 +176,7 @@ export async function POST(request: NextRequest, { params }: Props) {
 
     // Update progress stats
     const completedModules = userProgress.moduleProgress.filter((m: { completedAt?: Date }) => m.completedAt).length
-    const totalModules = await Module.countDocuments({ pathId: path._id, isActive: true })
+    const totalModules = await Module.countDocuments({ pathId: path._id, isActive: true } as any)
     
     userProgress.completionPercentage = (completedModules / totalModules) * 100
     userProgress.totalXpEarned += moduleData.xpReward
