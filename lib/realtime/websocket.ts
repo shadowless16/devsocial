@@ -170,14 +170,10 @@ export class WebSocketServer {
           await message.save()
           await message.populate("reactions.user", "username displayName avatar")
 
-          interface ParticipantsInFilter {
-            participants: { $in: unknown[] }
-          }
-
           // Find conversation and emit to all participants
           const conversation = await Conversation.findOne({
-            participants: { $in: [message.sender, message.recipient] },
-          } as ParticipantsInFilter)
+            participants: { $all: [message.sender, message.recipient] },
+          } as { participants: { $all: unknown[] } })
 
           if (conversation) {
             this.io.to(`conversation:${conversation._id}`).emit("message_reaction", {
