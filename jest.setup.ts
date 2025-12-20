@@ -57,7 +57,7 @@ jest.mock('next/server', () => ({
       this.body = init?.body || null
     }
     method = 'GET'
-    body = null
+    body: string | null = null
     nextUrl = { pathname: '/', searchParams: new URLSearchParams() }
     cookies = { get: jest.fn(), set: jest.fn() }
     headers = new Map()

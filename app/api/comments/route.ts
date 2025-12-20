@@ -1,4 +1,3 @@
-// app/api/comments/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { authMiddleware } from "@/middleware/auth";
 import Comment from "@/models/Comment";
@@ -9,6 +8,7 @@ import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/realtime/websocket";
 import Notification from "@/models/Notification";
 import { processMentions } from "@/utils/mention-utils";
+import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic'
 
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       author: authorId,
       post: postId,
       mentions,
-      mentionIds,
+      mentionIds: mentionIds.map(id => new mongoose.Types.ObjectId(id)),
     });
 
     (post as { commentsCount: number }).commentsCount = (post.commentsCount || 0) + 1;
