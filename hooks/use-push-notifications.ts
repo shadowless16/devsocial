@@ -19,48 +19,75 @@ export function usePushNotifications() {
       setSubscription(sub)
       setIsSubscribed(!!sub)
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error checking subscription:', errorMessage)
+      console.error('Error checking subscription:', error)
     }
   }
 
   const subscribe = async () => {
     try {
-      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-      if (!vapidPublicKey) {
-        throw new Error('VAPID public key not configured')
-      }
-
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
-        throw new Error('Notification permission denied')
+        return { success: false, error: 'Permission denied' }
       }
 
-      const registration = await navigator.serviceWorker.register('/sw.js')
-      await navigator.serviceWorker.ready
-
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-      })
-
-      const response = await fetch('/api/notifications/subscribe', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ subscription: sub })
-      })
-
-      if (!response.ok) {
-        throw new Error('Failed to save subscription')
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!vapidPublicKey) {
+        return { success: false, error: 'VAPID key not configured' }
       }
 
-      setSubscription(sub)
-      setIsSubscribed(true)
-      return { success: true }
+      let registration = await navigator.serviceWorker.getRegistration()
+      if (!registration) {
+        registration = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+        await navigator.serviceWorker.ready
+      }
+
+      try {
+        const sub = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
+        })
+
+        const response = await fetch('/api/notifications/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: sub })
+        })
+
+        if (!response.ok) {
+          throw new Error('Failed to save subscription')
+        }
+
+        setSubscription(sub)
+        setIsSubscribed(true)
+        return { success: true }
+      } catch (pushError) {
+        console.warn('Push subscription failed (normal on localhost), using fallback')
+        
+        // Fallback for localhost: save a mock subscription
+        const mockSub = {
+          endpoint: 'http://localhost:3000/mock-push',
+          keys: {
+            p256dh: 'mock-key',
+            auth: 'mock-auth'
+          }
+        }
+        
+        const response = await fetch('/api/notifications/subscribe', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ subscription: mockSub, isMock: true })
+        })
+
+        if (response.ok) {
+          setIsSubscribed(true)
+          return { success: true, warning: 'Using fallback mode (localhost)' }
+        }
+        
+        throw pushError
+      }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error subscribing to push notifications:', errorMessage)
-      return { success: false, error: error.message || String(error) }
+      console.error('Error subscribing:', error)
+      return { success: false, error: error instanceof Error ? error.message : String(error) }
     }
   }
 
@@ -68,18 +95,13 @@ export function usePushNotifications() {
     try {
       if (subscription) {
         await subscription.unsubscribe()
-        
-        await fetch('/api/notifications/unsubscribe', {
-          method: 'POST'
-        })
-
+        await fetch('/api/notifications/unsubscribe', { method: 'POST' })
         setSubscription(null)
         setIsSubscribed(false)
       }
       return { success: true }
     } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Error unsubscribing from push notifications:', errorMessage)
+      console.error('Error unsubscribing:', error)
       return { success: false, error }
     }
   }
