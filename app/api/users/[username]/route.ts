@@ -91,7 +91,7 @@ export async function GET(
       createdAt: Date
     }
     
-    const transformedPosts = (recentPosts as (PostData & Record<string, unknown>)[]).map((post) => ({
+    const transformedPosts = (recentPosts as unknown as PostData[]).map((post) => ({
       ...post,
       _id: post._id.toString(),
       id: post._id.toString(),
