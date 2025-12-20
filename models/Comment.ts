@@ -70,4 +70,4 @@ const CommentSchema = new Schema<IComment>(
 // Index for efficient querying
 CommentSchema.index({ post: 1, createdAt: -1 })
 
-export default mongoose.models.Comment || mongoose.model<IComment>("Comment", CommentSchema)
+export default (mongoose.models.Comment || mongoose.model<IComment>("Comment", CommentSchema)) as mongoose.Model<IComment>;

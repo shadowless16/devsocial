@@ -7,8 +7,14 @@ import { sendPushNotification } from '@/lib/notifications/push-notification'
 import { authMiddleware } from '@/middleware/auth'
 
 export async function GET(request: NextRequest) {
+  const startTotal = performance.now();
+  console.log('[API] Notifications: Request started');
+
   try {
+    const startAuth = performance.now();
     const authResult = await authMiddleware(request)
+    console.log(`[API] Notifications: Auth took ${(performance.now() - startAuth).toFixed(2)}ms`);
+
     if (!authResult.success) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
@@ -24,11 +30,14 @@ export async function GET(request: NextRequest) {
       const cacheKey = `notifications_unread_${userId}`;
       const cached = cache.get(cacheKey);
       if (cached) {
+        console.log('[API] Notifications: Returning cached unread count');
         return NextResponse.json(cached);
       }
     }
 
+    const startDb = performance.now();
     await connectWithRetry()
+    console.log(`[API] Notifications: DB Connection took ${(performance.now() - startDb).toFixed(2)}ms`);
 
     const query: Record<string, unknown> = { recipient: userId }
     if (unreadOnly) {
@@ -36,6 +45,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Use aggregation for better performance
+    const startQuery = performance.now();
     const [notifications, unreadCount] = await Promise.all([
       Notification.find(query)
         .populate('sender', 'username displayName avatar level')
@@ -50,6 +60,7 @@ export async function GET(request: NextRequest) {
         Notification.countDocuments({ recipient: userId, read: false }) :
         Promise.resolve(0)
     ])
+    console.log(`[API] Notifications: Query execution took ${(performance.now() - startQuery).toFixed(2)}ms`);
 
     const responseData = {
       success: true,
@@ -69,6 +80,7 @@ export async function GET(request: NextRequest) {
       cache.set(cacheKey, responseData, 10000);
     }
 
+    console.log(`[API] Notifications: Total request took ${(performance.now() - startTotal).toFixed(2)}ms`);
     return NextResponse.json(responseData)
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
@@ -105,7 +117,7 @@ export async function POST(request: NextRequest) {
     // Send push notification
     const recipientUser = await User.findById(recipient)
     if (recipientUser?.pushSubscription) {
-      await sendPushNotification(recipientUser.pushSubscription, {
+      await sendPushNotification(recipientUser.pushSubscription as any, {
         title,
         body: message,
         url: actionUrl || '/notifications',

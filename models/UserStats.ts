@@ -177,4 +177,4 @@ UserStatsSchema.index({ weeklyXP: -1 })
 UserStatsSchema.index({ monthlyXP: -1 })
 UserStatsSchema.index({ currentLevel: -1 })
 
-export default mongoose.models.UserStats || mongoose.model<IUserStats>("UserStats", UserStatsSchema)
+export default (mongoose.models.UserStats || mongoose.model<IUserStats>("UserStats", UserStatsSchema)) as mongoose.Model<IUserStats>;

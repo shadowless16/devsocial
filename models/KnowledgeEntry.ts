@@ -79,4 +79,4 @@ KnowledgeEntrySchema.virtual('likesCount').get(function() {
 // Ensure virtual fields are serialized
 KnowledgeEntrySchema.set('toJSON', { virtuals: true })
 
-export default mongoose.models.KnowledgeEntry || mongoose.model<IKnowledgeEntry>('KnowledgeEntry', KnowledgeEntrySchema)
+export default (mongoose.models.KnowledgeEntry || mongoose.model<IKnowledgeEntry>('KnowledgeEntry', KnowledgeEntrySchema)) as mongoose.Model<IKnowledgeEntry>;

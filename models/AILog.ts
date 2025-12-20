@@ -64,4 +64,4 @@ const AILogSchema = new Schema<IAILog>({
 AILogSchema.index({ createdAt: -1 })
 AILogSchema.index({ service: 1, taskType: 1 })
 
-export default mongoose.models.AILog || mongoose.model<IAILog>('AILog', AILogSchema)
+export default (mongoose.models.AILog || mongoose.model<IAILog>('AILog', AILogSchema)) as mongoose.Model<IAILog>;

@@ -66,7 +66,7 @@ export async function GET(
     }
     
     // Transform the data
-    const typedFollowingData = followingData as FollowingData[];
+    const typedFollowingData = followingData as unknown as FollowingData[];
     const following = typedFollowingData
       .filter((follow) => follow.following)
       .map((follow) => ({

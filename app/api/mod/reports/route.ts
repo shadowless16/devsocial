@@ -3,7 +3,7 @@ import { type NextRequest } from "next/server"
 // Force dynamic rendering
 export const dynamic = 'force-dynamic'
 import connectDB from "@/lib/core/db"
-import Report from "@/models/Report"
+import Report, { IReport } from "@/models/Report"
 import Post from "@/models/Post"
 import Comment from "@/models/Comment"
 import { authMiddleware, authorizeRoles } from "@/middleware/auth"
@@ -43,29 +43,26 @@ export async function GET(request: NextRequest) {
     const reportsWithContent = await Promise.all(
       reports.map(async (report) => {
         let reportedContent = null
+        const typedReport = report as unknown as IReport & { reporter: any; reportedPost: any }
 
-        if (report.reportedItemType === "post") {
-          reportedContent = await Post.findById(report.reportedItemId)
+        // Schema only covers Post currently
+        if (typedReport.reportedPost) {
+           reportedContent = await Post.findById(typedReport.reportedPost)
             .populate("author", "username avatar level")
-            .lean()
-        } else if (report.reportedItemType === "comment") {
-          reportedContent = await Comment.findById(report.reportedItemId)
-            .populate("author", "username avatar level")
-            .populate("post", "content")
             .lean()
         }
 
         return {
-          id: report._id,
+          id: typedReport._id,
           reporter: {
-            username: report.reporter.username,
-            avatar: report.reporter.avatar,
+            username: typedReport.reporter?.username,
+            avatar: typedReport.reporter?.avatar,
           },
-          reportedItemType: report.reportedItemType,
-          reportedItemId: report.reportedItemId,
-          reason: report.reason,
-          status: report.status,
-          createdAt: report.createdAt,
+          reportedItemType: 'post', // Hardcoded as schema implies only posts
+          reportedItemId: typedReport.reportedPost,
+          reason: typedReport.reason,
+          status: typedReport.status,
+          createdAt: typedReport.createdAt,
           reportedContent,
         }
       }),

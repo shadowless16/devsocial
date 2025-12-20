@@ -44,4 +44,4 @@ const ActivitySchema = new Schema<IActivity>(
 ActivitySchema.index({ user: 1, createdAt: -1 })
 ActivitySchema.index({ type: 1, createdAt: -1 })
 
-export default mongoose.models.Activity || mongoose.model<IActivity>("Activity", ActivitySchema)
+export default (mongoose.models.Activity || mongoose.model<IActivity>("Activity", ActivitySchema)) as mongoose.Model<IActivity>;

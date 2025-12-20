@@ -123,4 +123,4 @@ const UserProfileSchema = new Schema<IUserProfile>(
   { timestamps: true }
 )
 
-export default mongoose.models.UserProfile || mongoose.model<IUserProfile>("UserProfile", UserProfileSchema)
+export default (mongoose.models.UserProfile || mongoose.model<IUserProfile>("UserProfile", UserProfileSchema)) as mongoose.Model<IUserProfile>;

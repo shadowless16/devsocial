@@ -112,4 +112,4 @@ MessageSchema.index({ sender: 1, recipient: 1, createdAt: -1 })
 MessageSchema.index({ recipient: 1, createdAt: -1 })
 MessageSchema.index({ "readBy.user": 1 })
 
-export default mongoose.models.Message || mongoose.model<IMessage>("Message", MessageSchema)
+export default (mongoose.models.Message || mongoose.model<IMessage>("Message", MessageSchema)) as mongoose.Model<IMessage>;

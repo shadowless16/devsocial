@@ -55,4 +55,4 @@ const XPLogSchema = new Schema<IXPLog>(
 XPLogSchema.index({ userId: 1, createdAt: -1 })
 XPLogSchema.index({ type: 1, createdAt: -1 })
 
-export default mongoose.models.XPLog || mongoose.model<IXPLog>("XPLog", XPLogSchema)
+export default (mongoose.models.XPLog || mongoose.model<IXPLog>("XPLog", XPLogSchema)) as mongoose.Model<IXPLog>;

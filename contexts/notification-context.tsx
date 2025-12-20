@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react'
 
 interface Notification {
   _id: string
@@ -37,7 +37,7 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
 
-  const fetchNotifications = async () => {
+  const fetchNotifications = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch('/api/notifications?limit=50')
@@ -52,9 +52,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
 
-  const refreshUnreadCount = async () => {
+  const refreshUnreadCount = useCallback(async () => {
     try {
       const response = await fetch('/api/notifications?unread=true&limit=1')
       const data = await response.json()
@@ -66,9 +66,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     console.error('Error fetching unread count:', errorMessage)
       setUnreadCount(0)
     }
-  }
+  }, [])
 
-  const markAsRead = async (notificationId: string) => {
+  const markAsRead = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch('/api/notifications/mark-read', {
         method: 'PUT',
@@ -86,9 +86,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error('Error marking notification as read:', errorMessage)
     }
-  }
+  }, [])
 
-  const markAsUnread = async (notificationId: string) => {
+  const markAsUnread = useCallback(async (notificationId: string) => {
     try {
       const response = await fetch('/api/notifications/mark-unread', {
         method: 'PUT',
@@ -106,9 +106,9 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error('Error marking notification as unread:', errorMessage)
     }
-  }
+  }, [])
 
-  const markAllAsRead = async () => {
+  const markAllAsRead = useCallback(async () => {
     try {
       const response = await fetch('/api/notifications/mark-read', {
         method: 'PUT',
@@ -124,14 +124,14 @@ export function NotificationProvider({ children }: { children: ReactNode }) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error('Error marking all notifications as read:', errorMessage)
     }
-  }
+  }, [])
 
   useEffect(() => {
     refreshUnreadCount()
     // Poll less frequently to reduce server load
     const interval = setInterval(refreshUnreadCount, 120000) // 2 minutes instead of 30 seconds
     return () => clearInterval(interval)
-  }, [])
+  }, [refreshUnreadCount])
 
   return (
     <NotificationContext.Provider value={{

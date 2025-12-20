@@ -36,14 +36,14 @@ export async function GET(request: NextRequest) {
       type: activity.type === 'post_created' ? 'post' : activity.type,
       title: getActivityTitle(activity.type),
       description: activity.description || getActivityDescription(activity.type),
-      content: activity.metadata?.content,
+      content: (activity.metadata as any)?.content,
       timestamp: getRelativeTime(activity.createdAt),
       xpEarned: activity.xpEarned,
       createdAt: activity.createdAt,
       engagement: {
-        likes: activity.metadata?.likes || 0,
-        comments: activity.metadata?.comments || 0,
-        shares: activity.metadata?.shares || 0
+        likes: (activity.metadata as any)?.likes || 0,
+        comments: (activity.metadata as any)?.comments || 0,
+        shares: (activity.metadata as any)?.shares || 0
       }
     }))
 
@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
     const transformedPosts = posts.map(post => ({
       type: 'post',
       title: 'Created a new post',
-      description: post.title || post.content?.substring(0, 100) + '...' || 'Shared new content',
+      description: (post as any).title || post.content?.substring(0, 100) + '...' || 'Shared new content',
       content: post.content,
       timestamp: getRelativeTime(post.createdAt),
       xpEarned: post.xpAwarded || 10,

@@ -35,4 +35,4 @@ LikeSchema.index({ user: 1, targetId: 1, targetType: 1 }, { unique: true })
 // Performance indexes for queries
 LikeSchema.index({ targetId: 1, targetType: 1 })
 
-export default mongoose.models.Like || mongoose.model<ILike>("Like", LikeSchema)
+export default (mongoose.models.Like || mongoose.model<ILike>("Like", LikeSchema)) as mongoose.Model<ILike>;

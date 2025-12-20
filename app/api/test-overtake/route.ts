@@ -72,8 +72,8 @@ export async function POST(request: NextRequest) {
         overtakes: result.overtakes,
         userB: { username: userB.username, points: userB.points },
         notifications: notifications.map(n => ({
-          recipient: n.recipient.username,
-          sender: n.sender.username,
+          recipient: (n.recipient as any)?.username || 'Unknown',
+          sender: (n.sender as any)?.username || 'Unknown',
           type: n.type,
           message: n.message
         }))
@@ -123,8 +123,8 @@ export async function GET() {
       success: true,
       testUsers: testUsers.map(u => ({ username: u.username, points: u.points })),
       notifications: notifications.map(n => ({
-        recipient: n.recipient.username,
-        sender: n.sender.username,
+        recipient: (n.recipient as any)?.username || 'Unknown',
+        sender: (n.sender as any)?.username || 'Unknown',
         type: n.type,
         message: n.message,
         createdAt: n.createdAt

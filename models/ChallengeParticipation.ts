@@ -64,5 +64,5 @@ ChallengeParticipationSchema.index({ user: 1, challenge: 1 }, { unique: true })
 ChallengeParticipationSchema.index({ challenge: 1, status: 1 })
 ChallengeParticipationSchema.index({ user: 1, status: 1 })
 
-export default mongoose.models.ChallengeParticipation ||
-  mongoose.model<IChallengeParticipation>("ChallengeParticipation", ChallengeParticipationSchema)
+export default (mongoose.models.ChallengeParticipation || mongoose.model<IChallengeParticipation>("ChallengeParticipation", ChallengeParticipationSchema)) as mongoose.Model<IChallengeParticipation>;
+

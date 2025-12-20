@@ -54,15 +54,15 @@ export async function GET(req: NextRequest) {
           displayName: user.displayName
         },
         followers: followers.map(f => ({
-          _id: f.follower?._id,
-          username: f.follower?.username,
-          displayName: f.follower?.displayName || f.follower?.username,
+          _id: (f.follower as any)?._id,
+          username: (f.follower as any)?.username,
+          displayName: (f.follower as any)?.displayName || (f.follower as any)?.username,
           createdAt: f.createdAt
         })),
         following: following.map(f => ({
-          _id: f.following?._id,
-          username: f.following?.username,
-          displayName: f.following?.displayName || f.following?.username,
+          _id: (f.following as any)?._id,
+          username: (f.following as any)?.username,
+          displayName: (f.following as any)?.displayName || (f.following as any)?.username,
           createdAt: f.createdAt
         })),
         stats: {

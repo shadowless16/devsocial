@@ -174,7 +174,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           
           let progressUpdated = false;
           
-          for (const step of mission.steps || []) {
+          for (const s of (mission as any).steps || []) {
+            const step = s as any;
             const stepId = step.id || step._id?.toString();
             if (stepId && !progress.stepsCompleted.includes(stepId)) {
               // Check if this step is related to commenting
@@ -193,10 +194,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           }
           
           // Check if mission is completed
-          if (progress.stepsCompleted.length >= (mission.steps?.length || 0) && progress.status !== 'completed') {
+          if (progress.stepsCompleted.length >= ((mission as any).steps?.length || 0) && progress.status !== 'completed') {
             progress.status = "completed";
             progress.completedAt = new Date();
-            progress.xpEarned = mission.rewards?.xp || 0;
+            progress.xpEarned = (mission as any).rewards?.xp || 0;
             progressUpdated = true;
           }
           

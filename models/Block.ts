@@ -1,13 +1,20 @@
-import mongoose from "mongoose"
+import mongoose, { Schema, type Document } from "mongoose"
 
-const blockSchema = new mongoose.Schema({
+export interface IBlock extends Document {
+  blocker: mongoose.Types.ObjectId
+  blocked: mongoose.Types.ObjectId
+  reason: "spam" | "harassment" | "inappropriate" | "other"
+  createdAt: Date
+}
+
+const blockSchema = new Schema<IBlock>({
   blocker: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
   blocked: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
@@ -27,4 +34,4 @@ blockSchema.index({ blocker: 1, blocked: 1 }, { unique: true })
 blockSchema.index({ blocker: 1 })
 blockSchema.index({ blocked: 1 })
 
-export default mongoose.models.Block || mongoose.model("Block", blockSchema)
+export default (mongoose.models.Block || mongoose.model<IBlock>("Block", blockSchema)) as mongoose.Model<IBlock>;

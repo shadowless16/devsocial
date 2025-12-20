@@ -1,9 +1,18 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema, type Document } from 'mongoose'
 
-const FeedbackCommentSchema = new mongoose.Schema(
+export interface IFeedbackComment extends Document {
+  feedbackId: mongoose.Types.ObjectId
+  userId: mongoose.Types.ObjectId
+  content: string
+  isAdminComment: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+const FeedbackCommentSchema = new Schema<IFeedbackComment>(
   {
-    feedbackId: { type: mongoose.Schema.Types.ObjectId, ref: 'Feedback', required: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
+    feedbackId: { type: Schema.Types.ObjectId, ref: 'Feedback', required: true },
+    userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     content: { type: String, required: true, maxlength: 1000 },
     isAdminComment: { type: Boolean, default: false }
   },
@@ -15,6 +24,4 @@ const FeedbackCommentSchema = new mongoose.Schema(
 FeedbackCommentSchema.index({ feedbackId: 1, createdAt: -1 })
 FeedbackCommentSchema.index({ userId: 1 })
 
-const FeedbackComment = mongoose.models.FeedbackComment || mongoose.model('FeedbackComment', FeedbackCommentSchema)
-
-export default FeedbackComment
+export default (mongoose.models.FeedbackComment || mongoose.model<IFeedbackComment>('FeedbackComment', FeedbackCommentSchema)) as mongoose.Model<IFeedbackComment>;

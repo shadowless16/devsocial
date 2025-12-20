@@ -141,8 +141,8 @@ platformAnalyticsSchema.index({ date: -1 })
 gamificationAnalyticsSchema.index({ date: -1 })
 growthAnalyticsSchema.index({ date: -1 })
 
-export const UserAnalytics = mongoose.models.UserAnalytics || mongoose.model('UserAnalytics', userAnalyticsSchema)
-export const ContentAnalytics = mongoose.models.ContentAnalytics || mongoose.model('ContentAnalytics', contentAnalyticsSchema)
-export const PlatformAnalytics = mongoose.models.PlatformAnalytics || mongoose.model('PlatformAnalytics', platformAnalyticsSchema)
-export const GamificationAnalytics = mongoose.models.GamificationAnalytics || mongoose.model('GamificationAnalytics', gamificationAnalyticsSchema)
-export const GrowthAnalytics = mongoose.models.GrowthAnalytics || mongoose.model('GrowthAnalytics', growthAnalyticsSchema)
+export const UserAnalytics = (mongoose.models.UserAnalytics || mongoose.model('UserAnalytics', userAnalyticsSchema)) as mongoose.Model<mongoose.Document>
+export const ContentAnalytics = (mongoose.models.ContentAnalytics || mongoose.model('ContentAnalytics', contentAnalyticsSchema)) as mongoose.Model<mongoose.Document>
+export const PlatformAnalytics = (mongoose.models.PlatformAnalytics || mongoose.model('PlatformAnalytics', platformAnalyticsSchema)) as mongoose.Model<mongoose.Document>
+export const GamificationAnalytics = (mongoose.models.GamificationAnalytics || mongoose.model('GamificationAnalytics', gamificationAnalyticsSchema)) as mongoose.Model<mongoose.Document>
+export const GrowthAnalytics = (mongoose.models.GrowthAnalytics || mongoose.model('GrowthAnalytics', growthAnalyticsSchema)) as mongoose.Model<mongoose.Document>

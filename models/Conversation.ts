@@ -47,4 +47,4 @@ const ConversationSchema = new Schema<IConversation>(
 ConversationSchema.index({ participants: 1 }, { unique: true })
 ConversationSchema.index({ lastActivity: -1 })
 
-export default mongoose.models.Conversation || mongoose.model<IConversation>("Conversation", ConversationSchema)
+export default (mongoose.models.Conversation || mongoose.model<IConversation>("Conversation", ConversationSchema)) as mongoose.Model<IConversation>;

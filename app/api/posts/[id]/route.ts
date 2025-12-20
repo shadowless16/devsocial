@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .lean()
 
     // Format post for response
-    const postData = post as { _id: unknown; isAnonymous?: boolean; author: { username: string; avatar: string; level: number }; content: string; imageUrl?: string; imageUrls?: string[]; videoUrls?: string[]; tags: string[]; likesCount: number; commentsCount: number; viewsCount?: number; xpAwarded: number; createdAt: Date }
+    const postData = post as unknown as { _id: unknown; isAnonymous?: boolean; author: { username: string; avatar: string; level: number }; content: string; imageUrl?: string; imageUrls?: string[]; videoUrls?: string[]; tags: string[]; likesCount: number; commentsCount: number; viewsCount?: number; xpAwarded: number; createdAt: Date }
     const formattedPost = {
       id: postData._id,
       author: postData.isAnonymous
@@ -62,10 +62,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       comments: comments.map((comment) => ({
         id: comment._id,
         author: {
-          username: comment.author.username,
-          displayName: comment.author.username,
-          avatar: comment.author.avatar,
-          level: comment.author.level,
+          username: (comment.author as any).username,
+          displayName: (comment.author as any).username,
+          avatar: (comment.author as any).avatar,
+          level: (comment.author as any).level,
         },
         content: comment.content,
         likesCount: comment.likesCount,

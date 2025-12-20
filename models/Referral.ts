@@ -71,4 +71,4 @@ ReferralSchema.index({ referrer: 1, status: 1 })
 ReferralSchema.index({ referred: 1, status: 1 })
 ReferralSchema.index({ referralCode: 1, status: 1 })
 
-export default mongoose.models.Referral || mongoose.model<IReferral>("Referral", ReferralSchema)
+export default (mongoose.models.Referral || mongoose.model<IReferral>("Referral", ReferralSchema)) as mongoose.Model<IReferral>;

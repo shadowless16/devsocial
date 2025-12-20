@@ -66,4 +66,4 @@ const CareerPathSchema = new Schema<ICareerPath>({
   timestamps: true
 })
 
-export default mongoose.models.CareerPath || mongoose.model<ICareerPath>('CareerPath', CareerPathSchema)
+export default (mongoose.models.CareerPath || mongoose.model<ICareerPath>('CareerPath', CareerPathSchema)) as mongoose.Model<ICareerPath>;

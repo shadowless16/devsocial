@@ -1,13 +1,28 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema, type Document } from 'mongoose'
 
-const NotificationSchema = new mongoose.Schema({
+export interface INotification extends Document {
+  recipient: mongoose.Types.ObjectId
+  sender: mongoose.Types.ObjectId
+  type: 'like' | 'comment' | 'follow' | 'project_like' | 'mention' | 'system' | 'xp_overtake' | 'xp_overtaken'
+  title: string
+  message: string
+  relatedPost?: mongoose.Types.ObjectId
+  relatedProject?: mongoose.Types.ObjectId
+  relatedComment?: mongoose.Types.ObjectId
+  read: boolean
+  actionUrl?: string
+  createdAt: Date
+  updatedAt: Date
+}
+
+const NotificationSchema = new Schema<INotification>({
   recipient: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
   sender: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
@@ -27,15 +42,15 @@ const NotificationSchema = new mongoose.Schema({
     maxlength: 500
   },
   relatedPost: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Post'
   },
   relatedProject: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Project'
   },
   relatedComment: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'Comment'
   },
   read: {
@@ -52,4 +67,4 @@ const NotificationSchema = new mongoose.Schema({
 NotificationSchema.index({ recipient: 1, createdAt: -1 });
 NotificationSchema.index({ recipient: 1, read: 1 });
 
-export default mongoose.models.Notification || mongoose.model('Notification', NotificationSchema)
+export default (mongoose.models.Notification || mongoose.model<INotification>('Notification', NotificationSchema)) as mongoose.Model<INotification>;

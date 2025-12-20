@@ -168,7 +168,7 @@ export async function POST(request: NextRequest, { params }: Props) {
       existingProgress.completedAt = new Date()
     } else {
       userProgress.moduleProgress.push({
-        moduleId: moduleData._id,
+        moduleId: moduleData._id as any,
         completedAt: new Date(),
         timeSpent: 0
       })

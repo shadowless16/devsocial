@@ -29,13 +29,13 @@ export async function GET(request: NextRequest) {
           moduleCount: path.modules.length,
           completedModules: progress ? progress.moduleProgress.filter((m: unknown) => (m as { completedAt?: Date }).completedAt).length : 0
         }
-      })
+      }) as any[]
     } else {
       pathsWithProgress = paths.map(path => ({
         ...path.toObject(),
         moduleCount: path.modules.length,
         completedModules: 0
-      }))
+      })) as any[]
     }
 
     return NextResponse.json({

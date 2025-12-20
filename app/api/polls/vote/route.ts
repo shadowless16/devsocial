@@ -28,7 +28,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Poll has ended" }, { status: 400 })
     }
 
-    const hasVoted = post.poll.options.some((opt: { voters: string[] }) => opt.voters.includes(session.user.id))
+    const hasVoted = post.poll.options.some((opt: any) => opt.voters.some((v: any) => v.toString() === session.user.id))
     if (hasVoted) {
       return NextResponse.json({ success: false, message: "Already voted" }, { status: 400 })
     }
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Too many choices" }, { status: 400 })
     }
 
-    post.poll.options = post.poll.options.map((opt: { id: string; votes: number; voters: string[] }) => {
+    post.poll.options = post.poll.options.map((opt: any) => {
       if (optionIds.includes(opt.id)) {
         return {
           ...opt,

@@ -28,7 +28,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Verify user is part of conversation
     const conversation = await Conversation.findById(conversationId)
-    if (!conversation || !conversation.participants.includes(userId as unknown)) {
+    if (!conversation || !conversation.participants.some((p: any) => p.toString() === userId)) {
       return NextResponse.json(errorResponse("Conversation not found"), { status: 404 })
     }
 
@@ -116,7 +116,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Verify user is part of conversation
     const conversation = await Conversation.findById(conversationId)
-    if (!conversation || !conversation.participants.includes(userId as unknown)) {
+    if (!conversation || !conversation.participants.some((p: any) => p.toString() === userId)) {
       return NextResponse.json(errorResponse("Conversation not found"), { status: 404 })
     }
 
@@ -145,7 +145,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     ])
 
     // Update conversation
-    conversation.lastMessage = message._id as unknown
+    conversation.lastMessage = message._id as any
     conversation.lastActivity = new Date()
 
     // Update unread count for recipient
