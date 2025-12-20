@@ -9,7 +9,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { type = 'test' } = await request.json().catch(() => ({}))
+    let type = 'test'
+    try {
+      const body = await request.json()
+      type = body.type || 'test'
+    } catch {
+      // No body or invalid JSON, use default
+    }
 
     const notifications = {
       test: {

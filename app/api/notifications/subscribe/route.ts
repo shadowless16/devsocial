@@ -1,26 +1,45 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { connectWithRetry } from '@/lib/core/connect-with-retry'
+import { getServerSession } from 'next-auth'
+import { authOptions } from '@/app/api/auth/[...nextauth]/route'
+import dbConnect from '@/lib/db'
 import User from '@/models/User'
-import { getSession } from '@/lib/auth/server-auth'
 
-export async function POST(request: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
-    const session = await getSession(request)
+    const session = await getServerSession(authOptions)
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { subscription } = await request.json()
-    await connectWithRetry()
+    const subscription = await req.json()
 
+    await dbConnect()
     await User.findByIdAndUpdate(session.user.id, {
-      pushSubscription: subscription
+      pushSubscription: subscription,
     })
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Operation failed';
-    console.error('Subscribe error:', errorMessage)
+    console.error('Subscribe error:', error)
     return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 })
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session?.user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    await dbConnect()
+    await User.findByIdAndUpdate(session.user.id, {
+      $unset: { pushSubscription: '' },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (error) {
+    console.error('Unsubscribe error:', error)
+    return NextResponse.json({ error: 'Failed to unsubscribe' }, { status: 500 })
   }
 }
