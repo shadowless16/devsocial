@@ -3,6 +3,7 @@ import connectDB from "@/lib/core/db"
 import User from "@/models/User"
 import UserProfile from "@/models/UserProfile"
 import { getSession } from '@/lib/auth/server-auth'
+import mongoose from 'mongoose'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { authOptions } from "@/lib/auth/auth"
 
@@ -27,7 +28,7 @@ export async function GET(request: NextRequest) {
     // Create default profile if doesn't exist
     if (!userProfile) {
       userProfile = await UserProfile.create({
-        user: session.user.id,
+        user: new mongoose.Types.ObjectId(session.user.id),
         techStack: user.techStack || [],
         socialLinks: [
           user.githubUsername ? { platform: "GitHub", url: `https://github.com/${user.githubUsername}` } : null,

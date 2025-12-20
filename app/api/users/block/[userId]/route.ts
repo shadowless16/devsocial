@@ -5,6 +5,7 @@ import Block from "@/models/Block"
 import Follow from "@/models/Follow"
 import { authMiddleware, type AuthResult } from "@/middleware/auth"
 import { successResponse, errorResponse } from "@/utils/response"
+import mongoose from "mongoose"
 
 // POST /api/user/block/[userId] - Block a user
 
@@ -44,8 +45,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Create block relationship
     const block = await Block.create({
-      blocker: currentUserId,
-      blocked: userId,
+      blocker: new mongoose.Types.ObjectId(currentUserId),
+      blocked: new mongoose.Types.ObjectId(userId),
     })
 
     // Remove any existing follow relationships

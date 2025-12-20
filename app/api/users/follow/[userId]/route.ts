@@ -9,6 +9,7 @@ import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP, XP_VALUES } from "@/utils/awardXP"
 import MissionProgress from "@/models/MissionProgress"
 import { notifyFollow } from "@/lib/notifications/notification-helper"
+import mongoose from "mongoose"
 
 // POST /api/user/follow/[userId] - Follow a user
 
@@ -57,8 +58,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let isNewFollow = false;
     try {
       follow = await Follow.create({
-        follower: currentUserId,
-        following: userId,
+        follower: new mongoose.Types.ObjectId(currentUserId),
+        following: new mongoose.Types.ObjectId(userId),
       });
       isNewFollow = true;
     } catch (createError) {
@@ -81,7 +82,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Create an activity record for the user who followed
     await Activity.create({
-      user: currentUserId,
+      user: new mongoose.Types.ObjectId(currentUserId),
       type: "user_followed",
       description: `Started following ${userToFollow.displayName || userToFollow.username}`,
       metadata: { followedUserId: userId },

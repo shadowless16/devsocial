@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import connectDB from '@/lib/core/db'
 import Report from '@/models/Report'
 import { getSession } from '@/lib/auth/server-auth'
+import mongoose from 'mongoose'
 
 export async function GET(request: NextRequest) {
   try {
@@ -70,9 +71,9 @@ export async function POST(request: NextRequest) {
     }
 
     const report = await Report.create({
-      reporter: session.user.id,
+      reporter: new mongoose.Types.ObjectId(session.user.id),
       reportedUser: post.author._id,
-      reportedPost: postId,
+      reportedPost: new mongoose.Types.ObjectId(postId),
       reason,
       description: description || '',
       status: 'pending'

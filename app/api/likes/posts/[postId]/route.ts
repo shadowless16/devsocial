@@ -10,6 +10,7 @@ import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/realtime/websocket";
 import { handleDatabaseError } from "@/lib/api/api-error-handler";
 import { notifyLike } from "@/lib/notifications/notification-helper";
+import mongoose from "mongoose";
 
 
 export const dynamic = 'force-dynamic'
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       // Like
       try {
         await Promise.all([
-          Like.create({ user: userId, targetId: postId, targetType: 'post' }),
+          Like.create({ user: new mongoose.Types.ObjectId(userId), targetId: new mongoose.Types.ObjectId(postId), targetType: 'post' }),
           Post.findByIdAndUpdate(postId, { $inc: { likesCount: 1 } })
         ]);
         likesCount += 1;
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             await Promise.all([
               awardXP(userId, "like_given"),
               Activity.create({
-                user: userId,
+                user: new mongoose.Types.ObjectId(userId),
                 type: "like_given",
                 description: `Liked a post`,
                 metadata: {
