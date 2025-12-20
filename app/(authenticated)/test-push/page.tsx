@@ -3,28 +3,22 @@
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
+import { usePushNotifications } from '@/hooks/use-push-notifications'
 
 export default function TestPushPage() {
   const [result, setResult] = useState('')
   const [loading, setLoading] = useState(false)
-  const [hasSubscription, setHasSubscription] = useState(false)
+  const { isSupported, isSubscribed, subscribe } = usePushNotifications()
 
-  useEffect(() => {
-    checkSubscription()
-  }, [])
-
-  const checkSubscription = async () => {
-    try {
-      const response = await fetch('/api/notifications/subscribe', {
-        method: 'GET'
-      })
-      if (response.ok) {
-        const data = await response.json()
-        setHasSubscription(!!data.subscription)
-      }
-    } catch (error) {
-      console.error('Check failed:', error)
+  const handleSubscribe = async () => {
+    setLoading(true)
+    const result = await subscribe()
+    if (result.success) {
+      setResult('✅ Subscribed successfully! Now try the notification buttons below.')
+    } else {
+      setResult(`❌ Subscription failed: ${result.error}`)
     }
+    setLoading(false)
   }
 
   const testNotification = async (type: string) => {
@@ -74,8 +68,20 @@ export default function TestPushPage() {
     <div className="container max-w-2xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6">🔔 Test Push Notifications</h1>
       
+      <Card className="p-6 mb-6 bg-green-50 dark:bg-green-900/20 border-green-200">
+        <h2 className="text-xl font-semibold mb-4">Step 1: Subscribe to Push Notifications</h2>
+        <p className="text-sm mb-4">
+          {isSubscribed ? '✅ You are subscribed!' : '⚠️ You need to subscribe first'}
+        </p>
+        {!isSubscribed && (
+          <Button onClick={handleSubscribe} disabled={loading || !isSupported}>
+            🔔 Subscribe to Push Notifications
+          </Button>
+        )}
+      </Card>
+
       <Card className="p-6 mb-6 bg-blue-50 dark:bg-blue-900/20 border-blue-200">
-        <h2 className="text-xl font-semibold mb-4">Quick Browser Test</h2>
+        <h2 className="text-xl font-semibold mb-4">Step 2: Quick Browser Test</h2>
         <p className="text-sm mb-4">First, test if your browser supports notifications:</p>
         <Button onClick={testBrowserNotification}>
           🧪 Test Browser Notification
@@ -88,7 +94,7 @@ export default function TestPushPage() {
           <p>Browser Support: {typeof window !== 'undefined' && 'Notification' in window ? '✅ Supported' : '❌ Not Supported'}</p>
           <p>Service Worker: {typeof window !== 'undefined' && 'serviceWorker' in navigator ? '✅ Supported' : '❌ Not Supported'}</p>
           <p>Push Manager: {typeof window !== 'undefined' && 'PushManager' in window ? '✅ Supported' : '❌ Not Supported'}</p>
-          <p>Subscription: {hasSubscription ? '✅ Active' : '⚠️ Not Active (Push may not work)'}</p>
+          <p>Subscription: {isSubscribed ? '✅ Active' : '⚠️ Not Active (Subscribe above first!)'}</p>
         </div>
       </Card>
 

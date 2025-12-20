@@ -50,7 +50,7 @@ export function usePushNotifications() {
         const response = await fetch('/api/notifications/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: sub })
+          body: JSON.stringify(sub)
         })
 
         if (!response.ok) {
@@ -75,7 +75,7 @@ export function usePushNotifications() {
         const response = await fetch('/api/notifications/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ subscription: mockSub, isMock: true })
+          body: JSON.stringify(mockSub)
         })
 
         if (response.ok) {
