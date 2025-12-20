@@ -333,14 +333,17 @@ export class FeedAlgorithm {
     },
   ) {
     try {
-      // Record the activity
+      // Record the activity - map interaction types to Activity model types
+      const activityType = interaction.type === "like" ? "like_given" : "post_created";
+      
       await Activity.create({
         user: userId,
-        type: interaction.type,
-        targetType: "post",
-        targetId: interaction.postId,
+        type: activityType,
+        description: `User ${interaction.type}d a post`,
         metadata: {
+          postId: interaction.postId,
           duration: interaction.duration,
+          interactionType: interaction.type,
         },
       })
 
