@@ -1,13 +1,19 @@
-import mongoose from "mongoose"
+import mongoose, { Schema, type Document } from "mongoose"
 
-const followSchema = new mongoose.Schema({
+export interface IFollow extends Document {
+  follower: mongoose.Types.ObjectId
+  following: mongoose.Types.ObjectId
+  createdAt: Date
+}
+
+const followSchema = new Schema<IFollow>({
   follower: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
   following: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: "User",
     required: true,
   },
@@ -24,4 +30,4 @@ followSchema.index({ follower: 1, following: 1 }, { unique: true })
 followSchema.index({ follower: 1 })
 followSchema.index({ following: 1 })
 
-export default mongoose.models.Follow || mongoose.model("Follow", followSchema)
+export default (mongoose.models.Follow || mongoose.model<IFollow>("Follow", followSchema)) as mongoose.Model<IFollow>;

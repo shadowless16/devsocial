@@ -47,4 +47,4 @@ const UserProgressSchema = new Schema<IUserProgress>({
 // Compound index for efficient queries
 UserProgressSchema.index({ userId: 1, pathId: 1 }, { unique: true })
 
-export default mongoose.models.UserProgress || mongoose.model<IUserProgress>('UserProgress', UserProgressSchema)
+export default (mongoose.models.UserProgress || mongoose.model<IUserProgress>('UserProgress', UserProgressSchema)) as mongoose.Model<IUserProgress>;

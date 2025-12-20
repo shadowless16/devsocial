@@ -430,4 +430,4 @@ UserSchema.methods.cleanExpiredTokens = function () {
   // ... (your existing logic is perfect)
 };
 
-export default models.User || model<IUser>("User", UserSchema);
+export default (models.User || model<IUser>("User", UserSchema)) as mongoose.Model<IUser>;

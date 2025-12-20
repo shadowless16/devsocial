@@ -18,7 +18,7 @@ export class XPOvertakeService {
       await connectDB()
 
       const currentLeaderboard = await this.getCurrentLeaderboard(type)
-      const previousSnapshots = await LeaderboardSnapshot.find({ type } as any)
+      const previousSnapshots = await LeaderboardSnapshot.find({ type }).lean() as Array<{userId: mongoose.Types.ObjectId; rank: number; totalXP: number; type: string}>
 
       if (previousSnapshots.length === 0) {
         await this.saveCurrentSnapshot(currentLeaderboard, type)
@@ -41,7 +41,7 @@ export class XPOvertakeService {
         const currentRank = current.rank
         const previousRank = previousRankMap.get(userId)
 
-        if (previousRank && currentRank < previousRank) {
+        if (previousRank && currentRank < (previousRank as number)) {
           for (const prevSnapshot of previousSnapshots) {
             const prevUserId = prevSnapshot.userId.toString()
             if (prevUserId === userId) continue
@@ -54,7 +54,7 @@ export class XPOvertakeService {
                   overtaker: userId,
                   overtaken: prevUserId,
                   newRank: currentRank,
-                  oldRank: previousRank
+                  oldRank: previousRank as number
                 })
               }
             }
@@ -170,7 +170,7 @@ export class XPOvertakeService {
       type: type as 'weekly' | 'monthly' | 'all-time'
     }))
 
-    await LeaderboardSnapshot.insertMany(snapshots)
+    await LeaderboardSnapshot.insertMany(snapshots as Parameters<typeof LeaderboardSnapshot.insertMany>[0])
   }
 
   private static async sendOvertakeNotifications(overtake: {

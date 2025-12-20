@@ -64,13 +64,13 @@ export async function GET(request: NextRequest, { params }: Props) {
           isCompleted: !!moduleProgress?.completedAt,
           userProgress: moduleProgress || null
         }
-      })
+      }) as any[]
     } else {
       modulesWithProgress = modules.map(module => ({
         ...module.toObject(),
         isCompleted: false,
         userProgress: null
-      }))
+      })) as any[]
     }
 
     const pathData = {

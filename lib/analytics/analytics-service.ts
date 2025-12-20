@@ -408,23 +408,23 @@ export class AnalyticsService {
     }
     
     return {
-      userAnalytics: (userAnalytics as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
+      userAnalytics: (userAnalytics as unknown as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
         ...item.toObject(),
         date: formatDate(item.date)
       })),
-      contentAnalytics: (contentAnalytics as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
+      contentAnalytics: (contentAnalytics as unknown as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
         ...item.toObject(),
         date: formatDate(item.date)
       })),
-      platformAnalytics: (platformAnalytics as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
+      platformAnalytics: (platformAnalytics as unknown as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
         ...item.toObject(),
         date: formatDate(item.date)
       })),
-      gamificationAnalytics: (gamificationAnalytics as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
+      gamificationAnalytics: (gamificationAnalytics as unknown as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
         ...item.toObject(),
         date: formatDate(item.date)
       })),
-      growthAnalytics: (growthAnalytics as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
+      growthAnalytics: (growthAnalytics as unknown as Array<{ toObject: () => { date: Date }; date: Date }>).map(item => ({
         ...item.toObject(),
         date: formatDate(item.date)
       }))

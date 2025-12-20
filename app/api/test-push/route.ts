@@ -69,7 +69,11 @@ export async function POST(request: NextRequest) {
     if (result.success) {
       return NextResponse.json({ 
         success: true, 
-        message: 'Push notification sent!',
+        message: result.mock 
+          ? 'Localhost mode: Browser notification will be shown instead.'
+          : 'Push notification sent!',
+        mock: result.mock,
+        payload: result.mock ? payload : undefined, // Send payload for frontend to show browser notification
         type 
       })
     } else {

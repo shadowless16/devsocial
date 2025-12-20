@@ -28,16 +28,19 @@ export async function GET(req: NextRequest) {
       bio: user.bio || "",
       gender: user.gender || "",
       userType: user.userType || "",
-      socials: user.socials || { twitter: "", linkedin: "" },
+      socials: { 
+        github: user.githubUsername || "",
+        linkedin: user.linkedinUrl || "",
+        portfolio: user.portfolioUrl || ""
+      },
       techCareerPath: user.techCareerPath || "",
       experienceLevel: user.experienceLevel || "beginner",
       techStack: user.techStack || [],
       githubUsername: user.githubUsername || "",
       linkedinUrl: user.linkedinUrl || "",
       portfolioUrl: user.portfolioUrl || "",
-      interests: user.interests || [],
-      starterBadge: user.starterBadge || "",
-      xp: user.xp || 10,
+      badges: user.badges || [],
+      points: user.points || 0,
     })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
@@ -72,10 +75,13 @@ export async function PUT(req: NextRequest) {
     if (githubUsername) user.githubUsername = githubUsername
     if (linkedinUrl) user.linkedinUrl = linkedinUrl
     if (portfolioUrl) user.portfolioUrl = portfolioUrl
-    if (interests) user.interests = interests
-    if (starterBadge) user.starterBadge = starterBadge
     if (techCareerPath) user.techCareerPath = techCareerPath
-    if (socials) user.socials = socials
+    // Map socials object to individual URL fields
+    if (socials) {
+      if (socials.github) user.githubUsername = socials.github
+      if (socials.linkedin) user.linkedinUrl = socials.linkedin
+      if (socials.portfolio) user.portfolioUrl = socials.portfolio
+    }
 
     // Update avatar if provided (from RPM), otherwise generate gender-specific avatar
     if (avatar) {

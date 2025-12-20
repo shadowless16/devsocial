@@ -325,7 +325,7 @@ export async function POST(req: NextRequest) {
       viewsCount?: number
       xpAwarded?: number
     }
-    const postData = populatedPost as PopulatedPostData;
+    const postData = populatedPost as unknown as PopulatedPostData;
     const postAuthor = postData.author;
     const transformedPost = {
       ...postData,
@@ -465,7 +465,7 @@ export async function POST(req: NextRequest) {
           const mission = progress.mission;
           let progressUpdated = false;
           
-          for (const step of mission.steps || []) {
+          for (const step of (mission as any).steps || []) {
             const stepId = step.id || step._id?.toString();
             if (stepId && !progress.stepsCompleted.includes(stepId)) {
               // Check if this step is related to creating posts
@@ -484,10 +484,10 @@ export async function POST(req: NextRequest) {
           }
           
           // Check if mission is completed
-          if (progress.stepsCompleted.length >= (mission.steps?.length || 0) && progress.status !== 'completed') {
+          if (progress.stepsCompleted.length >= ((mission as any).steps?.length || 0) && progress.status !== 'completed') {
             progress.status = "completed";
             progress.completedAt = new Date();
-            progress.xpEarned = mission.rewards?.xp || 0;
+            progress.xpEarned = (mission as any).rewards?.xp || 0;
             progressUpdated = true;
           }
           

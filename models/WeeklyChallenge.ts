@@ -129,5 +129,5 @@ const WeeklyChallengeSchema = new Schema<IWeeklyChallenge>(
 WeeklyChallengeSchema.index({ isActive: 1, startDate: 1, endDate: 1 })
 WeeklyChallengeSchema.index({ type: 1, difficulty: 1, isActive: 1 })
 
-export default mongoose.models.WeeklyChallenge ||
-  mongoose.model<IWeeklyChallenge>("WeeklyChallenge", WeeklyChallengeSchema)
+export default (mongoose.models.WeeklyChallenge || mongoose.model<IWeeklyChallenge>("WeeklyChallenge", WeeklyChallengeSchema)) as mongoose.Model<IWeeklyChallenge>;
+

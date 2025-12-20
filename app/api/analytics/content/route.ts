@@ -11,6 +11,21 @@ interface TopTag {
   growth: number
 }
 
+interface ContentAnalyticsData {
+  date: Date
+  totalPosts: number
+  newPosts: number
+  totalComments: number
+  newComments: number
+  totalLikes: number
+  newLikes: number
+  totalShares: number
+  newShares: number
+  engagementRate: number
+  topTags: TopTag[]
+  contentTypes: Array<{ type: string; count: number; percentage: number }>
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession(request)
@@ -34,7 +49,7 @@ export async function GET(request: NextRequest) {
     
     const contentAnalytics = await ContentAnalytics.find({
       date: { $gte: startDate, $lte: endDate }
-    }).sort({ date: -1 }).limit(days)
+    }).sort({ date: -1 }).limit(days).lean() as unknown as ContentAnalyticsData[]
     
     // Format date helper
     const formatDate = (date: Date) => {

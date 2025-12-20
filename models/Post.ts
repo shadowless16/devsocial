@@ -192,4 +192,4 @@ PostSchema.index({ author: 1, createdAt: -1 })
 // Step 9: Index for duplicate detection
 PostSchema.index({ contentHash: 1 }, { sparse: true })
 
-export default mongoose.models.Post || mongoose.model<IPost>("Post", PostSchema)
+export default (mongoose.models.Post || mongoose.model<IPost>("Post", PostSchema)) as mongoose.Model<IPost>;

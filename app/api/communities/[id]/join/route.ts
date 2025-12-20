@@ -19,7 +19,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     const userId = user.userId
-    const isMember = community.members.includes(userId)
+    const isMember = community.members.some((m: any) => m.toString() === userId)
     const isCreator = community.creator.toString() === userId
 
     // Prevent creator from leaving their own community
@@ -32,11 +32,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (isMember) {
       // Leave community
-      community.members = community.members.filter((memberId: string) => memberId.toString() !== userId)
+      community.members = community.members.filter((memberId: any) => memberId.toString() !== userId)
       community.memberCount = Math.max(0, community.memberCount - 1)
     } else {
       // Join community
-      community.members.push(userId)
+      (community.members as any).push(userId)
       community.memberCount += 1
     }
 

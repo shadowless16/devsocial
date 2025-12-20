@@ -94,4 +94,4 @@ CommunitySchema.index({ category: 1 });
 CommunitySchema.index({ memberCount: -1 });
 CommunitySchema.index({ createdAt: -1 });
 
-export default mongoose.models.Community || mongoose.model<ICommunity>("Community", CommunitySchema);
+export default (mongoose.models.Community || mongoose.model<ICommunity>("Community", CommunitySchema)) as mongoose.Model<ICommunity>;

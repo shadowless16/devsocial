@@ -46,4 +46,4 @@ ViewSchema.index({ post: 1 });
 ViewSchema.index({ createdAt: -1 });
 ViewSchema.index({ user: 1 }, { sparse: true });
 
-export default models.View || model<IView>("View", ViewSchema);
+export default (models.View || model<IView>("View", ViewSchema)) as mongoose.Model<IView>;

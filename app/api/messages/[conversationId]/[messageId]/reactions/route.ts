@@ -36,7 +36,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Add new reaction
     message.reactions.push({
-      user: userId as unknown,
+      user: userId as any,
       emoji,
       createdAt: new Date(),
     })

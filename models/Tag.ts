@@ -57,4 +57,4 @@ const TagSchema = new Schema<ITag>(
 TagSchema.index({ name: "text" })
 TagSchema.index({ usageCount: -1 })
 
-export default mongoose.models.Tag || mongoose.model<ITag>("Tag", TagSchema)
+export default (mongoose.models.Tag || mongoose.model<ITag>("Tag", TagSchema)) as mongoose.Model<ITag>;

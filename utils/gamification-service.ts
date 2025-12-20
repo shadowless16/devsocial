@@ -208,8 +208,8 @@ export class GamificationService {
 
     return leaderboard.map((entry, index) => ({
       rank: index + 1,
-      username: entry.userId.username,
-      avatar: entry.userId.avatar,
+      username: (entry.user as any)?.username,
+      avatar: (entry.user as any)?.avatar,
       xp: entry[sortField],
       level: entry.currentLevel,
       userRank: entry.currentRank,
@@ -227,7 +227,7 @@ export class GamificationService {
     const nextRank = getNextRank(userStats.totalXP)
 
     return {
-      user: userStats.userId,
+      user: userStats.user,
       totalXP: userStats.totalXP,
       level: userStats.currentLevel,
       currentRank,

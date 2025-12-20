@@ -40,4 +40,4 @@ const UserMentionSchema = new Schema<IUserMention>(
 UserMentionSchema.index({ mentioned: 1, createdAt: -1 })
 UserMentionSchema.index({ post: 1, mentioned: 1 })
 
-export default mongoose.models.UserMention || mongoose.model<IUserMention>("UserMention", UserMentionSchema)
+export default (mongoose.models.UserMention || mongoose.model<IUserMention>("UserMention", UserMentionSchema)) as mongoose.Model<IUserMention>;

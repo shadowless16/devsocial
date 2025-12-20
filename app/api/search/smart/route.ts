@@ -76,7 +76,7 @@ export async function GET(request: NextRequest) {
       // AI ranking with fallback
       let rankedPosts
       try {
-        rankedPosts = await geminiPublicService.semanticSearch(query, posts)
+        rankedPosts = await geminiPublicService.semanticSearch(query, posts as any[])
       } catch {
         rankedPosts = posts
       }
@@ -106,7 +106,7 @@ export async function GET(request: NextRequest) {
 
       let rankedUsers
       try {
-        rankedUsers = await geminiPublicService.semanticSearch(query, users)
+        rankedUsers = await geminiPublicService.semanticSearch(query, users as any[])
       } catch {
         rankedUsers = users
       }
@@ -139,7 +139,7 @@ export async function GET(request: NextRequest) {
     // AI summary with fallback
     let summary
     try {
-      summary = await geminiPublicService.summarizeSearchResults(query, results.posts as Record<string, unknown>[])
+      summary = await geminiPublicService.summarizeSearchResults(query, results.posts as unknown as Record<string, unknown>[])
     } catch {
       summary = `Found ${results.posts.length} posts, ${results.users.length} users, and ${results.tags.length} tags.`
     }

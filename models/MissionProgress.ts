@@ -67,4 +67,4 @@ MissionProgressSchema.index({ user: 1, mission: 1 }, { unique: true })
 MissionProgressSchema.index({ user: 1, status: 1 })
 MissionProgressSchema.index({ mission: 1, status: 1 })
 
-export default mongoose.models.MissionProgress || mongoose.model<IMissionProgress>("MissionProgress", MissionProgressSchema)
+export default (mongoose.models.MissionProgress || mongoose.model<IMissionProgress>("MissionProgress", MissionProgressSchema)) as mongoose.Model<IMissionProgress>;

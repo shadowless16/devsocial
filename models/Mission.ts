@@ -104,4 +104,4 @@ const MissionSchema = new Schema<IMission>(
 MissionSchema.index({ isActive: 1, type: 1, difficulty: 1 })
 MissionSchema.index({ duration: 1, isActive: 1 })
 
-export default mongoose.models.Mission || mongoose.model<IMission>("Mission", MissionSchema)
+export default (mongoose.models.Mission || mongoose.model<IMission>("Mission", MissionSchema)) as mongoose.Model<IMission>;

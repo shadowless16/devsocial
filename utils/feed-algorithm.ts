@@ -149,7 +149,7 @@ export class FeedAlgorithm {
 
   private static async getUserInteractions(userId: string) {
     const [likedPosts, activities] = await Promise.all([
-      Like.find({ user: userId, itemType: "post" } as any).populate("item", "tags author").limit(100).lean(),
+      Like.find({ user: userId, targetType: "post" } as any).populate("targetId", "tags author").limit(100).lean(),
       Activity.find({ user: userId } as any).sort({ createdAt: -1 }).limit(200).lean(),
     ])
 
@@ -158,11 +158,12 @@ export class FeedAlgorithm {
     const interactedAuthors = new Set<string>()
 
     likedPosts.forEach((like) => {
-      if (like.item?.tags) {
-        like.item.tags.forEach((tag: string) => interactedTags.add(tag))
+      const item = like.targetId as any;
+      if (item?.tags) {
+        item.tags.forEach((tag: string) => interactedTags.add(tag))
       }
-      if (like.item?.author) {
-        interactedAuthors.add(like.item.author.toString())
+      if (item?.author) {
+        interactedAuthors.add(item.author.toString())
       }
     })
 

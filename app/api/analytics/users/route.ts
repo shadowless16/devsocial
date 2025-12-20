@@ -4,6 +4,26 @@ import { UserAnalytics } from '@/models/Analytics'
 import User from '@/models/User'
 import connectDB from '@/lib/core/db'
 
+interface UserAnalyticsData {
+  date: Date
+  totalUsers: number
+  newUsers: number
+  activeUsers: number
+  dailyActiveUsers: number
+  weeklyActiveUsers: number
+  monthlyActiveUsers: number
+  userRetention: {
+    day1: number
+    day7: number
+    day30: number
+  }
+  demographics: {
+    countries: Array<{ country: string; count: number; percentage: number }>
+    devices: Array<{ device: string; count: number; percentage: number }>
+    acquisitionChannels?: Array<{ channel: string; users: number; percentage: number }>
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const session = await getSession(request)
@@ -27,7 +47,7 @@ export async function GET(request: NextRequest) {
     
     const userAnalytics = await UserAnalytics.find({
       date: { $gte: startDate, $lte: endDate }
-    } as Record<string, unknown>).sort({ date: -1 }).limit(days)
+    }).sort({ date: -1 }).limit(days).lean() as unknown as UserAnalyticsData[]
     
     // Format date helper
     const formatDate = (date: Date) => {

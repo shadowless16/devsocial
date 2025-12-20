@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
         bio: user.bio,
         avatar: user.avatar,
         role: user.role,
-        xp: user.xp,
+        xp: user.points,
         level: user.level,
         badges: user.badges,
       }

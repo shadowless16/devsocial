@@ -38,7 +38,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return errorResponse("Report not found", 404)
     }
 
-    return successResponse(updatedReport)
+    return successResponse({ report: updatedReport })
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error("Update report status error:", errorMessage)

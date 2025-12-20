@@ -1,6 +1,34 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema, type Document } from 'mongoose'
 
-const ProjectSchema = new mongoose.Schema({
+export interface IProject extends Document {
+  title: string
+  description: string
+  author: mongoose.Types.ObjectId
+  technologies: string[]
+  githubUrl?: string
+  liveUrl?: string
+  images: string[]
+  openPositions: Array<{
+    title?: string
+    description?: string
+    requirements?: string[]
+    applicants: Array<{
+      user: mongoose.Types.ObjectId
+      appliedAt: Date
+      status: 'pending' | 'accepted' | 'rejected'
+    }>
+  }>
+  status: 'planning' | 'in-progress' | 'completed' | 'on-hold'
+  visibility: 'public' | 'private'
+  likes: mongoose.Types.ObjectId[]
+  views: number
+  viewedBy: mongoose.Types.ObjectId[]
+  featured: boolean
+  createdAt: Date
+  updatedAt: Date
+}
+
+const ProjectSchema = new Schema<IProject>({
   title: {
     type: String,
     required: true,
@@ -13,7 +41,7 @@ const ProjectSchema = new mongoose.Schema({
     maxlength: 4500
   },
   author: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
@@ -63,7 +91,7 @@ const ProjectSchema = new mongoose.Schema({
     }],
     applicants: [{
       user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: Schema.Types.ObjectId,
         ref: 'User'
       },
       appliedAt: {
@@ -88,7 +116,7 @@ const ProjectSchema = new mongoose.Schema({
     default: 'public'
   },
   likes: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User'
   }],
   views: {
@@ -96,7 +124,7 @@ const ProjectSchema = new mongoose.Schema({
     default: 0
   },
   viewedBy: [{
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User'
   }],
   featured: {
@@ -112,4 +140,4 @@ ProjectSchema.index({ technologies: 1 })
 ProjectSchema.index({ status: 1 })
 ProjectSchema.index({ featured: -1, createdAt: -1 })
 
-export default mongoose.models.Project || mongoose.model('Project', ProjectSchema)
+export default (mongoose.models.Project || mongoose.model<IProject>('Project', ProjectSchema)) as mongoose.Model<IProject>;

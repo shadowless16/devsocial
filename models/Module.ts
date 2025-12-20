@@ -146,4 +146,4 @@ const ModuleSchema = new Schema<IModule>({
   timestamps: true
 })
 
-export default mongoose.models.Module || mongoose.model<IModule>('Module', ModuleSchema)
+export default (mongoose.models.Module || mongoose.model<IModule>('Module', ModuleSchema)) as mongoose.Model<IModule>;

@@ -178,7 +178,7 @@ export class ReferralSystemFixed {
         acc[stat._id] = { count: stat.count, rewards: stat.totalRewards }
         return acc
       }, {}),
-      recentReferrals,
+      recentReferrals: recentReferrals as unknown as Record<string, unknown>[],
     }
   }
 
@@ -258,8 +258,8 @@ export class ReferralSystemFixed {
       },
       recentReferrals: recentReferrals.map(r => ({
         id: r._id,
-        referrer: r.referrer?.username || 'Unknown',
-        referred: r.referred?.username || 'Unknown',
+        referrer: (r.referrer as any)?.username || 'Unknown',
+        referred: (r.referred as any)?.username || 'Unknown',
         status: r.status,
         code: r.referralCode,
         createdAt: r.createdAt,

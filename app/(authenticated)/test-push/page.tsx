@@ -35,7 +35,20 @@ export default function TestPushPage() {
       const data = await response.json()
       
       if (data.success) {
-        setResult(`✅ ${type} notification sent! Check your browser notifications.`)
+        if (data.mock && data.payload) {
+          // On localhost/mock mode, show a browser notification directly
+          if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification(data.payload.title, {
+              body: data.payload.body,
+              icon: data.payload.icon || '/icon-192x192.png'
+            })
+            setResult(`✅ Localhost Mode: Browser notification shown! Real push notifications require HTTPS deployment.`)
+          } else {
+            setResult(`✅ ${data.message}`)
+          }
+        } else {
+          setResult(`✅ ${type} notification sent! Check your browser notifications.`)
+        }
       } else {
         setResult(`❌ Failed: ${data.message || data.reason || 'Unknown error'}. Try the manual test below.`)
       }

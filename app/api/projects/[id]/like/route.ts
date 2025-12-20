@@ -30,7 +30,7 @@ export async function POST(
     }
     
     const userId = session.user.id
-    const isLiked = project.likes.includes(userId)
+    const isLiked = project.likes.some((id: any) => id.toString() === userId)
     
     if (isLiked) {
       // Unlike
@@ -64,7 +64,7 @@ export async function POST(
     
     const updatedProject = await Project.findById(id)
       .populate('author', 'username displayName avatar level')
-      .lean() as { _id: unknown; title: string; author: unknown; likes?: string[] } | null
+      .lean() as unknown as { _id: unknown; title: string; author: unknown; likes?: any[] } | null
     
     if (!updatedProject) {
       return NextResponse.json(

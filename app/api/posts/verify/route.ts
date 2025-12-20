@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         )
       }
-      post = foundPost as PostData
+      post = foundPost as unknown as PostData
       
       // Recompute canonical hash for the post
       computedHash = computeContentHash({
@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
       
       // Find post with matching hash
       const foundPost = await Post.findOne({ contentHash: computedHash })
-      post = foundPost as PostData | null
+      post = foundPost as unknown as PostData | null
     }
     
     const result = {

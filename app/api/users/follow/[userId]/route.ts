@@ -107,10 +107,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         if (!progress.mission) continue;
         
         const mission = progress.mission;
-        console.log('🎯 Checking mission:', mission.title);
+        console.log('🎯 Checking mission:', (mission as any).title);
         let progressUpdated = false;
         
-        for (const step of mission.steps || []) {
+        for (const step of (mission as any).steps || []) {
           const stepId = step.id || step._id?.toString();
           console.log('📝 Checking step:', step.title, 'ID:', stepId);
           console.log('✅ Already completed:', progress.stepsCompleted.includes(stepId));
@@ -142,11 +142,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         }
         
         // Check if mission is completed
-        if (progress.stepsCompleted.length >= (mission.steps?.length || 0) && progress.status !== 'completed') {
+        if (progress.stepsCompleted.length >= ((mission as any).steps?.length || 0) && progress.status !== 'completed') {
           console.log('🏆 Mission completed!');
           progress.status = "completed";
           progress.completedAt = new Date();
-          progress.xpEarned = mission.rewards?.xp || 0;
+          progress.xpEarned = (mission as any).rewards?.xp || 0;
           progressUpdated = true;
         }
         

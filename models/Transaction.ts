@@ -60,4 +60,4 @@ TransactionSchema.pre("save", function (next) {
   next();
 });
 
-export default models.Transaction || model<ITransaction>("Transaction", TransactionSchema);
+export default (models.Transaction || model<ITransaction>("Transaction", TransactionSchema)) as mongoose.Model<ITransaction>;

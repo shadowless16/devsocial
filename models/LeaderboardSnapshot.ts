@@ -1,8 +1,17 @@
-import mongoose from 'mongoose'
+import mongoose, { Schema, type Document } from 'mongoose'
 
-const LeaderboardSnapshotSchema = new mongoose.Schema({
+export interface ILeaderboardSnapshot extends Document {
+  userId: mongoose.Types.ObjectId
+  rank: number
+  totalXP: number
+  type: 'all-time' | 'weekly' | 'monthly'
+  createdAt: Date
+  updatedAt: Date
+}
+
+const LeaderboardSnapshotSchema = new Schema<ILeaderboardSnapshot>({
   userId: {
-    type: mongoose.Schema.Types.ObjectId,
+    type: Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
@@ -26,4 +35,4 @@ const LeaderboardSnapshotSchema = new mongoose.Schema({
 LeaderboardSnapshotSchema.index({ userId: 1, type: 1 })
 LeaderboardSnapshotSchema.index({ createdAt: -1 })
 
-export default mongoose.models.LeaderboardSnapshot || mongoose.model('LeaderboardSnapshot', LeaderboardSnapshotSchema)
+export default (mongoose.models.LeaderboardSnapshot || mongoose.model<ILeaderboardSnapshot>('LeaderboardSnapshot', LeaderboardSnapshotSchema)) as mongoose.Model<ILeaderboardSnapshot>;

@@ -33,14 +33,14 @@ export async function POST(
       )
     }
 
-    const isLiked = entry.likes.includes(userId)
+    const isLiked = entry.likes.some((id: any) => id.toString() === userId)
 
     if (isLiked) {
       // Unlike
-      entry.likes = entry.likes.filter((like: Record<string, unknown>) => like.toString() !== userId)
+      entry.likes = entry.likes.filter((like: any) => like.toString() !== userId)
     } else {
       // Like
-      entry.likes.push(userId)
+      (entry.likes as any).push(userId)
       
       // Award XP to entry author (but not if liking own entry)
       if (entry.author.toString() !== userId) {
