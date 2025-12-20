@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server"
 import { getUserFromRequest } from "@/lib/auth/jwt-auth"
 import dbConnect from "@/lib/core/db"
 import Community from "@/models/Community"
+import mongoose from "mongoose"
 
 export async function GET() {
   try {
@@ -36,8 +37,8 @@ export async function POST(request: NextRequest) {
       category,
       longDescription,
       rules: rules?.filter((rule: string) => rule?.trim()) || [],
-      creator: user.userId,
-      members: [user.userId],
+      creator: new mongoose.Types.ObjectId(user.userId),
+      members: [new mongoose.Types.ObjectId(user.userId)],
       memberCount: 1
     })
 

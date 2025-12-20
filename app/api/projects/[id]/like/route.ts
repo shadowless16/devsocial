@@ -4,6 +4,7 @@ import connectDB from '@/lib/core/db'
 import Project from '@/models/Project'
 import User from '@/models/User'
 import Notification from '@/models/Notification'
+import mongoose from 'mongoose'
 
 export async function POST(
   request: NextRequest,
@@ -52,7 +53,7 @@ export async function POST(
         // Create notification for project author
         await Notification.create({
           recipient: project.author,
-          sender: userId,
+          sender: new mongoose.Types.ObjectId(userId),
           type: 'project_like',
           title: 'Project Liked',
           message: `Someone liked your project "${project.title}"`,

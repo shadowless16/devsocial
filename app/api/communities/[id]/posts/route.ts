@@ -3,6 +3,7 @@ import { getUserFromRequest } from '@/lib/auth/jwt-auth'
 import dbConnect from "@/lib/core/db"
 import Post from "@/models/Post"
 import Community from "@/models/Community"
+import mongoose from "mongoose"
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -57,8 +58,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       content,
       tags: tags || [],
       imageUrls: imageUrls || [],
-      author: user.userId,
-      community: id
+      author: new mongoose.Types.ObjectId(user.userId),
+      community: new mongoose.Types.ObjectId(id)
     })
 
     // Update community post count

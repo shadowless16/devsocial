@@ -1,4 +1,3 @@
-// app/api/posts/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { connectWithRetry } from "@/lib/core/connect-with-retry";
 import Post from "@/models/Post";
@@ -13,6 +12,7 @@ import { hashPost } from "@/lib/content/canonicalizer";
 import { extractHashtags, findOrCreateTags } from "@/utils/tag-utils";
 import Activity from '@/models/Activity'
 import Like from '@/models/Like'
+import mongoose from 'mongoose';
 
 import { getWebSocketServer } from '@/lib/realtime/websocket'
 import { cache } from '@/lib/core/cache'
@@ -282,7 +282,7 @@ export async function POST(req: NextRequest) {
       tags: uniqueTags,
       tagIds,
       mentions,
-      mentionIds,
+      mentionIds: mentionIds.map(id => new mongoose.Types.ObjectId(id)),
       imageUrl: imageUrl || null,
       imageUrls: imageUrls || [],
       videoUrls: videoUrls || [],
@@ -354,7 +354,7 @@ export async function POST(req: NextRequest) {
     // Create an Activity record so the user's profile activity shows this post
     try {
       await Activity.create({
-        user: authorId,
+        user: new mongoose.Types.ObjectId(authorId),
         type: 'post_created',
         description: 'Created a new post',
         metadata: { postId: newPost._id.toString(), content },
@@ -425,7 +425,7 @@ export async function POST(req: NextRequest) {
       
       // Create activity for quality bonus
       await Activity.create({
-        user: authorId,
+        user: new mongoose.Types.ObjectId(authorId),
         type: 'quality_bonus',
         description: `Earned quality bonus: ${qualityCategory}`,
         metadata: { postId: newPost._id.toString(), category: qualityCategory, bonus: qualityBonus },

@@ -2,6 +2,7 @@
 import connectDB from "@/lib/core/db"
 import Tag from "@/models/Tag"
 import { getSession } from '@/lib/auth/server-auth'
+import mongoose from 'mongoose'
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { authOptions } from "@/lib/auth/auth"
 
@@ -58,7 +59,7 @@ export async function POST(request: NextRequest) {
       slug,
       description,
       color: color || "#3b82f6",
-      createdBy: session.user.id
+      createdBy: new mongoose.Types.ObjectId(session.user.id)
     })
 
     return NextResponse.json({ tag }, { status: 201 })

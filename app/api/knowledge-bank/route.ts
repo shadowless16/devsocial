@@ -3,6 +3,7 @@ import { getSession } from '@/lib/auth/server-auth'
 import connectDB from '@/lib/core/db'
 import KnowledgeEntry from '@/models/KnowledgeEntry'
 import User from '@/models/User'
+import mongoose from 'mongoose'
 
 export const dynamic = 'force-dynamic'
 
@@ -105,7 +106,7 @@ export async function POST(request: NextRequest) {
       content,
       codeExample: codeExample || undefined,
       tags: tags || [],
-      author: session.user.id
+      author: new mongoose.Types.ObjectId(session.user.id)
     })
 
     // Populate author info
