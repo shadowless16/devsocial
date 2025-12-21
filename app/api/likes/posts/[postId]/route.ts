@@ -62,46 +62,45 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         liked = true;
 
         // Background tasks - don't await to improve response time
-        setImmediate(async () => {
-          try {
-            await Promise.all([
-              awardXP(userId, "like_given"),
-              Activity.create({
-                user: new mongoose.Types.ObjectId(userId),
-                type: "like_given",
-                description: `Liked a post`,
-                metadata: {
-                  postId,
-                  postTitle: post.content.substring(0, 50),
-                },
-                xpEarned: 5,
-              })
-            ]);
-
-            // Create notification with push if not self-like
-            if (post.author._id.toString() !== userId) {
-              await notifyLike(
-                post.author._id.toString(),
-                userId,
+        // Background tasks - await to ensure completion in serverless environment
+        try {
+          await Promise.all([
+            awardXP(userId, "like_given"),
+            Activity.create({
+              user: new mongoose.Types.ObjectId(userId),
+              type: "like_given",
+              description: `Liked a post`,
+              metadata: {
                 postId,
-                session.user.username || 'Someone'
-              );
+                postTitle: post.content.substring(0, 50),
+              },
+              xpEarned: 5,
+            })
+          ]);
 
-              const wsServer = getWebSocketServer();
-              if (wsServer) {
-                wsServer.sendNotificationToUser(post.author._id.toString(), {
-                  type: "like",
-                  title: `${session.user.username} liked your post`,
-                  message: post.content.substring(0, 100),
-                  sender: { id: session.user.id, username: session.user.username },
-                  createdAt: new Date(),
-                });
-              }
+          // Create notification with push if not self-like
+          if (post.author._id.toString() !== userId) {
+            await notifyLike(
+              post.author._id.toString(),
+              userId,
+              postId,
+              session.user.username || 'Someone'
+            );
+
+            const wsServer = getWebSocketServer();
+            if (wsServer) {
+              wsServer.sendNotificationToUser(post.author._id.toString(), {
+                type: "like",
+                title: `${session.user.username} liked your post`,
+                message: post.content.substring(0, 100),
+                sender: { id: session.user.id, username: session.user.username },
+                createdAt: new Date(),
+              });
             }
-          } catch (bgError) {
-            console.warn("Background task failed:", bgError);
           }
-        });
+        } catch (bgError) {
+          console.warn("Background task failed:", bgError);
+        }
       } catch (likeError) {
         if (likeError.code === 11000) {
           return NextResponse.json({
