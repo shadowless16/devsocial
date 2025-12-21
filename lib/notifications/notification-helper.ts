@@ -25,7 +25,7 @@ export async function createNotificationWithPush(params: CreateNotificationParam
       tag: params.type
     }
 
-    sendPushToUser(params.recipient, pushPayload).catch(err => {
+    await sendPushToUser(params.recipient, pushPayload).catch(err => {
       console.error('Failed to send push notification:', err)
     })
 

@@ -71,12 +71,16 @@ export async function POST(request: NextRequest) {
         success: true,
         overtakes: result.overtakes,
         userB: { username: userB.username, points: userB.points },
-        notifications: notifications.map(n => ({
-          recipient: (n.recipient as any)?.username || 'Unknown',
-          sender: (n.sender as any)?.username || 'Unknown',
-          type: n.type,
-          message: n.message
-        }))
+        notifications: notifications.map(n => {
+          const recipient = n.recipient as unknown as { username: string };
+          const sender = n.sender as unknown as { username: string };
+          return {
+            recipient: recipient?.username || 'Unknown',
+            sender: sender?.username || 'Unknown',
+            type: n.type,
+            message: n.message
+          };
+        })
       })
     }
 
@@ -122,13 +126,17 @@ export async function GET() {
     return NextResponse.json({
       success: true,
       testUsers: testUsers.map(u => ({ username: u.username, points: u.points })),
-      notifications: notifications.map(n => ({
-        recipient: (n.recipient as any)?.username || 'Unknown',
-        sender: (n.sender as any)?.username || 'Unknown',
-        type: n.type,
-        message: n.message,
-        createdAt: n.createdAt
-      })),
+      notifications: notifications.map(n => {
+        const recipient = n.recipient as unknown as { username: string };
+        const sender = n.sender as unknown as { username: string };
+        return {
+          recipient: recipient?.username || 'Unknown',
+          sender: sender?.username || 'Unknown',
+          type: n.type,
+          message: n.message,
+          createdAt: n.createdAt
+        };
+      }),
       snapshots: snapshots.length
     })
 
