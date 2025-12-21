@@ -79,16 +79,29 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           ]);
 
           // Create notification with push if not self-like
+          console.log('[DEBUG-NOTIF] Checking self-like condition:', {
+            authorId: post.author._id.toString(),
+            userId,
+            isSelf: post.author._id.toString() === userId
+          });
+
           if (post.author._id.toString() !== userId) {
-            await notifyLike(
-              post.author._id.toString(),
-              userId,
-              postId,
-              session.user.username || 'Someone'
-            );
+            console.log('[DEBUG-NOTIF] Not a self-like, triggering notifyLike...');
+            try {
+              const notifResult = await notifyLike(
+                post.author._id.toString(),
+                userId,
+                postId,
+                session.user.username || 'Someone'
+              );
+              console.log('[DEBUG-NOTIF] notifyLike completed.', notifResult ? 'Success' : 'No result');
+            } catch (err) {
+              console.error('[DEBUG-NOTIF] notifyLike threw error:', err);
+            }
 
             const wsServer = getWebSocketServer();
             if (wsServer) {
+              console.log('[DEBUG-NOTIF] Sending WS notification');
               wsServer.sendNotificationToUser(post.author._id.toString(), {
                 type: "like",
                 title: `${session.user.username} liked your post`,
@@ -96,7 +109,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
                 sender: { id: session.user.id, username: session.user.username },
                 createdAt: new Date(),
               });
+            } else {
+              console.warn('[DEBUG-NOTIF] WS Server not found');
             }
+          } else {
+            console.log('[DEBUG-NOTIF] Self-like detected, skipping notification');
           }
         } catch (bgError) {
           console.warn("Background task failed:", bgError);
