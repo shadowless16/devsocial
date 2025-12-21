@@ -68,9 +68,13 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
   } catch (error: unknown) {
     console.error('[PushService] Push notification error:', error)
     
-    if (error && typeof error === 'object' && 'statusCode' in error && error.statusCode === 410) {
-      await User.findByIdAndUpdate(userId, { $unset: { pushSubscription: 1 } })
-      return { success: false, expired: true, reason: 'Subscription expired. Please re-subscribe.' }
+    if (error && typeof error === 'object' && 'statusCode' in error) {
+      const statusCode = (error as any).statusCode;
+      if (statusCode === 410 || statusCode === 403) {
+        console.warn(`[PushService] Subscription invalid (Status ${statusCode}). Removing from user ${userId}.`);
+        await User.findByIdAndUpdate(userId, { $unset: { pushSubscription: 1 } });
+        return { success: false, expired: true, reason: 'Subscription expired or invalid keys. Please re-subscribe.' };
+      }
     }
     
     const errorMessage = error instanceof Error ? error.message : 'Unknown push error'
