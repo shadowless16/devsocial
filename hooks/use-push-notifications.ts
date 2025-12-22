@@ -32,7 +32,8 @@ export function usePushNotifications() {
 
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
       if (!vapidPublicKey) {
-        return { success: false, error: 'VAPID key not configured' }
+        console.warn('[Push] VAPID key not configured')
+        return { success: false, error: 'Push notifications not configured' }
       }
 
       let registration = await navigator.serviceWorker.getRegistration()
@@ -42,16 +43,16 @@ export function usePushNotifications() {
       }
 
       try {
-      console.log('[DEBUG] VAPID Key loaded. Length:', vapidPublicKey.length);
-      console.log('[DEBUG] VAPID Key Start:', vapidPublicKey.substring(0, 10) + '...');
-      
-      const convertedKey = urlBase64ToUint8Array(vapidPublicKey);
-      console.log('[DEBUG] Converted Key Length:', convertedKey.length);
+        const convertedKey = urlBase64ToUint8Array(vapidPublicKey)
+        
+        if (convertedKey.length !== 65) {
+          throw new Error('Invalid VAPID key format')
+        }
 
-      const sub = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: convertedKey
-      })
+        const sub = await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedKey
+        })
 
         const response = await fetch('/api/notifications/subscribe', {
           method: 'POST',
@@ -67,42 +68,18 @@ export function usePushNotifications() {
         setIsSubscribed(true)
         return { success: true }
       } catch (pushError) {
-        console.error('Push subscription failed:', pushError)
-        
-        // Fallback ONLY for localhost testing
-        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
-           console.warn('Using localhost fallback')
-           try {
-             const mockSub = {
-              endpoint: 'http://localhost:3000/mock-push',
-              keys: {
-                p256dh: 'mock-key',
-                auth: 'mock-auth'
-              }
-            }
-            
-            const response = await fetch('/api/notifications/subscribe', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(mockSub)
-            })
-    
-            if (response.ok) {
-              setSubscription(mockSub as any)
-              setIsSubscribed(true)
-              return { success: true, warning: 'Using fallback mode (localhost)' }
-            }
-           } catch (mockError) {
-             console.error('Mock fallback failed:', mockError)
-           }
-        } 
-        
-        // If not localhost, or if mock failed, rethrow
-        throw pushError
+        console.error('[Push] Subscription failed:', pushError)
+        return { 
+          success: false, 
+          error: 'Push notifications unavailable. Please check browser settings or try again later.' 
+        }
       }
     } catch (error) {
-      console.error('Error subscribing:', error)
-      return { success: false, error: error instanceof Error ? error.message : String(error) }
+      console.error('[Push] Error:', error)
+      return { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Failed to enable notifications' 
+      }
     }
   }
 
