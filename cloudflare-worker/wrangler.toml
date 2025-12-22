@@ -1,6 +1,7 @@
 name = "devsocial-push"
 main = "src/index.js"
-compatibility_date = "2024-01-01"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
 
 [vars]
 VAPID_SUBJECT = "mailto:admin@akdavid.dev"
@@ -10,4 +11,4 @@ VAPID_SUBJECT = "mailto:admin@akdavid.dev"
 
 [[kv_namespaces]]
 binding = "PUSH_SUBSCRIPTIONS"
-id = "YOUR_KV_NAMESPACE_ID"
+id = "7f795b8d66b9411a99c168790f16db11"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 
-const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || 'https://vite-react-template.akdavid4real.workers.dev'
+const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || 'https://devsocial-push.akdavid4real.workers.dev'
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false)
