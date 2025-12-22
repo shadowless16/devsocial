@@ -44,11 +44,15 @@ export default function PushNotificationManager() {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       })
 
-      await fetch('/api/notifications/subscribe', {
+      const response = await fetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(sub)
       })
+
+      if (!response.ok) {
+        throw new Error('Failed to save subscription to server')
+      }
 
       setSubscription(sub)
     } catch (error) {
