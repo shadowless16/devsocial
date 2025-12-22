@@ -14,6 +14,13 @@ export function usePushNotifications() {
 
   const checkSubscription = async () => {
     try {
+      const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
+      if (!vapidPublicKey || vapidPublicKey.includes('YOUR_NEW_PUBLIC_KEY_HERE')) {
+        console.warn('[Push] VAPID keys not configured properly')
+        setIsSupported(false)
+        return
+      }
+      
       const registration = await navigator.serviceWorker.ready
       const sub = await registration.pushManager.getSubscription()
       setSubscription(sub)
