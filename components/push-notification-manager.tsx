@@ -24,6 +24,7 @@ export default function PushNotificationManager() {
   const checkSubscription = async () => {
     const registration = await navigator.serviceWorker.ready
     const sub = await registration.pushManager.getSubscription()
+    console.log('[PushManager] Initial check. Existing subscription:', sub ? 'YES' : 'NO');
     setSubscription(sub)
   }
 
@@ -102,11 +103,17 @@ export default function PushNotificationManager() {
   }
 
   const unsubscribe = async () => {
+    console.log('[PushManager] Unsubscribe clicked');
     setLoading(true)
     try {
-      await subscription?.unsubscribe()
+      if (subscription) {
+        console.log('[PushManager] Unsubscribing from browser...');
+        await subscription.unsubscribe()
+      }
+      console.log('[PushManager] Notifying server of unsubscribe...');
       await fetch('/api/notifications/unsubscribe', { method: 'POST' })
       setSubscription(null)
+      console.log('[PushManager] Unsubscribe complete');
     } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error('Unsubscribe error:', errorMessage)
