@@ -38,10 +38,13 @@ export function usePushNotifications() {
       }
 
       const vapidPublicKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY
-      if (!vapidPublicKey) {
-        console.warn('[Push] VAPID key not configured')
+      if (!vapidPublicKey || vapidPublicKey.includes('YOUR_NEW_PUBLIC_KEY_HERE')) {
+        console.warn('[Push] VAPID keys not configured properly')
         return { success: false, error: 'Push notifications not configured' }
       }
+
+      console.log('[Push] VAPID key length:', vapidPublicKey.length)
+      console.log('[Push] VAPID key prefix:', vapidPublicKey.substring(0, 10))
 
       let registration = await navigator.serviceWorker.getRegistration()
       if (!registration) {
@@ -52,8 +55,11 @@ export function usePushNotifications() {
       try {
         const convertedKey = urlBase64ToUint8Array(vapidPublicKey)
         
+        console.log('[Push] Converted key length:', convertedKey.length)
+        
         if (convertedKey.length !== 65) {
-          throw new Error('Invalid VAPID key format')
+          console.error('[Push] Invalid VAPID key format. Expected 65 bytes, got:', convertedKey.length)
+          return { success: false, error: 'Invalid VAPID key configuration' }
         }
 
         const sub = await registration.pushManager.subscribe({
