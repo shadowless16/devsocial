@@ -61,28 +61,37 @@ export function usePushNotifications() {
         setIsSubscribed(true)
         return { success: true }
       } catch (pushError) {
-        console.warn('Push subscription failed (normal on localhost), using fallback')
+        console.error('Push subscription failed:', pushError)
         
-        // Fallback for localhost: save a mock subscription
-        const mockSub = {
-          endpoint: 'http://localhost:3000/mock-push',
-          keys: {
-            p256dh: 'mock-key',
-            auth: 'mock-auth'
-          }
-        }
+        // Fallback ONLY for localhost testing
+        if (typeof window !== 'undefined' && window.location.hostname === 'localhost') {
+           console.warn('Using localhost fallback')
+           try {
+             const mockSub = {
+              endpoint: 'http://localhost:3000/mock-push',
+              keys: {
+                p256dh: 'mock-key',
+                auth: 'mock-auth'
+              }
+            }
+            
+            const response = await fetch('/api/notifications/subscribe', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(mockSub)
+            })
+    
+            if (response.ok) {
+              setSubscription(mockSub as any)
+              setIsSubscribed(true)
+              return { success: true, warning: 'Using fallback mode (localhost)' }
+            }
+           } catch (mockError) {
+             console.error('Mock fallback failed:', mockError)
+           }
+        } 
         
-        const response = await fetch('/api/notifications/subscribe', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(mockSub)
-        })
-
-        if (response.ok) {
-          setIsSubscribed(true)
-          return { success: true, warning: 'Using fallback mode (localhost)' }
-        }
-        
+        // If not localhost, or if mock failed, rethrow
         throw pushError
       }
     } catch (error) {
