@@ -14,10 +14,8 @@ interface CreateNotificationParams {
 }
 
 export async function createNotificationWithPush(params: CreateNotificationParams) {
-  console.log('[DEBUG-NOTIF] createNotificationWithPush called with:', params);
   try {
     const notification = await Notification.create(params)
-    console.log('[DEBUG-NOTIF] DB Notification created:', notification._id);
 
     const pushPayload = {
       title: params.title,
@@ -27,16 +25,13 @@ export async function createNotificationWithPush(params: CreateNotificationParam
       tag: params.type
     }
 
-    console.log('[DEBUG-NOTIF] Sending push to user:', params.recipient);
-    const pushResult = await sendPushToUser(params.recipient, pushPayload).catch(err => {
-      console.error('[DEBUG-NOTIF] Failed to send push notification (catch):', err)
-      return { success: false, reason: err.message }
+    await sendPushToUser(params.recipient, pushPayload).catch(err => {
+      console.error('Failed to send push notification:', err)
     })
-    console.log('[DEBUG-NOTIF] Push result:', pushResult);
 
     return notification
   } catch (error) {
-    console.error('[DEBUG-NOTIF] Failed to create notification:', error)
+    console.error('Failed to create notification:', error)
     throw error
   }
 }
