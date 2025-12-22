@@ -28,22 +28,33 @@ export default function PushNotificationManager() {
   }
 
   const subscribe = async () => {
-    if (!session?.user) return
+    console.log('[PushManager] Subscribe clicked');
+    if (!session?.user) {
+      console.error('[PushManager] No user session found');
+      return;
+    }
     setLoading(true)
 
     try {
+      console.log('[PushManager] Requesting notification permission...');
       const permission = await Notification.requestPermission()
+      console.log('[PushManager] Permission status:', permission);
+      
       if (permission !== 'granted') {
         alert('Please enable notifications in your browser settings')
         setLoading(false)
         return
       }
 
+      console.log('[PushManager] Waiting for Service Worker ready...');
       const registration = await navigator.serviceWorker.ready
+      console.log('[PushManager] SW Ready. Subscribing with key length:', VAPID_PUBLIC_KEY.length);
+      
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       })
+      console.log('[PushManager] Got PushSubscription from browser:', JSON.stringify(sub));
 
       console.log('Sending subscription to server:', JSON.stringify(sub));
       const response = await fetch('/api/notifications/subscribe', {
