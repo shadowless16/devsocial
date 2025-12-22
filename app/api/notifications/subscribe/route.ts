@@ -21,7 +21,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Subscribe error:', error)
-    return NextResponse.json({ error: 'Failed to subscribe' }, { status: 500 })
+    const errorMessage = error instanceof Error ? error.message : String(error)
+    return NextResponse.json({ error: errorMessage }, { status: 500 })
   }
 }
 
