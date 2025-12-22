@@ -1,0 +1,13 @@
+name = "devsocial-push"
+main = "src/index.js"
+compatibility_date = "2024-01-01"
+
+[vars]
+VAPID_SUBJECT = "mailto:admin@akdavid.dev"
+
+# Run: wrangler kv:namespace create "PUSH_SUBSCRIPTIONS"
+# Then update the id below
+
+[[kv_namespaces]]
+binding = "PUSH_SUBSCRIPTIONS"
+id = "YOUR_KV_NAMESPACE_ID"

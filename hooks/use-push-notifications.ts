@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 
+const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || 'https://vite-react-template.akdavid4real.workers.dev'
+
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false)
   const [subscription, setSubscription] = useState<PushSubscription | null>(null)
@@ -67,7 +69,8 @@ export function usePushNotifications() {
           applicationServerKey: convertedKey
         })
 
-        const response = await fetch('/api/notifications/subscribe', {
+        // Send to Cloudflare Worker instead of Next.js API
+        const response = await fetch(`${WORKER_URL}/api/push/subscribe`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(sub)
