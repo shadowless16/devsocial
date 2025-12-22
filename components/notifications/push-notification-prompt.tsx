@@ -13,11 +13,6 @@ export function PushNotificationPrompt() {
   useEffect(() => {
     if (typeof window === 'undefined') return
     
-    // Temporarily disable prompt until VAPID keys are fixed in production
-    if (typeof window !== 'undefined' && window.location.hostname !== 'localhost') {
-      return
-    }
-    
     const dismissed = localStorage.getItem('push-notification-dismissed')
     if (isSupported && !isSubscribed && !dismissed) {
       setTimeout(() => setShowPrompt(true), 5000)
