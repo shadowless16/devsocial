@@ -14,6 +14,7 @@ export default function PushNotificationManager() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    console.log('[PushManager] Mounted. VAPID Key preset:', !!VAPID_PUBLIC_KEY);
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
       checkSubscription()
