@@ -44,6 +44,7 @@ export default function PushNotificationManager() {
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
       })
 
+      console.log('Sending subscription to server:', JSON.stringify(sub));
       const response = await fetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -11,6 +11,7 @@ export async function POST(req: NextRequest) {
     }
 
     const subscription = await req.json()
+    console.log('[DEBUG-SUB] Received subscription payload:', subscription);
 
     await dbConnect()
     await User.findByIdAndUpdate(session.user.id, {
