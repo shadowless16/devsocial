@@ -22,6 +22,8 @@ export function PushNotificationPrompt() {
     const result = await subscribe()
     if (result.success) {
       setShowPrompt(false)
+    } else if (result.error) {
+      alert(result.error)
     }
   }
 
