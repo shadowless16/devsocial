@@ -42,10 +42,16 @@ export function usePushNotifications() {
       }
 
       try {
-        const sub = await registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: urlBase64ToUint8Array(vapidPublicKey)
-        })
+      console.log('[DEBUG] VAPID Key loaded. Length:', vapidPublicKey.length);
+      console.log('[DEBUG] VAPID Key Start:', vapidPublicKey.substring(0, 10) + '...');
+      
+      const convertedKey = urlBase64ToUint8Array(vapidPublicKey);
+      console.log('[DEBUG] Converted Key Length:', convertedKey.length);
+
+      const sub = await registration.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedKey
+      })
 
         const response = await fetch('/api/notifications/subscribe', {
           method: 'POST',

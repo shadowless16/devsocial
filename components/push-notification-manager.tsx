@@ -51,9 +51,13 @@ export default function PushNotificationManager() {
       const registration = await navigator.serviceWorker.ready
       console.log('[PushManager] SW Ready. Subscribing with key length:', VAPID_PUBLIC_KEY.length);
       
+      console.log('[DEBUG] Manager VAPID Key loaded. Length:', VAPID_PUBLIC_KEY.length);
+      const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
+      console.log('[DEBUG] Manager Converted Key Length:', convertedKey.length);
+
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+        applicationServerKey: convertedKey
       })
       console.log('[PushManager] Got PushSubscription from browser:', JSON.stringify(sub));
 
