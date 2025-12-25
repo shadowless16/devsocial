@@ -31,9 +31,14 @@ export async function sendPushToUser(userId: string, payload: PushPayload) {
       return { success: false, reason: 'No push subscription found. Please subscribe first on the test page.' }
     }
 
-    const subscription = user.pushSubscription as Record<string, unknown>
+    let subscription = user.pushSubscription as any
     
-    console.log('[PushService] Subscription endpoint:', subscription.endpoint)
+    // Defensive check: handle both raw and wrapped { subscription: ... } formats
+    if (subscription && subscription.subscription) {
+      subscription = subscription.subscription
+    }
+    
+    console.log('[PushService] Subscription endpoint:', subscription?.endpoint)
     
     // Check if it's a mock subscription (localhost fallback)
     const endpoint = subscription.endpoint as string | undefined
