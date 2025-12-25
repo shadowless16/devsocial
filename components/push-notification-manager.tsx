@@ -42,6 +42,11 @@ export default function PushNotificationManager() {
 
       const registration = await navigator.serviceWorker.ready
       const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+      
+      console.log('[Push] Decoded VAPID Key length:', convertedKey.length)
+      if (convertedKey.length !== 65) {
+        throw new Error(`Invalid VAPID Public Key length. Expected 65 bytes, but decoded to ${convertedKey.length} bytes. Check your environment variable for extra spaces or missing characters.`)
+      }
 
       // Force unsubscribe from existing to clear stale state
       const existingSub = await registration.pushManager.getSubscription()
