@@ -11,12 +11,11 @@ export function PushNotificationPrompt() {
   const { isSupported, isSubscribed, subscribe } = usePushNotifications()
 
   useEffect(() => {
-    if (typeof window === 'undefined') return
-    
-    const dismissed = localStorage.getItem('push-notification-dismissed')
-    if (isSupported && !isSubscribed && !dismissed) {
-      setTimeout(() => setShowPrompt(true), 5000)
-    }
+    // Push notifications disabled due to browser push service limitations
+    // Browser push services reject subscriptions from *.vercel.app domains
+    // even when using Cloudflare Workers as the backend
+    // Re-enable only when using a custom domain
+    return
   }, [isSupported, isSubscribed])
 
   const handleEnable = async () => {

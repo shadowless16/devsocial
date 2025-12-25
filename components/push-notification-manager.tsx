@@ -14,7 +14,6 @@ export default function PushNotificationManager() {
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    console.log('[PushManager] Mounted. VAPID Key preset:', !!VAPID_PUBLIC_KEY);
     if ('serviceWorker' in navigator && 'PushManager' in window) {
       setIsSupported(true)
       checkSubscription()
@@ -24,22 +23,16 @@ export default function PushNotificationManager() {
   const checkSubscription = async () => {
     const registration = await navigator.serviceWorker.ready
     const sub = await registration.pushManager.getSubscription()
-    console.log('[PushManager] Initial check. Existing subscription:', sub ? 'YES' : 'NO');
     setSubscription(sub)
   }
 
   const subscribe = async () => {
     console.log('[PushManager] Subscribe clicked');
-    if (!session?.user) {
-      console.error('[PushManager] No user session found');
-      return;
-    }
+
     setLoading(true)
 
     try {
-      console.log('[PushManager] Requesting notification permission...');
       const permission = await Notification.requestPermission()
-      console.log('[PushManager] Permission status:', permission);
       
       if (permission !== 'granted') {
         alert('Please enable notifications in your browser settings')
@@ -47,21 +40,11 @@ export default function PushNotificationManager() {
         return
       }
 
-      console.log('[PushManager] Waiting for Service Worker ready...');
-      const registration = await navigator.serviceWorker.ready
-      console.log('[PushManager] SW Ready. Subscribing with key length:', VAPID_PUBLIC_KEY.length);
-      
-      console.log('[DEBUG] Manager VAPID Key loaded. Length:', VAPID_PUBLIC_KEY.length);
-      const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
-      console.log('[DEBUG] Manager Converted Key Length:', convertedKey.length);
-
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedKey
       })
-      console.log('[PushManager] Got PushSubscription from browser:', JSON.stringify(sub));
 
-      console.log('Sending subscription to server:', JSON.stringify(sub));
       const response = await fetch('/api/notifications/subscribe', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

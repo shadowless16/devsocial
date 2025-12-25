@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 
-const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || 'https://devsocial-push.akdavid4real.workers.dev'
 
 export function usePushNotifications() {
   const [isSupported, setIsSupported] = useState(false)
@@ -57,8 +56,6 @@ export function usePushNotifications() {
       try {
         const convertedKey = urlBase64ToUint8Array(vapidPublicKey)
         
-        console.log('[Push] Converted key length:', convertedKey.length)
-        
         if (convertedKey.length !== 65) {
           console.error('[Push] Invalid VAPID key format. Expected 65 bytes, got:', convertedKey.length)
           return { success: false, error: 'Invalid VAPID key configuration' }
@@ -69,8 +66,7 @@ export function usePushNotifications() {
           applicationServerKey: convertedKey
         })
 
-        // Send to Cloudflare Worker instead of Next.js API
-        const response = await fetch(`${WORKER_URL}/api/push/subscribe`, {
+        const response = await fetch('/api/notifications/subscribe', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(sub)
