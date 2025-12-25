@@ -118,10 +118,30 @@ export default function PushNotificationManager() {
     setLoading(false)
   }
 
+  const handleRepair = async () => {
+    if (!confirm('This will reset all push notification settings for this browser. Continue?')) {
+      return
+    }
+    setLoading(true)
+    try {
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const reg of registrations) {
+        await reg.unregister()
+      }
+      setSubscription(null)
+      alert('Notification settings reset. Please refresh and try enabling again.')
+      window.location.reload()
+    } catch (error) {
+      console.error('Repair failed:', error)
+      alert('Repair failed. Please clear browser storage manually.')
+    }
+    setLoading(false)
+  }
+
   if (!isSupported || !session) return null
 
   return (
-    <div className="fixed bottom-20 right-4 z-40">
+    <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
       <Button
         variant="outline"
         size="sm"
@@ -132,6 +152,19 @@ export default function PushNotificationManager() {
         {subscription ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
         <span className="ml-2">{subscription ? 'Notifications On' : 'Enable Notifications'}</span>
       </Button>
+      
+      {!subscription && (
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 rounded-full bg-background/50 backdrop-blur-sm self-end"
+          onClick={handleRepair}
+          title="Fix / Reset Notifications"
+          disabled={loading}
+        >
+          <BellOff className="h-4 w-4 text-muted-foreground opacity-50" />
+        </Button>
+      )}
     </div>
   )
 }

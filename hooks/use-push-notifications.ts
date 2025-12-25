@@ -117,11 +117,29 @@ export function usePushNotifications() {
     }
   }
 
+  const repair = async () => {
+    try {
+      console.log('[Push] Repairing: Unregistering all service workers...')
+      const registrations = await navigator.serviceWorker.getRegistrations()
+      for (const reg of registrations) {
+        await reg.unregister()
+        console.log('[Push] Unregistered worker:', reg.scope)
+      }
+      setSubscription(null)
+      setIsSubscribed(false)
+      return { success: true }
+    } catch (error) {
+      console.error('[Push] Repair failed:', error)
+      return { success: false, error }
+    }
+  }
+
   return {
     isSupported,
     isSubscribed,
     subscribe,
-    unsubscribe
+    unsubscribe,
+    repair
   }
 }
 
