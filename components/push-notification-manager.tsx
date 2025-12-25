@@ -114,15 +114,18 @@ export default function PushNotificationManager() {
   if (!isSupported || !session) return null
 
   return (
-    <Button
-      variant="ghost"
-      size="sm"
-      onClick={subscription ? unsubscribe : subscribe}
-      disabled={loading}
-    >
-      {subscription ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
-      <span className="ml-2">{subscription ? 'Notifications On' : 'Enable Notifications'}</span>
-    </Button>
+    <div className="fixed bottom-20 right-4 z-40">
+      <Button
+        variant="outline"
+        size="sm"
+        className="shadow-md bg-background/80 backdrop-blur-sm"
+        onClick={subscription ? unsubscribe : subscribe}
+        disabled={loading}
+      >
+        {subscription ? <Bell className="h-4 w-4" /> : <BellOff className="h-4 w-4" />}
+        <span className="ml-2">{subscription ? 'Notifications On' : 'Enable Notifications'}</span>
+      </Button>
+    </div>
   )
 }
 
