@@ -61,6 +61,13 @@ export function usePushNotifications() {
           return { success: false, error: 'Invalid VAPID key configuration' }
         }
 
+        // Force unsubscribe from any existing subscription to clear stale state
+        const existingSub = await registration.pushManager.getSubscription()
+        if (existingSub) {
+          console.log('[Push] Clearing existing subscription before re-subscribing...')
+          await existingSub.unsubscribe()
+        }
+
         const sub = await registration.pushManager.subscribe({
           userVisibleOnly: true,
           applicationServerKey: convertedKey
@@ -83,7 +90,7 @@ export function usePushNotifications() {
         console.error('[Push] Subscription failed:', pushError)
         return { 
           success: false, 
-          error: 'Push notifications unavailable. Please check browser settings or try again later.' 
+          error: `Push service error (AbortError). This usually happens if VAPID keys were recently changed or are invalid. Try clearing site data in browser settings or regenerating VAPID keys. Error: ${pushError instanceof Error ? pushError.message : String(pushError)}`
         }
       }
     } catch (error) {
