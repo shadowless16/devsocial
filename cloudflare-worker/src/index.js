@@ -1,4 +1,4 @@
-import webpush from 'web-push'
+import * as webpush from '@block65/webcrypto-web-push'
 
 export default {
   async fetch(req, env, ctx) {
