@@ -43,6 +43,13 @@ export default function PushNotificationManager() {
       const registration = await navigator.serviceWorker.ready
       const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
 
+      // Force unsubscribe from existing to clear stale state
+      const existingSub = await registration.pushManager.getSubscription()
+      if (existingSub) {
+        console.log('[PushManager] Clearing existing subscription...')
+        await existingSub.unsubscribe()
+      }
+
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedKey
