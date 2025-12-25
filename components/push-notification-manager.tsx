@@ -40,6 +40,9 @@ export default function PushNotificationManager() {
         return
       }
 
+      const registration = await navigator.serviceWorker.ready
+      const convertedKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+
       const sub = await registration.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: convertedKey
