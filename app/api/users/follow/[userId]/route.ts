@@ -9,6 +9,8 @@ import { successResponse, errorResponse } from "@/utils/response"
 import { awardXP, XP_VALUES } from "@/utils/awardXP"
 import MissionProgress from "@/models/MissionProgress"
 import { notifyFollow } from "@/lib/notifications/notification-helper"
+import { sendPushToUser } from '@/lib/notifications/push-service'
+import { notifyViaEmail } from "@/lib/notifications/email-helper"
 import mongoose from "mongoose"
 
 // POST /api/user/follow/[userId] - Follow a user
@@ -79,6 +81,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       currentUserId,
       authResult.user.displayName || authResult.user.username || 'Someone'
     )
+
+    // Send Push Notification
+    try {
+      await sendPushToUser(userId, {
+        title: 'New Follower',
+        body: `${authResult.user.displayName || authResult.user.username} started following you`,
+        url: `/profile/${authResult.user.username}`,
+        tag: 'follow'
+      })
+    } catch (pushError) {
+      console.error('[FollowAPI] Failed to send push:', pushError)
+    }
+
+    // Send Email Notification
+    notifyViaEmail(userId, 'follow', {
+      senderName: authResult.user.displayName || authResult.user.username,
+      actionUrl: `/profile/${authResult.user.username}`
+    });
 
     // Create an activity record for the user who followed
     await Activity.create({

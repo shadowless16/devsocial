@@ -143,7 +143,7 @@ export default function PushNotificationManager() {
     setLoading(false)
   }
 
-  if (!isSupported || !session) return null
+  if (!isSupported || !session || subscription) return null
 
   return (
     <div className="fixed bottom-20 right-4 z-40 flex flex-col gap-2">
@@ -158,6 +158,7 @@ export default function PushNotificationManager() {
         <span className="ml-2">{subscription ? 'Notifications On' : 'Enable Notifications'}</span>
       </Button>
       
+      {/* Hidden repair button for advanced users */}
       {!subscription && (
         <Button
           variant="ghost"

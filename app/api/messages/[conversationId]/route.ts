@@ -6,6 +6,8 @@ import connectDB from "@/lib/core/db"
 import { successResponse, errorResponse } from "@/utils/response"
 import mongoose from "mongoose"
 import { notifyMessage } from "@/lib/notifications/notification-helper"
+import { sendPushToUser } from '@/lib/notifications/push-service'
+import { notifyViaEmail } from "@/lib/notifications/email-helper"
 
 
 export const dynamic = 'force-dynamic'
@@ -155,12 +157,35 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Send push notification to recipient
     if (recipientId) {
+      const senderName = authResult.user!.displayName || authResult.user!.username || 'Someone';
+      const msgPreview = content ? (content.length > 50 ? content.substring(0, 50) + '...' : content) : 'Sent a file';
+      
+      // 1. Existing internal notification helper
       await notifyMessage(
         recipientId.toString(),
         userId,
         authResult.user!.username || 'Someone',
         content || 'Sent a file'
       ).catch(err => console.error('Failed to send message notification:', err))
+
+      // 2. Send Web Push
+      try {
+        await sendPushToUser(recipientId.toString(), {
+          title: `New message from ${senderName}`,
+          body: msgPreview,
+          url: `/messages/${conversationId}`,
+          tag: `message-${conversationId}`
+        })
+      } catch (pushError) {
+        console.error('[MessageAPI] Failed to send push:', pushError)
+      }
+
+      // 3. Send Email Notification
+      notifyViaEmail(recipientId.toString(), 'message', {
+        senderName,
+        actionUrl: `/messages/${conversationId}`,
+        preview: msgPreview
+      });
     }
 
     return NextResponse.json(successResponse({ message }), { status: 201 })

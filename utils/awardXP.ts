@@ -3,6 +3,8 @@ import XPLog from "@/models/XPLog"
 import connectDB from "@/lib/core/db"
 import { ReferralSystemFixed } from "./referral-system-fixed"
 import { checkDailyLimit } from "./check-daily-limit"
+import { sendPushToUser } from "@/lib/notifications/push-service"
+import { notifyViaEmail } from "@/lib/notifications/email-helper"
 
 // XP values for different actions
 export const XP_VALUES = {
@@ -64,7 +66,35 @@ export async function awardXP(
     }
 
     const oldLevel = user.level
+    const oldPoints = user.points
     user.points += xpAmount
+
+    // Check for XP Overtake
+    // Find users who were passed (points between old and new)
+    try {
+      const overtakenUsers = await User.find({
+        points: { $gt: oldPoints, $lt: user.points },
+        _id: { $ne: userId }
+      }).select('username point _id').limit(3) // Limit to avoid spamming too many people
+
+      for (const overtakenUser of overtakenUsers) {
+        // Notify the user they were passed
+        await sendPushToUser(overtakenUser._id.toString(), {
+          title: '🏆 XP Alert',
+          body: `${user.username} just passed you on the leaderboard!`,
+          url: '/leaderboard',
+          tag: 'overtake'
+        }).catch(err => console.error('[XP] Failed to send overtake push:', err))
+
+        // Also send email
+        await notifyViaEmail(overtakenUser._id.toString(), 'xp_overtake', {
+          senderName: user.username,
+          actionUrl: '/leaderboard'
+        });
+      }
+    } catch (err) {
+      console.error('[XP] Overtake check failed:', err)
+    }
 
     // Level will be automatically calculated in the pre-save hook
     await user.save()

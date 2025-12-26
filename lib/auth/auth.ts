@@ -208,16 +208,34 @@ export class AuthService {
     return crypto.randomBytes(32).toString('hex');
   }
 
-  // Send password reset email (placeholder implementation)
+  // Send password reset email
   static async sendPasswordResetEmail(email: string, resetToken: string, username: string) {
-    console.log(`[AuthService] Password reset email would be sent to ${email}`);
-    console.log(`[AuthService] Reset token: ${resetToken}`);
-    console.log(`[AuthService] Username: ${username}`);
+    console.log(`[AuthService] Preparing password reset email for ${email}`);
     
     const resetLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/reset-password?token=${resetToken}`;
-    console.log(`[AuthService] Reset link: ${resetLink}`);
+    const { getPasswordResetTemplate } = await import('@/lib/email/templates/password-reset');
+    const { sendEmail } = await import('@/lib/core/email');
+
+    const html = getPasswordResetTemplate(username, resetLink);
     
-    // TODO: Implement actual email sending
-    return true;
+    const result = await sendEmail({
+      to: email,
+      subject: 'Reset your DevSocial password',
+      html,
+    });
+
+    if (result.success) {
+      console.log(`[AuthService] Password reset email sent to ${email}`);
+      return true;
+    } else {
+      console.error(`[AuthService] Failed to send password reset email:`, result.error);
+      return false;
+    }
+  }
+
+  static generateVerificationToken() {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const crypto = require('crypto');
+    return crypto.randomBytes(32).toString('hex');
   }
 }

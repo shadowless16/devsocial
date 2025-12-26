@@ -1,4 +1,3 @@
-// app/api/likes/posts/[postId]/route.ts
 import { type NextRequest, NextResponse } from "next/server";
 import { getSession } from '@/lib/auth/server-auth';
 import Like from "@/models/Like";
@@ -10,8 +9,8 @@ import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/realtime/websocket";
 import { handleDatabaseError } from "@/lib/api/api-error-handler";
 import { notifyLike } from "@/lib/notifications/notification-helper";
+import { notifyViaEmail } from '@/lib/notifications/email-helper';
 import mongoose from "mongoose";
-
 
 export const dynamic = 'force-dynamic'
 
@@ -61,7 +60,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         likesCount += 1;
         liked = true;
 
-        // Background tasks - don't await to improve response time
         // Background tasks - await to ensure completion in serverless environment
         try {
           await Promise.all([
@@ -69,7 +67,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             Activity.create({
               user: new mongoose.Types.ObjectId(userId),
               type: "like_given",
-              description: `Liked a post`,
+              description: "Liked a post",
               metadata: {
                 postId,
                 postTitle: post.content.substring(0, 50),
@@ -78,34 +76,51 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
             })
           ]);
 
-          // Create notification with push if not self-like
+          // Create notification (handles Push automatically via notifyLike)
           if (post.author._id.toString() !== userId) {
             try {
-              await notifyLike(
+              const notification = await notifyLike(
                 post.author._id.toString(),
                 userId,
                 postId,
                 session.user.username || 'Someone'
               );
+
+              const wsServer = getWebSocketServer();
+        
+              // 1. Send WebSocket Notification
+              if (wsServer && notification) {
+                // Safely handle potentially missing profile fields
+                const senderProfile = {
+                  id: session.user.id,
+                  username: session.user.username,
+                  displayName: (session.user as any).displayName || session.user.username,
+                  avatar: (session.user as any).avatar || '', 
+                };
+
+                wsServer.sendNotificationToUser(post.author._id.toString(), {
+                  type: 'like',
+                  title: notification.title,
+                  message: notification.message,
+                  sender: senderProfile,
+                  createdAt: notification.createdAt
+                })
+              }
+
+              // 2. Send Email Notification
+              notifyViaEmail(post.author._id.toString(), 'like', {
+                senderName: session.user.username || 'Someone',
+                actionUrl: `/post/${postId}`
+              });
+
             } catch (err) {
               console.error('Failed to send like notification:', err);
-            }
-
-            const wsServer = getWebSocketServer();
-            if (wsServer) {
-              wsServer.sendNotificationToUser(post.author._id.toString(), {
-                type: "like",
-                title: `${session.user.username} liked your post`,
-                message: post.content.substring(0, 100),
-                sender: { id: session.user.id, username: session.user.username },
-                createdAt: new Date(),
-              });
             }
           }
         } catch (bgError) {
           console.warn("Background task failed:", bgError);
         }
-      } catch (likeError) {
+      } catch (likeError: any) {
         if (likeError.code === 11000) {
           return NextResponse.json({
             success: true,

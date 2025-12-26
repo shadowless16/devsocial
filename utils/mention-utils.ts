@@ -2,6 +2,8 @@ import User from "@/models/User"
 import UserMention from "@/models/UserMention"
 import connectDB from "@/lib/core/db"
 import { notifyMention } from "@/lib/notifications/notification-helper"
+import { sendPushToUser } from "@/lib/notifications/push-service"
+import { notifyViaEmail } from "@/lib/notifications/email-helper"
 
 export function extractMentions(content: string): string[] {
   const mentionRegex = /@(\w+)/g
@@ -47,6 +49,25 @@ export async function processMentions(
         postId,
         mentioner?.displayName || mentioner?.username || 'Someone'
       )
+
+      // Send Push Notification
+      try {
+        await sendPushToUser(mentionedUser._id.toString(), {
+          title: 'You were mentioned',
+          body: `${mentioner?.displayName || mentioner?.username || 'Someone'} mentioned you in a post`,
+          url: `/post/${postId}`,
+          tag: `mention-${postId}`
+        })
+      } catch (pushError) {
+        console.error('[Mention] Failed to send push:', pushError)
+      }
+
+      // Send Email Notification
+      notifyViaEmail(mentionedUser._id.toString(), 'mention', {
+        senderName: mentioner?.displayName || mentioner?.username || 'Someone',
+        actionUrl: `/post/${postId}`,
+        preview: content.substring(0, 100)
+      });
     } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Operation failed';
     console.error(`Error processing mention for ${username}:`, errorMessage)
