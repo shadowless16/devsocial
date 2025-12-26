@@ -140,6 +140,7 @@
     "recharts": "latest",
     "rehype-raw": "^7.0.0",
     "remark-gfm": "^4.0.1",
+    "resend": "^6.6.0",
     "socket.io": "latest",
     "socket.io-client": "latest",
     "sonner": "^1.7.1",

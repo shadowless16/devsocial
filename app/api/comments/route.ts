@@ -8,6 +8,8 @@ import { awardXP } from "@/utils/awardXP";
 import { getWebSocketServer } from "@/lib/realtime/websocket";
 import Notification from "@/models/Notification";
 import { processMentions } from "@/utils/mention-utils";
+import { sendPushToUser } from "@/lib/notifications/push-service";
+import { notifyViaEmail } from "@/lib/notifications/email-helper";
 import mongoose from "mongoose";
 
 export const dynamic = 'force-dynamic'
@@ -106,6 +108,25 @@ export async function POST(req: NextRequest) {
           createdAt: notification.createdAt,
         });
       }
+
+      // Send Push Notification
+      try {
+        await sendPushToUser(post.author.toString(), {
+          title: notification.title,
+          body: notification.message,
+          url: notification.actionUrl || `/post/${postId}`,
+          tag: `comment-${postId}`
+        });
+      } catch (pushError) {
+        console.error('[CommentAPI] Failed to send push:', pushError);
+      }
+
+      // Send Email Notification
+      notifyViaEmail(post.author.toString(), 'comment', {
+        senderName: authResult.user.displayName || authResult.user.username,
+        actionUrl: notification.actionUrl || `/post/${postId}`,
+        preview: content.substring(0, 100)
+      });
     }
 
     const populatedComment = await (Comment.findById(newComment._id) as unknown as { populate: (path: string, select: string) => { lean: () => Promise<unknown> } })

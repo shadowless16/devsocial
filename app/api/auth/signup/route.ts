@@ -9,6 +9,9 @@ import { successResponse, errorResponse, validationErrorResponse } from "@/utils
 import { awardXP } from "@/utils/awardXP"
 import { ReferralSystemFixed } from "@/utils/referral-system-fixed"
 import { generateAvatarFromUsername } from "@/utils/avatar-generator"
+import { AuthService } from "@/lib/auth/auth"
+import { getWelcomeEmailTemplate } from "@/lib/email/templates/welcome"
+import { sendEmail } from "@/lib/core/email"
 
 
 export const dynamic = 'force-dynamic'
@@ -65,6 +68,10 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generate verification token
+    const verificationToken = AuthService.generateVerificationToken() 
+    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours
+
     // Create user with proper referral fields
     const user = await User.create({
       username,
@@ -80,7 +87,26 @@ export async function POST(request: NextRequest) {
       badges: ["newcomer"], // Starting badge
       registrationSource: referrerInfo ? "referral" : "direct",
       referrer: referrerInfo ? referrerInfo.username : "",
+      verificationToken,
+      verificationTokenExpires: verificationExpires,
+      isVerified: false,
     })
+
+    // Send Welcome / Verification Email
+    try {
+      const verificationLink = `${process.env.NEXT_PUBLIC_APP_URL}/auth/verify-email?token=${verificationToken}`
+      const html = getWelcomeEmailTemplate(username, verificationLink)
+      
+      await sendEmail({
+        to: email,
+        subject: 'Welcome to DevSocial! Verify your email',
+        html,
+      })
+      console.log(`[Signup] Verification email sent to ${email}`)
+    } catch (emailError) {
+      console.error('[Signup] Failed to send verification email:', emailError)
+      // Don't fail signup if email fails, but log it
+    }
 
     // Award signup XP
     await awardXP(user._id.toString(), "daily_login")

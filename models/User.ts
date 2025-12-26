@@ -81,6 +81,14 @@ export interface IUser extends Document {
     showOnlineStatus?: boolean;
     indexProfile?: boolean;
   };
+  notificationSettings?: {
+    emailLikes: boolean;
+    emailComments: boolean;
+    emailFollows: boolean;
+    emailMentions: boolean;
+    emailMessages: boolean;
+    emailTips: boolean;
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -368,6 +376,14 @@ const UserSchema = new Schema<IUser>(
         type: Boolean,
         default: true,
       },
+    },
+    notificationSettings: {
+      emailLikes: { type: Boolean, default: true },
+      emailComments: { type: Boolean, default: true },
+      emailFollows: { type: Boolean, default: true },
+      emailMentions: { type: Boolean, default: true },
+      emailMessages: { type: Boolean, default: true },
+      emailTips: { type: Boolean, default: true },
     },
   },
   { timestamps: true }
