@@ -35,13 +35,13 @@ const EditProfileModal = dynamic(() => import('@/components/modals/edit-profile-
 
 interface ProfileData {
   name: string
-  title: string
-  location: string
-  joinDate: string
-  bio: string
+  title?: string
+  location?: string
+  joinDate?: string
+  bio?: string
   avatar: string
-  techStack: string[]
-  socialLinks: { platform: string; icon: string; url: string }[]
+  techStack?: string[]
+  socialLinks?: { platform: string; icon?: string; url: string }[]
   userId: string
   username: string
   followersCount: number
