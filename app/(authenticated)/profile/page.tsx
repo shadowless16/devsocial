@@ -191,7 +191,12 @@ export default function MyProfile() {
         <ProfileHeader 
           profile={{
             ...profileData!,
-            title: "System Engineer",
+            name: profileData?.name || user?.username || 'User',
+            title: profileData?.title || "System Engineer",
+            location: profileData?.location || "Not specified",
+            joinDate: profileData?.joinDate || "Member since 2024",
+            bio: profileData?.bio || "",
+            techStack: profileData?.techStack || [],
             userId: user.id,
             username: user.username,
             followersCount: profileData?.followersCount || 0,
