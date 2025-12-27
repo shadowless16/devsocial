@@ -1,7 +1,15 @@
 
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+let resendClient: Resend | null = null;
+
+function getResendClient() {
+  if (!resendClient) {
+    const apiKey = process.env.RESEND_API_KEY || 're_dummy_key_for_build';
+    resendClient = new Resend(apiKey);
+  }
+  return resendClient;
+}
 
 interface EmailOptions {
   to: string;
@@ -23,6 +31,7 @@ export async function sendEmail({ to, subject, html, text }: EmailOptions) {
     // In 'onboarding@resend.dev' mode, you can ONLY send to the email you used to sign up for Resend.
     // Ensure you verify your domain on Resend to send to anyone.
     
+    const resend = getResendClient();
     const data = await resend.emails.send({
       from: fromAddress,
       to,
