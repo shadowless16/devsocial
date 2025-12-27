@@ -1,6 +1,7 @@
 "use client"
 
 import dynamic from "next/dynamic"
+import { usePathname } from "next/navigation"
 import { TooltipProvider } from "@/components/ui/tooltip"
 
 // Remove ssr:false to allow server-side rendering and faster compilation
@@ -12,6 +13,25 @@ const PushNotificationManager = dynamic(() => import("@/components/push-notifica
 const PushNotificationPrompt = dynamic(() => import("@/components/notifications/push-notification-prompt").then(m => ({ default: m.PushNotificationPrompt })))
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname()
+  const isAdminPage = pathname?.startsWith('/admin')
+
+  if (isAdminPage) {
+    return (
+      <TooltipProvider>
+        <main className="min-h-screen bg-muted/30 pb-16 md:pb-0 w-full overflow-y-auto">
+          <div className="w-full">
+            {children}
+          </div>
+          <MobileNav />
+          <InstallPrompt />
+          <PushNotificationManager />
+          <PushNotificationPrompt />
+        </main>
+      </TooltipProvider>
+    )
+  }
+
   return (
     <TooltipProvider>
       <main className="h-screen overflow-hidden bg-muted/30 pb-16 md:pb-0 w-full">

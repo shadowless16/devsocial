@@ -3,18 +3,30 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
-import { useAuth, useApp } from "@/contexts/app-context"
-import { useUIState } from "@/hooks/use-ui-state"
+import { useApp } from "@/contexts/app-context"
+// import { useUIState } from "@/hooks/use-ui-state"
 import { UserAvatar } from "@/components/ui/user-avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
+// import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/core/utils"
 import Link from "next/link"
 import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import {
+  Check,
+  Palette,
+  Sun,
+  Laptop,
   Bell,
   Compass,
   Grid2X2,
@@ -75,8 +87,8 @@ const getNavItems = (userRole?: string): NavItem[] => {
 
 export default function SideNav() {
   const pathname = usePathname()
-  const { user } = useAuth()
-  const { handleThemeToggle } = useUIState()
+  const { state, setTheme, setColorTheme } = useApp() // Direct access to full state
+  const { user } = state
   const [active, setActive] = useState("")
   const [points, setPoints] = useState<number>(user?.points || 0)
   const [level, setLevel] = useState<number>(user?.level || 1)
@@ -135,18 +147,6 @@ export default function SideNav() {
     };
   }, [user]);
 
-  const calculateProgress = (currentXP: number, level: number) => {
-    const currentLevelXP = (level - 1) * 1000
-    const nextLevelXP = level * 1000
-    const progress = ((currentXP - currentLevelXP) / (nextLevelXP - currentLevelXP)) * 100
-    return Math.max(0, Math.min(100, progress))
-  }
-
-  const getXPToNext = (currentXP: number, level: number) => {
-    const nextLevelXP = level * 1000
-    return Math.max(0, nextLevelXP - currentXP)
-  }
-
   return (
     <div className="grid gap-2">
       <div className="flex items-center gap-1">
@@ -157,7 +157,7 @@ export default function SideNav() {
         </div>
       </div>
 
-      <Card className="border-0 p-2 ring-1 ring-black/5">
+      <Card className="border-0 p-2 ring-1 ring-black/5 bg-transparent shadow-none">
         <div className="flex items-center gap-2">
           {user && (
             <UserAvatar 
@@ -166,20 +166,16 @@ export default function SideNav() {
                 avatar: user.avatar,
                 displayName: user.displayName || user.username
               }}
-              className="h-6 w-6 ring-1 ring-primary/20"
+              className="h-8 w-8 ring-2 ring-primary/20"
             />
           )}
           <div className="min-w-0">
               <div className="flex items-center gap-1">
-              <div className="truncate text-xs font-medium">{user?.displayName || user?.username || 'User'}</div>
+              <div className="truncate text-sm font-medium">{user?.displayName || user?.username || 'User'}</div>
               <Badge className="bg-primary/10 text-primary hover:bg-primary/10 text-[10px] px-1">L{level || 1}</Badge>
             </div>
             <div className="text-[10px] text-muted-foreground">{points || 0} XP</div>
           </div>
-        </div>
-        <div className="mt-2">
-          <Progress value={calculateProgress(points || 0, level || 1)} className="[&>div]:bg-primary h-1" />
-          <div className="mt-1 text-[9px] text-muted-foreground">{getXPToNext(points || 0, level || 1)} XP to next</div>
         </div>
       </Card>
 
@@ -228,23 +224,66 @@ export default function SideNav() {
       <div className="grid gap-0.5">
         <Button 
           variant="ghost" 
-          className="justify-start gap-1 text-xs h-7"
+          className="justify-start gap-1 text-xs h-8"
           onClick={() => window.location.href = '/settings'}
         >
-          <Settings2 className="h-3 w-3" />
+          <Settings2 className="h-4 w-4" />
           Settings
         </Button>
+        
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" className="justify-start gap-1 text-xs h-8">
+              <Palette className="h-4 w-4" />
+              Theme & Appearance
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start" className="w-56 glass-panel">
+            <DropdownMenuLabel>Color Theme</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setColorTheme('vibrant')}>
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-full bg-purple-600 border border-white/20"></div>
+                <span>Vibrant (New)</span>
+                {state.colorTheme === 'vibrant' && <Check className="ml-auto h-3 w-3" />}
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setColorTheme('classic')}>
+              <div className="flex items-center gap-2">
+                <div className="h-4 w-4 rounded-full bg-emerald-600 border border-white/20"></div>
+                <span>Classic (Original)</span>
+                {state.colorTheme === 'classic' && <Check className="ml-auto h-3 w-3" />}
+              </div>
+            </DropdownMenuItem>
+            
+            <DropdownMenuSeparator />
+            <DropdownMenuLabel>Mode</DropdownMenuLabel>
+            <DropdownMenuItem onClick={() => setTheme('light')}>
+              <div className="flex items-center gap-2">
+                <Sun className="h-4 w-4" />
+                <span>Light</span>
+                {state.theme === 'light' && <Check className="ml-auto h-3 w-3" />}
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('dark')}>
+              <div className="flex items-center gap-2">
+                <Moon className="h-4 w-4" />
+                <span>Dark</span>
+                {state.theme === 'dark' && <Check className="ml-auto h-3 w-3" />}
+              </div>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setTheme('system')}>
+              <div className="flex items-center gap-2">
+                <Laptop className="h-4 w-4" />
+                <span>System</span>
+                {state.theme === 'system' && <Check className="ml-auto h-3 w-3" />}
+              </div>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+
         <Button 
           variant="ghost" 
-          className="justify-start gap-1 text-xs h-7"
-          onClick={handleThemeToggle}
-        >
-          <Moon className="h-3 w-3" />
-          Dark Mode
-        </Button>
-        <Button 
-          variant="ghost" 
-          className="justify-start gap-1 text-red-600 hover:text-red-600 text-xs h-7"
+          className="justify-start gap-1 text-red-600 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/10 text-xs h-8"
           onClick={() => {
             if (typeof window !== 'undefined') {
               localStorage.clear()
@@ -252,7 +291,7 @@ export default function SideNav() {
             }
           }}
         >
-          <LogOut className="h-3 w-3" />
+          <LogOut className="h-4 w-4" />
           Logout
         </Button>
       </div>

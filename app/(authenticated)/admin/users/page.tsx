@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { Users, Search, Filter, MoreVertical, Eye, Ban, Trash2, Shield, TrendingUp, Calendar, Award, MessageSquare, ChevronLeft, ChevronRight } from "lucide-react"
+import { Users, Search, Filter, MoreVertical, Eye, Ban, Trash2, Shield, TrendingUp, Calendar, Award, MessageSquare, ChevronLeft, ChevronRight, ArrowLeft } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
@@ -17,9 +17,19 @@ export default function UsersManagementPage() {
   const [users, setUsers] = useState<UserData[]>([])
   const [loading, setLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState("")
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("")
   const [filter, setFilter] = useState("all")
   const [page, setPage] = useState(1)
   const [pagination, setPagination] = useState({ page: 1, limit: 50, total: 0, totalPages: 0 })
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery)
+      setPage(1) // Reset to first page on new search
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [searchQuery])
 
   useEffect(() => {
     setPage(1)
@@ -28,7 +38,10 @@ export default function UsersManagementPage() {
   const fetchUsers = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await apiClient.request<{ users: UserData[], pagination: { page: number; limit: number; total: number; totalPages: number } }>(`/admin/users?filter=${filter}&page=${page}&limit=50`, { method: "GET" })
+      const response = await apiClient.request<{ users: UserData[], pagination: { page: number; limit: number; total: number; totalPages: number } }>(
+        `/admin/users?filter=${filter}&page=${page}&limit=50&search=${encodeURIComponent(debouncedSearchQuery)}`, 
+        { method: "GET" }
+      )
       if (response.success && response.data) {
         setUsers(response.data.users as UserData[])
         setPagination(response.data.pagination)
@@ -38,7 +51,7 @@ export default function UsersManagementPage() {
     } finally {
       setLoading(false)
     }
-  }, [filter, page])
+  }, [filter, page, debouncedSearchQuery])
 
   useEffect(() => {
     fetchUsers()
@@ -53,18 +66,22 @@ export default function UsersManagementPage() {
     }
   }
 
-  const filteredUsers = users.filter((user) =>
-    user.username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.displayName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchQuery.toLowerCase())
-  )
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
       <div className="w-full max-w-7xl mx-auto px-4 py-8">
         {/* Header Section */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col gap-6">
+          {/* Navigation and Top Header */}
+          <Button 
+            variant="ghost" 
+            className="w-fit flex items-center gap-2 text-slate-600 hover:text-blue-600 dark:text-slate-400 dark:hover:text-blue-400 -ml-2"
+            onClick={() => router.push('/home')}
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to Dashboard
+          </Button>
+
+          <div className="flex flex-col md:flex-row md:items-end justify-between items-start gap-6">
             <div>
               <div className="flex items-center gap-4 mb-2">
                 <div className="p-3 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-2xl shadow-lg">
@@ -135,7 +152,7 @@ export default function UsersManagementPage() {
           <>
             {/* Users Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-              {filteredUsers.map((user) => (
+              {users.map((user) => (
                 <Card 
                   key={user._id} 
                   className="group border-0 shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer bg-white/80 dark:bg-slate-900/80 backdrop-blur overflow-hidden"

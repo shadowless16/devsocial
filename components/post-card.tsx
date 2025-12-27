@@ -259,7 +259,7 @@ interface Comment {
 
   return (
     <>
-      <Card className="group relative w-full min-w-0 max-w-full border-0 ring-1 ring-black/5 transition-all hover:shadow-lg/30 motion-safe:hover:-translate-y-[1px] cursor-pointer overflow-hidden">
+    <Card className="glass-panel group relative w-full min-w-0 max-w-full transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 cursor-pointer overflow-hidden">
         <CardContent className="p-3 space-y-3">
           {/* Header Section */}
           <div className="flex items-start gap-3 min-w-0">

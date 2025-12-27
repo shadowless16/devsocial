@@ -50,6 +50,7 @@ interface AppState {
   
   // UI state
   theme: 'light' | 'dark' | 'system';
+  colorTheme: 'vibrant' | 'classic';
   sidebarOpen: boolean;
 }
 
@@ -67,6 +68,7 @@ type AppAction =
   | { type: 'ADD_NOTIFICATION'; payload: unknown }
   | { type: 'SET_UNREAD_COUNT'; payload: number }
   | { type: 'SET_THEME'; payload: 'light' | 'dark' | 'system' }
+  | { type: 'SET_COLOR_THEME'; payload: 'vibrant' | 'classic' }
   | { type: 'TOGGLE_SIDEBAR' };
 
 // Initial state
@@ -79,6 +81,7 @@ const initialState: AppState = {
   notifications: [],
   unreadCount: 0,
   theme: 'system',
+  colorTheme: 'vibrant',
   sidebarOpen: false,
 };
 
@@ -125,6 +128,8 @@ function appReducer(state: AppState, action: AppAction): AppState {
       return { ...state, unreadCount: action.payload };
     case 'SET_THEME':
       return { ...state, theme: action.payload };
+    case 'SET_COLOR_THEME':
+      return { ...state, colorTheme: action.payload };
     case 'TOGGLE_SIDEBAR':
       return { ...state, sidebarOpen: !state.sidebarOpen };
     default:
@@ -154,6 +159,7 @@ interface AppContextType {
   // UI actions
   toggleSidebar: () => void;
   setTheme: (theme: 'light' | 'dark' | 'system') => void;
+  setColorTheme: (theme: 'vibrant' | 'classic') => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -162,6 +168,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(appReducer, initialState);
   const { getCachedSession, setCachedSession, clearCache } = useSessionCache();
   const [sessionStatus, setSessionStatus] = React.useState<'loading' | 'authenticated' | 'unauthenticated'>('loading');
+
+  // Load color theme from localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedColorTheme = localStorage.getItem('colorTheme') as 'vibrant' | 'classic' | null;
+      if (savedColorTheme) {
+        dispatch({ type: 'SET_COLOR_THEME', payload: savedColorTheme });
+        document.documentElement.setAttribute('data-theme', savedColorTheme);
+      } else {
+        document.documentElement.setAttribute('data-theme', 'vibrant');
+      }
+    }
+  }, []);
 
   // Auth actions
   const login = useCallback(async (credentials: { usernameOrEmail: string; password: string }) => {
@@ -307,6 +326,14 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'SET_THEME', payload: theme });
   }, []);
 
+  const setColorTheme = useCallback((theme: 'vibrant' | 'classic') => {
+    dispatch({ type: 'SET_COLOR_THEME', payload: theme });
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('colorTheme', theme);
+      document.documentElement.setAttribute('data-theme', theme);
+    }
+  }, []);
+
   // Fetch notification count
   useEffect(() => {
     if (state.user) {
@@ -398,6 +425,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     toggleFollow,
     toggleSidebar,
     setTheme,
+    setColorTheme,
   };
 
   return <AppContext.Provider value={value}>{children}</AppContext.Provider>;

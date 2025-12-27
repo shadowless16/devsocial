@@ -188,7 +188,7 @@ export default function TestPushPage() {
       <Card className="p-6 mt-6 bg-gray-50 dark:bg-gray-900/20">
         <h3 className="font-semibold mb-2">💡 Troubleshooting</h3>
         <ul className="text-sm space-y-1 list-disc list-inside">
-          <li>If browser test works but push doesn't: Service worker issue (normal on localhost)</li>
+          <li>If browser test works but push doesn&apos;t: Service worker issue (normal on localhost)</li>
           <li>If nothing works: Check browser notification permissions in settings</li>
           <li>Chrome: Settings → Privacy → Site Settings → Notifications</li>
           <li>The real notifications will work when someone actually likes/comments/follows you!</li>
