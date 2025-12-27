@@ -17,6 +17,7 @@ export async function GET(request: NextRequest) {
 
     const { searchParams } = new URL(request.url)
     const filter = searchParams.get("filter") || "all"
+    const search = searchParams.get("search") || ""
     const page = parseInt(searchParams.get("page") || "1")
     const limit = parseInt(searchParams.get("limit") || "50")
     const skip = (page - 1) * limit
@@ -24,12 +25,21 @@ export async function GET(request: NextRequest) {
     interface UserQuery {
       isBlocked?: boolean;
       role?: string;
+      $or?: Array<Record<string, unknown>>;
     }
     
     const query: UserQuery = {}
     if (filter === "blocked") query.isBlocked = true
     if (filter === "active") query.isBlocked = false
     if (filter === "moderators") query.role = "moderator"
+
+    if (search) {
+      query.$or = [
+        { username: { $regex: search, $options: "i" } },
+        { displayName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } }
+      ]
+    }
 
     const [users, totalUsers] = await Promise.all([
       User.find(query)

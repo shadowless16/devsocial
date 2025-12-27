@@ -148,19 +148,6 @@ export async function GET(
     }
 
     // Default profile response
-    // Check liked status for posts if user is authenticated
-    if (currentUserId) {
-      const likedPostIds = await Post.find({
-        _id: { $in: transformedPosts.map(p => p._id) },
-        likes: currentUserId
-      }).distinct('_id');
-      
-      const likedPostIdsSet = new Set(likedPostIds.map(id => id.toString()));
-      transformedPosts.forEach(post => {
-        post.isLiked = likedPostIdsSet.has(post._id);
-      });
-    }
-
     // Calculate rank (simple ranking based on total XP)
     const userRank = await User.countDocuments({ 
       points: { $gt: user.points || 0 } 
@@ -188,6 +175,7 @@ export async function GET(
       bannerUrl: user.bannerUrl || "",
       level: user.level || 1,
       points: user.points || 0,
+      loginStreak: (user as any).loginStreak || 0, // ADDED: include streak
       location: user.location || "",
       website: user.website || "",
       createdAt: user.createdAt,

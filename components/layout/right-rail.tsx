@@ -26,6 +26,7 @@ function Trends() {
       try {
         const response = await apiClient.getTrendingData("today")
         console.log("[RightRail] Trending response:", response)
+        
         if (response.success && response.data) {
           const topics = ((response.data as { trendingTopics?: Array<{ tag: string; posts: number | string; trend?: string }> }).trendingTopics || [])
           console.log("[RightRail] Setting trending topics:", topics)

@@ -137,48 +137,8 @@ export async function GET(request: NextRequest) {
       },
     ])
 
-    // Fallback: If no trending topics from recent posts, get from all posts
-    let fallbackTopics = [];
-    if (trendingTopics.length === 0) {
-      fallbackTopics = await Post.aggregate([
-        {
-          $match: {
-            tags: { $exists: true, $ne: [], $not: { $size: 0 } }
-          },
-        },
-        { $unwind: "$tags" },
-        {
-          $match: {
-            tags: { $nin: [null, ""] }
-          }
-        },
-        {
-          $group: {
-            _id: "$tags",
-            posts: { $sum: 1 },
-            totalLikes: { $sum: "$likesCount" },
-            totalComments: { $sum: "$commentsCount" },
-          },
-        },
-        { $sort: { posts: -1 } },
-        { $limit: 5 },
-        {
-          $project: {
-            tag: { 
-              $replaceAll: { 
-                input: "$_id", 
-                find: "#", 
-                replacement: "" 
-              } 
-            },
-            posts: 1,
-            growth: "+0%",
-            trend: "up",
-            description: "Popular topic in the community",
-          },
-        },
-      ]);
-    }
+    // No fallback - if it's empty, it's empty
+    const finalTrendingTopics = trendingTopics;
 
     // Optimized rising users query with aggregation
     const risingUsers = await User.aggregate([
@@ -222,15 +182,13 @@ export async function GET(request: NextRequest) {
       engagements: formatNumber(totalEngagements),
     }
 
-    const finalTrendingTopics = trendingTopics.length > 0 ? trendingTopics : fallbackTopics;
-
     const responseData = {
       success: true,
       data: {
         period,
         stats,
         trendingPosts,
-        trendingTopics: finalTrendingTopics,
+        trendingTopics,
         risingUsers,
       }
     };

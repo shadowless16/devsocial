@@ -315,8 +315,8 @@ export function SimplePostModal({ isOpen, onClose, onSubmit }: SimplePostModalPr
   const isOverLimit = characterCount > maxCharacters;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
-      <div className="w-full max-w-2xl bg-white dark:bg-gray-900 rounded-2xl shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-md p-4 transition-all">
+      <div className="glass-panel w-full max-w-2xl bg-background/95 shadow-2xl overflow-hidden border-primary/10">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">Create Post</h2>

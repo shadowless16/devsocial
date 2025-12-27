@@ -45,8 +45,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Update last login
-    user.lastLogin = new Date();
+    // Calculate Login Streak
+    const now = new Date();
+    const lastLogin = user.lastLogin ? new Date(user.lastLogin) : null;
+    let newStreak = user.loginStreak || 0;
+
+    if (lastLogin) {
+      const oneDay = 24 * 60 * 60 * 1000;
+      const hoursSinceLastLogin = (now.getTime() - lastLogin.getTime()) / (1000 * 60 * 60);
+      
+      // If login was more than 24h ago but less than 48h (consecutive day)
+      // Actually, standard checking is checking calendar days or 24h windows. 
+      // Let's use simple day difference for robustness:
+      // Reset logic:
+      const isSameDay = now.toDateString() === lastLogin.toDateString();
+      const isYesterday = new Date(now.getTime() - oneDay).toDateString() === lastLogin.toDateString();
+
+      if (isSameDay) {
+        // Do nothing, already logged in today
+      } else if (isYesterday) {
+        newStreak += 1;
+      } else {
+        // Missed a day or more
+        newStreak = 1;
+      }
+    } else {
+      // First time login or no last login recorded
+      newStreak = 1;
+    }
+
+    user.loginStreak = newStreak;
+    user.lastLogin = now;
     await user.save();
 
     // Create JWT token
@@ -72,7 +101,8 @@ export async function POST(request: NextRequest) {
       points: user.points || 0,
       followersCount: user.followersCount || 0,
       followingCount: user.followingCount || 0,
-      displayName: user.displayName || `${user.username}`
+      displayName: user.displayName || `${user.username}`,
+      loginStreak: user.loginStreak || 1, 
     };
 
     // Create response with auth cookie

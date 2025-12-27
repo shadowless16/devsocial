@@ -52,29 +52,42 @@ export default function ProfileStats({ stats }: ProfileStatsProps) {
   ]
 
   return (
-    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
-      {statItems.map((item, index) => (
-        <Card key={index} className="hover:shadow-md transition-shadow cursor-pointer group">
-          <CardContent className="p-2">
-            <div className="flex items-center justify-between mb-1">
-              <div className={`w-5 h-5 ${item.bgColor} rounded-md flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                <item.icon size={10} className={item.color} />
-              </div>
-              <div className="text-right">
-                <div className="text-sm font-bold text-foreground">
-                  {item.value}
-                  {item.suffix && (
-                    <span className={`text-xs font-medium ml-0.5 ${item.color}`}>
-                      {item.suffix}
-                    </span>
-                  )}
+    <div className="w-full">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+        {statItems.map((item, index) => (
+          <div 
+            key={index} 
+            className="group relative"
+          >
+            <div className="flex flex-col space-y-3">
+              <div className="flex items-center space-x-3">
+                <div className={`w-10 h-10 rounded-2xl ${item.bgColor} flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-inner`}>
+                  <item.icon size={18} className={item.color} />
                 </div>
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground opacity-50 group-hover:opacity-100 transition-opacity">
+                  {item.label}
+                </span>
+              </div>
+              
+              <div className="flex items-baseline space-x-1">
+                <span className="text-4xl font-black text-foreground tracking-tighter">
+                  {item.value}
+                </span>
+                {item.suffix && (
+                  <span className={`text-xs font-black uppercase tracking-widest ${item.color}`}>
+                    {item.suffix}
+                  </span>
+                )}
+              </div>
+
+              {/* Decorative underlying line */}
+              <div className="w-full h-px bg-foreground/5 relative overflow-hidden">
+                <div className={`absolute inset-0 w-0 group-hover:w-full transition-all duration-1000 ease-out ${item.color.replace('text-', 'bg-')}/30`} />
               </div>
             </div>
-            <p className="text-xs text-muted-foreground font-medium truncate">{item.label}</p>
-          </CardContent>
-        </Card>
-      ))}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
